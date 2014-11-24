@@ -196,8 +196,17 @@ void plotter::prepareSampleForPlotting (string sampleName)
            ++iHisto)
         {
           addOverFlow (iHisto->second) ; 
-          iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
-          iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+          if (m_samples[sampleName].m_isSignal)
+            {
+              iHisto->second->SetFillColor (0) ;
+              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+              iHisto->second->SetLineWidth (2) ;
+            }
+          else
+            {  
+              iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
+              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+            }
         } // loop over histos
     } // loop over layers
   m_samples[sampleName].m_readyForPlotting = true ;
@@ -230,7 +239,7 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
   TLegend leg = initLegend (1) ;
   leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
 
-  DrawPlot (h_var, leg, 1, xaxisTitle, yaxisTitle, isLog) ;
+  DrawPlots (vector<TH1F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog) ;
 
   return ;
 }
@@ -245,10 +254,10 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
   THStack * stack = new THStack (name.c_str (), "") ;
   int nsamples = m_samplesSequence.size () ;
 
-  TLegend leg = initLegend (m_samplesSequence.size ()) ;
+  TLegend leg = initLegend (nsamples) ;
 
   // add bkg to the stack
-  for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
     {
       string sampleName = m_samplesSequence.at (iSample) ;
       prepareSampleForPlotting (sampleName) ;
@@ -259,7 +268,7 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
     }
   
   // add signal to the stack
-  for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
     {
       string sampleName = m_samplesSequence.at (iSample) ;
       if (m_samples[sampleName].m_isSignal == false) continue ;
@@ -268,9 +277,59 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
       leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
     }
 
-  DrawPlot (stack, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog) ;
+  DrawPlots (vector<THStack *> (1, stack), leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog) ;
 
   return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void plotter::compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
+                           bool isNormalized, float scaleSignal, int isLog)
+{
+  // FIXME isNormalized needs to be implemented
+  // FIXME scaleSignal needs to be implemented
+  string name = string ("st_bkg_") + layerName + "_" + histoName ;
+  THStack * bkg_stack = new THStack (name.c_str (), "") ;
+  int nsamples = m_samplesSequence.size () ;
+
+  TLegend leg = initLegend (nsamples) ;
+
+  // add bkg to the stack
+  for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
+    {
+      string sampleName = m_samplesSequence.at (iSample) ;
+      prepareSampleForPlotting (sampleName) ;
+      if (m_samples[sampleName].m_isSignal == true) continue ;
+      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+      bkg_stack->Add (h_var) ;
+      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    }
+  
+  name = string ("st_sig_") + layerName + "_" + histoName ;
+  THStack * sig_stack = new THStack (name.c_str (), "") ;
+
+  // add signal to the stack
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
+    {
+      string sampleName = m_samplesSequence.at (iSample) ;
+      if (m_samples[sampleName].m_isSignal == false) continue ;
+      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+      sig_stack->Add (h_var) ;
+      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    }
+
+  vector<THStack *> histos ;
+  histos.push_back (bkg_stack) ;
+  histos.push_back (sig_stack) ;
+  
+  DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog) ;
+
+  return ;
+
+
 }
 
 

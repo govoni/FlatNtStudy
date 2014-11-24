@@ -83,7 +83,7 @@ int main (int argc, char ** argv)
 
   analysisPlots.plotSingleLayer ("total", "mjj", "mjj (GeV)", "#sigma #times lumi") ;
   analysisPlots.plotSingleLayer ("total", "mjj", "mjj (GeV)", "#sigma #times lumi", 1) ;
-
+  analysisPlots.compareStoB ("total", "mjj", "mjj (GeV)", "#sigma #times lumi") ;
 
   return 0 ;
 }  

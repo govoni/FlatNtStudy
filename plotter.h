@@ -121,25 +121,39 @@ public:
   void    copyLayerInSample (string sampleName, string target, string origin) ;
   void    copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
   void    printStructure () ; 
-  void    plotSingleSample (string sampleName, string layerName, string histoName) ;
+  TLegend initLegend (int sampleNum) ;
           
   void    fillHisto (string sampleName, string layerName, string histoName, float value, float weight) ;
           
   void    setRootAspect () ;
   void    prepareCanvas (float xmin, float xmax, float ymin, float ymax, string xaxisTitle, string yaxisTitle, bool hasPull) ;
   void    prepareSampleForPlotting (string sampleName) ;  
-  void    plotSingleSample (string sampleName, string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
-  void    plotSingleLayer (string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
-  TLegend initLegend (int sampleNum) ;
+  void    plotSingleSample (string sampleName, string layerName, string histoName, 
+                            string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+  void    plotSingleLayer (string layerName, string histoName, 
+                           string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+  void    compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
+                       bool isNormalized = false, float scaleSignal = 1., int isLog = 0.) ;
+
 
   template <class T>
-  void DrawPlot (T * histo, TLegend leg, int sampleNum, string xaxisTitle, string yaxisTitle, int isLog)
+  void DrawPlots (vector<T *> histo, TLegend leg, int sampleNum, string xaxisTitle, string yaxisTitle, int isLog)
     {
-      histo->Draw () ;
-      float xmin = histo->GetXaxis ()->GetXmin () ;
-      float xmax = histo->GetXaxis ()->GetXmax () ;
-      float ymin = histo->GetMinimum () ;
-      float ymax = histo->GetMaximum () ;
+      histo.at (0)->Draw () ;
+      float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
+      float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
+      float ymin = histo.at (0)->GetMinimum () ;
+      float ymax = histo.at (0)->GetMaximum () ;
+      
+      for (int i = 1 ; i < histo.size () ; ++i)
+        {
+          histo.at (i)->Draw () ;
+          if (histo.at (i)->GetXaxis ()->GetXmin () < xmin) xmin = histo.at (i)->GetXaxis ()->GetXmin () ;
+          if (histo.at (i)->GetXaxis ()->GetXmax () > xmax) xmax = histo.at (i)->GetXaxis ()->GetXmax () ;
+          if (histo.at (i)->GetMinimum () < ymin) ymin = histo.at (i)->GetMinimum () ;
+          if (histo.at (i)->GetMaximum () > ymax) ymax = histo.at (i)->GetMaximum () ;
+        }
+      
       if (isLog && ymin <= 0) ymin = 0.001 ;
       float height = 0.17 ;
       float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
@@ -153,11 +167,12 @@ public:
       if (isLog) m_canvas.SetLogy () ;
       prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
       string options = "same histo" ;
-      histo->Draw (options.c_str ()) ;
+      for (int i = 0 ; i < histo.size () ; ++i) histo.at (i)->Draw (options.c_str ()) ;
       leg.Draw () ;
       m_canvas.RedrawAxis () ;    
 
-      string filename = histo->GetName () ;
+      string filename = histo.at (0)->GetName () ;
+      if (histo.size () > 1) filename += "_compare" ; 
       if (isLog) filename += "_log" ;
       filename += ".pdf" ;
       m_canvas.Print (filename.c_str (), "pdf") ; 
