@@ -18,7 +18,7 @@ void addOverFlow (TH1F * input)
     input->GetXaxis ()->GetXmax () + input->GetBinWidth (1)
   ) ;
   dummy->Sumw2 () ;
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () ; ++iBin) 
+  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
     {
       dummy->SetBinContent (iBin, input->GetBinContent (iBin)) ;
       dummy->SetBinError (iBin, input->GetBinError (iBin)) ;
@@ -26,8 +26,7 @@ void addOverFlow (TH1F * input)
   string name = input->GetName () ;  
   input->SetName ("trash") ;
   dummy->SetName (name.c_str ()) ;
-  swap (input, dummy) ;
-//  delete dummy ; // this delete generates a segfault
+  swap (*input, *dummy) ;
   return ;
 
 }
@@ -41,7 +40,7 @@ plotter::plotter (float lumi) :
   m_canvas ("can", "can", 500, 500)
 {
 // don't like it, need improvement
-//  setRootAspect () ;
+  setRootAspect () ;
 }
 
 
@@ -196,9 +195,9 @@ void plotter::prepareSampleForPlotting (string sampleName)
            iHisto != m_samples[sampleName].m_sampleContent[name].m_histos.end () ;
            ++iHisto)
         {
+          addOverFlow (iHisto->second) ; 
           iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
           iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
-          addOverFlow (iHisto->second) ; 
         } // loop over histos
     } // loop over layers
   m_samples[sampleName].m_readyForPlotting = true ;
@@ -228,10 +227,7 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
   TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
   m_canvas.cd () ;
 
-  TLegend leg (0.1, 0.75, 0.9, 0.9) ;
-  leg.SetNColumns (3) ;
-  leg.SetLineStyle (0) ;
-  leg.SetFillStyle (0) ;
+  TLegend leg = initLegend (1) ;
   leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
 
   DrawPlot (h_var, leg, 1, xaxisTitle, yaxisTitle, isLog) ;
@@ -249,10 +245,7 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
   THStack * stack = new THStack (name.c_str (), "") ;
   int nsamples = m_samplesSequence.size () ;
 
-  TLegend leg (0.1, 0.9 - 0.1 * m_samplesSequence.size () * 0.5, 0.9, 0.9) ;
-  leg.SetNColumns (3) ;
-  leg.SetLineStyle (0) ;
-  leg.SetFillStyle (0) ;
+  TLegend leg = initLegend (m_samplesSequence.size ()) ;
 
   // add bkg to the stack
   for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
@@ -284,8 +277,42 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
+TLegend plotter::initLegend (int sampleNum)
+{
+  TLegend leg (0.2, 0.95 - 0.1 * sampleNum * 0.33, 0.87, 0.95) ;
+  leg.SetNColumns (3) ;
+  leg.SetLineStyle (0) ;
+  leg.SetFillStyle (0) ;
+  return leg ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
 void plotter::setRootAspect ()
 {
+  gStyle->SetCanvasColor (-1) ; 
+  gStyle->SetPadColor (-1) ; 
+  gStyle->SetFrameFillColor (-1) ; 
+  gStyle->SetHistFillColor (-1) ; 
+  gStyle->SetTitleFillColor (-1) ; 
+  gStyle->SetFillColor (-1) ; 
+//  gStyle->SetFillStyle (4000) ; 
+  gStyle->SetStatStyle (0) ; 
+  gStyle->SetTitleStyle (0) ; 
+  gStyle->SetCanvasBorderSize (0) ; 
+  gStyle->SetFrameBorderSize (0) ; 
+  gStyle->SetLegendBorderSize (0) ; 
+  gStyle->SetStatBorderSize (0) ; 
+  gStyle->SetTitleBorderSize (0) ; 
+
+  m_canvas.SetLeftMargin (0.17) ; 
+  m_canvas.SetTopMargin (0.05) ; 
+  gStyle->SetTitleYOffset (2) ;
+
+  return ;
+
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat (1111111) ;
   gStyle->SetOptFit (1111) ;

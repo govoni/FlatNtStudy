@@ -114,22 +114,23 @@ public:
   
   ~plotter () {} ;
   
-  void addSample (string sampleName, float XS, int totInitialEvents, bool isSignal, int color) ;
-  void addLayerToSample (string sampleName, string layerName) ;
-  void addPlotToLayer (string sampleName, string layerName, 
-                       string plotName, int nBins, float xMin, float xMax) ;
-  void copyLayerInSample (string sampleName, string target, string origin) ;
-  void copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
-  void printStructure () ; 
-  void plotSingleSample (string sampleName, string layerName, string histoName) ;
-
-  void fillHisto (string sampleName, string layerName, string histoName, float value, float weight) ;
-
-  void setRootAspect () ;
-  void prepareCanvas (float xmin, float xmax, float ymin, float ymax, string xaxisTitle, string yaxisTitle, bool hasPull) ;
-  void prepareSampleForPlotting (string sampleName) ;  
-  void plotSingleSample (string sampleName, string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
-  void plotSingleLayer (string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+  void    addSample (string sampleName, float XS, int totInitialEvents, bool isSignal, int color) ;
+  void    addLayerToSample (string sampleName, string layerName) ;
+  void    addPlotToLayer (string sampleName, string layerName, 
+                          string plotName, int nBins, float xMin, float xMax) ;
+  void    copyLayerInSample (string sampleName, string target, string origin) ;
+  void    copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
+  void    printStructure () ; 
+  void    plotSingleSample (string sampleName, string layerName, string histoName) ;
+          
+  void    fillHisto (string sampleName, string layerName, string histoName, float value, float weight) ;
+          
+  void    setRootAspect () ;
+  void    prepareCanvas (float xmin, float xmax, float ymin, float ymax, string xaxisTitle, string yaxisTitle, bool hasPull) ;
+  void    prepareSampleForPlotting (string sampleName) ;  
+  void    plotSingleSample (string sampleName, string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+  void    plotSingleLayer (string layerName, string histoName, string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+  TLegend initLegend (int sampleNum) ;
 
   template <class T>
   void DrawPlot (T * histo, TLegend leg, int sampleNum, string xaxisTitle, string yaxisTitle, int isLog)

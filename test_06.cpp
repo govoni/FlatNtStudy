@@ -59,7 +59,7 @@ int main (int argc, char ** argv)
 
   analysisPlots.addSample ("EWK_WW2j", 4.13649215685881443E-003, totEvents_EWK_WW2j, 1, 50) ; 
   analysisPlots.addLayerToSample ("EWK_WW2j", "total") ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j", "total", "mjj", 50, 0., 2000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j", "total", "mjj", 50, 0., 10000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j", "total", "ptj1", 100, 0., 1000.) ; 
   analysisPlots.copyLayerInSample ("EWK_WW2j", "mjj", "total") ;
 
