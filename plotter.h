@@ -141,19 +141,21 @@ public:
       float ymax = histo->GetMaximum () ;
       if (isLog && ymin <= 0) ymin = 0.001 ;
       float height = 0.17 ;
+      float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
       if (isLog) 
         {
-          float lymax = log10 (ymax) + height * sampleNum * 0.5 * (log10 (ymax) - log10 (ymin)) ;
+          float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
           ymax = pow (10, lymax) ;
         }
-      else ymax += height * sampleNum * 0.5 * (ymax - ymin) ;
+      else ymax += height * (ymax - ymin) * linesNum ;
     
       if (isLog) m_canvas.SetLogy () ;
       prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
       string options = "same histo" ;
       histo->Draw (options.c_str ()) ;
       leg.Draw () ;
-    
+      m_canvas.RedrawAxis () ;    
+
       string filename = histo->GetName () ;
       if (isLog) filename += "_log" ;
       filename += ".pdf" ;

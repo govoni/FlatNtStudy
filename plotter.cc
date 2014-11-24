@@ -229,6 +229,7 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
   m_canvas.cd () ;
 
   TLegend leg (0.1, 0.75, 0.9, 0.9) ;
+  leg.SetNColumns (3) ;
   leg.SetLineStyle (0) ;
   leg.SetFillStyle (0) ;
   leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -249,7 +250,9 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
   int nsamples = m_samplesSequence.size () ;
 
   TLegend leg (0.1, 0.9 - 0.1 * m_samplesSequence.size () * 0.5, 0.9, 0.9) ;
-  leg.SetNColumns (2) ;
+  leg.SetNColumns (3) ;
+  leg.SetLineStyle (0) ;
+  leg.SetFillStyle (0) ;
 
   // add bkg to the stack
   for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
@@ -273,28 +276,6 @@ void plotter::plotSingleLayer (string layerName, string histoName, string xaxisT
     }
 
   DrawPlot (stack, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog) ;
-
-//  stack->Draw () ; // this is necessary to get the histogram afterwards
-//  TH1F * h_stack = (TH1F *) stack.GetHistogram () ;
-//  float xmin = stack.GetXaxis ()->GetXmin () ;
-//  float xmax = stack.GetXaxis ()->GetXmax () ;
-//  float ymin = stack.GetMinimum () ;
-//  float ymax = stack.GetMaximum () ;
-//  if (isLog && ymin <= 0) ymin = 0.001 ;
-//  ymax += 0.15 * m_samplesSequence.size () * 0.5 * (ymax - ymin) ;
-//  
-//  if (isLog) m_canvas.SetLogy () ;
-//  prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
-//  string options = "same histo" ;
-//  stack.Draw (options.c_str ()) ;
-//
-//  leg.Draw () ;
-//
-//  string filename = stack.GetName () ;
-//  if (isLog) filename += "_log" ;
-//  filename += ".pdf" ;
-//  m_canvas.Print (filename.c_str (), "pdf") ; 
-//  if (isLog) m_canvas.SetLogy (0) ;
 
   return ;
 }
