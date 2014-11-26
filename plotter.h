@@ -1,6 +1,7 @@
 #ifndef plotter_h
 #define plotter_h
 
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -129,16 +130,27 @@ public:
   void    prepareCanvas (float xmin, float xmax, float ymin, float ymax, string xaxisTitle, string yaxisTitle, bool hasPull) ;
   void    prepareSampleForPlotting (string sampleName) ;  
   void    plotSingleSample (string sampleName, string layerName, string histoName, 
-                            string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+                            string xaxisTitle, string yaxisTitle, int isLog = 0,
+                            string folderName = "") ;
   void    plotSingleLayer (string layerName, string histoName, 
-                           string xaxisTitle, string yaxisTitle, int isLog = 0) ;
+                           string xaxisTitle, string yaxisTitle, int isLog = 0,
+                           string folderName = "") ;
+  void    plotFullLayer (string layerName) ;
   void    compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
-                       bool isNormalized = false, float scaleSignal = 1., int isLog = 0.) ;
-
+                       bool isNormalized = false, float scaleSignal = 1., int isLog = 0., 
+                       string folderName = "") ;
+  void    compareStoBFullLayer (string layerName) ;
+  void    plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
+                              bool isNormalized = false, float scaleSignal = 1., int isLog = 0., 
+                              string folderName = "") ;
+  void    plotRelativeExcessFullLayer (string layerName) ;
 
   template <class T>
-  void DrawPlots (vector<T *> histo, TLegend leg, int sampleNum, string xaxisTitle, string yaxisTitle, int isLog)
+  void DrawPlots (vector<T *> histo, TLegend leg, int sampleNum, 
+                  string xaxisTitle, string yaxisTitle, int isLog, 
+                  string folderName = "")
     {
+      // FIXME add error bands here
       histo.at (0)->Draw () ;
       float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
       float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
@@ -171,7 +183,7 @@ public:
       leg.Draw () ;
       m_canvas.RedrawAxis () ;    
 
-      string filename = histo.at (0)->GetName () ;
+      string filename = folderName + histo.at (0)->GetName () ;
       if (histo.size () > 1) filename += "_compare" ; 
       if (isLog) filename += "_log" ;
       filename += ".pdf" ;
