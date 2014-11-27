@@ -17,7 +17,7 @@ void addOverFlow (TH1F * input)
     input->GetXaxis ()->GetXmin (),
     input->GetXaxis ()->GetXmax () + input->GetBinWidth (1)
   ) ;
-  dummy->Sumw2 () ;
+//  dummy->Sumw2 () ;
   for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
     {
       dummy->SetBinContent (iBin, input->GetBinContent (iBin)) ;
@@ -29,6 +29,19 @@ void addOverFlow (TH1F * input)
   swap (*input, *dummy) ;
   return ;
 
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void setPoissonErrorsToHisto (TH1F * input) 
+{
+  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
+    {
+      input->SetBinError (iBin, sqrt (input->GetBinContent (iBin))) ;
+    }
+  return ;
 }
 
 
@@ -112,7 +125,7 @@ void plotter::addPlotToLayer (string sampleName, string layerName,
 {
   string h_name = sampleName + "_" + layerName + "_" + plotName ;
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
-  dummy->Sumw2 () ;
+//  dummy->Sumw2 () ;
   m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
 }
 
@@ -564,10 +577,10 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::plotRelativeExcessFullLayer (string layerName)
+void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
 {
   // FIXME needs to be finished
-  string outFolderName = "plots/relExcess/" + layerName + "/";
+  string outFolderName = basefolder + "/plots/relExcess/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
   // loop over variables and call plot single layer
@@ -580,6 +593,91 @@ void plotter::plotRelativeExcessFullLayer (string layerName)
                           0, 1., 0, outFolderName) ;
     }   
   
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void plotter::scaleAllHistos (float scaleFactor)
+{
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      // loop over layers
+      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          
+          // loop over histos
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto)
+            {
+              iHisto->second->Scale (scaleFactor) ;
+            } // loop over histos
+        } // loop over layers
+    } // loop over samples
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void plotter::setPoissonErrors ()
+{
+  cout << "WARNING setting all the histograms to the poisson error\n" ;
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      // loop over layers
+      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          
+          // loop over histos
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto)
+            {
+              setPoissonErrorsToHisto (iHisto->second) ;
+            } // loop over histos
+        } // loop over layers
+    } // loop over samples
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void plotter::resetAll (float lumi)
+{
+  cout << "WARNING resetting all the stored quantities\n" ;
+  cout << "luminosity set to " << lumi << "\n" ;
+  m_lumi = lumi ;
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      // loop over layers
+      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          
+          // loop over histos
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto)
+            {
+              iHisto->second->Reset () ;
+            } // loop over histos
+        } // loop over layers
+    } // loop over samples
   return ;
 }
 

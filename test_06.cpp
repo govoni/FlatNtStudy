@@ -36,6 +36,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       analysisPlots.fillHisto (sampleName, "mjj", "ptj1", reader.jetpt1_puppi, 1.) ;
 
     } // loop over events
+  analysisPlots.setPoissonErrors () ;
   return ;
 }
 

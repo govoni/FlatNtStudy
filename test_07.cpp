@@ -84,6 +84,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       // pT Ws per distinguere segnale da fondo QCD
 
     } // loop over events
+  analysisPlots.setPoissonErrors () ;
   return ;
 }
 

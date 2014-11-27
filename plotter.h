@@ -143,7 +143,10 @@ public:
   void    plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
                               bool isNormalized = false, float scaleSignal = 1., int isLog = 0., 
                               string folderName = "") ;
-  void    plotRelativeExcessFullLayer (string layerName) ;
+  void    plotRelativeExcessFullLayer (string layerName, string basefolder = ".") ;
+  void    scaleAllHistos (float scaleFactor) ;
+  void    setPoissonErrors () ;
+  void    resetAll (float lumi) ;
 
   template <class T>
   void DrawPlots (vector<T *> histo, TLegend leg, int sampleNum, 

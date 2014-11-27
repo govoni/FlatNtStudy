@@ -84,6 +84,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       // pT Ws per distinguere segnale da fondo QCD
 
     } // loop over events
+  analysisPlots.setPoissonErrors () ;
   return ;
 }
 
@@ -93,7 +94,8 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
 
 int main (int argc, char ** argv)
 {
-  float lumi = 20. ;
+  float lumi = 300 ; // fb^(-1)
+  lumi *= 1000. ;   // transform into pb^(-1)
   plotter analysisPlots (lumi) ;
    
   // EWK 126 sample 
@@ -105,7 +107,7 @@ int main (int argc, char ** argv)
 
   readTree reader_EWK_WW2j_126 (sample_EWK_WW2j_126) ;
 
-  analysisPlots.addSample ("EWK_WW2j_126", 4.13649215685881443E-003, totEvents_EWK_WW2j_126, 1, 50) ; 
+  analysisPlots.addSample ("EWK_WW2j_126", 4.13649215685881443E-003/*pb*/, totEvents_EWK_WW2j_126, 1, 50) ; 
   analysisPlots.addLayerToSample ("EWK_WW2j_126", "total") ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLL",    25, 0., 3.14) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLMet",  25, 0., 3.14) ; 
@@ -133,7 +135,7 @@ int main (int argc, char ** argv)
 
   readTree reader_EWK_WW2j_noH (sample_EWK_WW2j_noH) ;
 
-  analysisPlots.copySampleStructure ("EWK_WW2j_noH", "EWK_WW2j_126", 4.49200073018412010E-003, totEvents_EWK_WW2j_noH, 1, 38) ;
+  analysisPlots.copySampleStructure ("EWK_WW2j_noH", "EWK_WW2j_126", 4.49200073018412010E-003/*pb*/, totEvents_EWK_WW2j_noH, 1, 38) ;
 
   fillHistos (analysisPlots, reader_EWK_WW2j_noH, "EWK_WW2j_noH") ;
 
@@ -146,7 +148,7 @@ int main (int argc, char ** argv)
 
   readTree reader_QCD_WW2j_126 (sample_QCD_WW2j_126) ;
 
-  analysisPlots.copySampleStructure ("QCD_WW2j_126", "EWK_WW2j_126", 1.06691296353271774E-003, totEvents_QCD_WW2j_126, 0, 8) ;
+  analysisPlots.copySampleStructure ("QCD_WW2j_126", "EWK_WW2j_126", 1.06691296353271774E-003/*pb*/, totEvents_QCD_WW2j_126, 0, 8) ;
 
   fillHistos (analysisPlots, reader_QCD_WW2j_126, "QCD_WW2j_126") ;
 

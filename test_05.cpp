@@ -61,6 +61,7 @@ int main (int argc, char ** argv)
     } // loop over events
 
   analysisPlots.printStructure () ;
+  analysisPlots.setPoissonErrors () ;
   analysisPlots.plotSingleSample ("EWK_WW2j", "mjj", "ptj1", "leading jet pT (GeV)", "#sigma #times lumi") ;
 
 
