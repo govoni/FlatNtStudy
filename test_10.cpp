@@ -164,10 +164,10 @@ int main (int argc, char ** argv)
   TMVAfactory->AddVariable ("dEtajj"      , 'F') ;
   TMVAfactory->AddVariable ("mll"         , 'F') ;
   TMVAfactory->AddVariable ("dPhill"      , 'F') ;
-  TMVAfactory->AddVariable ("asL"         , 'F') ;
-  TMVAfactory->AddVariable ("asJ"         , 'F') ;
+//  TMVAfactory->AddVariable ("asL"         , 'F') ;
+//  TMVAfactory->AddVariable ("asJ"         , 'F') ;
   TMVAfactory->AddVariable ("dPhijjMET"   , 'F') ;
-  TMVAfactory->AddVariable ("dPhiLeadJMET", 'F') ;
+//  TMVAfactory->AddVariable ("dPhiLeadJMET", 'F') ;
   TMVAfactory->AddVariable ("R"           , 'F') ;
 
   TMVAfactory->SetWeightExpression ("weight") ;
@@ -188,7 +188,11 @@ int main (int argc, char ** argv)
   // normalisation, decorrelation, principal component analysis, Gaussianisation,
   // Norm, Deco, PCA, Uniform, Gauss, 
   // N, D, P, U , G.
-  TMVAfactory->BookMethod (TMVA::Types::kCuts, "cuts", "H:V:VarTransform=Norm_Signal,Uniform_Signal,Gauss_Signal") ;
+//  TMVAfactory->BookMethod (TMVA::Types::kCuts, "cuts", "H:V:VarTransform=Norm_Signal,Uniform_Signal,Gauss_Signal:FitMethod=SA") ;
+
+//  TMVAfactory->BookMethod (TMVA::Types::kFisher, "Fisher", "H:!V:Fisher:VarTransform=None:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10") ;
+  TMVAfactory->BookMethod (TMVA::Types::kFisher, "Fisher", "H:!V") ;
+  TMVAfactory->BookMethod (TMVA::Types::kBDT, "BDT", "H:!V") ;
 
   TMVAfactory->TrainAllMethods () ;
   TMVAfactory->TestAllMethods () ;
