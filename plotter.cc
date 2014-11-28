@@ -545,6 +545,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
                               // and then reprint the canvas 
+  if (isLog) m_canvas.SetLogy (1) ;
   m_canvas.RedrawAxis () ;    
   leg.Draw () ;
   string filename = folderName + histos.at (0)->GetName () ;
@@ -552,6 +553,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   if (isLog) filename += "_log" ;
   filename += ".pdf" ;
   m_canvas.Print (filename.c_str (), "pdf") ; 
+  if (isLog) m_canvas.SetLogy (0) ;
 
   // direct comparison of the uncertainty on the SM to the difference between H and noH
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -591,6 +593,8 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
     {
       plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
                           0, 1., 0, outFolderName) ;
+      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
+                          0, 1., 1, outFolderName) ;
     }   
   
   return ;

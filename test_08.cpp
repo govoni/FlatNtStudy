@@ -94,7 +94,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
 
 int main (int argc, char ** argv)
 {
-  float lumi = 300 ; // fb^(-1)
+  float lumi = 3000 ; // fb^(-1)
   lumi *= 1000. ;   // transform into pb^(-1)
   plotter analysisPlots (lumi) ;
    
@@ -109,20 +109,20 @@ int main (int argc, char ** argv)
 
   analysisPlots.addSample ("EWK_WW2j_126", 4.13649215685881443E-003/*pb*/, totEvents_EWK_WW2j_126, 1, 50) ; 
   analysisPlots.addLayerToSample ("EWK_WW2j_126", "total") ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLL",    25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLMet",  25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLLMet", 25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTLMet", 25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiJJ",    25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiJJMet", 25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLJMet", 25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTJMet", 25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTL",    25, 0., 3.14) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "mjj",       50, 0., 10000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "mll",       50, 0., 1500.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "asimJ",     50, 0., 1.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "asimL",     50, 0., 1.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R",         50, 0., 5.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLL",    10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLMet",  10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLLMet", 10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTLMet", 10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiJJ",    10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiJJMet", 10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLJMet", 10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTJMet", 10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTL",    10, 0., 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "mjj",       20, 0., 10000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "mll",       20, 0., 1500.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "asimJ",     20, 0., 1.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "asimL",     20, 0., 1.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R",         20, 0., 15.) ; 
 
   fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126") ;
 
