@@ -1,5 +1,5 @@
 /*
-fill a couple of plots when running on two samples
+check several variables to spot some sensitive to the H / noH difference
 -------------------
 
 c++ -o test_08 `root-config --glibs --cflags` -lm test_08.cpp readTree.cc plotter.cc 

@@ -1,5 +1,5 @@
 /*
-fill a couple of plots when running on two samples
+compare for a single variable the expected stats uncertainty to the difference between H and noH
 -------------------
 
 c++ -o test_09 `root-config --glibs --cflags` -lm test_09.cpp readTree.cc plotter.cc 
