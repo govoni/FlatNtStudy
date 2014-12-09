@@ -52,11 +52,11 @@ int main (int argc, char ** argv)
       if (iEvent % 10000 == 0) cout << "reading event " << iEvent << "\n" ; 
 
       analysisPlots.fillHisto ("EWK_WW2j", "total", "mjj", reader.mjj, 1.) ;
-      analysisPlots.fillHisto ("EWK_WW2j", "total", "ptj1", reader.jetpt1_puppi, 1.) ;
+      analysisPlots.fillHisto ("EWK_WW2j", "total", "ptj1", reader.jetpt_puppi1, 1.) ;
 
       if (reader.mjj < 350) continue ;
       analysisPlots.fillHisto ("EWK_WW2j", "mjj", "mjj", reader.mjj, 1.) ;
-      analysisPlots.fillHisto ("EWK_WW2j", "mjj", "ptj1", reader.jetpt1_puppi, 1.) ;
+      analysisPlots.fillHisto ("EWK_WW2j", "mjj", "ptj1", reader.jetpt_puppi1, 1.) ;
 
     } // loop over events
 

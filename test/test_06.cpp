@@ -29,11 +29,11 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       if (iEvent % 10000 == 0) cout << "reading event " << iEvent << "\n" ; 
 
       analysisPlots.fillHisto (sampleName, "total", "mjj", reader.mjj, 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "ptj1", reader.jetpt1_puppi, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "ptj1", reader.jetpt_puppi1, 1.) ;
 
       if (reader.mjj < 350) continue ;
       analysisPlots.fillHisto (sampleName, "mjj", "mjj", reader.mjj, 1.) ;
-      analysisPlots.fillHisto (sampleName, "mjj", "ptj1", reader.jetpt1_puppi, 1.) ;
+      analysisPlots.fillHisto (sampleName, "mjj", "ptj1", reader.jetpt_puppi1, 1.) ;
 
     } // loop over events
   analysisPlots.setPoissonErrors () ;
