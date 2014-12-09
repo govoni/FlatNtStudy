@@ -521,7 +521,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   TH1F * SM_histo = (TH1F *) SM_stack->GetStack ()->Last ()->Clone (name.c_str ()) ;
   SM_histo->SetLineColor (1) ;
   SM_histo->SetFillColor (1) ;
-  SM_histo->SetFillStyle (3001) ;
+  SM_histo->SetFillStyle (3004) ;
 
   // get the histogram of the total shape, of SM bkg + noH hypothesis
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
