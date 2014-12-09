@@ -1,14 +1,14 @@
-#define easyDelphes_cxx
+#define readTree_cxx
 #include "readTree.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void easyDelphes::Loop()
+void readTree::Loop()
 {
 //   In a ROOT session, you can do:
-//      root> .L easyDelphes.C
-//      root> easyDelphes t
+//      root> .L readTree.C
+//      root> readTree t
 //      root> t.GetEntry(12); // Fill t data members with entry number 12
 //      root> t.Show();       // Show values of entry 12
 //      root> t.Show(16);     // Read and show values of entry 16
