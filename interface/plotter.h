@@ -129,7 +129,7 @@ class plotter { // generic plotter class
   void compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle,
 		    bool isNormalized = false, float scaleSignal = 1., int isLog = 0.,
 		    string folderName = "") ;
-  void compareStoBFullLayer (string layerName) ;
+  void compareStoBFullLayer (string layerName, string folderTag = "") ;
 
   // Plot relatve excess
   void plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle,

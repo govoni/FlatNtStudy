@@ -410,10 +410,10 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::compareStoBFullLayer (string layerName)
+void plotter::compareStoBFullLayer (string layerName, string folderTag)
 {
   // FIXME needs to be finished
-  string outFolderName = "plots/compareStoB/" + layerName + "/";
+  string outFolderName = "plots/compareStoB" + folderTag + "/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
   // loop over variables and call plot single layer
