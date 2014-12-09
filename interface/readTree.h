@@ -5,8 +5,8 @@
 // found on file: eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER/PHANTOM_SS_EWK_DF_126_2p5/outDumper_0.root
 //////////////////////////////////////////////////////////
 
-#ifndef easyDelphes_h
-#define easyDelphes_h
+#ifndef readTree_h
+#define readTree_h
 
 #include <TROOT.h>
 #include <TChain.h>
