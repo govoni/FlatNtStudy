@@ -141,6 +141,9 @@ class plotter { // generic plotter class
   // scale all histos
   void scaleAllHistos (float scaleFactor) ;
 
+  // scale all histos
+  void normaliseAllHistos () ;
+
   // poissonian errors
   void setPoissonErrors () ;
 

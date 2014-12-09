@@ -631,6 +631,33 @@ void plotter::scaleAllHistos (float scaleFactor)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
+void plotter::normaliseAllHistos ()
+{
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          
+          // loop over histos
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto)
+            {
+              iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+            } // loop over histos
+        } // loop over layers
+    } // loop over samples
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
 void plotter::setPoissonErrors ()
 {
   cout << "WARNING setting all the histograms to the poisson error\n" ;
