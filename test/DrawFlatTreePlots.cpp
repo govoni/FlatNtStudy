@@ -92,13 +92,13 @@ int main (int argc, char ** argv) {
   for (int i = 0 ; i < 8 ; ++i)
     {
       cout << (baseLumi / 1000.) << "\t" 
-           << int (baseLumi * XS_SignalEWK_H126) << "\t"
-           << int (baseLumi * XS_SignalEWK_noH) << "\t"
-           << int (baseLumi * XS_SignalEWK_noH - baseLumi * XS_SignalEWK_H126) << "\t"
+           << int (baseLumi * XS_EWK_H126) << "\t"
+           << int (baseLumi * XS_EWK_noH) << "\t"
+           << int (baseLumi * XS_EWK_noH - baseLumi * XS_EWK_H126) << "\t"
            << int (baseLumi * XS_VV_QCD) << "\t" 
-           << int (baseLumi * XSBackground.at(0)) << "\t" 
-           << setprecision (2) << (XS_SignalEWK_noH - XS_SignalEWK_H126) / (XS_VV_QCD) << "\t"
-           << setprecision (2) << (baseLumi * XS_SignalEWK_noH - baseLumi * XS_SignalEWK_H126) / sqrt (baseLumi * XS_VV_QCD) << "\n";
+           << int (baseLumi * XS_WZ_EWK_H126) << "\t" 
+           << setprecision (2) << (XS_EWK_noH - XS_EWK_H126) / (XS_VV_QCD) << "\t"
+           << setprecision (2) << (baseLumi * XS_EWK_noH - baseLumi * XS_EWK_H126) / sqrt (baseLumi * XS_VV_QCD) << "\n";
       baseLumi *= 2 ;
     }
   
@@ -120,7 +120,7 @@ int main (int argc, char ** argv) {
   int totEvents_EWK_WW2j_126        = sample_EWK_WW2j_126->GetEntries();
   treeReader* fReader_EWK_WW2j_126  = new treeReader((TTree*)(sample_EWK_WW2j_126), false);
 
-  analysisPlots.addSample         ("EWK_WW2j_126", XS_SignalEWK_H126, totEvents_EWK_WW2j_126, 1, 2) ;   
+  analysisPlots.addSample         ("EWK_WW2j_126", XS_EWK_H126, totEvents_EWK_WW2j_126, 1, 2) ;   
   analysisPlots.addLayerToSample  ("EWK_WW2j_126", "total") ; 
 
   analysisPlots.addPlotToLayer    ("EWK_WW2j_126", "total", "dPhiLL",25,0.,3.14) ;  // add single histo to this 
@@ -179,9 +179,10 @@ int main (int argc, char ** argv) {
     sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*root").c_str()) ;
 
   int totEvents_EWK_WW2j_noH        = sample_EWK_WW2j_noH->GetEntries();
+
   treeReader* fReader_EWK_WW2j_noH  = new treeReader((TTree*)(sample_EWK_WW2j_noH), false);
 
-  analysisPlots.copySampleStructure ("EWK_WW2j_noH","EWK_WW2j_126", XS_SignalEWK_noH, totEvents_EWK_WW2j_noH, 1,4)
+  analysisPlots.copySampleStructure ("EWK_WW2j_noH","EWK_WW2j_126", XS_EWK_noH, totEvents_EWK_WW2j_noH, 1,4);
   fillHistos (analysisPlots, fReader_EWK_WW2j_noH, "EWK_WW2j_noH") ; // fill the histogram
 
   
@@ -192,9 +193,10 @@ int main (int argc, char ** argv) {
     sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*root").c_str()) ;
 
   int totEvents_QCD_WW2j = sample_QCD_WW2j->GetEntries();
+
   treeReader* fReader_QCD_WW2j  = new treeReader((TTree*)(sample_QCD_WW2j), false);
 
-  analysisPlots.copySampleStructure ("QCD_WW2j","EWK_WW2j_126", XS_VV_QCD, totEvents_QCD_WW2j, 0, kGreen+1)
+  analysisPlots.copySampleStructure ("QCD_WW2j","EWK_WW2j_126", XS_VV_QCD, totEvents_QCD_WW2j, 0, kGreen+1);
 
   fillHistos (analysisPlots, fReader_QCD_WW2j, "QCD_WW2j") ; // fill the histogram
 
@@ -208,7 +210,7 @@ int main (int argc, char ** argv) {
   int totEvents_WZ_EWK_H126 = sample_WZ_EWK_H126->GetEntries();
   treeReader* fReader_WZ_EWK_H126  = new treeReader((TTree*)(sample_WZ_EWK_H126), false);
 
-  analysisPlots.copySampleStructure ("WZ_EWK_H126","WZ_EWK_H126", XS_WZ_EWK_H126, totEvents_WZ_EWK_H126, 0, kAzure+1)
+  analysisPlots.copySampleStructure ("WZ_EWK_H126","WZ_EWK_H126", XS_WZ_EWK_H126, totEvents_WZ_EWK_H126, 0, kAzure+1);
 
   fillHistos (analysisPlots, fReader_WZ_EWK_H126, "WZ_EWK_H126") ; // fill the histogram
 
@@ -222,7 +224,7 @@ int main (int argc, char ** argv) {
   int totEvents_WZ_QCD = sample_WZ_QCD->GetEntries();
   treeReader* fReader_WZ_QCD  = new treeReader((TTree*)(sample_WZ_QCD), false);
 
-  analysisPlots.copySampleStructure ("WZ_QCD","WZ_QCD", XS_WZ_QCD, totEvents_WZ_QCD, 0, kYellow+1)
+  analysisPlots.copySampleStructure ("WZ_QCD","WZ_QCD", XS_WZ_QCD, totEvents_WZ_QCD, 0, kOrange);
 
   fillHistos (analysisPlots, fReader_WZ_QCD, "WZ_QCD") ; // fill the histogram
       

@@ -151,7 +151,6 @@ class plotter { // generic plotter class
 
   template <class T>
   void DrawPlots (vector<T*> histo, TLegend leg, int sampleNum,
-<<<<<<< Updated upstream
           string xaxisTitle, string yaxisTitle, int isLog, string folderName)
     {
       // FIXME add error bands here
@@ -196,54 +195,15 @@ class plotter { // generic plotter class
       if (isLog) filename += "_log" ;
       filename += ".pdf" ;
       m_canvas.Print (filename.c_str (), "pdf") ;
+      int index = 0;
+      index = filename.find(".pdf", index);
+      if (index != string::npos){
+       filename.replace(index, 4, ".png");
+       m_canvas.Print (filename.c_str (), "png") ;
+      }
       if (isLog) m_canvas.SetLogy (0) ;
       return;
-   }   
-
-=======
-		  string xaxisTitle, string yaxisTitle, int isLog, string folderName){
-  // FIXME add error bands here
-  histo.at (0)->Draw () ;
-  float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
-  float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
-  float ymin = histo.at (0)->GetMinimum () ;
-  float ymax = histo.at (0)->GetMaximum () ;
-  for (size_t i = 1 ; i < histo.size () ; ++i){
-    histo.at (i)->Draw () ;
-    if (histo.at (i)->GetXaxis ()->GetXmin () < xmin) xmin = histo.at (i)->GetXaxis ()->GetXmin () ;
-    if (histo.at (i)->GetXaxis ()->GetXmax () > xmax) xmax = histo.at (i)->GetXaxis ()->GetXmax () ;
-    if (histo.at (i)->GetMinimum () < ymin) ymin = histo.at (i)->GetMinimum () ;
-    if (histo.at (i)->GetMaximum () > ymax) ymax = histo.at (i)->GetMaximum () ;
-  }
-  if (isLog && ymin <= 0) ymin = 0.001 ;
-  float height = 0.17 ;
-  float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
-  if (isLog){
-    float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
-    ymax = pow (10, lymax) ;
-  }
-  else ymax += height * (ymax - ymin) * linesNum ;
-  if (isLog) m_canvas.SetLogy () ;
-  prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
-  string options = "same histo" ;
-  for (size_t i = 0 ; i < histo.size () ; ++i)
-    histo.at (i)->Draw (options.c_str ()) ;
-  leg.Draw () ;
-  m_canvas.RedrawAxis () ;
-  string filename = folderName + histo.at (0)->GetName () ;
-  if (histo.size () > 1) filename += "_compare" ;
-  if (isLog) filename += "_log" ;
-  filename += ".pdf" ;
-  m_canvas.Print (filename.c_str (), "pdf") ;
-  int index = filename.find(".pdf", index);
-  if (index != string::npos){
-   filename.replace(index, 4, ".png");
-    m_canvas.Print (filename.c_str (), "png") ;
-  }
-  if (isLog) m_canvas.SetLogy (0) ;
-  return;
  }
->>>>>>> Stashed changes
  private:
 
  float m_lumi ;
