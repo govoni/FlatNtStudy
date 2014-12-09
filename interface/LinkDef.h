@@ -10,7 +10,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class record+;
-#pragma link C++ class config+;
+#pragma link C++ class ConfigFileLine+;
+#pragma link C++ class ConfigParser+;
 #pragma link C++ class counter+;
 #pragma link C++ class readTree+;
 #pragma link C++ class layer+;

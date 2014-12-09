@@ -9,6 +9,7 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
+#include <fstream>
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -16,8 +17,12 @@
 #include "TCanvas.h"
 #include "THStack.h"
 #include "TLegend.h"
+#include "TChain.h"
 
 using namespace std ;
+
+double deltaPhi (double phi1, double phi2);
+bool   FillChain(TChain& chain, const std::string& inputFileList);
 
 // List of some methods implemented in the .cc
 void  setPoissonErrorsToHisto (TH1F * input); // give an histogram set the poisson error bars
@@ -57,7 +62,7 @@ class sample {
     m_isSignal (isSignal),
     m_color (color),
     m_readyForPlotting (false),
-      m_weight (XS * lumi / static_cast<float> (m_totInitialEvents)) // luminosity weight
+    m_weight (XS * lumi / static_cast<float> (m_totInitialEvents)) // luminosity weight
     {}
 
   string m_sampleName ;
@@ -133,11 +138,57 @@ public:
   void    setPoissonErrors () ;
   void    resetAll (float lumi) ;
 
-  // generic plotter
   template <class T>
-  void DrawPlots (vector<T*> histo, TLegend leg, int sampleNum, 
-                  string xaxisTitle, string yaxisTitle, int isLog, 
-                  string folderName = "");
+  void DrawPlots (vector<T*> histo, TLegend leg, int sampleNum,
+		  string xaxisTitle, string yaxisTitle, int isLog, string folderName){
+  // FIXME add error bands here                                                                                                                                                           
+
+  histo.at (0)->Draw () ;
+  float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
+  float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
+  float ymin = histo.at (0)->GetMinimum () ;
+  float ymax = histo.at (0)->GetMaximum () ;
+
+  for (size_t i = 1 ; i < histo.size () ; ++i){
+    histo.at (i)->Draw () ;
+    if (histo.at (i)->GetXaxis ()->GetXmin () < xmin) xmin = histo.at (i)->GetXaxis ()->GetXmin () ;
+    if (histo.at (i)->GetXaxis ()->GetXmax () > xmax) xmax = histo.at (i)->GetXaxis ()->GetXmax () ;
+    if (histo.at (i)->GetMinimum () < ymin) ymin = histo.at (i)->GetMinimum () ;
+    if (histo.at (i)->GetMaximum () > ymax) ymax = histo.at (i)->GetMaximum () ;
+  }
+
+  if (isLog && ymin <= 0) ymin = 0.001 ;
+  float height   = 0.17 ;
+  float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
+  if (isLog){
+    float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
+    ymax = pow (10, lymax) ;
+  }
+  else ymax += height * (ymax - ymin) * linesNum ;
+
+  if (isLog) m_canvas.SetLogy () ;
+
+  prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
+  string options = "same histo" ;
+
+  for (size_t i = 0 ; i < histo.size () ; ++i)
+    histo.at (i)->Draw (options.c_str ()) ;
+
+  leg.Draw () ;
+  m_canvas.RedrawAxis () ;
+
+  string filename = folderName + histo.at (0)->GetName () ;
+  if (histo.size () > 1) filename += "_compare" ;
+  if (isLog) filename += "_log" ;
+  filename += ".pdf" ;
+  m_canvas.Print (filename.c_str (), "pdf") ;
+  if (isLog) m_canvas.SetLogy (0) ;
+
+  return;
+
+  }
+
+
   
 private:
 
