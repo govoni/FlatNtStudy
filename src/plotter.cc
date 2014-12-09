@@ -130,6 +130,9 @@ void plotter::addPlotToLayer (string sampleName, string layerName,
 }
 
 
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
 // duplicate a layer into a new one with a different name, within a single sample
 void plotter::copyLayerInSample (string sampleName, string target, string origin)
 {
@@ -630,6 +633,7 @@ void plotter::scaleAllHistos (float scaleFactor)
 
 void plotter::normaliseAllHistos ()
 {
+  cout << "WARNING normalising all the histograms" << endl ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample)
