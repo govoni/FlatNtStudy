@@ -174,7 +174,7 @@ int main (int argc, char ** argv)
       analysisPlots.setPoissonErrors () ;
       string baseFolder = "lumi_" ;
       baseFolder += to_string (intlumi) ;
-      //      analysisPlots.plotRelativeExcessFullLayer ("total", baseFolder) ;
+      analysisPlots.plotRelativeExcessFullLayer ("total", baseFolder) ;
       intlumi *= 2. ;
     }
 
