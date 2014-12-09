@@ -28,6 +28,53 @@ deltaPhi (double phi1, double phi2)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
+bool closeToLeptons (float eta, float phi, readTree & reader, float R = 0.3)
+{
+  if ((eta - reader.eta1) * (eta - reader.eta1) +
+      deltaPhi (phi, reader.phi1) * deltaPhi (phi, reader.phi1) < R * R) return true ;
+  if ((eta - reader.eta2) * (eta - reader.eta2) +
+      deltaPhi (phi, reader.phi2) * deltaPhi (phi, reader.phi2) < R * R) return true ;
+  return false ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
+
+
+void fillTrackJetArray (float * pt, float * eta, float * phi, readTree & reader)
+  {
+    int i = 0 ;
+    pt[++i] = reader.jetTrackpt1 ;
+    eta[i]  = reader.jetTracketa1 ;
+    phi[i]  = reader.jetTrackphi1 ;
+    pt[++i] = reader.jetTrackpt2 ;
+    eta[i]  = reader.jetTracketa2 ;
+    phi[i]  = reader.jetTrackphi2 ;
+    pt[++i] = reader.jetTrackpt3 ;
+    eta[i]  = reader.jetTracketa3 ;
+    phi[i]  = reader.jetTrackphi3 ;
+    pt[++i] = reader.jetTrackpt4 ;
+    eta[i]  = reader.jetTracketa4 ;
+    phi[i]  = reader.jetTrackphi4 ;
+    pt[++i] = reader.jetTrackpt5 ;
+    eta[i]  = reader.jetTracketa5 ;
+    phi[i]  = reader.jetTrackphi5 ;
+    pt[++i] = reader.jetTrackpt6 ;
+    eta[i]  = reader.jetTracketa6 ;
+    phi[i]  = reader.jetTrackphi6 ;
+    pt[++i] = reader.jetTrackpt7 ;
+    eta[i]  = reader.jetTracketa7 ;
+    phi[i]  = reader.jetTrackphi7 ;
+    pt[++i] = reader.jetTrackpt8 ;
+    eta[i]  = reader.jetTracketa8 ;
+    phi[i]  = reader.jetTrackphi8 ;
+    return ;
+  }
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
+
+
 void fillHistos (plotter & analysisPlots, readTree & reader, const string sampleName)
 {
   int maxevents = reader.fChain->GetEntries () ;
@@ -74,277 +121,47 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float TKJ_SumHT_OneGeV_IN = 0 ;
       float TKJ_SumHT_ThreeGeV_IN = 0 ;
 
-      // tk jet 1 
-      if (reader.jetTrackpt1 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt1, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt1 ;
-          if (reader.jetTrackpt1 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt1 ;
-            }
-          if (reader.jetTrackpt1 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt1 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa1 < TJ_etaMin ||
-              reader.jetTracketa1 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt1, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt1 ;
-          if (reader.jetTrackpt1 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt1 ;
-            }
-          if (reader.jetTrackpt1 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt1 ;
-            }
-        }
+      float TKJ_pt[8] ;
+      float TKJ_eta[8] ;
+      float TKJ_phi[8] ;
+      fillTrackJetArray (TKJ_pt, TKJ_eta, TKJ_phi, reader) ;
       
-      // tk jet 2 
-      if (reader.jetTrackpt2 > 0)
+      // loop over track jets
+      for (int iJet = 0 ; iJet < 8 ; ++iJet)      
         {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt2, 1.) ;
+          if (TKJ_pt[iJet] < 0) continue ;
+          if (closeToLeptons (TKJ_eta[iJet], TKJ_phi[iJet], reader, 0.3/*R*/)) continue ;
+          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", TKJ_pt[iJet], 1.) ;
           ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt2 ;
-          if (reader.jetTrackpt2 > 1.) 
+          TKJ_SumHT += TKJ_pt[iJet] ;
+          if (TKJ_pt[iJet] > 1.) 
             {
               ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt2 ;
+              TKJ_SumHT_OneGeV += TKJ_pt[iJet] ;
             }
-          if (reader.jetTrackpt2 > 3.) 
+          if (TKJ_pt[iJet] > 3.) 
             {
               ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt2 ;
+              TKJ_SumHT_ThreeGeV += TKJ_pt[iJet] ;
             }
           // only the central region  
-          if (reader.jetTracketa2 < TJ_etaMin ||
-              reader.jetTracketa2 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt2, 1.) ;
+          if (TKJ_eta[iJet] < TJ_etaMin + 0.5 ||
+              TKJ_eta[iJet] > TJ_etaMax - 0.5) continue ;  
+          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", TKJ_pt[iJet], 1.) ;
           ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt2 ;
-          if (reader.jetTrackpt2 > 1.) 
+          TKJ_SumHT_IN += TKJ_pt[iJet] ;
+          if (TKJ_pt[iJet] > 1.) 
             {
               ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt2 ;
+              TKJ_SumHT_OneGeV_IN += TKJ_pt[iJet] ;
             }
-          if (reader.jetTrackpt2 > 3.) 
+          if (TKJ_pt[iJet] > 3.) 
             {
               ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt2 ;
+              TKJ_SumHT_ThreeGeV_IN += TKJ_pt[iJet] ;
             }
-        }
+        } // loop over track jets
       
-      // tk jet 3 
-      if (reader.jetTrackpt3 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt3, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt3 ;
-          if (reader.jetTrackpt3 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt3 ;
-            }
-          if (reader.jetTrackpt3 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt3 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa3 < TJ_etaMin ||
-              reader.jetTracketa3 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt3, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt3 ;
-          if (reader.jetTrackpt3 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt3 ;
-            }
-          if (reader.jetTrackpt3 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt3 ;
-            }
-        }
-      
-      // tk jet 4 
-      if (reader.jetTrackpt4 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt4, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt4 ;
-          if (reader.jetTrackpt4 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt4 ;
-            }
-          if (reader.jetTrackpt4 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt4 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa4 < TJ_etaMin ||
-              reader.jetTracketa4 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt4, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt4 ;
-          if (reader.jetTrackpt4 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt4 ;
-            }
-          if (reader.jetTrackpt4 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt4 ;
-            }
-        }
-      
-      // tk jet 5 
-      if (reader.jetTrackpt5 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt5, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt5 ;
-          if (reader.jetTrackpt5 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt5 ;
-            }
-          if (reader.jetTrackpt5 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt5 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa5 < TJ_etaMin ||
-              reader.jetTracketa5 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt5, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt5 ;
-          if (reader.jetTrackpt5 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt5 ;
-            }
-          if (reader.jetTrackpt5 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt5 ;
-            }
-        }
-      
-      // tk jet 6 
-      if (reader.jetTrackpt6 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt6, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt6 ;
-          if (reader.jetTrackpt6 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt6 ;
-            }
-          if (reader.jetTrackpt6 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt6 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa6 < TJ_etaMin ||
-              reader.jetTracketa6 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt6, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt6 ;
-          if (reader.jetTrackpt6 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt6 ;
-            }
-          if (reader.jetTrackpt6 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt6 ;
-            }
-        }
-      
-      // tk jet 7 
-      if (reader.jetTrackpt7 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt7, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt7 ;
-          if (reader.jetTrackpt7 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt7 ;
-            }
-          if (reader.jetTrackpt7 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt7 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa7 < TJ_etaMin ||
-              reader.jetTracketa7 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt7, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt7 ;
-          if (reader.jetTrackpt7 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt7 ;
-            }
-          if (reader.jetTrackpt7 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt7 ;
-            }
-        }
-      
-      // tk jet 8 
-      if (reader.jetTrackpt8 > 0)
-        {
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt", reader.jetTrackpt8, 1.) ;
-          ++TKJ_num ;
-          TKJ_SumHT += reader.jetTrackpt8 ;
-          if (reader.jetTrackpt8 > 1.) 
-            {
-              ++TKJ_num_OneGeV ;
-              TKJ_SumHT_OneGeV += reader.jetTrackpt8 ;
-            }
-          if (reader.jetTrackpt8 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV ;
-              TKJ_SumHT_ThreeGeV += reader.jetTrackpt8 ;
-            }
-          // only the central region  
-          if (reader.jetTracketa8 < TJ_etaMin ||
-              reader.jetTracketa8 > TJ_etaMax) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", reader.jetTrackpt8, 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += reader.jetTrackpt8 ;
-          if (reader.jetTrackpt8 > 1.) 
-            {
-              ++TKJ_num_OneGeV_IN ;
-              TKJ_SumHT_OneGeV_IN += reader.jetTrackpt8 ;
-            }
-          if (reader.jetTrackpt8 > 3.) 
-            {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += reader.jetTrackpt8 ;
-            }
-        }
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum",               TKJ_num, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_OneGeV",        TKJ_num_OneGeV, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV",      TKJ_num_ThreeGeV, 1.) ;
@@ -378,7 +195,7 @@ int main (int argc, char ** argv)
   string etaLimit = "2p5" ;
 
   float XS_EWK_WW2j_126 = 4.13649215685881443E-003/*pb*/ ;
-  float XS_EWK_WW2j_noH = 4.49200073018412010E-003/*pb*/ ;
+//  float XS_EWK_WW2j_noH = 4.49200073018412010E-003/*pb*/ ;
   float XS_QCD_WW2j_126 = 1.06691296353271774E-003/*pb*/ ;
 
   // EWK 126 sample 
@@ -442,6 +259,10 @@ int main (int argc, char ** argv)
 
   analysisPlots.plotFullLayer ("total") ;
   analysisPlots.compareStoBFullLayer ("total") ;
+  analysisPlots.normaliseAllHistos () ;
+  analysisPlots.compareStoBFullLayer ("total", "_norm") ;
+  
+  
 
 
   return 0 ;
