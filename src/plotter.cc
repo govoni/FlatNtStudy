@@ -130,9 +130,6 @@ void plotter::addPlotToLayer (string sampleName, string layerName,
 }
 
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
 // duplicate a layer into a new one with a different name, within a single sample
 void plotter::copyLayerInSample (string sampleName, string target, string origin)
 {
