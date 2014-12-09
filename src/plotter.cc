@@ -170,7 +170,7 @@ void plotter::copySampleStructure (string target, string origin, float newXS, in
       m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
     }   
   
-  for (int iLayer = 1 ; iLayer < m_samples[origin].m_layersSequence.size () ; ++iLayer)
+  for (unsigned int iLayer = 1 ; iLayer < m_samples[origin].m_layersSequence.size () ; ++iLayer)
     {
       copyLayerInSample (target, m_samples[origin].m_layersSequence.at (iLayer), firstLayer) ;
     }
@@ -196,7 +196,7 @@ void plotter::printStructure ()
            << iSample->second.m_color << "\n" ;
 
       // loop over layers
-      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
         {
           string name = iSample->second.m_layersSequence.at (iLayer) ;
           
@@ -237,7 +237,7 @@ void plotter::prepareSampleForPlotting (string sampleName)
   if (m_samples[sampleName].m_readyForPlotting) return ;
 
   // loop over layers
-  for (int iLayer = 0 ; iLayer < m_samples[sampleName].m_layersSequence.size () ; ++iLayer)
+  for (unsigned int iLayer = 0 ; iLayer < m_samples[sampleName].m_layersSequence.size () ; ++iLayer)
     {
       string name = m_samples[sampleName].m_layersSequence.at (iLayer) ;
       // loop over histos
@@ -374,7 +374,7 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
   TLegend leg = initLegend (nsamples) ;
 
   // add bkg to the stack
-  for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
+  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
     {
       string sampleName = m_samplesSequence.at (iSample) ;
       prepareSampleForPlotting (sampleName) ;
@@ -462,7 +462,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
   int sigSamplesNum = 0 ;
   vector<int> signalPos (2, 0) ;
-  for (int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
+  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
     {
       string sampleName = m_samplesSequence.at (iSample) ;
       prepareSampleForPlotting (sampleName) ;
@@ -611,7 +611,7 @@ void plotter::scaleAllHistos (float scaleFactor)
        ++iSample)
     {
       // loop over layers
-      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
         {
           string name = iSample->second.m_layersSequence.at (iLayer) ;
           
@@ -639,7 +639,7 @@ void plotter::setPoissonErrors ()
        ++iSample)
     {
       // loop over layers
-      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
         {
           string name = iSample->second.m_layersSequence.at (iLayer) ;
           
@@ -669,7 +669,7 @@ void plotter::resetAll (float lumi)
        ++iSample)
     {
       // loop over layers
-      for (int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
         {
           string name = iSample->second.m_layersSequence.at (iLayer) ;
           
