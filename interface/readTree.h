@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Tue Dec  9 14:24:29 2014 by ROOT version 6.02/02
-// from TTree easyDelphes/easyDelphes
+// from TTree readTree/readTree
 // found on file: eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER/PHANTOM_SS_EWK_DF_126_2p5/outDumper_0.root
 //////////////////////////////////////////////////////////
 
@@ -14,7 +14,7 @@
 
 // Header file for the classes stored in the TTree if any.
 
-class easyDelphes {
+class readTree {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -1601,8 +1601,8 @@ public :
    TBranch        *b_PuppiRhoGridFastJet_0;   //!
    TBranch        *b_PuppiRhoGridFastJet_1;   //!
 
-   easyDelphes(TTree *tree=0);
-   virtual ~easyDelphes();
+   readTree(TTree *tree=0);
+   virtual ~readTree();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -1614,8 +1614,8 @@ public :
 
 #endif
 
-#ifdef easyDelphes_cxx
-easyDelphes::easyDelphes(TTree *tree) : fChain(0) 
+#ifdef readTree_cxx
+readTree::readTree(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
@@ -1624,25 +1624,25 @@ easyDelphes::easyDelphes(TTree *tree) : fChain(0)
       if (!f || !f->IsOpen()) {
          f = new TFile("eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER/PHANTOM_SS_EWK_DF_126_2p5/outDumper_0.root");
       }
-      f->GetObject("easyDelphes",tree);
+      f->GetObject("readTree",tree);
 
    }
    Init(tree);
 }
 
-easyDelphes::~easyDelphes()
+readTree::~readTree()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t easyDelphes::GetEntry(Long64_t entry)
+Int_t readTree::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t easyDelphes::LoadTree(Long64_t entry)
+Long64_t readTree::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -1655,7 +1655,7 @@ Long64_t easyDelphes::LoadTree(Long64_t entry)
    return centry;
 }
 
-void easyDelphes::Init(TTree *tree)
+void readTree::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -2462,7 +2462,7 @@ void easyDelphes::Init(TTree *tree)
    Notify();
 }
 
-Bool_t easyDelphes::Notify()
+Bool_t readTree::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -2473,18 +2473,18 @@ Bool_t easyDelphes::Notify()
    return kTRUE;
 }
 
-void easyDelphes::Show(Long64_t entry)
+void readTree::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t easyDelphes::Cut(Long64_t entry)
+Int_t readTree::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef easyDelphes_cxx
+#endif // #ifdef readTree_cxx
