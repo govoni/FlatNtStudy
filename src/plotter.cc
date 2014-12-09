@@ -545,6 +545,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
                               // and then reprint the canvas 
+  /*
   if (isLog) m_canvas.SetLogy (1) ;
   m_canvas.RedrawAxis () ;    
   leg.Draw () ;
@@ -571,7 +572,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
   DrawPlots (histos2, leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
-
+  */
   return ;
 }
 
