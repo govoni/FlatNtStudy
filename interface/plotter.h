@@ -192,17 +192,23 @@ class plotter { // generic plotter class
 
       if(plotCanvas){
        string filename = folderName + histo.at (0)->GetName () ;
-       if (histo.size () > 1) filename += "_compare" ;
-       if (isLog) filename += "_log" ;
-       filename += ".pdf" ;
-       m_canvas.Print (filename.c_str (), "pdf") ;
-       int index = 0;
-       index = filename.find(".pdf", index);
-       if (index != string::npos){
-       filename.replace(index, 4, ".png");
-       m_canvas.Print (filename.c_str (), "png") ;
-       }
+       TString Name (filename.c_str());       
+       Name.ReplaceAll("#","");
+       Name.ReplaceAll("{","");
+       Name.ReplaceAll("}","");
+       Name.ReplaceAll("[","");
+       Name.ReplaceAll("]","");
+       Name.ReplaceAll("^","");
+       Name.ReplaceAll("__","_");
+       Name.ReplaceAll("..",".");
+       if (histo.size () > 1) Name += "_compare" ;
+       if (isLog) Name += "_log" ;
+       Name += ".pdf" ;
+       m_canvas.Print (Name, "pdf") ;
+       Name.ReplaceAll("pdf","png");
+       m_canvas.Print (Name, "png") ;
       }
+      
 
       if (isLog) m_canvas.SetLogy (0) ;
 

@@ -276,22 +276,25 @@ void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax, str
   bkg->GetYaxis ()->SetTitle (yaxisTitle.c_str ()) ;
   bkg->Draw () ;
 
-  TLatex * tex = new TLatex(0.94,0.92," 13 TeV");
+  TLatex * tex = new TLatex(0.892,0.957," 14 TeV");
   tex->SetNDC();
   tex->SetTextAlign(31);
   tex->SetTextFont(42);
   tex->SetTextSize(0.04);
   tex->SetLineWidth(2);
-  TLatex * tex2 = new TLatex(0.14,0.92,"Delphes");
+  tex->Draw();
+  TLatex * tex2 = new TLatex(0.173,0.957,"Delphes");
   tex2->SetNDC();
   tex2->SetTextFont(61);
   tex2->SetTextSize(0.04);
   tex2->SetLineWidth(2);
-  TLatex * tex3 = new TLatex(0.286,0.92,"Simulation Preliminary");
+  tex2->Draw();
+  TLatex * tex3 = new TLatex(0.332,0.957,"Simulation Preliminary");
   tex3->SetNDC();
   tex3->SetTextFont(52);
   tex3->SetTextSize(0.035);
   tex3->SetLineWidth(2);
+  tex3->Draw();
 
   return ;
 }
@@ -569,16 +572,23 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   leg.Draw () ;
 
   string filename = folderName + histos.at (0)->GetName () ;
-  if (histos.size () > 1) filename += "_compare" ;
-  if (isLog) filename += "_log" ;
-  filename += ".pdf" ;
-  m_canvas.Print (filename.c_str (), "pdf") ;
-  size_t index = 0;
-  index = filename.find(".pdf", index);
-  if (index != string::npos){
-      filename.replace(index, 4, ".png");
-      m_canvas.Print (filename.c_str (), "png") ;
-  }
+  TString Name (filename.c_str());
+  Name.ReplaceAll("#","");
+  Name.ReplaceAll("{","");
+  Name.ReplaceAll("}","");
+  Name.ReplaceAll("[","");
+  Name.ReplaceAll("]","");
+  Name.ReplaceAll("^","");
+  Name.ReplaceAll("__","_");
+  Name.ReplaceAll("..",".");
+  if (histos.size () > 1) Name += "_compare" ;
+  if (isLog) Name += "_log" ;
+  Name += ".pdf" ;
+  m_canvas.Print (Name, "pdf") ;
+  Name.ReplaceAll("pdf","png");
+  m_canvas.Print (Name, "png") ;
+  
+
   if (isLog) m_canvas.SetLogy (0) ;
 
   
