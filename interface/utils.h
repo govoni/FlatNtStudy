@@ -8,6 +8,7 @@
 
 double deltaPhi (double phi1, double phi2) ;
 
+bool closeToLeptons (float eta, float phi, std::vector<TLorentzVector> & TL_leptons, float R = 0.3) ;
 bool closeToLeptons (float eta, float phi, readTree & reader, float R = 0.3) ;
 
 /*
@@ -42,6 +43,14 @@ void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector
 /*
  - translates the 8 sets of variables into 8 sets of arrays
 */
-void fillTrackJetArray (float * pt, float * eta, float * phi, readTree & reader) ;
+void fillTrackJetArray (float * pt, float * eta, float * phi, float * mass, readTree & reader) ;
+/*
+ - copies jets in the vector
+ - removes jets closer than deltaR to the first two leptons, if the first two leptons 
+   pass the pt threshold lepminptcut
+*/
+void dumpTrackJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector> & TL_leptons, 
+                    float * pt, float * eta, float * phi, float * mass, 
+                    float minptcut, float lepminptcut, float deltaR) ;
 
 #endif
