@@ -27,7 +27,7 @@ using namespace std ;
 // generic functions implemented in the cc
 
 double deltaPhi (double phi1, double phi2) ;
-bool FillChain (TChain& chain, const std::string& inputFileList) ;
+bool   FillChain (TChain& chain, const std::string& inputFileList) ;
 
 // give an histogram set the poisson error bars
 void     setPoissonErrorsToHisto (TH1F * input) ;
@@ -36,7 +36,7 @@ void     setPoissonErrorsToHisto (TH1F * input) ;
 void     addOverFlow (TH1F * input) ;            
 
 // take an histogram with bin errors
-TH1F*    getHistoOfErrors (TH1F * input) ; 
+TH1F*    getHistoOfErrors (TH1F * input, int isLog) ; 
 
 // create a stack from a histo
 THStack* CreateStack (TH1F * histo) ; 
@@ -151,7 +151,7 @@ class plotter { // generic plotter class
 
   template <class T>
   void DrawPlots (vector<T*> histo, TLegend leg, int sampleNum,
-          string xaxisTitle, string yaxisTitle, int isLog, string folderName)
+		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true)
     {
       // FIXME add error bands here
       histo.at (0)->Draw () ;
@@ -190,18 +190,22 @@ class plotter { // generic plotter class
       leg.Draw () ;
       m_canvas.RedrawAxis () ;
 
-      string filename = folderName + histo.at (0)->GetName () ;
-      if (histo.size () > 1) filename += "_compare" ;
-      if (isLog) filename += "_log" ;
-      filename += ".pdf" ;
-      m_canvas.Print (filename.c_str (), "pdf") ;
-      int index = 0;
-      index = filename.find(".pdf", index);
-      if (index != string::npos){
+      if(plotCanvas){
+       string filename = folderName + histo.at (0)->GetName () ;
+       if (histo.size () > 1) filename += "_compare" ;
+       if (isLog) filename += "_log" ;
+       filename += ".pdf" ;
+       m_canvas.Print (filename.c_str (), "pdf") ;
+       int index = 0;
+       index = filename.find(".pdf", index);
+       if (index != string::npos){
        filename.replace(index, 4, ".png");
        m_canvas.Print (filename.c_str (), "png") ;
+       }
       }
+
       if (isLog) m_canvas.SetLogy (0) ;
+
       return;
  }
  private:
