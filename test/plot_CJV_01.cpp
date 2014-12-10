@@ -110,6 +110,8 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float TJ_etaMin = reader.jeteta1 ;
       float TJ_etaMax = reader.jeteta2 ;
       if (TJ_etaMin > TJ_etaMax) swap (TJ_etaMin, TJ_etaMax) ;
+      float dEta = TJ_etaMax - TJ_etaMin ;
+      float avEta = 0.5 * (TJ_etaMax + TJ_etaMin) ;
       
       int TKJ_num = 0 ;
       int TKJ_num_FourGeV = 0 ;
@@ -129,13 +131,18 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float TKJ_eta[8] ;
       float TKJ_phi[8] ;
       fillTrackJetArray (TKJ_pt, TKJ_eta, TKJ_phi, reader) ;
-      
+
       // loop over track jets
       for (int iJet = 0 ; iJet < 8 ; ++iJet)      
         {
           if (TKJ_pt[iJet] < 2.) continue ; // this is the cut applied by Raffele
           if (closeToLeptons (TKJ_eta[iJet], TKJ_phi[iJet], reader, 0.3/*R*/)) continue ;
+
           analysisPlots.fillHisto (sampleName, "total", "tkJetPt", TKJ_pt[iJet], 1.) ;
+          analysisPlots.fillHisto (sampleName, "total", "tkJetEta", TKJ_eta[iJet], 1.) ;
+          analysisPlots.fillHisto (sampleName, "total", "tkJetZep", (TKJ_eta[iJet] - avEta) / dEta, 1.) ;
+          analysisPlots.fillHisto (sampleName, "total", "tkJetPhi", TKJ_phi[iJet], 1.) ;
+
           ++TKJ_num ;
           TKJ_SumHT += TKJ_pt[iJet] ;
           if (TKJ_pt[iJet] > 4.) 
@@ -192,11 +199,12 @@ int main (int argc, char ** argv)
 {
   float lumi = 300. ; // fb^(-1)
   lumi *= 1000. ;   // transform into pb^(-1)
-  plotter analysisPlots (lumi) ;
 
   // on cmsmi4
   string baseFolder = "/data2/govoni/TP/ntuples/2012-12-09/" ;   
-  string etaLimit = "2p5" ;
+  string etaLimit = argv[1] ;
+
+  plotter analysisPlots (lumi, "plot_" + etaLimit) ;
 
   float XS_EWK_WW2j_126 = 4.13649215685881443E-003/*pb*/ ;
 //  float XS_EWK_WW2j_noH = 4.49200073018412010E-003/*pb*/ ;
@@ -216,6 +224,9 @@ int main (int argc, char ** argv)
   analysisPlots.addLayerToSample ("EWK_WW2j_126", "total") ; 
   
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt",                200, 0., 200.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPhi",               50, -3.14, 3.14) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta",               50, -5., 5.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep",               50, -3., 3.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt_IN",             200, 0., 200.) ; 
 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum",               10, 0., 10.) ; 
@@ -234,18 +245,16 @@ int main (int argc, char ** argv)
 
   fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126") ;
 
-/*
   // EWK noH sample 
   // ---- ---- ---- ---- ---- ---- ----
 
-  TChain * sample_EWK_WW2j_noH = new TChain ("easyDelphes") ;
-  sample_EWK_WW2j_noH->Add ((baseFolder + "PHANTOM_SS_EWK_DF_noH_" + etaLimit + "/*.root").c_str ()) ;
-  int totEvents_EWK_WW2j_noH = sample_EWK_WW2j_noH->GetEntries () ;
-
-  readTree reader_EWK_WW2j_noH (sample_EWK_WW2j_noH) ;
-  analysisPlots.copySampleStructure ("EWK_WW2j_noH", "EWK_WW2j_126", XS_EWK_WW2j_noH, totEvents_EWK_WW2j_noH, 0, 38) ;
-  fillHistos (analysisPlots, reader_EWK_WW2j_noH, "EWK_WW2j_noH") ;
-*/
+//   TChain * sample_EWK_WW2j_noH = new TChain ("easyDelphes") ;
+//   sample_EWK_WW2j_noH->Add ((baseFolder + "PHANTOM_SS_EWK_DF_noH_" + etaLimit + "/*.root").c_str ()) ;
+//   int totEvents_EWK_WW2j_noH = sample_EWK_WW2j_noH->GetEntries () ;
+// 
+//   readTree reader_EWK_WW2j_noH (sample_EWK_WW2j_noH) ;
+//   analysisPlots.copySampleStructure ("EWK_WW2j_noH", "EWK_WW2j_126", XS_EWK_WW2j_noH, totEvents_EWK_WW2j_noH, 0, 38) ;
+//   fillHistos (analysisPlots, reader_EWK_WW2j_noH, "EWK_WW2j_noH") ;
 
   // QCD 126 sample 
   // ---- ---- ---- ---- ---- ---- ----
