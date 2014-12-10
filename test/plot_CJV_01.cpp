@@ -12,64 +12,9 @@ cjv plots
 #include "readTree.h"
 #include "plotter.h"
 
+#include "utils.h"
+
 using namespace std ;
-
-
-double 
-deltaPhi (double phi1, double phi2)
-{
-  double deltaphi=fabs(phi1-phi2);
-  if (deltaphi > 6.283185308) deltaphi -= 6.283185308;
-  if (deltaphi > 3.141592654) deltaphi = 6.283185308-deltaphi;
-  return deltaphi;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
-
-
-bool closeToLeptons (float eta, float phi, readTree & reader, float R = 0.3)
-{
-  if ((eta - reader.eta1) * (eta - reader.eta1) +
-      deltaPhi (phi, reader.phi1) * deltaPhi (phi, reader.phi1) < R * R) return true ;
-  if ((eta - reader.eta2) * (eta - reader.eta2) +
-      deltaPhi (phi, reader.phi2) * deltaPhi (phi, reader.phi2) < R * R) return true ;
-  return false ;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
-
-
-void fillTrackJetArray (float * pt, float * eta, float * phi, readTree & reader)
-  {
-    int i = 0 ;
-    pt[++i] = reader.jetTrackpt1 ;
-    eta[i]  = reader.jetTracketa1 ;
-    phi[i]  = reader.jetTrackphi1 ;
-    pt[++i] = reader.jetTrackpt2 ;
-    eta[i]  = reader.jetTracketa2 ;
-    phi[i]  = reader.jetTrackphi2 ;
-    pt[++i] = reader.jetTrackpt3 ;
-    eta[i]  = reader.jetTracketa3 ;
-    phi[i]  = reader.jetTrackphi3 ;
-    pt[++i] = reader.jetTrackpt4 ;
-    eta[i]  = reader.jetTracketa4 ;
-    phi[i]  = reader.jetTrackphi4 ;
-    pt[++i] = reader.jetTrackpt5 ;
-    eta[i]  = reader.jetTracketa5 ;
-    phi[i]  = reader.jetTrackphi5 ;
-    pt[++i] = reader.jetTrackpt6 ;
-    eta[i]  = reader.jetTracketa6 ;
-    phi[i]  = reader.jetTrackphi6 ;
-    pt[++i] = reader.jetTrackpt7 ;
-    eta[i]  = reader.jetTracketa7 ;
-    phi[i]  = reader.jetTrackphi7 ;
-    pt[++i] = reader.jetTrackpt8 ;
-    eta[i]  = reader.jetTracketa8 ;
-    phi[i]  = reader.jetTrackphi8 ;
-    return ;
-  }
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
@@ -86,12 +31,51 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       reader.GetEntry (iEvent) ;
       if (iEvent % 10000 == 0) cout << "reading event " << iEvent << "\n" ; 
 
+      // read leptons, apply isolation and veto events with additional leptons
+      // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+      float LEP_pt[4] ;
+      float LEP_eta[4] ;
+      float LEP_phi[4] ;
+      float LEP_iso[4] ;
+      fillRecoLeptonsArray (LEP_pt, LEP_eta, LEP_phi, LEP_iso, reader) ;
+      vector<TLorentzVector> TL_leptons ;
+      dumpLeptons (TL_leptons, LEP_pt, LEP_eta, LEP_phi, LEP_iso, 
+                   0.4, // isolation
+                   10.  // min pT
+        ) ;
+
+      if (TL_leptons.size () > 2) continue ;
+
+      // read jets, apply isolation and veto events with additional leptons
+      // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+      // FIXME jets cleaning
+      float REJ_pt[8] ;
+      float REJ_eta[8] ;
+      float REJ_phi[8] ;
+      float REJ_mass[8] ;
+      float REJ_ID[8] ;
+      float REJ_btag[8] ;
+      fillRecoJetArray (REJ_pt, REJ_eta, REJ_phi, REJ_mass, REJ_ID, REJ_btag, reader) ;
+
+      vector<TLorentzVector> TL_jets ;
+      dumpJets (TL_jets, TL_leptons, 
+                REJ_pt, REJ_eta, REJ_phi, REJ_mass, REJ_btag, 
+                30.,   // min pT
+                -99.,  // btag
+                15.,   // min pt of cleaning from leptons
+                0.3    // matching cone
+        ) ;
+      
       // sanity checks and mild requirements on pt objects
-      if (reader.pt1 < 10    ||
-          reader.pt2 < 10    ||
+      if (TL_leptons.at (0).Pt () < 20. ||
+          TL_leptons.at (1).Pt () < 20. ||
           reader.jetpt1 < 30 ||
           reader.jetpt2 < 30) continue ;
-          
+
+      // FIXME b-veto
+                
       // mild VBF cuts
       if (reader.detajj < 2.5) continue ;
 
@@ -132,6 +116,9 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float TKJ_phi[8] ;
       fillTrackJetArray (TKJ_pt, TKJ_eta, TKJ_phi, reader) ;
 
+      analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (reader.eta1 - avEta) / dEta, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (reader.eta2 - avEta) / dEta, 1.) ;
+
       // loop over track jets
       for (int iJet = 0 ; iJet < 8 ; ++iJet)      
         {
@@ -147,11 +134,15 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
           TKJ_SumHT += TKJ_pt[iJet] ;
           if (TKJ_pt[iJet] > 4.) 
             {
+              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_FourGeV", TKJ_eta[iJet], 1.) ;
+              analysisPlots.fillHisto (sampleName, "total", "tkJetZep_FourGeV", (TKJ_eta[iJet] - avEta) / dEta, 1.) ;
               ++TKJ_num_FourGeV ;
               TKJ_SumHT_FourGeV += TKJ_pt[iJet] ;
             }
           if (TKJ_pt[iJet] > 3.) 
             {
+              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_ThreeGeV", TKJ_eta[iJet], 1.) ;
+              analysisPlots.fillHisto (sampleName, "total", "tkJetZep_ThreeGeV", (TKJ_eta[iJet] - avEta) / dEta, 1.) ;
               ++TKJ_num_ThreeGeV ;
               TKJ_SumHT_ThreeGeV += TKJ_pt[iJet] ;
             }
@@ -204,7 +195,7 @@ int main (int argc, char ** argv)
   string baseFolder = "/data2/govoni/TP/ntuples/2012-12-09/" ;   
   string etaLimit = argv[1] ;
 
-  plotter analysisPlots (lumi, "plot_" + etaLimit) ;
+  plotter analysisPlots (lumi, "plots_" + etaLimit) ;
 
   float XS_EWK_WW2j_126 = 4.13649215685881443E-003/*pb*/ ;
 //  float XS_EWK_WW2j_noH = 4.49200073018412010E-003/*pb*/ ;
@@ -223,11 +214,19 @@ int main (int argc, char ** argv)
   analysisPlots.addSample ("EWK_WW2j_126", XS_EWK_WW2j_126, totEvents_EWK_WW2j_126, 1, 50) ; 
   analysisPlots.addLayerToSample ("EWK_WW2j_126", "total") ; 
   
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "leadLepZep",             75, -2., 2.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "traiLepZep",             75, -2., 2.) ; 
+
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt",                200, 0., 200.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPhi",               50, -3.14, 3.14) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta",               50, -5., 5.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep",               50, -3., 3.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep",               75, -2., 2.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt_IN",             200, 0., 200.) ; 
+
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta_FourGeV",       50, -5., 5.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep_FourGeV",       75, -2., 2.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta_ThreeGeV",      50, -5., 5.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep_ThreeGeV",      75, -2., 2.) ; 
 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum",               10, 0., 10.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_FourGeV",       10, 0., 10.) ; 
