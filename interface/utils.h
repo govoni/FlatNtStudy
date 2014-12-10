@@ -42,7 +42,7 @@ void dumpLeptons (std::vector<TLorentzVector> & TL_leptons,
 */
 void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector> & TL_leptons, 
                float * pt, float * eta, float * phi, float * mass, float * btag, 
-               float minptcut, float btagcut, float lepminptcut, float deltaR) ;
+               float minptcut, float btagcut, float lepminptcut, float deltaR, int Njets = 8) ;
 
 /*
  - translates the 8 sets of variables into 8 sets of arrays

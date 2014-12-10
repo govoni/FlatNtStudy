@@ -318,27 +318,27 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       float REJ_mass_puppi[8] ;
       float REJ_ID_puppi  [8] ;
       float REJ_btag_puppi[8] ;
-      fillRecoJetArray (REJ_pt_puppi, REJ_eta_puppi, REJ_phi_puppi, REJ_mass_puppi, REJ_ID_puppi, REJ_btag_puppi, *reader) ;
+      fillPuppiJetArray (REJ_pt_puppi, REJ_eta_puppi, REJ_phi_puppi, REJ_mass_puppi, REJ_ID_puppi, REJ_btag_puppi, *reader) ;
 
       vector<TLorentzVector> TL_jets_puppi ;
       dumpJets (TL_jets_puppi, TL_leptons, REJ_pt_puppi, REJ_eta_puppi, REJ_phi_puppi, REJ_mass_puppi, REJ_btag_puppi, minJetCutPt, bTagCutVeto, minLeptonCleaningPt, matchingCone);
-
+      
       if (TL_jets_puppi.size () < 2) continue ;
 
       // FIXME jets cleaning                                                                                                                                                               
-      float REJ_pt_gen  [8] ;
-      float REJ_eta_gen [8] ;
-      float REJ_phi_gen [8] ;
-      float REJ_mass_gen[8] ;
-      float REJ_ID_gen  [8] ;
-      float REJ_btag_gen[8] ;
-      fillRecoJetArray (REJ_pt_gen, REJ_eta_gen, REJ_phi_gen, REJ_mass_gen, REJ_ID_gen, REJ_btag_gen, *reader) ;
-
+      float REJ_pt_gen  [4] ;
+      float REJ_eta_gen [4] ;
+      float REJ_phi_gen [4] ;
+      float REJ_mass_gen[4] ;
+      float REJ_ID_gen  [4] ;
+      float REJ_btag_gen[4] ;
+      fillGenJetArray (REJ_pt_gen, REJ_eta_gen, REJ_phi_gen, REJ_mass_gen, REJ_ID_gen, REJ_btag_gen, *reader) ;
       vector<TLorentzVector> TL_jets_gen ;
-      dumpJets (TL_jets_gen, TL_leptons, REJ_pt_gen, REJ_eta_gen, REJ_phi_gen, REJ_mass_gen, REJ_btag_gen, minJetCutPt, bTagCutVeto,  minLeptonCleaningPt, matchingCone) ;
+
+      dumpJets (TL_jets_gen, TL_leptons, REJ_pt_gen, REJ_eta_gen, REJ_phi_gen, REJ_mass_gen, REJ_btag_gen, minJetCutPt, bTagCutVeto,  minLeptonCleaningPt, matchingCone,4) ;
 
       if (TL_jets_gen.size () < 2) continue ;
-
+      /*
       TLorentzVector L_dilepton = TL_leptons.at(0) + TL_leptons.at(1) ;
 
       TLorentzVector L_met;
@@ -434,7 +434,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
 
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TJMet}",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
       */
-
+      /*
       if(L_dijet.M() < 350 or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta()) < 2.5 ) continue ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LL}",         fabs (TL_leptons.at(0).DeltaPhi (TL_leptons.at(1))), 1.) ;
@@ -506,7 +506,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TJMet",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
 	*/
-      
+      /*      
       if(L_dijet.M() < 800 or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta() ) < 4.0 ) continue ;
 
       analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).DeltaPhi (TL_leptons.at(1))), 1.) ;

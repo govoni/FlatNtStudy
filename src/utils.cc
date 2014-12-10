@@ -1,5 +1,5 @@
 #include "utils.h"
-
+#include <iostream>
 using namespace std ;
 
 double 
@@ -46,7 +46,7 @@ bool closeToLeptons (float eta, float phi, readTree & reader, float R)
 void fillRecoJetArray (float * pt, float * eta, float * phi, 
                        float * mass, float * ID, float * btag, readTree & reader)
   {
-    int i = 0 ;
+    int i = -1 ;
     pt[++i] = reader.jetpt1 ;
     eta[i]  = reader.jeteta1 ;
     phi[i]  = reader.jetphi1 ;
@@ -110,7 +110,7 @@ void fillRecoJetArray (float * pt, float * eta, float * phi,
 void fillPuppiJetArray (float * pt, float * eta, float * phi, 
                        float * mass, float * ID, float * btag, readTree & reader)
   {
-    int i = 0 ;
+    int i = -1 ;
     pt[++i] = reader.jetpt_puppi1 ;
     eta[i]  = reader.jeteta_puppi1 ;
     phi[i]  = reader.jetphi_puppi1 ;
@@ -174,7 +174,7 @@ void fillPuppiJetArray (float * pt, float * eta, float * phi,
 void fillGenJetArray (float * pt, float * eta, float * phi, 
                        float * mass, float * ID, float * btag, readTree & reader)
   {
-    int i = 0 ;
+    int i = -1 ;
     pt[++i] = reader.jetGenpt1 ;
     eta[i]  = reader.jetGeneta1 ;
     phi[i]  = reader.jetGenphi1 ;
@@ -202,7 +202,7 @@ void fillGenJetArray (float * pt, float * eta, float * phi,
     mass[i] = reader.jetGenm4 ;
     ID[i]   = -1. ;
     btag[i] = -1 ;
-
+    
     return ;
   }
 
@@ -213,7 +213,7 @@ void fillGenJetArray (float * pt, float * eta, float * phi,
 // isolation applied here
 void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, readTree & reader)
   {
-    int i = 0 ;
+    int i = -1 ;
     pt[++i] = reader.pt1 ;
     eta[i]  = reader.eta1 ;
     phi[i]  = reader.phi1 ;
@@ -257,9 +257,9 @@ void dumpLeptons (vector<TLorentzVector> & TL_leptons,
 
 void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector> & TL_leptons, 
                float * pt, float * eta, float * phi, float * mass, float * btag, 
-               float minptcut, float btagcut, float lepminptcut, float deltaR)
+               float minptcut, float btagcut, float lepminptcut, float deltaR, int Njets)
   {
-    for (int iJet = 0 ; iJet < 8 ; ++iJet)
+    for (int iJet = 0 ; iJet < Njets ; ++iJet)
       {
         if (pt[iJet] < minptcut) continue ;
         if (btag[iJet] > btagcut) continue ;
@@ -282,12 +282,14 @@ void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector
   }
                
 
+
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
 void fillTrackJetArray (float * pt, float * eta, float * phi, float * mass, readTree & reader)
   {
-    int i = 0 ;
+    int i = -1 ;
     pt[++i] = reader.jetTrackpt1 ;
     eta[i]  = reader.jetTracketa1 ;
     phi[i]  = reader.jetTrackphi1 ;
