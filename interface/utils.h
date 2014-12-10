@@ -16,6 +16,10 @@ bool closeToLeptons (float eta, float phi, readTree & reader, float R = 0.3) ;
 */
 void fillRecoJetArray (float * pt, float * eta, float * phi, 
                        float * mass, float * ID, float * btag, readTree & reader) ;
+void fillPuppiJetArray (float * pt, float * eta, float * phi, 
+                        float * mass, float * ID, float * btag, readTree & reader) ;
+void fillGenJetArray (float * pt, float * eta, float * phi, 
+                      float * mass, float * ID, float * btag, readTree & reader) ;
 
 /*
  - translates the 4 sets of variables into 4 sets of arrays

@@ -47,62 +47,162 @@ void fillRecoJetArray (float * pt, float * eta, float * phi,
                        float * mass, float * ID, float * btag, readTree & reader)
   {
     int i = 0 ;
-    pt[++i] = reader.jetTrackpt1 ;
-    eta[i]  = reader.jetTracketa1 ;
-    phi[i]  = reader.jetTrackphi1 ;
+    pt[++i] = reader.jetpt1 ;
+    eta[i]  = reader.jeteta1 ;
+    phi[i]  = reader.jetphi1 ;
     mass[i] = reader.jetmass1 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo1 ;
 
-    pt[++i] = reader.jetTrackpt2 ;
-    eta[i]  = reader.jetTracketa2 ;
-    phi[i]  = reader.jetTrackphi2 ;
+    pt[++i] = reader.jetpt2 ;
+    eta[i]  = reader.jeteta2 ;
+    phi[i]  = reader.jetphi2 ;
     mass[i] = reader.jetmass2 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo2 ;
 
-    pt[++i] = reader.jetTrackpt3 ;
-    eta[i]  = reader.jetTracketa3 ;
-    phi[i]  = reader.jetTrackphi3 ;
+    pt[++i] = reader.jetpt3 ;
+    eta[i]  = reader.jeteta3 ;
+    phi[i]  = reader.jetphi3 ;
     mass[i] = reader.jetmass3 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo3 ;
 
-    pt[++i] = reader.jetTrackpt4 ;
-    eta[i]  = reader.jetTracketa4 ;
-    phi[i]  = reader.jetTrackphi4 ;
+    pt[++i] = reader.jetpt4 ;
+    eta[i]  = reader.jeteta4 ;
+    phi[i]  = reader.jetphi4 ;
     mass[i] = reader.jetmass4 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo4 ;
 
-    pt[++i] = reader.jetTrackpt5 ;
-    eta[i]  = reader.jetTracketa5 ;
-    phi[i]  = reader.jetTrackphi5 ;
+    pt[++i] = reader.jetpt5 ;
+    eta[i]  = reader.jeteta5 ;
+    phi[i]  = reader.jetphi5 ;
     mass[i] = reader.jetmass5 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo5 ;
     
-    pt[++i] = reader.jetTrackpt6 ;
-    eta[i]  = reader.jetTracketa6 ;
-    phi[i]  = reader.jetTrackphi6 ;
+    pt[++i] = reader.jetpt6 ;
+    eta[i]  = reader.jeteta6 ;
+    phi[i]  = reader.jetphi6 ;
     mass[i] = reader.jetmass6 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo6 ;
     
-    pt[++i] = reader.jetTrackpt7 ;
-    eta[i]  = reader.jetTracketa7 ;
-    phi[i]  = reader.jetTrackphi7 ;
+    pt[++i] = reader.jetpt7 ;
+    eta[i]  = reader.jeteta7 ;
+    phi[i]  = reader.jetphi7 ;
     mass[i] = reader.jetmass7 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo7 ;
 
-    pt[++i] = reader.jetTrackpt8 ;
-    eta[i]  = reader.jetTracketa8 ;
-    phi[i]  = reader.jetTrackphi8 ;
+    pt[++i] = reader.jetpt8 ;
+    eta[i]  = reader.jeteta8 ;
+    phi[i]  = reader.jetphi8 ;
     mass[i] = reader.jetmass8 ;
     ID[i]   = -1. ;
     btag[i] = reader.jetBTagAlgo8 ;
     
+    return ;
+  }
+
+// 
+void fillPuppiJetArray (float * pt, float * eta, float * phi, 
+                       float * mass, float * ID, float * btag, readTree & reader)
+  {
+    int i = 0 ;
+    pt[++i] = reader.jetpt_puppi1 ;
+    eta[i]  = reader.jeteta_puppi1 ;
+    phi[i]  = reader.jetphi_puppi1 ;
+    mass[i] = reader.jetmass_puppi1 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi1 ;
+
+    pt[++i] = reader.jetpt_puppi2 ;
+    eta[i]  = reader.jeteta_puppi2 ;
+    phi[i]  = reader.jetphi_puppi2 ;
+    mass[i] = reader.jetmass_puppi2 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi2 ;
+
+    pt[++i] = reader.jetpt_puppi3 ;
+    eta[i]  = reader.jeteta_puppi3 ;
+    phi[i]  = reader.jetphi_puppi3 ;
+    mass[i] = reader.jetmass_puppi3 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi3 ;
+
+    pt[++i] = reader.jetpt_puppi4 ;
+    eta[i]  = reader.jeteta_puppi4 ;
+    phi[i]  = reader.jetphi_puppi4 ;
+    mass[i] = reader.jetmass_puppi4 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi4 ;
+
+    pt[++i] = reader.jetpt_puppi5 ;
+    eta[i]  = reader.jeteta_puppi5 ;
+    phi[i]  = reader.jetphi_puppi5 ;
+    mass[i] = reader.jetmass_puppi5 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi5 ;
+    
+    pt[++i] = reader.jetpt_puppi6 ;
+    eta[i]  = reader.jeteta_puppi6 ;
+    phi[i]  = reader.jetphi_puppi6 ;
+    mass[i] = reader.jetmass_puppi6 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi6 ;
+    
+    pt[++i] = reader.jetpt_puppi7 ;
+    eta[i]  = reader.jeteta_puppi7 ;
+    phi[i]  = reader.jetphi_puppi7 ;
+    mass[i] = reader.jetmass_puppi7 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi7 ;
+
+    pt[++i] = reader.jetpt_puppi8 ;
+    eta[i]  = reader.jeteta_puppi8 ;
+    phi[i]  = reader.jetphi_puppi8 ;
+    mass[i] = reader.jetmass_puppi8 ;
+    ID[i]   = -1. ;
+    btag[i] = reader.jetBTagAlgo_puppi8 ;
+    
+    return ;
+  }
+
+// 
+void fillGenJetArray (float * pt, float * eta, float * phi, 
+                       float * mass, float * ID, float * btag, readTree & reader)
+  {
+    int i = 0 ;
+    pt[++i] = reader.jetGenpt1 ;
+    eta[i]  = reader.jetGeneta1 ;
+    phi[i]  = reader.jetGenphi1 ;
+    mass[i] = reader.jetGenm1 ;
+    ID[i]   = -1. ;
+    btag[i] = -1 ;
+
+    pt[++i] = reader.jetGenpt2 ;
+    eta[i]  = reader.jetGeneta2 ;
+    phi[i]  = reader.jetGenphi2 ;
+    mass[i] = reader.jetGenm2 ;
+    ID[i]   = -1. ;
+    btag[i] = -1 ;
+
+    pt[++i] = reader.jetGenpt3 ;
+    eta[i]  = reader.jetGeneta3 ;
+    phi[i]  = reader.jetGenphi3 ;
+    mass[i] = reader.jetGenm3 ;
+    ID[i]   = -1. ;
+    btag[i] = -1 ;
+
+    pt[++i] = reader.jetGenpt4 ;
+    eta[i]  = reader.jetGeneta4 ;
+    phi[i]  = reader.jetGenphi4 ;
+    mass[i] = reader.jetGenm4 ;
+    ID[i]   = -1. ;
+    btag[i] = -1 ;
+
     return ;
   }
 
