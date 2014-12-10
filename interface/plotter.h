@@ -96,7 +96,7 @@ class sample {
 
 class plotter { // generic plotter class
  public:
-  plotter (float lumi) ;
+  plotter (float lumi, string folderName = "plots") ;
   ~plotter () {} ;
   
   // adding methods
@@ -206,6 +206,7 @@ class plotter { // generic plotter class
  }
  private:
 
+ string m_folderName ; 
  float m_lumi ;
  TCanvas m_canvas ;
  unordered_map<string, sample> m_samples ; //map of sample names and sample object

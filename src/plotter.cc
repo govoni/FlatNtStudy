@@ -85,11 +85,12 @@ THStack * stackMe (TH1F * histo)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-plotter::plotter (float lumi) :
+plotter::plotter (float lumi, string folderName) :
+  m_folderName (folderName) ,
   m_lumi (lumi) ,
   m_canvas ("can", "can", 500, 500)
 {
-// don't like it, need improvement
+// don't like it, needs improvement
   setRootAspect () ;
 }
 
@@ -340,7 +341,7 @@ void plotter::plotSingleLayer (string layerName, string histoName,
 void plotter::plotFullLayer (string layerName)
 {
   // FIXME needs to be finished
-  string outFolderName = "plots/stacks/" + layerName + "/";
+  string outFolderName = m_folderName + "/stacks/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
   // loop over variables and call plot single layer
@@ -413,7 +414,7 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
 void plotter::compareStoBFullLayer (string layerName, string folderTag)
 {
   // FIXME needs to be finished
-  string outFolderName = "plots/compareStoB" + folderTag + "/" + layerName + "/";
+  string outFolderName = m_folderName + "/compareStoB" + folderTag + "/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
   // loop over variables and call plot single layer
@@ -583,7 +584,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
 {
   // FIXME needs to be finished
-  string outFolderName = basefolder + "/plots/relExcess/" + layerName + "/";
+  string outFolderName = m_folderName + "/" + basefolder + "/relExcess/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
   // loop over variables and call plot single layer
