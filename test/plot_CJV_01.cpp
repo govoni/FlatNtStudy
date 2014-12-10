@@ -58,12 +58,11 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float REJ_ID[8] ;
       float REJ_btag[8] ;
       fillRecoJetArray (REJ_pt, REJ_eta, REJ_phi, REJ_mass, REJ_ID, REJ_btag, reader) ;
-
       vector<TLorentzVector> TL_jets ;
       dumpJets (TL_jets, TL_leptons, 
                 REJ_pt, REJ_eta, REJ_phi, REJ_mass, REJ_btag, 
                 30.,   // min pT
-                -99.,  // btag
+                99.,   // btag
                 15.,   // min pt of cleaning from leptons
                 0.3    // matching cone
         ) ;
@@ -79,38 +78,45 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       // mild VBF cuts
       if (dEta < 2.5) continue ;
 
-      int TKJ_num = 0 ;
-      int TKJ_num_FourGeV = 0 ;
-      int TKJ_num_ThreeGeV = 0 ;
-      float TKJ_SumHT = 0 ;
-      float TKJ_SumHT_FourGeV = 0 ;
-      float TKJ_SumHT_ThreeGeV = 0 ;
-
-      int TKJ_num_IN = 0 ;
-      int TKJ_num_FourGeV_IN = 0 ;
-      int TKJ_num_ThreeGeV_IN = 0 ;
-      float TKJ_SumHT_IN = 0 ;
-      float TKJ_SumHT_FourGeV_IN = 0 ;
-      float TKJ_SumHT_ThreeGeV_IN = 0 ;
+      analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (TL_leptons.at (0).Eta () - avEta) / dEta, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (TL_leptons.at (1).Eta () - avEta) / dEta, 1.) ;
 
       float TKJ_pt[8] ;
       float TKJ_eta[8] ;
       float TKJ_phi[8] ;
       float TKJ_mass[8] ;
       fillTrackJetArray (TKJ_pt, TKJ_eta, TKJ_phi, TKJ_mass, reader) ;
-
-      analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (TL_leptons.at (0).Eta () - avEta) / dEta, 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (TL_leptons.at (1).Eta () - avEta) / dEta, 1.) ;
-
       vector<TLorentzVector> TL_trackJets ;
       dumpTrackJets (TL_trackJets, TL_leptons, 
                      TKJ_pt, TKJ_eta, TKJ_phi, TKJ_mass, 
-                     2.,   // min pT
-                     15.,   // min pt of cleaning from leptons
-                     0.3    // matching cone
+                     2.,    // min pT
+                     15.,   // min pt of leptons in the cleaning from leptons
+                     0.3    // matching cone for cleaning from leptons
         ) ;
       
-      // loop over track jets
+      int TKJ_num              = 0 ;
+      int TKJ_num_ThreeGeV     = 0 ;
+      int TKJ_num_FourGeV      = 0 ;
+      float TKJ_SumHT          = 0. ;
+      float TKJ_SumHT_ThreeGeV = 0. ;
+      float TKJ_SumHT_FourGeV  = 0. ;
+
+      int TKJ_num_IN              = 0 ;
+      int TKJ_num_ThreeGeV_IN     = 0 ;
+      int TKJ_num_FourGeV_IN      = 0 ;
+      float TKJ_SumHT_IN          = 0. ;
+      float TKJ_SumHT_ThreeGeV_IN = 0. ;
+      float TKJ_SumHT_FourGeV_IN  = 0. ;
+
+      OUTt TKJ_num_OUT              = 0 ;
+      OUTt TKJ_num_ThreeGeV_OUT     = 0 ;
+      OUTt TKJ_num_FourGeV_OUT      = 0 ;
+      float TKJ_SumHT_OUT          = 0. ;
+      float TKJ_SumHT_ThreeGeV_OUT = 0. ;
+      float TKJ_SumHT_FourGeV_OUT  = 0. ;
+
+      float deltaEtaThreshold = 0.7 ;
+       // loop over track jets
       for (unsigned int iJet = 0 ; iJet < TL_trackJets.size () ; ++iJet)      
         {
           analysisPlots.fillHisto (sampleName, "total", "tkJetPt",  TL_trackJets.at (iJet).Pt (), 1.) ;
@@ -135,22 +141,41 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
               TKJ_SumHT_FourGeV += TL_trackJets.at (iJet).Pt () ;
             }
           // only the central region  
-          if (TL_trackJets.at (iJet).Eta () < TJ_etaMin + 0.5 ||
-              TL_trackJets.at (iJet).Eta () > TJ_etaMax - 0.5) continue ;  
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", TL_trackJets.at (iJet).Pt (), 1.) ;
-          ++TKJ_num_IN ;
-          TKJ_SumHT_IN += TL_trackJets.at (iJet).Pt () ;
-          if (TL_trackJets.at (iJet).Pt () > 3.) 
+          if (TL_trackJets.at (iJet).Eta () > TJ_etaMin + deltaEtaThreshold &&
+              TL_trackJets.at (iJet).Eta () < TJ_etaMax - deltaEtaThreshold) 
             {
-              ++TKJ_num_ThreeGeV_IN ;
-              TKJ_SumHT_ThreeGeV_IN += TL_trackJets.at (iJet).Pt () ;
-            }
-          if (TL_trackJets.at (iJet).Pt () > 4.) 
+			  analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", TL_trackJets.at (iJet).Pt (), 1.) ;
+			  ++TKJ_num_IN ;
+			  TKJ_SumHT_IN += TL_trackJets.at (iJet).Pt () ;
+			  if (TL_trackJets.at (iJet).Pt () > 3.) 
+				{
+				  ++TKJ_num_ThreeGeV_IN ;
+				  TKJ_SumHT_ThreeGeV_IN += TL_trackJets.at (iJet).Pt () ;
+				}
+			  if (TL_trackJets.at (iJet).Pt () > 4.) 
+				{
+				  ++TKJ_num_FourGeV_IN ;
+				  TKJ_SumHT_FourGeV_IN += TL_trackJets.at (iJet).Pt () ;
+				}
+			}
+		  else if (TL_trackJets.at (iJet).Eta () < TJ_etaMin - deltaEtaThreshold ||
+                   TL_trackJets.at (iJet).Eta () > TJ_etaMax + deltaEtaThreshold) 
             {
-              ++TKJ_num_FourGeV_IN ;
-              TKJ_SumHT_FourGeV_IN += TL_trackJets.at (iJet).Pt () ;
-            }
-        } // loop over track jets
+			  analysisPlots.fillHisto (sampleName, "total", "tkJetPt_OUT", TL_trackJets.at (iJet).Pt (), 1.) ;
+			  ++TKJ_num_OUT ;
+			  TKJ_SumHT_OUT += TL_trackJets.at (iJet).Pt () ;
+			  if (TL_trackJets.at (iJet).Pt () > 3.) 
+				{
+				  ++TKJ_num_ThreeGeV_OUT ;
+				  TKJ_SumHT_ThreeGeV_OUT += TL_trackJets.at (iJet).Pt () ;
+				}
+			  if (TL_trackJets.at (iJet).Pt () > 4.) 
+				{
+				  ++TKJ_num_FourGeV_OUT ;
+				  TKJ_SumHT_FourGeV_OUT += TL_trackJets.at (iJet).Pt () ;
+				}
+			}
+       } // loop over track jets
       
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum",               TKJ_num, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV",       TKJ_num_FourGeV, 1.) ;
@@ -158,12 +183,18 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_IN",            TKJ_num_IN, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV_IN",    TKJ_num_FourGeV_IN, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV_IN",   TKJ_num_ThreeGeV_IN, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_OUT",            TKJ_num_OUT, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV_OUT",    TKJ_num_FourGeV_OUT, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV_OUT",   TKJ_num_ThreeGeV_OUT, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT",             TKJ_SumHT, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV",     TKJ_SumHT_FourGeV, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV",    TKJ_SumHT_ThreeGeV, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_IN",          TKJ_SumHT_IN, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV_IN",  TKJ_SumHT_FourGeV_IN, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_IN", TKJ_SumHT_ThreeGeV_IN, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_OUT",          TKJ_SumHT_OUT, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV_OUT",  TKJ_SumHT_FourGeV_OUT, 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_OUT", TKJ_SumHT_ThreeGeV_OUT, 1.) ;
       
     } // loop over events
   analysisPlots.setPoissonErrors () ;
@@ -222,13 +253,19 @@ int main (int argc, char ** argv)
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_IN",            10, 0., 10.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_FourGeV_IN",    10, 0., 10.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_ThreeGeV_IN",   10, 0., 10.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_OUT",            10, 0., 10.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_FourGeV_OUT",    10, 0., 10.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetNum_ThreeGeV_OUT",   10, 0., 10.) ; 
 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT",             200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV",     200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV",    200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_IN",          200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_IN",  200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_IN", 200, 0., 1000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 200, 0., 1000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_OUT",          200, 0., 1000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_OUT",  200, 0., 1000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 200, 0., 1000.) ; 
 
   fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126") ;
 
@@ -261,9 +298,6 @@ int main (int argc, char ** argv)
   analysisPlots.compareStoBFullLayer ("total") ;
   analysisPlots.normaliseAllHistos () ;
   analysisPlots.compareStoBFullLayer ("total", "_norm") ;
-  
-  
-
 
   return 0 ;
 }  
