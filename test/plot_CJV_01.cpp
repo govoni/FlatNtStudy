@@ -45,7 +45,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
                    10.  // min pT
         ) ;
 
-      if (TL_leptons.size () > 2) continue ;
+      if (TL_leptons.size () != 2) continue ;
 
       // read jets, apply isolation and veto events with additional leptons
       // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -68,28 +68,16 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
                 0.3    // matching cone
         ) ;
       
-      if (TL_jets.size () > 2) continue ;
+      if (TL_jets.size () < 2) continue ;
 
       float TJ_etaMin = TL_jets.at (0).Eta () ;
-      float TJ_etaMax = TL_jets.at (0).Eta () ;
+      float TJ_etaMax = TL_jets.at (1).Eta () ;
       if (TJ_etaMin > TJ_etaMax) swap (TJ_etaMin, TJ_etaMax) ;
       float dEta = TJ_etaMax - TJ_etaMin ;
       float avEta = 0.5 * (TJ_etaMax + TJ_etaMin) ;
 
       // mild VBF cuts
       if (dEta < 2.5) continue ;
-
-//       TLorentzVector L_leadi_lepton ;
-//       L_leadi_lepton.SetPtEtaPhiM (reader.pt1, reader.eta1, reader.phi1, 0.) ;
-// 
-//       TLorentzVector L_trail_lepton ;
-//       L_trail_lepton.SetPtEtaPhiM (reader.pt2, reader.eta2, reader.phi2, 0.) ;
-// 
-//       TLorentzVector L_leadi_jet ;
-//       L_leadi_jet.SetPtEtaPhiM (reader.jetpt1, reader.jeteta1, reader.jetphi1, 0.) ;
-// 
-//       TLorentzVector L_trail_jet ;
-//       L_trail_jet.SetPtEtaPhiM (reader.jetpt2, reader.jeteta2, reader.jetphi2, 0.) ;
 
       int TKJ_num = 0 ;
       int TKJ_num_FourGeV = 0 ;
@@ -114,7 +102,6 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (TL_leptons.at (0).Eta () - avEta) / dEta, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (TL_leptons.at (1).Eta () - avEta) / dEta, 1.) ;
 
-
       vector<TLorentzVector> TL_trackJets ;
       dumpTrackJets (TL_trackJets, TL_leptons, 
                      TKJ_pt, TKJ_eta, TKJ_phi, TKJ_mass, 
@@ -122,7 +109,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
                      15.,   // min pt of cleaning from leptons
                      0.3    // matching cone
         ) ;
-
+      
       // loop over track jets
       for (unsigned int iJet = 0 ; iJet < TL_trackJets.size () ; ++iJet)      
         {

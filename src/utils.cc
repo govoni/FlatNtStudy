@@ -169,7 +169,7 @@ void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector
         for (unsigned int iLep = 0 ; iLep < TL_leptons.size () ; ++iLep)
           {
             if (TL_leptons.at (iLep).Pt () < lepminptcut) continue ;
-            if (TL_leptons.at (iLep).DeltaR (TL_jets.at (iJet)) < deltaR) 
+            if (TL_leptons.at (iLep).DeltaR (L_jet) < deltaR) 
               {
                 discard = true ;
                 break ;
@@ -248,7 +248,7 @@ void dumpTrackJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzV
         for (unsigned int iLep = 0 ; iLep < TL_leptons.size () ; ++iLep)
           {
             if (TL_leptons.at (iLep).Pt () < lepminptcut) continue ;
-            if (TL_leptons.at (iLep).DeltaR (TL_jets.at (iJet)) < deltaR) 
+            if (TL_leptons.at (iLep).DeltaR (L_jet) < deltaR) 
               {
                 discard = true ;
                 break ;
