@@ -3,6 +3,7 @@
 #include "TLegend.h"
 #include "TStyle.h"
 #include "TROOT.h"
+#include "TLatex.h"
 
 using namespace std ;
 
@@ -48,10 +49,11 @@ void setPoissonErrorsToHisto (TH1F * input)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-TH1F *  getHistoOfErrors (TH1F * input)
+TH1F *  getHistoOfErrors (TH1F * input, int isLog)
 {
   string name = "err_" ;
   name += input->GetName () ;
+  if(isLog) name +="_log";
   string title = "errors of " ;
   title += input->GetTitle () ;
   TH1F * dummy = new TH1F (
@@ -272,6 +274,24 @@ void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax, str
   bkg->GetXaxis ()->SetTitle (xaxisTitle.c_str ()) ;
   bkg->GetYaxis ()->SetTitle (yaxisTitle.c_str ()) ;
   bkg->Draw () ;
+
+  TLatex * tex = new TLatex(0.94,0.92," 13 TeV");
+  tex->SetNDC();
+  tex->SetTextAlign(31);
+  tex->SetTextFont(42);
+  tex->SetTextSize(0.04);
+  tex->SetLineWidth(2);
+  TLatex * tex2 = new TLatex(0.14,0.92,"Delphes");
+  tex2->SetNDC();
+  tex2->SetTextFont(61);
+  tex2->SetTextSize(0.04);
+  tex2->SetLineWidth(2);
+  TLatex * tex3 = new TLatex(0.286,0.92,"Simulation Preliminary");
+  tex3->SetNDC();
+  tex3->SetTextFont(52);
+  tex3->SetTextSize(0.035);
+  tex3->SetLineWidth(2);
+
   return ;
 }
 
@@ -448,7 +468,6 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   
   // prepare the first stacks
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
   string name = string ("st_SM_") + layerName + "_" + histoName ; // SM = QCD bkg + EWK 126 GeV H
   THStack * SM_stack = new THStack (name.c_str (), "") ;
   name = string ("st_nH_") + layerName + "_" + histoName ;  // no H = QCD bkg + EWK noH
@@ -489,7 +508,6 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   string sampleName = m_samplesSequence.at (signalPos.at (0)) ;
   TH1F * h_sigSM = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;  
   SM_stack->Add (h_sigSM) ;
-  leg.AddEntry (h_sigSM, sampleName.c_str (), "fl") ;
 
   // calculate the difference between noH and SM126
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -522,9 +540,9 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   name = "SM_histo_" ;
   name += h_sigSM->GetName () ;
   TH1F * SM_histo = (TH1F *) SM_stack->GetStack ()->Last ()->Clone (name.c_str ()) ;
-  SM_histo->SetLineColor (1) ;
   SM_histo->SetFillColor (1) ;
   SM_histo->SetFillStyle (3004) ;
+  leg.AddEntry (SM_histo, "bkg + EWK H126", "fl") ;
 
   // get the histogram of the total shape, of SM bkg + noH hypothesis
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -542,26 +560,33 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // do the drawing
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   
-  DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName, false) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
-                              // and then reprint the canvas 
-  /*
+
   if (isLog) m_canvas.SetLogy (1) ;
   m_canvas.RedrawAxis () ;    
   leg.Draw () ;
+
   string filename = folderName + histos.at (0)->GetName () ;
-  if (histos.size () > 1) filename += "_compare" ; 
+  if (histos.size () > 1) filename += "_compare" ;
   if (isLog) filename += "_log" ;
   filename += ".pdf" ;
-  m_canvas.Print (filename.c_str (), "pdf") ; 
+  m_canvas.Print (filename.c_str (), "pdf") ;
+  size_t index = 0;
+  index = filename.find(".pdf", index);
+  if (index != string::npos){
+      filename.replace(index, 4, ".png");
+      m_canvas.Print (filename.c_str (), "png") ;
+  }
   if (isLog) m_canvas.SetLogy (0) ;
 
+  
   // direct comparison of the uncertainty on the SM to the difference between H and noH
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   TLegend leg2 = initLegend (2) ;
-  TH1F * h_tot_SM = (TH1F *) SM_stack->GetStack ()->Last () ;
-  TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM) ;
+  TH1F * h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
+  TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
   h_tot_SM_err->SetLineColor (1) ;
   h_tot_SM_err->SetFillColor (1) ;
   h_tot_SM_err->SetFillStyle (3001) ;
@@ -572,9 +597,10 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
   DrawPlots (histos2, leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
-  */
+
   return ;
 }
+
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----

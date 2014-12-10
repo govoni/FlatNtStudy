@@ -115,7 +115,7 @@ int main (int argc, char ** argv) {
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_EWK_WW2j_126 = new TChain (treeName.c_str()) ;  
   for(size_t iEntry = 0; iEntry < InputEWKH126.size(); iEntry++)
-    sample_EWK_WW2j_126->Add ((InputBaseDirectory+"/"+InputEWKH126.at(iEntry)+"/*root").c_str()) ;
+    sample_EWK_WW2j_126->Add ((InputBaseDirectory+"/"+InputEWKH126.at(iEntry)+"/*1.root").c_str()) ;
 
   int totEvents_EWK_WW2j_126        = sample_EWK_WW2j_126->GetEntries();
   std::cout<<"totEvents_EWK_WW2j_126 "<<totEvents_EWK_WW2j_126<<std::endl;
@@ -125,7 +125,7 @@ int main (int argc, char ** argv) {
   analysisPlots.addLayerToSample  ("EWK_WW2j_126", "total") ; 
   
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLL",25,0.,3.14) ;  // add single histo to this 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLMet",  25, 0., 3.14) ;
+  /*  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLMet",  25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLPuppiMet",  25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLGenMet",    25, 0., 3.14) ;
   
@@ -182,7 +182,7 @@ int main (int argc, char ** argv) {
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLJPuppiMet", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiLPuppiJPuppiMet", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "dPhiTJMet", 25, 0., 3.14) ;
-
+  */
   analysisPlots.copyLayerInSample ("EWK_WW2j_126","looseVBF","total");  // copy this layer in another one
   analysisPlots.copyLayerInSample ("EWK_WW2j_126","tightVBF","total");  // copy this layer in another one
   
@@ -193,7 +193,7 @@ int main (int argc, char ** argv) {
 
   TChain * sample_EWK_WW2j_noH = new TChain (treeName.c_str()) ;
   for(size_t iEntry = 0; iEntry < InputEWKnoH.size(); iEntry++)
-    sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*root").c_str()) ;
+    sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*1.root").c_str()) ;
 
   int totEvents_EWK_WW2j_noH        = sample_EWK_WW2j_noH->GetEntries();
   std::cout<<"totEvents_EWK_WW2j_noH "<<totEvents_EWK_WW2j_noH<<std::endl;
@@ -208,7 +208,7 @@ int main (int argc, char ** argv) {
 
   TChain * sample_QCD_WW2j = new TChain (treeName.c_str()) ;
   for(size_t iEntry = 0; iEntry < InputVVQCD.size(); iEntry++)
-    sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*root").c_str()) ;
+    sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*1.root").c_str()) ;
 
   int totEvents_QCD_WW2j = sample_QCD_WW2j->GetEntries();
   std::cout<<"totEvents_QCD_WW2j "<<totEvents_QCD_WW2j<<std::endl;
@@ -224,7 +224,7 @@ int main (int argc, char ** argv) {
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_WZ_EWK_H126 = new TChain (treeName.c_str()) ;
   for(size_t iEntry = 0; iEntry < InputWZEWKH126.size(); iEntry++)
-    sample_WZ_EWK_H126->Add ((InputBaseDirectory+"/"+InputWZEWKH126.at(iEntry)+"/*root").c_str()) ;
+    sample_WZ_EWK_H126->Add ((InputBaseDirectory+"/"+InputWZEWKH126.at(iEntry)+"/*1.root").c_str()) ;
 
   int totEvents_WZ_EWK_H126        = sample_WZ_EWK_H126->GetEntries();
   std::cout<<"totEvents_WZ_EWK_H126 "<<totEvents_WZ_EWK_H126<<std::endl;
@@ -239,7 +239,7 @@ int main (int argc, char ** argv) {
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_WZ_QCD = new TChain (treeName.c_str()) ;
   for(size_t iEntry = 0; iEntry < InputWZQCD.size(); iEntry++)
-    sample_WZ_QCD->Add ((InputBaseDirectory+"/"+InputWZQCD.at(iEntry)+"/*root").c_str()) ;
+    sample_WZ_QCD->Add ((InputBaseDirectory+"/"+InputWZQCD.at(iEntry)+"/*1.root").c_str()) ;
 
   int totEvents_WZ_QCD = sample_WZ_QCD->GetEntries();
   std::cout<<"totEvents_WZ_QCD "<<totEvents_WZ_QCD<<std::endl;
@@ -264,7 +264,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
   int maxevents = reader->fChain->GetEntries() ;
 
   // loop over events
-  for (int iEvent = 0 ; iEvent < maxevents/100 ; ++iEvent){
+  for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent){
       reader->fChain->GetEntry(iEvent) ;
       if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ; 
 
@@ -273,6 +273,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       if(reader->jetpt_puppi1 < 0 or reader->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet 
       if(reader->pt3 > 10)                                     continue ;
 
+      if(reader->pt1 < 20 or reader->pt2 < 15 or reader->jetpt1 < 30 or reader->jetpt2 < 30) continue ;
 
       TLorentzVector L_lead_lepton;
       L_lead_lepton.SetPtEtaPhiM (reader->pt1, reader->eta1, reader->phi1, 0.) ;     
@@ -317,7 +318,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       float RvarGen   =  L_lead_lepton.Pt () * L_trail_lepton.Pt () / (L_lead_gen_jet.Pt () * L_trail_gen_jet.Pt ()) ;
       
       analysisPlots.fillHisto (sampleName, "total", "dPhiLL",   fabs (L_lead_lepton.DeltaPhi (L_trail_lepton)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "dPhiLMet", fabs (L_lead_lepton.DeltaPhi (L_met)), 1.) ;
+      /*      analysisPlots.fillHisto (sampleName, "total", "dPhiLMet", fabs (L_lead_lepton.DeltaPhi (L_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "dPhiLPuppiMet", fabs (L_lead_lepton.DeltaPhi (L_puppi_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "dPhiLGenMet", fabs (L_lead_lepton.DeltaPhi (L_gen_met)), 1.) ;
 
@@ -384,12 +385,12 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "total", "ptj2",       L_trail_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "ptj_gen1",   L_lead_gen_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "ptj_gen2",   L_trail_gen_jet.Pt(), 1) ;
-      
+      */      
 
-      if(reader->pt1 < 20 or reader->pt2 < 15 or reader->jetpt1 < 30 or reader->jetpt2 < 30 or L_dijet.M() < 350 or fabs(L_lead_jet.Eta()-L_trail_jet.Eta()) < 2.5 ) continue ;
+      if(L_dijet.M() < 350 or fabs(L_lead_jet.Eta()-L_trail_jet.Eta()) < 2.5 ) continue ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "dPhiLL",   fabs (L_lead_lepton.DeltaPhi (L_trail_lepton)), 1.) ;
-      
+      /*
       analysisPlots.fillHisto (sampleName, "looseVBF", "dPhiLMet", fabs (L_lead_lepton.DeltaPhi (L_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "dPhiLPuppiMet", fabs (L_lead_lepton.DeltaPhi (L_puppi_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "dPhiLGenMet", fabs (L_lead_lepton.DeltaPhi (L_gen_met)), 1.) ;
@@ -452,11 +453,12 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "looseVBF", "ptj2",       L_trail_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "ptj_gen1",   L_lead_gen_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "ptj_gen2",   L_trail_gen_jet.Pt(), 1) ;
-      
+      */      
 
       if(L_dijet.M() < 800 or fabs(L_lead_jet.Eta()-L_trail_jet.Eta() ) < 4.0 ) continue ;
 
       analysisPlots.fillHisto (sampleName, "tightVBF", "dPhiLL",   fabs (L_lead_lepton.DeltaPhi (L_trail_lepton)), 1.) ;
+      /*
       analysisPlots.fillHisto (sampleName, "tightVBF", "dPhiLMet", fabs (L_lead_lepton.DeltaPhi (L_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "dPhiLPuppiMet", fabs (L_lead_lepton.DeltaPhi (L_puppi_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "dPhiLGenMet", fabs (L_lead_lepton.DeltaPhi (L_gen_met)), 1.) ;
@@ -519,7 +521,7 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "tightVBF", "ptj2",       L_trail_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "ptj_gen1",   L_lead_gen_jet.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "ptj_gen2",   L_trail_gen_jet.Pt(), 1) ;
-
+      */
     } // loop over events
 
   analysisPlots.setPoissonErrors() ;
