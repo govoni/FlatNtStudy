@@ -6,6 +6,25 @@
 #include "readTree.h"
 #include <vector>
 
+class leptonContainer {
+
+ public:
+
+  leptonContainer(TLorentzVector lepton4V, float charge, float iso):
+   lepton4V_(lepton4V),
+   charge_(charge),
+   iso_(iso){};  
+
+  leptonContainer(TLorentzVector lepton4V, float iso):
+   lepton4V_(lepton4V),
+   charge_(-999),
+   iso_(iso){};  
+
+   TLorentzVector lepton4V_ ;
+   float charge_ ;
+   float iso_ ;
+};
+
 double deltaPhi (double phi1, double phi2) ;
 
 bool closeToLeptons (float eta, float phi, std::vector<TLorentzVector> & TL_leptons, float R = 0.3) ;
@@ -25,6 +44,7 @@ void fillGenJetArray (float * pt, float * eta, float * phi,
  - translates the 4 sets of variables into 4 sets of arrays
 */
 void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, readTree & reader) ;
+void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, float* charge, readTree & reader) ;
 
 /*
  - copies leptons in the vector
@@ -33,6 +53,11 @@ void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, re
 */
 void dumpLeptons (std::vector<TLorentzVector> & TL_leptons, 
                   float * pt, float * eta, float * phi, float * iso, float isocut, float minptcut) ;
+void dumpLeptons (std::vector<TLorentzVector> & TL_leptons, 
+                    float * pt, float * eta, float * phi, float * iso, float* charge, float isocut, float minptcut) ;
+
+void dumpLeptons(std::vector<leptonContainer> & TL_leptons, float * pt, float * eta, float * phi, float * iso, float isocut, float minptcut) ;
+void dumpLeptons(std::vector<leptonContainer> & TL_leptons, float * pt, float * eta, float * phi, float * iso, float* charge, float isocut, float minptcut) ;
 
 /*
  - copies jets in the vector
@@ -41,6 +66,10 @@ void dumpLeptons (std::vector<TLorentzVector> & TL_leptons,
  - applies the btagging
 */
 void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector> & TL_leptons, 
+               float * pt, float * eta, float * phi, float * mass, float * btag, 
+               float minptcut, float btagcut, float lepminptcut, float deltaR, int Njets = 8) ;
+
+void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<leptonContainer> & TL_leptons, 
                float * pt, float * eta, float * phi, float * mass, float * btag, 
                float minptcut, float btagcut, float lepminptcut, float deltaR, int Njets = 8) ;
 

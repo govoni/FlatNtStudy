@@ -206,19 +206,46 @@ void plotter::printStructure ()
           cout << " + " << name << "\t" 
                << iSample->second.m_sampleContent[name].m_layerName << "\n" ;
           // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+           for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
                iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
                ++iHisto)
-            {
-              cout << "    + " << iHisto->first << "\t"
+             { 
+                 cout << "    + " << iHisto->first << "\t"
                    << iHisto->second->GetName () << "\t"
-                   << iHisto->second->GetEntries () << "\t"
+                   << iHisto->second->Integral () << "\t"
                    << iHisto->second->GetNbinsX () << "\n" ;
-            } // loop over histos
+            } // loop over histos	  
         } // loop over layers
     } // loop over samples
 }
 
+void plotter::printEventNumber(string layerName, string histoName){
+
+  // loop over samples
+  cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<<"<<endl;
+  cout<<"Event number for : Layer Name "<<layerName<<" Histo Name "<<histoName<<endl;
+
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      cout << iSample->first << "\t" ;
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          if(name != layerName) continue ;
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto){
+   
+           if(histoName != iHisto->first) continue ;
+	   cout << setprecision(5) <<" events "<< iHisto->second->Integral () << "\n";
+	  }
+	}
+    }
+}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 

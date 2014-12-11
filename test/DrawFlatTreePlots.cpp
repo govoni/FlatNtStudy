@@ -16,12 +16,24 @@
 
 using namespace std ;
 
-#define leptonIsoCut 0.4 
-#define minLeptonCutPt 10.
-#define minJetCutPt 30.
-#define bTagCutVeto 99
-#define matchingCone 0.3
+#define leptonIsoCut      0.4 
+#define leptonIsoLooseCut 0.7 
+#define minLeptonCutPt    10.
+#define minJetCutPt       30.
+#define bTagCutVeto       99
+#define matchingCone      0.3
 #define minLeptonCleaningPt 15.
+#define TrailingLeptonPtCut 15.
+#define LeadingLeptonPtCut  15.
+
+#define looseVBFDetaJJ 2.5
+#define looseVBFMJJ    500
+
+#define tightVBFDetaJJ 4.0
+#define tightVBFMJJ    800
+
+#define MZZMin 85
+#define MZZMax 98
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleName);
@@ -121,8 +133,11 @@ int main (int argc, char ** argv) {
   // EWK 126 sample 
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_EWK_WW2j_126 = new TChain (treeName.c_str()) ;  
-  for(size_t iEntry = 0; iEntry < InputEWKH126.size(); iEntry++)
+  for(size_t iEntry = 0; iEntry < InputEWKH126.size(); iEntry++){
     sample_EWK_WW2j_126->Add ((InputBaseDirectory+"/"+InputEWKH126.at(iEntry)+"/*1.root").c_str()) ;
+    sample_EWK_WW2j_126->Add ((InputBaseDirectory+"/"+InputEWKH126.at(iEntry)+"/*2.root").c_str()) ;
+    sample_EWK_WW2j_126->Add ((InputBaseDirectory+"/"+InputEWKH126.at(iEntry)+"/*3.root").c_str()) ;
+  }
 
   int totEvents_EWK_WW2j_126        = sample_EWK_WW2j_126->GetEntries();
   std::cout<<"totEvents_EWK_WW2j_126 "<<totEvents_EWK_WW2j_126<<std::endl;
@@ -137,33 +152,33 @@ int main (int argc, char ** argv) {
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#eta_{jj}^{gen}",    30, 0., 7.) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#eta_{jj}^{puppi}",  30, 0., 7.) ;
   
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}",       50, 0., 3000.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}^{gen}",    50, 0., 3000.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}^{puppi}",  50, 0., 3000.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{ll}",       50, 0., 1500.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}",          75, 0., 7000.) ;
+
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}^{gen}",    75, 0., 7000.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{jj}^{puppi}",  75, 0., 7000.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "M_{ll}",          50, 0., 1500.) ;
   
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{l1}",       50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{l2}",       50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met",        50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met^{puppi}",   50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met^{gen}",     50, 0., 600.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{l1}",       30, 0., 300.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{l2}",       30, 0., 300.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met",           30, 0., 300.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met^{puppi}",   30, 0., 300.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "met^{gen}",     30, 0., 300.) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j1}^{puppi}",  50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j2}^{puppi}", 50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j1}^{gen}",  50, 0., 600.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j2}^{gen}",  50, 0., 600.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j2}^{puppi}",  50, 0., 600.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j1}^{gen}",    50, 0., 600.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j2}^{gen}",    50, 0., 600.) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j1}",     50, 0., 600.) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "pt_{j2}",     50, 0., 600.) ;
 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}",     50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}^{puppi}",50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}^{gen}",  50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{L}",    50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R",         50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R^{puppi}", 50, 0., 1.) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R^{gen}",   50, 0., 1.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}",        50, 0., 2.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}^{puppi}",50, 0., 2.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{J}^{gen}",  50, 0., 2.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "Asim_{L}",    50, 0., 2.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R",         60, 0., 10.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R^{puppi}", 60, 0., 10.) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "R^{gen}",   60, 0., 10.) ;
 
-  /*
-  /*  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LMet}",  25, 0., 3.14) ;
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LMet}",  25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LMet^{puppi}}",  25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LMet^{gen}}",    25, 0., 3.14) ;
   
@@ -171,28 +186,33 @@ int main (int argc, char ** argv) {
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LLMet}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LLMet^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LLMet^{gen}}", 25, 0., 3.14) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{TLMet}", 25, 0., 3.14) ;
+ 
+ analysisPlots.addPlotToLayer  ("EWK_WW2j_126", "total", "#Delta#phi_{TLMet}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{TLMet^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{TLMet^{gen}}", 25, 0., 3.14) ;
+
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ}",    25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{gen}}",    25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{puppi}}", 25, 0., 3.14) ;
+
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJMet}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{gen}Met}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{puppi}Met}", 25, 0., 3.14) ;
+
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJMet^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{puppi}Met^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{gen}Met^{puppi}}", 25, 0., 3.14) ;
+
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJMet^{gen}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{puppi}Met^{gen}}", 25, 0., 3.14) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{puppi}Met^{gen}}", 25, 0., 3.14) ;
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{gen}Met}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{JJ^{gen}Met^{gen}}", 25, 0., 3.14) ;
+
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LJMet}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LJ^{puppi}Met}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LJMet^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{LJ^{puppi}Met^{puppi}}", 25, 0., 3.14) ;
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "#Delta#phi_{TJMet}", 25, 0., 3.14) ;
-  */
+
   analysisPlots.copyLayerInSample ("EWK_WW2j_126","looseVBF","total");  // copy this layer in another one
   analysisPlots.copyLayerInSample ("EWK_WW2j_126","tightVBF","total");  // copy this layer in another one
   
@@ -202,8 +222,11 @@ int main (int argc, char ** argv) {
   // ---- ---- ---- ---- ---- ---- ----
 
   TChain * sample_EWK_WW2j_noH = new TChain (treeName.c_str()) ;
-  for(size_t iEntry = 0; iEntry < InputEWKnoH.size(); iEntry++)
+  for(size_t iEntry = 0; iEntry < InputEWKnoH.size(); iEntry++){
     sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*1.root").c_str()) ;
+    sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*2.root").c_str()) ;
+    sample_EWK_WW2j_noH->Add ((InputBaseDirectory+"/"+InputEWKnoH.at(iEntry)+"/*3.root").c_str()) ;
+  }
 
   int totEvents_EWK_WW2j_noH        = sample_EWK_WW2j_noH->GetEntries();
   std::cout<<"totEvents_EWK_WW2j_noH "<<totEvents_EWK_WW2j_noH<<std::endl;
@@ -217,8 +240,11 @@ int main (int argc, char ** argv) {
   // ---- ---- ---- ---- ---- ---- ----
 
   TChain * sample_QCD_WW2j = new TChain (treeName.c_str()) ;
-  for(size_t iEntry = 0; iEntry < InputVVQCD.size(); iEntry++)
+  for(size_t iEntry = 0; iEntry < InputVVQCD.size(); iEntry++){
     sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*1.root").c_str()) ;
+    sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*2.root").c_str()) ;
+    sample_QCD_WW2j->Add ((InputBaseDirectory+"/"+InputVVQCD.at(iEntry)+"/*3.root").c_str()) ;
+  }
 
   int totEvents_QCD_WW2j = sample_QCD_WW2j->GetEntries();
   std::cout<<"totEvents_QCD_WW2j "<<totEvents_QCD_WW2j<<std::endl;
@@ -233,8 +259,11 @@ int main (int argc, char ** argv) {
   // WZ H126
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_WZ_EWK_H126 = new TChain (treeName.c_str()) ;
-  for(size_t iEntry = 0; iEntry < InputWZEWKH126.size(); iEntry++)
+  for(size_t iEntry = 0; iEntry < InputWZEWKH126.size(); iEntry++){
     sample_WZ_EWK_H126->Add ((InputBaseDirectory+"/"+InputWZEWKH126.at(iEntry)+"/*1.root").c_str()) ;
+    sample_WZ_EWK_H126->Add ((InputBaseDirectory+"/"+InputWZEWKH126.at(iEntry)+"/*2.root").c_str()) ;
+    sample_WZ_EWK_H126->Add ((InputBaseDirectory+"/"+InputWZEWKH126.at(iEntry)+"/*3.root").c_str()) ;
+  }
 
   int totEvents_WZ_EWK_H126        = sample_WZ_EWK_H126->GetEntries();
   std::cout<<"totEvents_WZ_EWK_H126 "<<totEvents_WZ_EWK_H126<<std::endl;
@@ -248,8 +277,11 @@ int main (int argc, char ** argv) {
   // WZ QCD
   // ---- ---- ---- ---- ---- ---- ----
   TChain * sample_WZ_QCD = new TChain (treeName.c_str()) ;
-  for(size_t iEntry = 0; iEntry < InputWZQCD.size(); iEntry++)
+  for(size_t iEntry = 0; iEntry < InputWZQCD.size(); iEntry++){
     sample_WZ_QCD->Add ((InputBaseDirectory+"/"+InputWZQCD.at(iEntry)+"/*1.root").c_str()) ;
+    sample_WZ_QCD->Add ((InputBaseDirectory+"/"+InputWZQCD.at(iEntry)+"/*2.root").c_str()) ;
+    sample_WZ_QCD->Add ((InputBaseDirectory+"/"+InputWZQCD.at(iEntry)+"/*3.root").c_str()) ;
+  }
 
   int totEvents_WZ_QCD = sample_WZ_QCD->GetEntries();
   std::cout<<"totEvents_WZ_QCD "<<totEvents_WZ_QCD<<std::endl;
@@ -265,6 +297,10 @@ int main (int argc, char ** argv) {
   analysisPlots.plotRelativeExcessFullLayer ("total", outputPlotDirectory) ;
   analysisPlots.plotRelativeExcessFullLayer ("looseVBF", outputPlotDirectory) ;
   analysisPlots.plotRelativeExcessFullLayer ("tightVBF", outputPlotDirectory) ;
+
+  analysisPlots.printEventNumber("total","#Delta#phi_{LL}");
+  analysisPlots.printEventNumber("looseVBF","#Delta#phi_{LL}");
+  analysisPlots.printEventNumber("tightVBF","#Delta#phi_{LL}");
 
 }  
 
@@ -288,13 +324,57 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       float LEP_eta[4] ;
       float LEP_phi[4] ;
       float LEP_iso[4] ;
-      fillRecoLeptonsArray (LEP_pt, LEP_eta, LEP_phi, LEP_iso, *reader) ;
+      float LEP_charge[4] ;
+      fillRecoLeptonsArray (LEP_pt, LEP_eta, LEP_phi, LEP_iso, LEP_charge, *reader) ; // fill 4 leptons info
 
-      vector<TLorentzVector> TL_leptons ;
-      dumpLeptons (TL_leptons, LEP_pt, LEP_eta, LEP_phi, LEP_iso, leptonIsoCut, minLeptonCutPt) ;
+      // no cut on isolation but only on lepton pt --> Z mass veto
+      vector<leptonContainer> TL_leptons_noIsoCut; // in order to embed in one object all the info
+      dumpLeptons (TL_leptons_noIsoCut, LEP_pt, LEP_eta, LEP_phi, LEP_iso, LEP_charge, 9999., minLeptonCutPt) ;
+    
+      bool isZMassVeto = false;
+      for(size_t iLept = 0; iLept < TL_leptons_noIsoCut.size() ; iLept++){
+	for(size_t jLept = 0; jLept < TL_leptons_noIsoCut.size() ; jLept++){
+	  if((TL_leptons_noIsoCut.at(iLept).lepton4V_ + TL_leptons_noIsoCut.at(jLept).lepton4V_).M() > MZZMin and 
+             (TL_leptons_noIsoCut.at(iLept).lepton4V_ + TL_leptons_noIsoCut.at(jLept).lepton4V_).M() < MZZMax and
+              TL_leptons_noIsoCut.at(iLept).charge_*TL_leptons_noIsoCut.at(jLept).charge_ < 0)
+            isZMassVeto = true; 
+        }
+      }
+
+      if(isZMassVeto) continue ;
+
+      // identify tight leptons and require exactly 2
+      vector<leptonContainer> TL_leptons ;
+      dumpLeptons (TL_leptons, LEP_pt, LEP_eta, LEP_phi, LEP_iso, LEP_charge, leptonIsoCut, minLeptonCutPt) ;
       if (TL_leptons.size () != 2) continue ;
-      if(TL_leptons.at(0).Pt() < 20 or TL_leptons.at(1).Pt() < 15) continue ;
+      if (TL_leptons.at(0).lepton4V_.Pt() < LeadingLeptonPtCut or TL_leptons.at(1).lepton4V_.Pt() < TrailingLeptonPtCut) continue ;
 
+      // identify loose leptons
+      vector<leptonContainer> TL_leptons_loose ;
+      dumpLeptons (TL_leptons_loose, LEP_pt, LEP_eta, LEP_phi, LEP_iso, LEP_charge, leptonIsoLooseCut, minLeptonCutPt) ;
+
+      int extraLepton = 0; // count the extra lepton number     
+      for(size_t iLepton = 0; iLepton < TL_leptons_loose.size() ; iLepton++){
+        if(TL_leptons_loose.at(iLepton).lepton4V_ == TL_leptons.at(0).lepton4V_ or TL_leptons_loose.at(iLepton).lepton4V_ == TL_leptons.at(1).lepton4V_) continue; // skip tight ones
+        extraLepton++; 
+      }
+ 
+      if(extraLepton > 0) continue; // extra lepton cut
+
+      // charge cut
+
+      int sameSign = 1;
+      int nLeptons = 0;
+      TString Name ; Name = sampleName.c_str();
+      for(size_t iLep = 0; iLep < TL_leptons.size(); iLep++){
+	if(abs(TL_leptons.at(iLep).charge_) !=1) continue;
+        sameSign *= TL_leptons.at(iLep).charge_;
+        nLeptons++;        
+      }
+
+      if(nLeptons!=2){ std::cout<<nLeptons<<std::endl; std::cerr<<" problem in the charge evaluation "<<std::endl;}
+      if(sameSign < 0) continue ;
+    
       // read jets, apply isolation and veto events with additional leptons                                                                                                                
       // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                                  
       // FIXME jets cleaning                                                                                                                                                               
@@ -338,8 +418,8 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       dumpJets (TL_jets_gen, TL_leptons, REJ_pt_gen, REJ_eta_gen, REJ_phi_gen, REJ_mass_gen, REJ_btag_gen, minJetCutPt, bTagCutVeto,  minLeptonCleaningPt, matchingCone,4) ;
 
       if (TL_jets_gen.size () < 2) continue ;
-      /*
-      TLorentzVector L_dilepton = TL_leptons.at(0) + TL_leptons.at(1) ;
+
+      TLorentzVector L_dilepton = TL_leptons.at(0).lepton4V_ + TL_leptons.at(1).lepton4V_ ;
 
       TLorentzVector L_met;
       L_met.SetPtEtaPhiM (reader->pfmet,0.,reader->pfmetphi, 0.) ;
@@ -353,16 +433,16 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       TLorentzVector L_dijet_puppi = TL_jets_puppi.at(0) + TL_jets_puppi.at(1) ;
    
       float asimJ = (TL_jets.at(0).Pt()-TL_jets.at(1).Pt())/(TL_jets.at(0).Pt()+TL_jets.at(1).Pt()) ;
-      float asimL = (TL_leptons.at(0).Pt()-TL_leptons.at(1).Pt())/(TL_leptons.at(0).Pt ()+TL_leptons.at(1).Pt()) ;
-      float Rvar  = (TL_leptons.at(0).Pt()*TL_leptons.at(1).Pt())/(TL_jets.at(0).Pt()*TL_jets.at(1).Pt()) ;
+      float asimL = (TL_leptons.at(0).lepton4V_.Pt()-TL_leptons.at(1).lepton4V_.Pt())/(TL_leptons.at(0).lepton4V_.Pt()+TL_leptons.at(1).lepton4V_.Pt()) ;
+      float Rvar  = (TL_leptons.at(0).lepton4V_.Pt()*TL_leptons.at(1).lepton4V_.Pt())/(TL_jets.at(0).Pt()*TL_jets.at(1).Pt()) ;
 
-      float asimPuppiJ =  (TL_jets_puppi.at(0).Pt () - TL_jets_puppi.at(1).Pt ()) / (TL_jets_puppi.at(0).Pt () + TL_jets_puppi.at(1).Pt ()) ;
-      float RvarPuppi  =  TL_leptons.at(0).Pt() * TL_leptons.at(1).Pt () / (TL_jets_puppi.at(0).Pt () * TL_jets_puppi.at(1).Pt ()) ;
+      float asimPuppiJ =  (TL_jets_puppi.at(0).Pt() - TL_jets_puppi.at(1).Pt()) / (TL_jets_puppi.at(0).Pt() + TL_jets_puppi.at(1).Pt()) ;
+      float RvarPuppi  =  (TL_leptons.at(0).lepton4V_.Pt() * TL_leptons.at(1).lepton4V_.Pt()) / (TL_jets_puppi.at(0).Pt() * TL_jets_puppi.at(1).Pt()) ;
 
-      float asimGenJ  = (TL_jets_gen.at(0).Pt () - TL_jets_gen.at(1).Pt ()) / (TL_jets_gen.at(0).Pt () + TL_jets_gen.at(1).Pt ()) ;
-      float RvarGen   =  TL_leptons.at(0).Pt () * TL_leptons.at(1).Pt () / (TL_jets_gen.at(0).Pt () * TL_jets_gen.at(1).Pt ()) ;
+      float asimGenJ  = (TL_jets_gen.at(0).Pt() - TL_jets_gen.at(1).Pt()) / (TL_jets_gen.at(0).Pt() + TL_jets_gen.at(1).Pt()) ;
+      float RvarGen   = (TL_leptons.at(0).lepton4V_.Pt() * TL_leptons.at(1).lepton4V_.Pt()) / (TL_jets_gen.at(0).Pt() * TL_jets_gen.at(1).Pt()) ;
       
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).DeltaPhi (TL_leptons.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (TL_leptons.at(1).lepton4V_)), 1.) ;
   
       analysisPlots.fillHisto (sampleName, "total", "M_{jj}",           L_dijet.M(), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "M_{jj}^{gen}",     L_dijet_gen.M(), 1.) ;
@@ -384,8 +464,8 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "total", "Asim_{J}^{gen}", asimGenJ, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "R^{gen}",        RvarGen, 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "total", "pt_{l1}",      TL_leptons.at(0).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "total", "pt_{l2}",      TL_leptons.at(1).Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "total", "pt_{l1}",      TL_leptons.at(0).lepton4V_.Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "total", "pt_{l2}",      TL_leptons.at(1).lepton4V_.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "met",          L_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "met^{gen}",    L_gen_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "met^{puppi}",  L_puppi_met.Pt(), 1) ;
@@ -397,22 +477,20 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "total", "pt_{j1}^{gen}",   TL_jets_gen.at(0).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "total", "pt_{j2}^{gen}",   TL_jets_gen.at(1).Pt(), 1) ;
    
-      /*
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet}", fabs (TL_leptons.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet^{puppi}}", fabs (TL_leptons.at(0).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet^{gen}}", fabs (TL_leptons.at(0).DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet^{puppi}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LMet^{gen}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
 
-      /*
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LLMet}", fabs (L_dilepton.DeltaPhi (L_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LLMet^{puppi}}", fabs (L_dilepton.DeltaPhi (L_puppi_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LLMet^{gen}}", fabs (L_dilepton.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet}", fabs (TL_leptons.at(1).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet^{puppi}}", fabs (TL_leptons.at(1).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet^{gen}}", fabs (TL_leptons.at(1).DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet^{puppi}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TLMet^{gen}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ}",         fabs (TL_leptons.at(0).DeltaPhi (TL_jets.at(1))), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1)t)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ}",         fabs (TL_jets.at(0).DeltaPhi (TL_jets.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1))), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ^{gen}}",   fabs (TL_jets_gen.at(0).DeltaPhi (TL_jets_gen.at(1))), 1.) ;
 
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJMet}",          fabs (L_dijet.DeltaPhi (L_met)), 1.) ;
@@ -427,98 +505,101 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ^{gen}Met^{gen}}",   fabs (L_dijet_gen.DeltaPhi (L_gen_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{JJ^{puppi}Met^{gen}}", fabs (L_dijet_puppi.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJMet}",      fabs (TL_leptons.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJMet^{puppi}}", fabs (L_lead_jet.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJMet}",      fabs (TL_jets.at(0).DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJMet^{puppi}}", fabs (TL_jets.at(0).DeltaPhi (L_puppi_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJ^{puppi}Met}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_met)), 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{LJ^{puppi}Met^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_puppi_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TJMet}",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
-      */
-      /*
-      if(L_dijet.M() < 350 or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta()) < 2.5 ) continue ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LL}",         fabs (TL_leptons.at(0).DeltaPhi (TL_leptons.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "total", "#Delta#phi_{TJMet}",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
+
+      if(L_dijet.M() < looseVBFMJJ or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta()) < looseVBFDetaJJ ) continue ;
+
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (TL_leptons.at(1).lepton4V_)), 1.) ;
+  
+      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}",           L_dijet.M(), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}^{gen}",     L_dijet_gen.M(), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}^{puppi}",   L_dijet_puppi.M(), 1.) ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#eta_{jj}",         fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta()), 1.);
       analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#eta_{jj}^{gen}",   fabs(TL_jets_gen.at(0).Eta()-TL_jets_gen.at(1).Eta()), 1.);
       analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#eta_{jj}^{puppi}", fabs(TL_jets_puppi.at(0).Eta()-TL_jets_puppi.at(1).Eta()), 1.);
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}",           L_dijet.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}^{gen}",     L_dijet_gen.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{jj}^{puppi}",   L_dijet_puppi.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{ll}",           L_dilepton.M(), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "M_{ll}",        L_dilepton.M(), 1.) ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "Asim_{J}", asimJ, 1.) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "Asim_{L}", asimL, 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "R", Rvar, 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "R",        Rvar, 1.) ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "Asim_{J}^{puppi}", asimPuppiJ, 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "R^{puppi}", RvarPuppi, 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "R^{puppi}",        RvarPuppi, 1.) ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "Asim_{J}^{gen}", asimGenJ, 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "R^{gen}", RvarGen, 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "R^{gen}",        RvarGen, 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{l1}",      TL_leptons.at(0).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{l2}",      TL_leptons.at(1).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "met",       L_met.Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{l1}",      TL_leptons.at(0).lepton4V_.Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{l2}",      TL_leptons.at(1).lepton4V_.Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "met",          L_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "met^{gen}",    L_gen_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "met^{puppi}",  L_puppi_met.Pt(), 1) ;
 
       analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j1}^{puppi}", TL_jets_puppi.at(0).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j2}^{puppi}", TL_jets_puppi.at(1).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j1}",       TL_jets.at(0).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j2}",       TL_jets.at(1).Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j1}",         TL_jets.at(0).Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j2}",         TL_jets.at(1).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j1}^{gen}",   TL_jets_gen.at(0).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "looseVBF", "pt_{j2}^{gen}",   TL_jets_gen.at(1).Pt(), 1) ;
-        /*
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LMet", fabs (TL_leptons.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LPuppiMet", fabs (TL_leptons.at(0).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LGenMet", fabs (TL_leptons.at(0).DeltaPhi (L_gen_met)), 1.) ;
+   
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LMet}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LMet^{puppi}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LMet^{gen}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLMet", fabs (L_dilepton.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLPuppiMet", fabs (L_dilepton.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLGenMet", fabs (L_dilepton.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLMet}", fabs (L_dilepton.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLMet^{puppi}}", fabs (L_dilepton.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LLMet^{gen}}", fabs (L_dilepton.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLMet", fabs (TL_leptons.at(1).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLPuppiMet", fabs (TL_leptons.at(1).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLGenMet", fabs (TL_leptons.at(1).DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLMet}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLMet^{puppi}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TLMet^{gen}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ",      fabs (L_lead_jet.DeltaPhi (TL_jets.at(1))), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{PuppiJJ", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1)t)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{GenJJ",   fabs (TL_jets_gen.at(0).DeltaPhi (TL_jets_gen.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ}",         fabs (TL_jets.at(0).DeltaPhi (TL_jets.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{gen}}",   fabs (TL_jets_gen.at(0).DeltaPhi (TL_jets_gen.at(1))), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJMet",      fabs (L_dijet.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{GenJJMet",      fabs (L_dijet_gen.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{PuppiJJMet",      fabs (L_dijet_puppi.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJMet}",          fabs (L_dijet.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{gen}Met}",    fabs (L_dijet_gen.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{puppi}Met}",  fabs (L_dijet_puppi.DeltaPhi (L_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJPuppiMet",      fabs (L_dijet.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{GenJJPuppiMet",   fabs (L_dijet_gen.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{PuppiJJPuppiMet", fabs (L_dijet_puppi.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJMet^{puppi}}",        fabs (L_dijet.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{gen}Met^{puppi}}",  fabs (L_dijet_gen.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{puppi}Met^{puppi}}", fabs (L_dijet_puppi.DeltaPhi (L_puppi_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJGenMet",      fabs (L_dijet.DeltaPhi (L_gen_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{GenJJGenMet",   fabs (L_dijet_gen.DeltaPhi (L_gen_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{PuppiJJGenMet", fabs (L_dijet_puppi.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJMet^{gen}}",         fabs (L_dijet.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{gen}Met^{gen}}",   fabs (L_dijet_gen.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{JJ^{puppi}Met^{gen}}", fabs (L_dijet_puppi.DeltaPhi (L_gen_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJMet",      fabs (L_lead_jet.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJPuppiMet", fabs (L_lead_jet.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LPuppiJMet", fabs (TL_jets_puppi.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LPuppiJPuppiMet", fabs (TL_jets_puppi.at(0).DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJMet}",      fabs (TL_jets.at(0).DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJMet^{puppi}}", fabs (TL_jets.at(0).DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJ^{puppi}Met}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{LJ^{puppi}Met^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_puppi_met)), 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TJMet",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
-	*/
-      /*      
-      if(L_dijet.M() < 800 or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta() ) < 4.0 ) continue ;
 
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).DeltaPhi (TL_leptons.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "looseVBF", "#Delta#phi_{TJMet}",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
+
+
+      if(L_dijet.M() < tightVBFMJJ or fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta() ) < tightVBFDetaJJ ) continue ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LL}",   fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (TL_leptons.at(1).lepton4V_)), 1.) ;
+  
+      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}",           L_dijet.M(), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}^{gen}",     L_dijet_gen.M(), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}^{puppi}",   L_dijet_puppi.M(), 1.) ;
 
       analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#eta_{jj}",         fabs(TL_jets.at(0).Eta()-TL_jets.at(1).Eta()), 1.);
       analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#eta_{jj}^{gen}",   fabs(TL_jets_gen.at(0).Eta()-TL_jets_gen.at(1).Eta()), 1.);
       analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#eta_{jj}^{puppi}", fabs(TL_jets_puppi.at(0).Eta()-TL_jets_puppi.at(1).Eta()), 1.);
-      
-      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}",           L_dijet.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}^{gen}",     L_dijet_gen.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{jj}^{puppi}",   L_dijet_puppi.M(), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{ll}",           L_dilepton.M(), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "M_{ll}",        L_dilepton.M(), 1.) ;
 
       analysisPlots.fillHisto (sampleName, "tightVBF", "Asim_{J}", asimJ, 1.) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "Asim_{L}", asimL, 1.) ;
@@ -530,8 +611,8 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "tightVBF", "Asim_{J}^{gen}", asimGenJ, 1.) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "R^{gen}",        RvarGen, 1.) ;
 
-      analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{l1}",      TL_leptons.at(0).Pt(), 1) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{l2}",      TL_leptons.at(1).Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{l1}",      TL_leptons.at(0).lepton4V_.Pt(), 1) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{l2}",      TL_leptons.at(1).lepton4V_.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "met",          L_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "met^{gen}",    L_gen_met.Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "met^{puppi}",  L_puppi_met.Pt(), 1) ;
@@ -542,47 +623,49 @@ void fillHistos (plotter & analysisPlots, readTree* reader, const string sampleN
       analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{j2}",         TL_jets.at(1).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{j1}^{gen}",   TL_jets_gen.at(0).Pt(), 1) ;
       analysisPlots.fillHisto (sampleName, "tightVBF", "pt_{j2}^{gen}",   TL_jets_gen.at(1).Pt(), 1) ;
-      /*
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LMet", fabs (TL_leptons.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LPuppiMet", fabs (TL_leptons.at(0).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LGenMet", fabs (TL_leptons.at(0).DeltaPhi (L_gen_met)), 1.) ;
+   
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LMet}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LMet^{puppi}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LMet^{gen}}", fabs (TL_leptons.at(0).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLMet}", fabs (L_dilepton.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLMet^{puppi}}", fabs (L_dilepton.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLMet^{gen}}", fabs (L_dilepton.DeltaPhi (L_gen_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLMet}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLMet^{puppi}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLMet^{gen}}", fabs (TL_leptons.at(1).lepton4V_.DeltaPhi (L_gen_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ}",         fabs (TL_jets.at(0).DeltaPhi (TL_jets.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1))), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{gen}}",   fabs (TL_jets_gen.at(0).DeltaPhi (TL_jets_gen.at(1))), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJMet}",          fabs (L_dijet.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{gen}Met}",    fabs (L_dijet_gen.DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{puppi}Met}",  fabs (L_dijet_puppi.DeltaPhi (L_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJMet^{puppi}}",        fabs (L_dijet.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{gen}Met^{puppi}}",  fabs (L_dijet_gen.DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{puppi}Met^{puppi}}", fabs (L_dijet_puppi.DeltaPhi (L_puppi_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJMet^{gen}}",         fabs (L_dijet.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{gen}Met^{gen}}",   fabs (L_dijet_gen.DeltaPhi (L_gen_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ^{puppi}Met^{gen}}", fabs (L_dijet_puppi.DeltaPhi (L_gen_met)), 1.) ;
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJMet}",      fabs (TL_jets.at(0).DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJMet^{puppi}}", fabs (TL_jets.at(0).DeltaPhi (L_puppi_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJ^{puppi}Met}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_met)), 1.) ;
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJ^{puppi}Met^{puppi}}", fabs (TL_jets_puppi.at(0).DeltaPhi (L_puppi_met)), 1.) ;
+
+
+      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TJMet}",      fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
+
       
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLMet", fabs (L_dilepton.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLPuppiMet", fabs (L_dilepton.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LLGenMet", fabs (L_dilepton.DeltaPhi (L_gen_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLMet", fabs (TL_leptons.at(1).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLPuppiMet", fabs (TL_leptons.at(1).DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TLGenMet", fabs (TL_leptons.at(1).DeltaPhi (L_gen_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJ",      fabs (L_lead_jet.DeltaPhi (TL_jets.at(1))), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{PuppiJJ", fabs (TL_jets_puppi.at(0).DeltaPhi (TL_jets_puppi.at(1)t)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{GenJJ",   fabs (TL_jets_gen.at(0).DeltaPhi (TL_jets_gen.at(1))), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJMet",      fabs (L_dijet.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{GenJJMet",      fabs (L_dijet_gen.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{PuppiJJMet",      fabs (L_dijet_puppi.DeltaPhi (L_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJPuppiMet",      fabs (L_dijet.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{GenJJPuppiMet",   fabs (L_dijet_gen.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{PuppiJJPuppiMet", fabs (L_dijet_puppi.DeltaPhi (L_puppi_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{JJGenMet",      fabs (L_dijet.DeltaPhi (L_gen_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{GenJJGenMet",   fabs (L_dijet_gen.DeltaPhi (L_gen_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{PuppiJJGenMet", fabs (L_dijet_puppi.DeltaPhi (L_gen_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJMet",      fabs (L_lead_jet.DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LJPuppiMet", fabs (L_lead_jet.DeltaPhi (L_puppi_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LPuppiJMet", fabs (TL_jets_puppi.at(0).DeltaPhi (L_met)), 1.) ;
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{LPuppiJPuppiMet", fabs (TL_jets_puppi.at(0).DeltaPhi (L_puppi_met)), 1.) ;
-
-      analysisPlots.fillHisto (sampleName, "tightVBF", "#Delta#phi_{TJMet",  fabs (TL_jets.at(1).DeltaPhi (L_met)), 1.) ;
-      */
   }
   // loop over events
 
   analysisPlots.setPoissonErrors() ;
+
   return ;
 }
 

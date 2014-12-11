@@ -233,6 +233,32 @@ void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, re
     return ;
   }
 
+void fillRecoLeptonsArray (float * pt, float * eta, float * phi, float * iso, float* charge, readTree & reader)
+  {
+    int i = -1 ;
+    pt[++i] = reader.pt1 ;
+    eta[i]  = reader.eta1 ;
+    phi[i]  = reader.phi1 ;
+    iso[i]  = reader.isoRhoCorr1 ;
+    charge[i]  = reader.ch1 ;
+    pt[++i] = reader.pt2 ;
+    eta[i]  = reader.eta2 ;
+    phi[i]  = reader.phi2 ;
+    iso[i]  = reader.isoRhoCorr2 ;
+    charge[i]  = reader.ch2 ;
+    pt[++i] = reader.pt3 ;
+    eta[i]  = reader.eta3 ;
+    phi[i]  = reader.phi3 ;
+    iso[i]  = reader.isoRhoCorr3 ;
+    charge[i]  = reader.ch3 ;
+    pt[++i] = reader.pt4 ;
+    eta[i]  = reader.eta4 ;
+    phi[i]  = reader.phi4 ;
+    iso[i]  = reader.isoRhoCorr4 ;
+    charge[i]  = reader.ch4 ;
+    return ;
+  }
+
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
@@ -250,6 +276,48 @@ void dumpLeptons (vector<TLorentzVector> & TL_leptons,
       }
     return ;
   }
+
+void dumpLeptons (vector<TLorentzVector> & TL_leptons, 
+                  float * pt, float * eta, float * phi, float * iso, float* charge, float isocut, float minptcut)
+  {
+    for (int i = 0 ; i < 4 ; ++i)
+      {
+        if (iso[i] > isocut)  { charge[i] = -99; continue ;}
+        if (pt[i] < minptcut) { charge[i] = -99; continue ;}
+        TLorentzVector L_lepton ;
+        L_lepton.SetPtEtaPhiM (pt[i], eta[i], phi[i], 0.) ;
+        TL_leptons.push_back (L_lepton) ;
+      }
+    return ;
+  }
+
+
+void dumpLeptons(std::vector<leptonContainer> & TL_leptons, float * pt, float * eta, float * phi, float * iso, float isocut, float minptcut){
+    for (int i = 0 ; i < 4 ; ++i)
+      {
+        if (iso[i] > isocut)  continue ;
+        if (pt[i] < minptcut) continue ;
+        TLorentzVector L_lepton ;
+        L_lepton.SetPtEtaPhiM (pt[i], eta[i], phi[i], 0.) ;
+        leptonContainer lepton(L_lepton,iso[i]);
+        TL_leptons.push_back (lepton) ;
+      }
+    return ;
+}
+
+
+void dumpLeptons(std::vector<leptonContainer> & TL_leptons, float * pt, float * eta, float * phi, float * iso, float* charge, float isocut, float minptcut){
+    for (int i = 0 ; i < 4 ; ++i)
+      {
+        if (iso[i] > isocut)  continue ;
+        if (pt[i] < minptcut) continue ;
+        TLorentzVector L_lepton ;
+        L_lepton.SetPtEtaPhiM (pt[i], eta[i], phi[i], 0.) ;
+        leptonContainer lepton(L_lepton,charge[i],iso[i]);
+        TL_leptons.push_back (lepton) ;
+      }
+    return ;
+}
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
@@ -270,6 +338,33 @@ void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<TLorentzVector
           {
             if (TL_leptons.at (iLep).Pt () < lepminptcut) continue ;
             if (TL_leptons.at (iLep).DeltaR (L_jet) < deltaR) 
+              {
+                discard = true ;
+                break ;
+              }
+          }
+        if (discard) continue ;
+        TL_jets.push_back (L_jet) ;        
+      }
+    return ;
+  }
+               
+
+void dumpJets (std::vector<TLorentzVector> & TL_jets, std::vector<leptonContainer> & TL_leptons, 
+               float * pt, float * eta, float * phi, float * mass, float * btag, 
+               float minptcut, float btagcut, float lepminptcut, float deltaR, int Njets)
+  {
+    for (int iJet = 0 ; iJet < Njets ; ++iJet)
+      {
+        if (pt[iJet] < minptcut) continue ;
+        if (btag[iJet] > btagcut) continue ;
+        TLorentzVector L_jet ;
+        L_jet.SetPtEtaPhiM (pt[iJet], eta[iJet], phi[iJet], mass[iJet]) ;
+        bool discard = false ;
+        for (unsigned int iLep = 0 ; iLep < TL_leptons.size () ; ++iLep)
+          {
+            if (TL_leptons.at (iLep).lepton4V_.Pt () < lepminptcut) continue ;
+            if (TL_leptons.at (iLep).lepton4V_.DeltaR (L_jet) < deltaR) 
               {
                 discard = true ;
                 break ;

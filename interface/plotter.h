@@ -108,6 +108,7 @@ class plotter { // generic plotter class
   void copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
   // print structure
   void printStructure () ;
+  void printEventNumber(string layerName, string histoName);
   // init legend
   TLegend initLegend (int sampleNum) ;
   // fill histo
