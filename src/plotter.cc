@@ -124,12 +124,13 @@ void plotter::addLayerToSample (string sampleName, string layerName)
 
 // add a plot to a layer of a given sample
 void plotter::addPlotToLayer (string sampleName, string layerName, 
-                              string plotName, int nBins, float xMin, float xMax)
+                              string plotName, int nBins, float xMin, float xMax, string labelName)
 {
   string h_name = sampleName + "_" + layerName + "_" + plotName ;
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
-//  dummy->Sumw2 () ;
-  m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
+  dummy->GetXaxis()->SetTitle(labelName.c_str()); 
+ //  dummy->Sumw2 () ;
+ m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
 }
 
 
@@ -400,10 +401,19 @@ void plotter::plotFullLayer (string layerName)
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto)
     {
+      if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str (), "#sigma #times lumi", 1, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str (), "#sigma #times lumi", 0, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 0, outFolderName) ;
+      }
+      else {
+      plotSingleLayer (layerName, iHisto->first.c_str (), 
+                       iHisto->first.c_str(), "#sigma #times lumi", 1, outFolderName) ;
+      plotSingleLayer (layerName, iHisto->first.c_str (), 
+                       iHisto->first.c_str(), "#sigma #times lumi", 0, outFolderName) ;
+
+      }
     }   
   
   return ;
