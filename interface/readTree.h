@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Dec 10 22:31:03 2014 by ROOT version 6.02/02
+// Wed Dec 17 12:35:36 2014 by ROOT version 5.34/07
 // from TTree easyDelphes/easyDelphes
-// found on file: eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v2/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root
+// found on file: eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v3/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root
 //////////////////////////////////////////////////////////
 
 #ifndef readTree_h
@@ -13,13 +13,19 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
+#include <TObject.h>
+#include <TVector3.h>
+#include <TLorentzVector.h>
+
 
 class readTree {
 public :
+
+   // Fixed size dimensions of array or collections stored in the TTree if any.
+   const static Int_t kMaxTrackJet_V4 = 34;
+
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
-
-// Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
    Float_t         leptonLHEpt1;
@@ -130,72 +136,17 @@ public :
    Float_t         jetGenAreaY4;
    Float_t         jetGenAreaZ4;
    Float_t         jetGenAreaT4;
+   Int_t           TrackJet_V4_;
+   UInt_t          TrackJet_V4_fUniqueID[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   UInt_t          TrackJet_V4_fBits[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   UInt_t          TrackJet_V4_fP_fUniqueID[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   UInt_t          TrackJet_V4_fP_fBits[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   Double_t        TrackJet_V4_fP_fX[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   Double_t        TrackJet_V4_fP_fY[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   Double_t        TrackJet_V4_fP_fZ[kMaxTrackJet_V4];   //[TrackJet_V4_]
+   Double_t        TrackJet_V4_fE[kMaxTrackJet_V4];   //[TrackJet_V4_]
    Float_t         HtSoft;
    Float_t         nSoftJets;
-   Float_t         jetTrackpt1;
-   Float_t         jetTracketa1;
-   Float_t         jetTrackphi1;
-   Float_t         jetTrackm1;
-   Float_t         jetTrackAreaX1;
-   Float_t         jetTrackAreaY1;
-   Float_t         jetTrackAreaZ1;
-   Float_t         jetTrackAreaT1;
-   Float_t         jetTrackpt2;
-   Float_t         jetTracketa2;
-   Float_t         jetTrackphi2;
-   Float_t         jetTrackm2;
-   Float_t         jetTrackAreaX2;
-   Float_t         jetTrackAreaY2;
-   Float_t         jetTrackAreaZ2;
-   Float_t         jetTrackAreaT2;
-   Float_t         jetTrackpt3;
-   Float_t         jetTracketa3;
-   Float_t         jetTrackphi3;
-   Float_t         jetTrackm3;
-   Float_t         jetTrackAreaX3;
-   Float_t         jetTrackAreaY3;
-   Float_t         jetTrackAreaZ3;
-   Float_t         jetTrackAreaT3;
-   Float_t         jetTrackpt4;
-   Float_t         jetTracketa4;
-   Float_t         jetTrackphi4;
-   Float_t         jetTrackm4;
-   Float_t         jetTrackAreaX4;
-   Float_t         jetTrackAreaY4;
-   Float_t         jetTrackAreaZ4;
-   Float_t         jetTrackAreaT4;
-   Float_t         jetTrackpt5;
-   Float_t         jetTracketa5;
-   Float_t         jetTrackphi5;
-   Float_t         jetTrackm5;
-   Float_t         jetTrackAreaX5;
-   Float_t         jetTrackAreaY5;
-   Float_t         jetTrackAreaZ5;
-   Float_t         jetTrackAreaT5;
-   Float_t         jetTrackpt6;
-   Float_t         jetTracketa6;
-   Float_t         jetTrackphi6;
-   Float_t         jetTrackm6;
-   Float_t         jetTrackAreaX6;
-   Float_t         jetTrackAreaY6;
-   Float_t         jetTrackAreaZ6;
-   Float_t         jetTrackAreaT6;
-   Float_t         jetTrackpt7;
-   Float_t         jetTracketa7;
-   Float_t         jetTrackphi7;
-   Float_t         jetTrackm7;
-   Float_t         jetTrackAreaX7;
-   Float_t         jetTrackAreaY7;
-   Float_t         jetTrackAreaZ7;
-   Float_t         jetTrackAreaT7;
-   Float_t         jetTrackpt8;
-   Float_t         jetTracketa8;
-   Float_t         jetTrackphi8;
-   Float_t         jetTrackm8;
-   Float_t         jetTrackAreaX8;
-   Float_t         jetTrackAreaY8;
-   Float_t         jetTrackAreaZ8;
-   Float_t         jetTrackAreaT8;
    Float_t         mjj;
    Float_t         detajj;
    Int_t           njet;
@@ -769,6 +720,7 @@ public :
    Float_t         eta1;
    Float_t         phi1;
    Int_t           ch1;
+   Int_t           pid1;
    Float_t         iso1;
    Float_t         isoDBeta1;
    Float_t         isoRhoCorr1;
@@ -780,6 +732,7 @@ public :
    Float_t         eta2;
    Float_t         phi2;
    Int_t           ch2;
+   Int_t           pid2;
    Float_t         iso2;
    Float_t         isoDBeta2;
    Float_t         isoRhoCorr2;
@@ -791,6 +744,7 @@ public :
    Float_t         eta3;
    Float_t         phi3;
    Int_t           ch3;
+   Int_t           pid3;
    Float_t         iso3;
    Float_t         isoDBeta3;
    Float_t         isoRhoCorr3;
@@ -802,6 +756,7 @@ public :
    Float_t         eta4;
    Float_t         phi4;
    Int_t           ch4;
+   Int_t           pid4;
    Float_t         iso4;
    Float_t         isoDBeta4;
    Float_t         isoRhoCorr4;
@@ -938,72 +893,17 @@ public :
    TBranch        *b_jetGenAreaY4;   //!
    TBranch        *b_jetGenAreaZ4;   //!
    TBranch        *b_jetGenAreaT4;   //!
+   TBranch        *b_TrackJet_V4_;   //!
+   TBranch        *b_TrackJet_V4_fUniqueID;   //!
+   TBranch        *b_TrackJet_V4_fBits;   //!
+   TBranch        *b_TrackJet_V4_fP_fUniqueID;   //!
+   TBranch        *b_TrackJet_V4_fP_fBits;   //!
+   TBranch        *b_TrackJet_V4_fP_fX;   //!
+   TBranch        *b_TrackJet_V4_fP_fY;   //!
+   TBranch        *b_TrackJet_V4_fP_fZ;   //!
+   TBranch        *b_TrackJet_V4_fE;   //!
    TBranch        *b_HtSoft;   //!
    TBranch        *b_nSoftJets;   //!
-   TBranch        *b_jetTrackpt1;   //!
-   TBranch        *b_jetTracketa1;   //!
-   TBranch        *b_jetTrackphi1;   //!
-   TBranch        *b_jetTrackm1;   //!
-   TBranch        *b_jetTrackAreaX1;   //!
-   TBranch        *b_jetTrackAreaY1;   //!
-   TBranch        *b_jetTrackAreaZ1;   //!
-   TBranch        *b_jetTrackAreaT1;   //!
-   TBranch        *b_jetTrackpt2;   //!
-   TBranch        *b_jetTracketa2;   //!
-   TBranch        *b_jetTrackphi2;   //!
-   TBranch        *b_jetTrackm2;   //!
-   TBranch        *b_jetTrackAreaX2;   //!
-   TBranch        *b_jetTrackAreaY2;   //!
-   TBranch        *b_jetTrackAreaZ2;   //!
-   TBranch        *b_jetTrackAreaT2;   //!
-   TBranch        *b_jetTrackpt3;   //!
-   TBranch        *b_jetTracketa3;   //!
-   TBranch        *b_jetTrackphi3;   //!
-   TBranch        *b_jetTrackm3;   //!
-   TBranch        *b_jetTrackAreaX3;   //!
-   TBranch        *b_jetTrackAreaY3;   //!
-   TBranch        *b_jetTrackAreaZ3;   //!
-   TBranch        *b_jetTrackAreaT3;   //!
-   TBranch        *b_jetTrackpt4;   //!
-   TBranch        *b_jetTracketa4;   //!
-   TBranch        *b_jetTrackphi4;   //!
-   TBranch        *b_jetTrackm4;   //!
-   TBranch        *b_jetTrackAreaX4;   //!
-   TBranch        *b_jetTrackAreaY4;   //!
-   TBranch        *b_jetTrackAreaZ4;   //!
-   TBranch        *b_jetTrackAreaT4;   //!
-   TBranch        *b_jetTrackpt5;   //!
-   TBranch        *b_jetTracketa5;   //!
-   TBranch        *b_jetTrackphi5;   //!
-   TBranch        *b_jetTrackm5;   //!
-   TBranch        *b_jetTrackAreaX5;   //!
-   TBranch        *b_jetTrackAreaY5;   //!
-   TBranch        *b_jetTrackAreaZ5;   //!
-   TBranch        *b_jetTrackAreaT5;   //!
-   TBranch        *b_jetTrackpt6;   //!
-   TBranch        *b_jetTracketa6;   //!
-   TBranch        *b_jetTrackphi6;   //!
-   TBranch        *b_jetTrackm6;   //!
-   TBranch        *b_jetTrackAreaX6;   //!
-   TBranch        *b_jetTrackAreaY6;   //!
-   TBranch        *b_jetTrackAreaZ6;   //!
-   TBranch        *b_jetTrackAreaT6;   //!
-   TBranch        *b_jetTrackpt7;   //!
-   TBranch        *b_jetTracketa7;   //!
-   TBranch        *b_jetTrackphi7;   //!
-   TBranch        *b_jetTrackm7;   //!
-   TBranch        *b_jetTrackAreaX7;   //!
-   TBranch        *b_jetTrackAreaY7;   //!
-   TBranch        *b_jetTrackAreaZ7;   //!
-   TBranch        *b_jetTrackAreaT7;   //!
-   TBranch        *b_jetTrackpt8;   //!
-   TBranch        *b_jetTracketa8;   //!
-   TBranch        *b_jetTrackphi8;   //!
-   TBranch        *b_jetTrackm8;   //!
-   TBranch        *b_jetTrackAreaX8;   //!
-   TBranch        *b_jetTrackAreaY8;   //!
-   TBranch        *b_jetTrackAreaZ8;   //!
-   TBranch        *b_jetTrackAreaT8;   //!
    TBranch        *b_mjj;   //!
    TBranch        *b_detajj;   //!
    TBranch        *b_njet;   //!
@@ -1577,6 +1477,7 @@ public :
    TBranch        *b_eta1;   //!
    TBranch        *b_phi1;   //!
    TBranch        *b_ch1;   //!
+   TBranch        *b_pid1;   //!
    TBranch        *b_iso1;   //!
    TBranch        *b_isoDBeta1;   //!
    TBranch        *b_isoRhoCorr1;   //!
@@ -1588,6 +1489,7 @@ public :
    TBranch        *b_eta2;   //!
    TBranch        *b_phi2;   //!
    TBranch        *b_ch2;   //!
+   TBranch        *b_pid2;   //!
    TBranch        *b_iso2;   //!
    TBranch        *b_isoDBeta2;   //!
    TBranch        *b_isoRhoCorr2;   //!
@@ -1599,6 +1501,7 @@ public :
    TBranch        *b_eta3;   //!
    TBranch        *b_phi3;   //!
    TBranch        *b_ch3;   //!
+   TBranch        *b_pid3;   //!
    TBranch        *b_iso3;   //!
    TBranch        *b_isoDBeta3;   //!
    TBranch        *b_isoRhoCorr3;   //!
@@ -1610,6 +1513,7 @@ public :
    TBranch        *b_eta4;   //!
    TBranch        *b_phi4;   //!
    TBranch        *b_ch4;   //!
+   TBranch        *b_pid4;   //!
    TBranch        *b_iso4;   //!
    TBranch        *b_isoDBeta4;   //!
    TBranch        *b_isoRhoCorr4;   //!
@@ -1656,9 +1560,9 @@ readTree::readTree(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v2/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v3/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v2/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root");
+         f = new TFile("eos/cms/store/group/dpg_ecal/alca_ecalcalib/ecalMIBI/rgerosa/TP_ANALYSIS/REDUCED_TREE/JOBS_DUMPER_v3/PHANTOM_SS_EWK_DF_126_2p5/outDumper_1.root");
       }
       f->GetObject("easyDelphes",tree);
 
@@ -1815,72 +1719,17 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("jetGenAreaY4", &jetGenAreaY4, &b_jetGenAreaY4);
    fChain->SetBranchAddress("jetGenAreaZ4", &jetGenAreaZ4, &b_jetGenAreaZ4);
    fChain->SetBranchAddress("jetGenAreaT4", &jetGenAreaT4, &b_jetGenAreaT4);
+   fChain->SetBranchAddress("TrackJet_V4", &TrackJet_V4_, &b_TrackJet_V4_);
+   fChain->SetBranchAddress("TrackJet_V4.fUniqueID", TrackJet_V4_fUniqueID, &b_TrackJet_V4_fUniqueID);
+   fChain->SetBranchAddress("TrackJet_V4.fBits", TrackJet_V4_fBits, &b_TrackJet_V4_fBits);
+   fChain->SetBranchAddress("TrackJet_V4.fP.fUniqueID", TrackJet_V4_fP_fUniqueID, &b_TrackJet_V4_fP_fUniqueID);
+   fChain->SetBranchAddress("TrackJet_V4.fP.fBits", TrackJet_V4_fP_fBits, &b_TrackJet_V4_fP_fBits);
+   fChain->SetBranchAddress("TrackJet_V4.fP.fX", TrackJet_V4_fP_fX, &b_TrackJet_V4_fP_fX);
+   fChain->SetBranchAddress("TrackJet_V4.fP.fY", TrackJet_V4_fP_fY, &b_TrackJet_V4_fP_fY);
+   fChain->SetBranchAddress("TrackJet_V4.fP.fZ", TrackJet_V4_fP_fZ, &b_TrackJet_V4_fP_fZ);
+   fChain->SetBranchAddress("TrackJet_V4.fE", TrackJet_V4_fE, &b_TrackJet_V4_fE);
    fChain->SetBranchAddress("HtSoft", &HtSoft, &b_HtSoft);
    fChain->SetBranchAddress("nSoftJets", &nSoftJets, &b_nSoftJets);
-   fChain->SetBranchAddress("jetTrackpt1", &jetTrackpt1, &b_jetTrackpt1);
-   fChain->SetBranchAddress("jetTracketa1", &jetTracketa1, &b_jetTracketa1);
-   fChain->SetBranchAddress("jetTrackphi1", &jetTrackphi1, &b_jetTrackphi1);
-   fChain->SetBranchAddress("jetTrackm1", &jetTrackm1, &b_jetTrackm1);
-   fChain->SetBranchAddress("jetTrackAreaX1", &jetTrackAreaX1, &b_jetTrackAreaX1);
-   fChain->SetBranchAddress("jetTrackAreaY1", &jetTrackAreaY1, &b_jetTrackAreaY1);
-   fChain->SetBranchAddress("jetTrackAreaZ1", &jetTrackAreaZ1, &b_jetTrackAreaZ1);
-   fChain->SetBranchAddress("jetTrackAreaT1", &jetTrackAreaT1, &b_jetTrackAreaT1);
-   fChain->SetBranchAddress("jetTrackpt2", &jetTrackpt2, &b_jetTrackpt2);
-   fChain->SetBranchAddress("jetTracketa2", &jetTracketa2, &b_jetTracketa2);
-   fChain->SetBranchAddress("jetTrackphi2", &jetTrackphi2, &b_jetTrackphi2);
-   fChain->SetBranchAddress("jetTrackm2", &jetTrackm2, &b_jetTrackm2);
-   fChain->SetBranchAddress("jetTrackAreaX2", &jetTrackAreaX2, &b_jetTrackAreaX2);
-   fChain->SetBranchAddress("jetTrackAreaY2", &jetTrackAreaY2, &b_jetTrackAreaY2);
-   fChain->SetBranchAddress("jetTrackAreaZ2", &jetTrackAreaZ2, &b_jetTrackAreaZ2);
-   fChain->SetBranchAddress("jetTrackAreaT2", &jetTrackAreaT2, &b_jetTrackAreaT2);
-   fChain->SetBranchAddress("jetTrackpt3", &jetTrackpt3, &b_jetTrackpt3);
-   fChain->SetBranchAddress("jetTracketa3", &jetTracketa3, &b_jetTracketa3);
-   fChain->SetBranchAddress("jetTrackphi3", &jetTrackphi3, &b_jetTrackphi3);
-   fChain->SetBranchAddress("jetTrackm3", &jetTrackm3, &b_jetTrackm3);
-   fChain->SetBranchAddress("jetTrackAreaX3", &jetTrackAreaX3, &b_jetTrackAreaX3);
-   fChain->SetBranchAddress("jetTrackAreaY3", &jetTrackAreaY3, &b_jetTrackAreaY3);
-   fChain->SetBranchAddress("jetTrackAreaZ3", &jetTrackAreaZ3, &b_jetTrackAreaZ3);
-   fChain->SetBranchAddress("jetTrackAreaT3", &jetTrackAreaT3, &b_jetTrackAreaT3);
-   fChain->SetBranchAddress("jetTrackpt4", &jetTrackpt4, &b_jetTrackpt4);
-   fChain->SetBranchAddress("jetTracketa4", &jetTracketa4, &b_jetTracketa4);
-   fChain->SetBranchAddress("jetTrackphi4", &jetTrackphi4, &b_jetTrackphi4);
-   fChain->SetBranchAddress("jetTrackm4", &jetTrackm4, &b_jetTrackm4);
-   fChain->SetBranchAddress("jetTrackAreaX4", &jetTrackAreaX4, &b_jetTrackAreaX4);
-   fChain->SetBranchAddress("jetTrackAreaY4", &jetTrackAreaY4, &b_jetTrackAreaY4);
-   fChain->SetBranchAddress("jetTrackAreaZ4", &jetTrackAreaZ4, &b_jetTrackAreaZ4);
-   fChain->SetBranchAddress("jetTrackAreaT4", &jetTrackAreaT4, &b_jetTrackAreaT4);
-   fChain->SetBranchAddress("jetTrackpt5", &jetTrackpt5, &b_jetTrackpt5);
-   fChain->SetBranchAddress("jetTracketa5", &jetTracketa5, &b_jetTracketa5);
-   fChain->SetBranchAddress("jetTrackphi5", &jetTrackphi5, &b_jetTrackphi5);
-   fChain->SetBranchAddress("jetTrackm5", &jetTrackm5, &b_jetTrackm5);
-   fChain->SetBranchAddress("jetTrackAreaX5", &jetTrackAreaX5, &b_jetTrackAreaX5);
-   fChain->SetBranchAddress("jetTrackAreaY5", &jetTrackAreaY5, &b_jetTrackAreaY5);
-   fChain->SetBranchAddress("jetTrackAreaZ5", &jetTrackAreaZ5, &b_jetTrackAreaZ5);
-   fChain->SetBranchAddress("jetTrackAreaT5", &jetTrackAreaT5, &b_jetTrackAreaT5);
-   fChain->SetBranchAddress("jetTrackpt6", &jetTrackpt6, &b_jetTrackpt6);
-   fChain->SetBranchAddress("jetTracketa6", &jetTracketa6, &b_jetTracketa6);
-   fChain->SetBranchAddress("jetTrackphi6", &jetTrackphi6, &b_jetTrackphi6);
-   fChain->SetBranchAddress("jetTrackm6", &jetTrackm6, &b_jetTrackm6);
-   fChain->SetBranchAddress("jetTrackAreaX6", &jetTrackAreaX6, &b_jetTrackAreaX6);
-   fChain->SetBranchAddress("jetTrackAreaY6", &jetTrackAreaY6, &b_jetTrackAreaY6);
-   fChain->SetBranchAddress("jetTrackAreaZ6", &jetTrackAreaZ6, &b_jetTrackAreaZ6);
-   fChain->SetBranchAddress("jetTrackAreaT6", &jetTrackAreaT6, &b_jetTrackAreaT6);
-   fChain->SetBranchAddress("jetTrackpt7", &jetTrackpt7, &b_jetTrackpt7);
-   fChain->SetBranchAddress("jetTracketa7", &jetTracketa7, &b_jetTracketa7);
-   fChain->SetBranchAddress("jetTrackphi7", &jetTrackphi7, &b_jetTrackphi7);
-   fChain->SetBranchAddress("jetTrackm7", &jetTrackm7, &b_jetTrackm7);
-   fChain->SetBranchAddress("jetTrackAreaX7", &jetTrackAreaX7, &b_jetTrackAreaX7);
-   fChain->SetBranchAddress("jetTrackAreaY7", &jetTrackAreaY7, &b_jetTrackAreaY7);
-   fChain->SetBranchAddress("jetTrackAreaZ7", &jetTrackAreaZ7, &b_jetTrackAreaZ7);
-   fChain->SetBranchAddress("jetTrackAreaT7", &jetTrackAreaT7, &b_jetTrackAreaT7);
-   fChain->SetBranchAddress("jetTrackpt8", &jetTrackpt8, &b_jetTrackpt8);
-   fChain->SetBranchAddress("jetTracketa8", &jetTracketa8, &b_jetTracketa8);
-   fChain->SetBranchAddress("jetTrackphi8", &jetTrackphi8, &b_jetTrackphi8);
-   fChain->SetBranchAddress("jetTrackm8", &jetTrackm8, &b_jetTrackm8);
-   fChain->SetBranchAddress("jetTrackAreaX8", &jetTrackAreaX8, &b_jetTrackAreaX8);
-   fChain->SetBranchAddress("jetTrackAreaY8", &jetTrackAreaY8, &b_jetTrackAreaY8);
-   fChain->SetBranchAddress("jetTrackAreaZ8", &jetTrackAreaZ8, &b_jetTrackAreaZ8);
-   fChain->SetBranchAddress("jetTrackAreaT8", &jetTrackAreaT8, &b_jetTrackAreaT8);
    fChain->SetBranchAddress("mjj", &mjj, &b_mjj);
    fChain->SetBranchAddress("detajj", &detajj, &b_detajj);
    fChain->SetBranchAddress("njet", &njet, &b_njet);
@@ -2454,6 +2303,7 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("eta1", &eta1, &b_eta1);
    fChain->SetBranchAddress("phi1", &phi1, &b_phi1);
    fChain->SetBranchAddress("ch1", &ch1, &b_ch1);
+   fChain->SetBranchAddress("pid1", &pid1, &b_pid1);
    fChain->SetBranchAddress("iso1", &iso1, &b_iso1);
    fChain->SetBranchAddress("isoDBeta1", &isoDBeta1, &b_isoDBeta1);
    fChain->SetBranchAddress("isoRhoCorr1", &isoRhoCorr1, &b_isoRhoCorr1);
@@ -2465,6 +2315,7 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("eta2", &eta2, &b_eta2);
    fChain->SetBranchAddress("phi2", &phi2, &b_phi2);
    fChain->SetBranchAddress("ch2", &ch2, &b_ch2);
+   fChain->SetBranchAddress("pid2", &pid2, &b_pid2);
    fChain->SetBranchAddress("iso2", &iso2, &b_iso2);
    fChain->SetBranchAddress("isoDBeta2", &isoDBeta2, &b_isoDBeta2);
    fChain->SetBranchAddress("isoRhoCorr2", &isoRhoCorr2, &b_isoRhoCorr2);
@@ -2476,6 +2327,7 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("eta3", &eta3, &b_eta3);
    fChain->SetBranchAddress("phi3", &phi3, &b_phi3);
    fChain->SetBranchAddress("ch3", &ch3, &b_ch3);
+   fChain->SetBranchAddress("pid3", &pid3, &b_pid3);
    fChain->SetBranchAddress("iso3", &iso3, &b_iso3);
    fChain->SetBranchAddress("isoDBeta3", &isoDBeta3, &b_isoDBeta3);
    fChain->SetBranchAddress("isoRhoCorr3", &isoRhoCorr3, &b_isoRhoCorr3);
@@ -2487,6 +2339,7 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("eta4", &eta4, &b_eta4);
    fChain->SetBranchAddress("phi4", &phi4, &b_phi4);
    fChain->SetBranchAddress("ch4", &ch4, &b_ch4);
+   fChain->SetBranchAddress("pid4", &pid4, &b_pid4);
    fChain->SetBranchAddress("iso4", &iso4, &b_iso4);
    fChain->SetBranchAddress("isoDBeta4", &isoDBeta4, &b_isoDBeta4);
    fChain->SetBranchAddress("isoRhoCorr4", &isoRhoCorr4, &b_isoRhoCorr4);
