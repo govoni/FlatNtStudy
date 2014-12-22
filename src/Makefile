@@ -23,7 +23,8 @@ ___BINS  =  $(notdir $(__BINS))
 BINS	 =  $(addprefix $(BIN),${___BINS})
 
 LINKDEF   =  $(wildcard ${HDR}*LinkDef.h)
-DICTHDRS  =  $(patsubst $(LINKDEF),,$(HDRS)) $(LINKDEF)
+DICTHDRS_TEMP  =  $(patsubst $(LINKDEF),,$(HDRS)) $(LINKDEF)
+DICTHDRS  =  $(filter-out ../interface/ReadInputFile.h,$(DICTHDRS_TEMP))
 
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTGLIBS     = $(shell root-config --glibs)
@@ -85,6 +86,7 @@ $(OBJ)%$(ObjSuf): %$(SrcSuf) $(HDRS)
 
 $(OBJ)mydict.cc: $(DICTHDRS)
 	@echo "Generating dictionary for  ..."
+	@echo $(DICTHDRS)
 	rootcling -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
 
 $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
