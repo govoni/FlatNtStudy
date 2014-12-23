@@ -119,7 +119,7 @@ int main (int argc, char ** argv) {
    // Add cuts to the analysis plot container
    for(size_t iCut = 0; iCut < CutList.size(); iCut++){
      analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
-     histoCutEff[itSample->first+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_"+CutList.at(iCut).cutLayerName).c_str(),"",10,0,10);
+     histoCutEff[itSample->first+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
 
      // Add variables to the plot
      for(size_t iVar = 0; iVar < variableList.size(); iVar++){   
@@ -141,7 +141,7 @@ int main (int argc, char ** argv) {
     analysisPlots.printEventNumber(CutList.at(iCut).cutLayerName,"DeltaPhi_LL");
   }
 
-  TFile* outputEfficiency = new TFile("output/outputEfficiency.root","RECREATE");
+  TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 
   for(map<string,TH1F*>::const_iterator itMap = histoCutEff.begin(); itMap !=  histoCutEff.end(); itMap++){
     itMap->second->Scale(1./itMap->second->GetBinContent(1));

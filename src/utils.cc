@@ -395,12 +395,42 @@ void fillHistos (plotter & analysisPlots,
       vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
       iBin++;   
 
-      // apply Zmass veto
-      bool isZMassVeto = false;                                                                                                                                            
+      // identify tight leptons and require exactly nLep                                                                                                                       
+      if (int(leptonsIsoTight.size()) != CutList.at(iCut).nLep ) continue ;                                                                                                    
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+      iBin++;   
+      if (leptonsIsoTight.at(0).lepton4V_.Pt() < CutList.at(iCut).ptL.first) continue;
+ 
+      bool badTrailingLepton = false;
+      for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
+        if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < CutList.at(iCut).ptL.second) 
+        badTrailingLepton = true;
+      }                         
+      if(badTrailingLepton) continue ;
 
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
+      iBin++;   
+
+      int extraLepton = 0; // count the extra lepton number                                                                                                            
+            
+      for(size_t iLepton = 0; iLepton < leptonsIsoLoose.size() ; iLepton++){                                                                                             
+           
+       if(leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(0).lepton4V_ or leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(1).lepton4V_) continue; // skip tight ones
+       extraLepton++;                                                                                                                                                         
+           
+      }                                                                                                                                                              
+                                                                                                                                                                               
+      if(extraLepton > CutList.at(iCut).nextra ) continue; // extra lepton cut                                                                                                 
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
+      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"extra lepton");
+      iBin++;   
+
+      // apply Zmass veto: if nLep == 2 is a veto (WW analysis) if nLep == 3 is a tag (WZ analysis)
+      bool isZMassVeto = false;                                                                                                                                            
       for(size_t iLept = 0; iLept < LeptonsAll.size() ; iLept++){                                                                                                             
        if(LeptonsAll.at(iLept).lepton4V_.Pt() < minPtLeptonCut) continue;
-
        for(size_t jLept = iLept+1; jLept < LeptonsAll.size() ; jLept++){                                                                                                   
         if(LeptonsAll.at(jLept).lepton4V_.Pt() < minPtLeptonCut) continue; 
         if(fabs(LeptonsAll.at(jLept).flavour_) != fabs(LeptonsAll.at(iLept).flavour_)) continue; 
@@ -411,45 +441,13 @@ void fillHistos (plotter & analysisPlots,
        }
       }                                                                                                                                                                       
 
-     if(isZMassVeto) continue ;                                                                                                                                             
+      if(isZMassVeto and CutList.at(iCut).nLep == 2) continue ;                                                                                                                      if(not isZMassVeto and CutList.at(iCut).nLep == 3) continue;
+                             
       vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
       vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Z veto");
       iBin++;   
                                                                                                                                                                           
-     // identify tight leptons and require exactly 2                                                                                                                         
-     if (int(leptonsIsoTight.size()) != CutList.at(iCut).nLep ) continue ;                                                                                                    
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
-     iBin++;   
-     if (leptonsIsoTight.at(0).lepton4V_.Pt() < CutList.at(iCut).ptL.first) continue;
- 
-     bool badTrailingLepton = false;
-     for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-       if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < CutList.at(iCut).ptL.second) 
-        badTrailingLepton = true;
-     }                         
-     if(badTrailingLepton) continue ;
-        
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
-     iBin++;   
-
-     int extraLepton = 0; // count the extra lepton number                                                                                                            
-            
-     for(size_t iLepton = 0; iLepton < leptonsIsoLoose.size() ; iLepton++){                                                                                                   
-           
-      if(leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(0).lepton4V_ or leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(1).lepton4V_) continue; // skip tight ones
-      extraLepton++;                                                                                                                                                         
-           
-     }                                                                                                                                                              
-                                                                                                                                                                           
-    
-     if(extraLepton > CutList.at(iCut).nextra ) continue; // extra lepton cut                                                                                                 
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
-     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"extra lepton");
-     iBin++;   
-
-     // charge cut for same sign final state                                                                                                                                
+     // charge cut for same sign final state : zero means no cut, one means same sign, -1 opposite sign                                                                        
      if(CutList.at(iCut).chargeSign != 0){
        int sign = 1;
        for(size_t leptSize = 0; leptSize < leptonsIsoTight.size(); leptSize++) // loop on tight leptns
@@ -461,6 +459,21 @@ void fillHistos (plotter & analysisPlots,
      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
      iBin++;   
 
+     // flavour selection
+     if(CutList.at(iCut).flavour != 0){
+       int flavour = 0;
+       int sameflavour = 0;
+       for(size_t leptSize = 0; leptSize < leptonsIsoTight.size(); leptSize++) // loop on tight leptns
+	 flavour = fabs(leptonsIsoTight.at(leptSize).flavour_) ;
+       if(flavour/leptonsIsoTight.size() == 11 or flavour/leptonsIsoTight.size() == 13 ) sameflavour = 1;
+       else sameflavour = -1;
+       if(sameflavour != CutList.at(iCut).flavour) continue;
+     }
+
+     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);   
+     vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"flavour selection");
+     iBin++;   
+    
      // take jets
      vector<jetContainer> RecoJets;
      RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);   
@@ -533,7 +546,7 @@ void fillHistos (plotter & analysisPlots,
      vect[sampleName+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaJJ");
      iBin++;   
     
-
+     
      for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
        if(VariableList.at(iVar).variableName == "detajj" and RecoJets.size() >= 2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1);   
@@ -543,7 +556,7 @@ void fillHistos (plotter & analysisPlots,
        }
        else if(VariableList.at(iVar).variableName == "detajj_gen" and GenJets.size() >= 2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta()),1);   
-       }
+       }       
        else if(VariableList.at(iVar).variableName == "mjj" and RecoJets.size() >= 2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.M(),1);   
        }
@@ -555,7 +568,7 @@ void fillHistos (plotter & analysisPlots,
        }
        else if(VariableList.at(iVar).variableName == "DeltaPhi_LL"){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_),1);   
-       }
+       }       
        else if(VariableList.at(iVar).variableName == "mll"){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),1);   
        }
@@ -582,7 +595,8 @@ void fillHistos (plotter & analysisPlots,
        }
        else if(VariableList.at(iVar).variableName == "DeltaPhi_LL"){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_),1);   
-       } 
+       }
+       
        else if(VariableList.at(iVar).variableName == "DeltaPhi_LMet"){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met),1);   
        } 
@@ -613,86 +627,87 @@ void fillHistos (plotter & analysisPlots,
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_gen_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ"       and RecoJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi" and PuppiJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.DeltaPhi(PuppiJets.at(1).jet4V_),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen"   and GenJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaPhi(GenJets.at(1).jet4V_),1);   
        } 
-
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet"){
+       
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet" and RecoJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met" and GenJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met" and PuppiJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_puppi.DeltaPhi(L_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_Met_puppi" and RecoJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi" and GenJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met_puppi" and PuppiJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_puppi.DeltaPhi(L_puppi_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_Met_gen"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_Met_gen" and RecoJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_gen_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_gen"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_gen" and GenJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.DeltaPhi(L_gen_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met_gen"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met_gen" and PuppiJets.size()>=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_puppi.DeltaPhi(L_gen_met),1);   
        } 
 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet" and RecoJets.size()>=1){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met" and PuppiJets.size()>=1){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met" and GenJets.size()>=1){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaPhi(L_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet_puppi" and RecoJets.size()>=1){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met_puppi" and PuppiJets.size()>=1){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met_puppi" and GenJets.size()>=1){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet" and RecoJets.size() >=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met" and PuppiJets.size() >=2){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(1).jet4V_.DeltaPhi(L_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met" and GenJets.size() >=2){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.DeltaPhi(L_met),1);   
        } 
 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet_puppi" and RecoJets.size() >=2){
 	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met_puppi" and PuppiJets.size() >=2){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   
        } 
-       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi"){
+       else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi" and GenJets.size() >=2){
  	 analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   
        }
+       
      }                
     }
   }
