@@ -4,6 +4,7 @@
 #include "TStyle.h"
 #include "TROOT.h"
 #include "TLatex.h"
+#include "TMath.h"
 
 using namespace std ;
 
@@ -558,6 +559,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   nH_stack->Add (h_noH) ;
   name = "diff_" ;
   name += h_noH->GetName () ;
+
   TH1F * diff = (TH1F *) h_noH->Clone (name.c_str ()) ;
   diff->Add (h_sigSM, -1.) ;
   diff->SetLineColor (4) ;
@@ -635,15 +637,29 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   TLegend leg2 = initLegend (2) ;
   TH1F * h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
   TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
+  TH1F * h_significance  = (TH1F *) diff->Clone(("h_significance_"+string(h_noH->GetName())).c_str()) ;  
+
+  for(int iBin = 0; iBin < h_significance->GetNbinsX()+1; iBin++){
+    if(h_tot_SM_err->GetBinContent(iBin+1) == 0) h_significance->SetBinContent(iBin+1,0.);
+    else h_significance->SetBinContent(iBin+1,diff->GetBinContent(iBin+1)/ h_tot_SM_err->GetBinContent(iBin+1));
+  }
+
   h_tot_SM_err->SetLineColor (1) ;
   h_tot_SM_err->SetFillColor (1) ;
   h_tot_SM_err->SetFillStyle (3001) ;
+
+  h_significance->SetLineColor (2) ;
+  h_significance->SetLineWidth (2) ;
+  
+
   leg2.AddEntry (h_tot_SM_err, "SM fluct", "fl") ;
   leg2.AddEntry (diff, "noH - 126", "fl") ;
+  leg2.AddEntry (h_significance, "(noH - 126)/#sigma_{SM} ", "l") ;
 
   vector<TH1F *> histos2 ;
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
+  histos2.push_back (h_significance) ;
   DrawPlots (histos2, leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
 
   return ;
