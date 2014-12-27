@@ -99,10 +99,7 @@ int main (int argc, char ** argv) {
    // take input files
    for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
     numBefore += itSample->second.at(iContainer).numBefore; 
-    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
-    //chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
-    //chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
-    //chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
+    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
    }
 
    int totEvent = chain->GetEntries();

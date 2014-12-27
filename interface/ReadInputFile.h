@@ -1,3 +1,6 @@
+#ifndef ReadInputFile_h
+#define ReadInputFile_h
+
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -21,7 +24,7 @@ class sampleContainer {
     isSignal(isSignal){};
 
   std::string sampleName ;
-  int color;
+  int    color;
   double xsec;
   int numBefore;
   int isSignal;
@@ -105,5 +108,8 @@ int ReadInputSampleFile   (const std::string & , std::map<std::string, std::vect
 
 int ReadInputVariableFile (const std::string & , std::vector<variableContainer> & );
 
+int ReadInputVariableFile (const std::string & , std::vector<std::string> & );
+
 int ReadInputCutFile      (const std::string & , std::vector<cutContainer> &);
 
+#endif

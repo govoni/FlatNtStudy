@@ -23,8 +23,7 @@ ___BINS  =  $(notdir $(__BINS))
 BINS	 =  $(addprefix $(BIN),${___BINS})
 
 LINKDEF   =  $(wildcard ${HDR}*LinkDef.h)
-DICTHDRS_TEMP  =  $(patsubst $(LINKDEF),,$(HDRS)) $(LINKDEF)
-DICTHDRS  =  $(filter-out ../interface/ReadInputFile.h,$(DICTHDRS_TEMP))
+DICTHDRS  =  $(patsubst $(LINKDEF),,$(HDRS)) $(LINKDEF)
 
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTGLIBS     = $(shell root-config --glibs)
@@ -40,7 +39,8 @@ FFLAGS = -c
 
 LD       =  g++
 LDFLAGS  =  -rdynamic -shared $(ARCHL)
-SONAME	 =  libPlotter.so
+SONAME	 =  libFlatNtStudy.so
+SONAME2  =  FlatNtStudy
 SOFLAGS  =  -Wl,-soname,$(SONAME)
 
 GLIBS   =  -lm -ldl -rdynamic $(ROOTGLIBS) -lGenVector -lFoam -lMinuit -lTMVA -lMLP -lXMLIO -lGpad  -lTreePlayer 
@@ -94,7 +94,7 @@ $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
         @echo "Linking $(SONAME):"
 
 $(BIN)%$(BinSuf): $(PRG)%$(PrgSuf) $(HDRS) $(LIB)$(SONAME)
-	$(CPP) $<  -lPlotter $(CPPFLAGS) -L$(LIB) $(GLIBS)  -o $@
+	$(CPP) $<  -l$(SONAME2) $(CPPFLAGS) -L$(LIB) $(GLIBS)  -o $@
 
 
 clean:

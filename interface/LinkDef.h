@@ -6,6 +6,8 @@
 #include "utils.h"
 #include "ConfigFileLine.h"
 #include "ConfigParser.h"
+#include "ReadInputFile.h"
+#include "TMVATrainingClass.h"
 
 #ifdef __CINT__
 
@@ -27,5 +29,6 @@
 #pragma link C++ class cutContainer+;
 #pragma link C++ class variableContainer+;
 #pragma link C++ class sampleContainer+;
+#pragma link C++ class TMVATrainingClass+;
 
 #endif

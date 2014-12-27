@@ -1,4 +1,4 @@
-// H4ConfigFileLine.h
+// H4configfileline-.h
 //
 // A class representing a (continued) line in the configuration
 // file, that is a pair of an option name and a (list of) value(s) 

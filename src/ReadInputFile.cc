@@ -91,6 +91,32 @@ int ReadInputVariableFile( const std::string & InputVariableList , std::vector<v
 
 }
 
+
+int ReadInputVariableFile( const std::string & InputVariableList , std::vector<std::string> & varContainer){
+
+
+  std::ifstream inputFile (InputVariableList.c_str());
+  std::string buffer;
+
+  if(inputFile.fail()) return -1; 
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+    std::stringstream line(buffer);
+
+    std::string  VariablesTemp;
+    
+    line >> VariablesTemp ;
+
+    varContainer.push_back(VariablesTemp);                                  
+  }
+
+  return varContainer.size() ;
+
+}
+
 int ReadInputCutFile( const std::string & InputCutList , std::vector<cutContainer> & CutContainer){
 
 
