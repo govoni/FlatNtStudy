@@ -1,19 +1,23 @@
 #include "TMVATrainingClass.h"
+#include "utils.h"
 
 // constructor giving files 
 TMVATrainingClass::TMVATrainingClass(const vector<TFile*> & signalFileList, 
-				   const vector<TFile*> & backgroundFileList, 
-				   const string & TreeName,
-				   const string & outputFilePath , 
-				   const string & outputFileName, 
-				   const string & Label, 
-				   const string & transformation){
+				     const vector<TFile*> & backgroundFileList, 
+				     const string & TreeName,
+				     const string & outputFilePath , 
+				     const string & outputFileName, 
+				     const string & Label, 
+				     const string & transformation){
 
- 
+   
   SetSignalTree     (signalFileList,TreeName) ;
   SetBackgroundTree (backgroundFileList,TreeName) ;
-  SetLabel (Label);
-  SetOutputFile (outputFilePath , outputFileName) ;
+  SetLabel          (Label);
+  SetOutputFile     (outputFilePath,outputFileName) ;
+  SetTransformations(transformation);
+
+  if(factory_!=0) delete factory_;
 
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
                                 outputFile_, 
@@ -24,19 +28,22 @@ TMVATrainingClass::TMVATrainingClass(const vector<TFile*> & signalFileList,
 
 // constructor giving tree
 TMVATrainingClass::TMVATrainingClass(const vector<TTree*> & signalTreeList, 
-				   const vector<TTree*> & backgroundTreeList,  
-				   const string & TreeName,
-                                   const string & outputFilePath , 
-				   const string & outputFileName, 
-				   const string & Label,
-				   const string & transformation){
+				     const vector<TTree*> & backgroundTreeList,  
+				     const string & TreeName,
+				     const string & outputFilePath , 
+				     const string & outputFileName, 
+				     const string & Label,
+				     const string & transformation){
    
 
-  SetTreeName (TreeName) ;
-  SetSignalTree (signalTreeList) ;
+  SetTreeName       (TreeName) ;
+  SetSignalTree     (signalTreeList) ;
   SetBackgroundTree (backgroundTreeList) ;
   SetLabel (Label);
-  SetOutputFile (outputFilePath , outputFileName) ;
+  SetOutputFile (outputFilePath,outputFileName) ;
+  SetTransformations(transformation);
+
+  if(factory_!=0) delete factory_;
 
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
 				outputFile_,
@@ -47,111 +54,425 @@ TMVATrainingClass::TMVATrainingClass(const vector<TTree*> & signalTreeList,
 // Deconstructor
 TMVATrainingClass::~TMVATrainingClass(){
 
-  for(size_t iTree = 0; iTree < signalTreeList_.size() ; iTree++) { 
-   if(signalTreeList_.at(iTree)!=0)  delete signalTreeList_.at(iTree) ; 
-  }
 
-  for(size_t iTree = 0; iTree < backgroundTreeList_.size() ; iTree++) {
-   if(backgroundTreeList_.at(iTree)!=0)  delete backgroundTreeList_.at(iTree) ;
-  }
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
 
-  for(size_t iTree = 0; iTree < signalTreeListForTraining_.size() ; iTree++) { 
-   if(signalTreeListForTraining_.at(iTree)!=0)  delete signalTreeListForTraining_.at(iTree) ; 
-  }
+  for_each(backgroundTreeList_.begin(),backgroundTreeList_.end(), default_delete<TTree>());
+  backgroundTreeList_.clear();
 
-  for(size_t iTree = 0; iTree < backgroundTreeListForTraining_.size() ; iTree++) {
-   if(backgroundTreeListForTraining_.at(iTree)!=0)  delete backgroundTreeListForTraining_.at(iTree) ;
-  }
+  for_each(signalTNtuplaForTraining_.begin(),signalTNtuplaForTraining_.end(), default_delete<TNtuple>());
+  signalTNtuplaForTraining_.clear();
 
-  if(outputFile_!=0) outputFile_->Close() ;
-  if(factory_!=0)    factory_->Delete() ;
+  for_each(backgroundTNtuplaForTraining_.begin(),backgroundTNtuplaForTraining_.end(), default_delete<TNtuple>());
+  backgroundTNtuplaForTraining_.clear();
+
+  mapTrainingVariables_.clear();
+  mapSpectatorVariables_.clear();
+
+  signalGlobalWeight_.clear();
+  backgroundGlobalWeight_.clear();
+  
+  outputFileWeightName_.clear();
+
+  if(outputFile_!=0) outputFile_->Close();
+  if(factory_!=0)    factory_->Delete();
+  if(reader_!=0)     delete reader_;
+}
+
+
+//Set Signal Tree Name
+void TMVATrainingClass::SetSignalTree (const vector<TFile*> & signalFileList, const string & TreeName){
+
+  if(TreeName!="") TreeName_ = TreeName ;
+  else TreeName_ = "easyDelphes" ;
+
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(size_t iFile = 0 ; iFile < signalFileList.size() ; iFile ++){
+   if(signalFileList.at(iFile)!=0) 
+    signalTreeList_.push_back((TTree*) signalFileList.at(iFile)->Get(TreeName_.c_str()));
+  }   
+
+  return ;
 
 }
 
+
+void TMVATrainingClass::SetSignalTree (const vector<TTree*> & signalTreeList){
+
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++){
+    if(signalTreeList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
+  }
+  return ;
+
+}
+
+// Set Background Tree Name
+void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFileList, const string & TreeName){
+
+  if(TreeName!="") TreeName_ = TreeName ;
+  else TreeName_ = "easyDelphes" ;
+     
+  for_each(backgroundTreeList_.begin(),backgroundTreeList_.end(), default_delete<TTree>());
+  backgroundTreeList_.clear();
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(size_t iFile = 0 ; iFile < backgroundFileList.size() ; iFile ++){
+   if(backgroundFileList.at(iFile)!=0) 
+    backgroundTreeList_.push_back((TTree*) backgroundFileList.at(iFile)->Get(TreeName_.c_str()));
+  }
+
+  return ;
+
+}
+
+void TMVATrainingClass::SetBackgroundTree (const vector<TTree*> & backgroundTreeList){
+
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
+    if(backgroundTreeList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
+  }
+   return ;
+
+}
+
+// Set label
+void TMVATrainingClass::SetLabel (const string & Label ){
+  Label_ = Label ;
+  return ;
+
+}
+
+// Set Tree Name
+void TMVATrainingClass::SetTreeName (const string & TreeName ){
+
+  if(TreeName!="") TreeName_ = TreeName ;
+  else TreeName_ = "easyDelphes" ;
+
+  return ;
+}
+
+// set output file
+void TMVATrainingClass::SetOutputFile ( const string & outputFilePath , const string & outputFileName ){
+  
+  if( !outputFilePath.empty() && !outputFileName.empty()) { 
+ 
+   outputFilePath_ = outputFilePath; 
+   outputFileName_ = outputFileName;
+
+   replace(outputFileName_.begin(),outputFileName_.end(),'/','_');
+   replace(outputFileName_.begin(),outputFileName_.end(),'[','_');
+   replace(outputFileName_.begin(),outputFileName_.end(),']','_');
+   replace(outputFileName_.begin(),outputFileName_.end(),'(','_');
+   replace(outputFileName_.begin(),outputFileName_.end(),')','_');
+   replace(outputFileName_.begin(),outputFileName_.end(),':','_');
+
+   outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
+
+   if(outputFile_!=0) delete outputFile_ ;
+
+   outputFile_ = new TFile((outputFilePath_+"/"+outputFileName_+"_"+Label_+".root").c_str(),"RECREATE");
+   
+   outputFile_->cd();
+ }
+
+  return ;
+
+}
+
+void TMVATrainingClass::SetTransformations (const std::string & transformations){
+
+  transformations_ = transformations;
+
+  return ;
+
+}
+
+
+
 // AddTrainingVariables in the MVA
-void TMVATrainingClass::AddTrainingVariables ( const vector<pair<string,string> > & mapTrainingVariables, 
-                                              const vector<pair<string,string> > & mapSpectatorVariables){
+void TMVATrainingClass::AddTrainingVariables ( const vector<string> & mapTrainingVariables, 
+					       const vector<string> & mapSpectatorVariables){
 
   SetTrainingVariables(mapTrainingVariables);
   SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<" train " <<mapTrainingVariables_.at(iVar).first<<" type "<<mapTrainingVariables_.at(iVar).second<<endl;
-    factory_->AddVariable(mapTrainingVariables_.at(iVar).first+" := "+mapTrainingVariables_.at(iVar).first,*mapTrainingVariables_.at(iVar).second.c_str());
+    cout<<" train " <<mapTrainingVariables_.at(iVar)<<endl;
+    factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
   }
 
   for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<" spectator " <<mapSpectatorVariables_.at(iVar).first<<" type "<<mapSpectatorVariables_.at(iVar).second<<endl;
-    factory_->AddSpectator(mapSpectatorVariables_.at(iVar).first,mapSpectatorVariables_.at(iVar).second.c_str());
+    cout<<" spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
+    factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
   }    
 }
 
 // AddTrainingVariables in the MVA
-void TMVATrainingClass::AddTrainingVariables ( const pair<string,string> & mapTrainingVariables, 
-					      const vector<pair<string,string> > & mapSpectatorVariables){
+void TMVATrainingClass::AddTrainingVariables ( const string& mapTrainingVariables, 
+					       const vector<string> & mapSpectatorVariables){
 
   
   mapTrainingVariables_.push_back(mapTrainingVariables);
   SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<" train " <<mapTrainingVariables_.at(iVar).first<<" type "<<mapTrainingVariables_.at(iVar).second<<endl;
-    factory_->AddVariable(mapTrainingVariables_.at(iVar).first+" := "+mapTrainingVariables_.at(iVar).first,*mapTrainingVariables_.at(iVar).second.c_str());
+    cout<<" train " <<mapTrainingVariables_.at(iVar)<<" type "<<endl;
+    factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
   }
 
   for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<" spectator " <<mapSpectatorVariables_.at(iVar).first<<" type "<<mapSpectatorVariables_.at(iVar).second<<endl;
-    factory_->AddSpectator(mapSpectatorVariables_.at(iVar).first,mapSpectatorVariables_.at(iVar).second.c_str());
+    cout<<" spectator " <<mapSpectatorVariables_.at(iVar)<<" type "<<endl;
+    factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
   }    
+}
+
+// Set Training Variables 
+void TMVATrainingClass::SetTrainingVariables  (const vector<string> & mapTrainingVariables){
+
+   mapTrainingVariables_.clear();
+   if(mapTrainingVariables.size()!=0) mapTrainingVariables_ = mapTrainingVariables;
+
+   return ;
+
+}
+
+// Set Spectator Variables
+void TMVATrainingClass::SetSpectatorVariables (const vector<string> & mapSpectatorVariables){
+
+   mapSpectatorVariables_.clear();
+   if(mapSpectatorVariables.size()!=0) mapSpectatorVariables_ = mapSpectatorVariables;
+
+   return ;
 }
 
 
 
 // Prepare the training addinf the preselection cut and the train/testing composition
 void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
-                                           const string & weightStringSignal,
-					   const string & weightStringBackground,
-					   const pair<int,int> & PileUpBinOfTraining,
-					   const int & nTraining,
-					   const int & nTesting, 
-					   const string & splitMode,
-					   const string & NormMode){
+					    string  weightStringSignal,
+					    string  weightStringBackground,
+					    const pair<int,int> & PileUpBinOfTraining,
+					    const int & nTraining,
+					    const int & nTesting, 
+					    const string & splitMode,
+					    const string & NormMode){
 
+  // cut container for events
+  cutEvent_ = cutContainer;
+  npuRange_ = PileUpBinOfTraining;
 
-  // declare the option for the training and set the weight expression for the signal and background samples
+  // declare the option for the training and set the weight expression for the signal and background samples --> weight expression can be a formula, not only a single branch 
   TString Option = Form("nTrain_Signal=%d:nTrain_Background=%d:nTest_Signal=%d:nTest_Background=%d:SplitMode=%s:NormMode=%s:!V",
                          nTraining,nTraining,nTesting,nTesting,splitMode.c_str(),NormMode.c_str());
 
-  SetEventWeight (weightStringSignal,weightStringBackground);
-  factory_->PrepareTrainingAndTestTree("","",Option.Data() );
+  SetEventWeight (weightStringSignal,weightStringBackground); // set the event basis weight in the factoryy
+  factory_->PrepareTrainingAndTestTree("","",Option.Data());  // set the options
 
+  // create the varlist for the TNtupla --> variables to be used as input, spectator and weights
+  string varListSignal ;
+  for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){ // loop on training variables
+    if(iVar!=0) varListSignal += ":"+mapTrainingVariables_.at(iVar);
+    else        varListSignal += mapTrainingVariables_.at(iVar);
+  }
+
+  for(size_t iVar = 0; iVar < mapSpectatorVariables_.size() ; iVar++){ // loop on spectator variables
+    if(iVar!=0) varListSignal += ":"+mapSpectatorVariables_.at(iVar);
+    else        varListSignal += mapSpectatorVariables_.at(iVar);
+  }
+
+  string varListBackground ;
+  varListBackground = varListSignal ;
+
+  // the re-weight can be different for signal and background, while the input and spectator must be the same
+  replace(weightStringBackground.begin(),weightStringBackground.end(),'*',':');
+  replace(weightStringBackground.begin(),weightStringBackground.end(),'=',':');
+  replace(weightStringBackground.begin(),weightStringBackground.end(),'/',':');
+  varListBackground += ":"+weightStringBackground;
+
+  replace(weightStringSignal.begin(),weightStringSignal.end(),'*',':');
+  replace(weightStringSignal.begin(),weightStringSignal.end(),'=',':');
+  replace(weightStringSignal.begin(),weightStringSignal.end(),'/',':');
+  varListSignal += ":"+weightStringSignal;  
+
+  // create the TNtuple structure for both signal and background
+  for(size_t iTree = 0; iTree < signalTreeList_.size() ; iTree++){
+    signalTNtuplaForTraining_.push_back(new TNtuple(TreeName_.c_str(),"",varListSignal.c_str()));
+  }
+
+  for(size_t iTree = 0; iTree < backgroundTreeList_.size() ; iTree++){
+    backgroundTNtuplaForTraining_.push_back(new TNtuple(TreeName_.c_str(),"",varListBackground.c_str()));
+  }
+
+  // make a list with the name of all the variables to be used --> split the weight expression
+  vector<string> totalSignalVariableList;
+  string segment;
+  stringstream signal_temp(varListSignal); 
+  while(getline(signal_temp, segment,':')){
+      totalSignalVariableList.push_back(segment);
+  } 
+
+  vector<string> totalBackgroundVariableList;
+  stringstream backg_temp(varListBackground); 
+  while(getline(backg_temp, segment,':')){
+      totalBackgroundVariableList.push_back(segment);
+  } 
+
+  
+  // Now loop on tress and events, applying cuts
+  vector<float> variableValue;
+  map<string,TH1F*> vect;
+
+  for(size_t iTree = 0; iTree  < signalTNtuplaForTraining_.size() ; iTree++){
+    if(reader_!=0) delete reader_;
+    reader_  = new readTree((TTree*)(signalTreeList_.at(iTree))); // create a reader of each tree
+    for(int iEvent = 0; iEvent < signalTreeList_.at(iTree)->GetEntries(); iEvent++){ // Loop on each tree entries
+      reader_->fChain->GetEntry(iEvent) ;
+      variableValue.clear();  
+      if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
+      // skip event with less than two leptons by default                    
+      if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
+      if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
+      if(reader_->jetpt_puppi1 < 0 or reader_->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet                                                      
+
+      if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range
+          
+      vect.clear();
+   
+      // apply analysis cut from utils.h 
+      if(!passCutContainerSelection(reader_,
+				    cutEvent_,
+				    "",
+				    usePuppiAsDefault_,
+				    minPtLeptonCut_,
+				    minPtLeptonCutCleaning_,
+				    leptonIsoCut_,
+				    leptonIsoLooseCut_,
+				    matchingCone_,
+				    minJetCutPt_,
+				    vect)) continue;
+
+
+      FillVariablesNtupla(variableValue,totalSignalVariableList); // fill the vector with variables value     
+      signalTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event
+    }    
+  }
+  
+  // Now loop on tress and events, applying cuts
+  for(size_t iTree = 0; iTree  < backgroundTNtuplaForTraining_.size() ; iTree++){
+    if(reader_!=0) delete reader_;
+    reader_  = new readTree((TTree*)(backgroundTreeList_.at(iTree)));
+    for(int iEvent = 0; iEvent < backgroundTreeList_.at(iTree)->GetEntries(); iEvent++){ // loop on backg events
+
+      reader_->fChain->GetEntry(iEvent) ;    
+      variableValue.clear();
+
+      if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
+      // skip event with less than two leptons by default                    
+      if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
+      if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
+      if(reader_->jetpt_puppi1 < 0 or reader_->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet                                                      
+
+      if(reader_->npu < npuRange_.first or reader_->npu > npuRange_.second) continue;
+        
+      vect.clear();
+      if(!passCutContainerSelection(reader_, // apply analysis cuts
+				    cutEvent_,
+				    "",
+				    usePuppiAsDefault_,
+				    minPtLeptonCut_,
+				    minPtLeptonCutCleaning_,
+				    leptonIsoCut_,
+				    leptonIsoLooseCut_,
+				    matchingCone_,
+				    minJetCutPt_,
+				    vect)) continue;
+
+
+      FillVariablesNtupla(variableValue,totalBackgroundVariableList); // fill the vector with variables value     
+      backgroundTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event
+    }
+  }
 }
 
+
+
+void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
+					       const double & minPtLeptonCut,
+					       const double & minPtLeptonCutCleaning,
+					       const double & leptonIsoCut,
+					       const double & leptonIsoLooseCut,
+					       const double & matchingCone,
+					       const double & minJetCutPt     
+					       ){
+
+  usePuppiAsDefault_ = usePuppiAsDefault;
+  minPtLeptonCut_         = minPtLeptonCut;
+  minPtLeptonCutCleaning_ = minPtLeptonCutCleaning;
+  leptonIsoCut_      = leptonIsoCut;
+  leptonIsoLooseCut_ = leptonIsoLooseCut;
+  matchingCone_ = matchingCone;
+  minJetCutPt_  = minJetCutPt;
+
+}
+    
 // Book MVA Training Variables 
 void TMVATrainingClass::BookMVATrees (const vector<double> & signalGlobalWeight, 
-				     const vector<double> & backgroundGlobalWeight){
+				      const vector<double> & backgroundGlobalWeight){
   
   SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
  
-  if(signalGlobalWeight.size() == signalTreeListForTraining_.size()){
-    for(size_t iTree = 0; iTree < signalTreeListForTraining_.size(); iTree ++) 
-      factory_->AddSignalTree (signalTreeListForTraining_.at(iTree),signalGlobalWeight.at(iTree)) ;
+  if(signalGlobalWeight.size() == signalTNtuplaForTraining_.size()){
+    for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++) 
+      factory_->AddSignalTree (signalTNtuplaForTraining_.at(iTree),signalGlobalWeight.at(iTree)) ;
   }
   else{        
-    for(size_t iTree = 0; iTree < signalTreeListForTraining_.size(); iTree ++) 
-      factory_->AddSignalTree (signalTreeListForTraining_.at(iTree),1.0) ;
+    for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++) 
+      factory_->AddSignalTree (signalTNtuplaForTraining_.at(iTree),1.0) ;
   }
 
-  if(backgroundGlobalWeight.size() == backgroundTreeListForTraining_.size()){
-    for(size_t iTree = 0; iTree < backgroundTreeListForTraining_.size(); iTree ++) 
-      factory_->AddBackgroundTree (backgroundTreeListForTraining_.at(iTree),backgroundGlobalWeight.at(iTree)) ;
+  if(backgroundGlobalWeight.size() == backgroundTNtuplaForTraining_.size()){
+    for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) 
+      factory_->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),backgroundGlobalWeight.at(iTree)) ;
   }
   else{        
-    for(size_t iTree = 0; iTree < backgroundTreeListForTraining_.size(); iTree ++) 
-      factory_->AddBackgroundTree (backgroundTreeListForTraining_.at(iTree),1.0) ;
+    for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) 
+      factory_->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),1.0) ;
   }
   
 }
+
+// set global event weight
+void TMVATrainingClass::SetGlobalSampleWeight (const vector<double> & signalGlobalWeight, const vector<double> & backgroundGlobalWeight){
+
+  signalGlobalWeight_.clear();
+  backgroundGlobalWeight_.clear();
+
+  signalGlobalWeight_     = signalGlobalWeight ;
+  backgroundGlobalWeight_ = backgroundGlobalWeight ;
+
+  return ;
+
+}
+
+
+void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const string & weightStringBackground){
+
+  factory_->SetSignalWeightExpression(weightStringSignal);
+  factory_->SetBackgroundWeightExpression(weightStringBackground);
+
+  return ;
+
+}
+
 
 // Train Rectangular Cuts
 void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod, 
@@ -459,12 +780,12 @@ void TMVATrainingClass::BookandTrainBDT ( const int & NTrees,
 
 // Train BDTG
 void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees, 
-					  const bool & optimizeMethods, 
-					  const float & GradBaggingFraction, 
-					  const string & PruneMethod,
-                       			  const int & PruneStrength, 
-					  const int & MaxDepth, 
-					  const string & SeparationType){
+					   const bool & optimizeMethods, 
+					   const float & GradBaggingFraction, 
+					   const string & PruneMethod,
+					   const int & PruneStrength, 
+					   const int & MaxDepth, 
+					   const string & SeparationType){
 
 
   string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
@@ -531,141 +852,110 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
   cout << "==> TMVAClassification is done!" << endl;
 }
 
-
-//Set Signal Tree Name
-void TMVATrainingClass::SetSignalTree (const vector<TFile*> & signalFileList, const string & TreeName){
-
-  if(TreeName!="") TreeName_ = TreeName ;
-  else TreeName_ = "easyDelphes" ;
-
-  for(size_t iFile = 0 ; iFile < signalFileList.size() ; iFile ++){
-   if(signalFileList.at(iFile)!=0) 
-    signalTreeList_.push_back((TTree*) signalFileList.at(iFile)->Get(TreeName_.c_str()));
-  }   
-
-  return ;
-
-}
+void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const vector<string> & variableList){
 
 
-void TMVATrainingClass::SetSignalTree (const vector<TTree*> & signalTreeList){
-  
-  for(unsigned int iTree = 0; iTree< signalTreeList.size(); iTree++){
-    if(signalTreeList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalTreeList.at(iTree)) ; 
+  TLorentzVector L_dilepton, L_met;
+
+  // dump all the lepton in the event                                                                                                                                      
+  vector<leptonContainer> LeptonsAll;
+  fillRecoLeptonsArray (LeptonsAll, *reader_);
+  // dump tight leptons                                                                                                                                                    
+  vector<leptonContainer> leptonsIsoTight ;
+  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_, minPtLeptonCut_);
+    
+  L_dilepton = leptonsIsoTight.at(0).lepton4V_ + leptonsIsoTight.at(1).lepton4V_ ;
+  if(not usePuppiAsDefault_)
+    L_met.SetPtEtaPhiM       (reader_->pfmet,0.,reader_->pfmetphi, 0.) ; 
+  else
+    L_met.SetPtEtaPhiM       (reader_->pfmet_puppi,0.,reader_->pfmetphi_puppi, 0.) ; 
+    
+  TLorentzVector L_dijet;
+  float asimJ = 0, asimL = 0, Rvar = 0;
+
+  vector<jetContainer> RecoJetsAll ;
+  if(not usePuppiAsDefault_)
+   fillRecoJetArray (RecoJetsAll, *reader_) ;
+  else 
+   fillPuppiJetArray (RecoJetsAll, *reader_) ;
+
+  // take jets                                                                                                                                                             
+  vector<jetContainer> RecoJets;
+  RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt_, cutEvent_.bTagVeto, cutEvent_.jetPUID, minPtLeptonCutCleaning_, matchingCone_);
+
+  if(RecoJets.size() > 2){
+    L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;
+    asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;
+    Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
   }
-  return ;
-
-}
-
-// Set Background Tree Name
-void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFileList, const string & TreeName){
-
-  if(TreeName!="") TreeName_ = TreeName ;
-  else TreeName_ = "easyDelphes" ;
-     
-  for(size_t iFile = 0 ; iFile < backgroundFileList.size() ; iFile ++){
-   if(backgroundFileList.at(iFile)!=0) 
-    backgroundTreeList_.push_back((TTree*) backgroundFileList.at(iFile)->Get(TreeName_.c_str()));
+      
+  // loop on the variable and find the values
+  for(size_t iVar = 0; iVar < variableList.size(); iVar++){
+    if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
+      variableValue.push_back(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())); 
+    }
+    else if(variableList.at(iVar) == "mjj" and RecoJets.size() >= 2){
+      variableValue.push_back(L_dijet.M());
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_LL"){
+      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_));
+    }
+    else if(variableList.at(iVar) == "mll"){
+      variableValue.push_back(L_dilepton.M());
+    }
+    else if(variableList.at(iVar) == "Asim_j"){
+      variableValue.push_back(asimJ);
+    }
+    else if(variableList.at(iVar) == "Asim_l"){
+      variableValue.push_back(asimL);
+    }
+    else if(variableList.at(iVar) == "R"){
+      variableValue.push_back(Rvar);
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_LL"){
+      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_LMet"){
+      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met));
+    }     
+    else if(variableList.at(iVar) == "DeltaPhi_LLMet"){
+      variableValue.push_back(L_dilepton.DeltaPhi(L_met));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_TLMet"){
+      variableValue.push_back(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_JJ"   and RecoJets.size()>=2){
+      variableValue.push_back(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()>=2){
+      variableValue.push_back(L_dijet.DeltaPhi(L_met));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()>=1){
+      variableValue.push_back(RecoJets.at(0).jet4V_.DeltaPhi(L_met));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() >=2){
+      variableValue.push_back(RecoJets.at(1).jet4V_.DeltaPhi(L_met));
+    }
+    else if(variableList.at(iVar) == "npu"){
+      variableValue.push_back(reader_-> npu);
+    }
+    else if(variableList.at(iVar) == "ptj1" and RecoJets.size()>=1){
+      variableValue.push_back(RecoJets.at(0).jet4V_.Pt());
+    }
+    else if(variableList.at(iVar) == "ptj2" and RecoJets.size()>=2){
+      variableValue.push_back(RecoJets.at(1).jet4V_.Pt());
+    }
+    else if(variableList.at(iVar) == "ptl1"){
+      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.Pt());
+    }
+    else if(variableList.at(iVar) == "ptl2"){
+      variableValue.push_back(leptonsIsoTight.at(1).lepton4V_.Pt());
+    }
+    else if(variableList.at(iVar) == "met"){
+      variableValue.push_back(L_met.Pt());
+    }
+    //        else if(variableList.at(iVar) == "weight"){
+    //	  variableValue.push_back(reader_->weight);
+    //}
   }
-
-  return ;
-
-}
-
-void TMVATrainingClass::SetBackgroundTree (const vector<TTree*> & backgroundTreeList){
-
-  for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
-    if(backgroundTreeList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
-  }
-   return ;
-
-}
-
-// Set Training Variables 
-void TMVATrainingClass::SetTrainingVariables  (const vector<pair<string,string> > & mapTrainingVariables){
-
-   if(mapTrainingVariables.size()!=0) mapTrainingVariables_ = mapTrainingVariables;
-
-   return ;
-
-}
-
-// Set Spectator Variables
-void TMVATrainingClass::SetSpectatorVariables (const vector<pair<string,string> > & mapSpectatorVariables){
-
-   if(mapSpectatorVariables.size()!=0) mapSpectatorVariables_ = mapSpectatorVariables;
-
-   return ;
-}
-
-// Set label
-void TMVATrainingClass::SetLabel (const string & Label ){
-
-  Label_ = Label ;
-
-  return ;
-
-}
-
-// Set Tree Name
-void TMVATrainingClass::SetTreeName (const string & TreeName ){
-
-  if(TreeName!="") TreeName_ = TreeName ;
-  else TreeName_ = "easyDelphes" ;
-
-  return ;
-}
-
-// set output file
-void TMVATrainingClass::SetOutputFile ( const string & outputFilePath , const string & outputFileName ){
-  
-  if( !outputFilePath.empty() && !outputFileName.empty()) { 
- 
-   outputFilePath_=outputFilePath; 
-   outputFileName_=outputFileName;
-
-   replace(outputFileName_.begin(),outputFileName_.end(),'/','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),'[','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),']','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),'(','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),')','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),':','_');
-
-   outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
-
-   outputFile_ = new TFile((outputFilePath_+"/"+outputFileName_+"_"+Label_+".root").c_str(),"RECREATE");
-   
-   outputFile_->cd();
- }
-
-  return ;
-
-}
-
-// set global event weight
-void TMVATrainingClass::SetGlobalSampleWeight (const vector<double> & signalGlobalWeight, const vector<double> & backgroundGlobalWeight){
-
-  signalGlobalWeight_     = signalGlobalWeight ;
-  backgroundGlobalWeight_ = backgroundGlobalWeight ;
-
-  return ;
-
-}
-
-
-void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const string & weightStringBackground){
-
-  factory_->SetSignalWeightExpression(weightStringSignal);
-  factory_->SetBackgroundWeightExpression(weightStringBackground);
-
-  return ;
-
-}
-
-void TMVATrainingClass::SetTransformations (const string & transformations){
-
-  transformations_ = transformations;  
-
- return ;
-
 }

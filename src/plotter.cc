@@ -1,11 +1,5 @@
 #include "plotter.h"
 
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TROOT.h"
-#include "TLatex.h"
-#include "TMath.h"
-
 using namespace std ;
 
 

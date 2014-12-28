@@ -2,34 +2,34 @@
 
 using namespace std;
 
-int ReadInputSampleFile(const std::string & InputSampleList, std::map<std::string,std::vector<sampleContainer> > & SampleContainer){
+int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sampleContainer> > & SampleContainer){
 
 
-  std::ifstream inputFile (InputSampleList.c_str());
-  std::string buffer;
+  ifstream inputFile (InputSampleList.c_str());
+  string buffer;
 
   if(inputFile.fail()) return -1; 
 
-  std::vector<std::string> NameSample;
-  std::vector<std::string> NameReducedSample;
-  std::vector<int>         ColorSample;
-  std::vector<double>      SampleCrossSection;
-  std::vector<int>         NumEntriesBefore;
-  std::vector<int>         isSignal;
+  vector<string> NameSample;
+  vector<string> NameReducedSample;
+  vector<int>         ColorSample;
+  vector<double>      SampleCrossSection;
+  vector<int>         NumEntriesBefore;
+  vector<int>         isSignal;
 
   while(!inputFile.eof()){
   
     getline(inputFile,buffer);
 
     if(buffer.empty() || !buffer.find("#") || buffer==" " ) continue ;
-    std::stringstream line(buffer);
+    stringstream line(buffer);
 
-    std::string  NameSampleTemp;
-    std::string  NameReducedSampleTemp;
-    std::string  ColorSampleTemp;
-    std::string  SampleCrossSectionTemp;
-    std::string  NumEntresBeforeTemp;
-    std::string  isSignalTemp;
+    string  NameSampleTemp;
+    string  NameReducedSampleTemp;
+    string  ColorSampleTemp;
+    string  SampleCrossSectionTemp;
+    string  NumEntresBeforeTemp;
+    string  isSignalTemp;
 
     line >> NameSampleTemp >> NameReducedSampleTemp >> ColorSampleTemp >> SampleCrossSectionTemp >> NumEntresBeforeTemp >> isSignalTemp;
 
@@ -48,16 +48,23 @@ int ReadInputSampleFile(const std::string & InputSampleList, std::map<std::strin
   }
 
 
+  NameSample.clear();
+  NameReducedSample.clear();
+  ColorSample.clear();
+  SampleCrossSection.clear();
+  NumEntriesBefore.clear();
+  isSignal.clear();
+
   return SampleContainer.size() ;
 
 }
 
 
-int ReadInputVariableFile( const std::string & InputVariableList , std::vector<variableContainer> & varContainer){
+int ReadInputVariableFile( const string & InputVariableList , vector<variableContainer> & varContainer){
 
 
-  std::ifstream inputFile (InputVariableList.c_str());
-  std::string buffer;
+  ifstream inputFile (InputVariableList.c_str());
+  string buffer;
 
   if(inputFile.fail()) return -1; 
   while(!inputFile.eof()){
@@ -65,13 +72,13 @@ int ReadInputVariableFile( const std::string & InputVariableList , std::vector<v
     getline(inputFile,buffer);
 
     if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
-    std::stringstream line(buffer);
+    stringstream line(buffer);
 
-    std::string  VariablesTemp;
-    std::string  VariablesNbinTemp;
-    std::string  VariablesMinValueTemp;
-    std::string  VariablesMaxValueTemp;
-    std::string  VariablesTitleTemp;
+    string  VariablesTemp;
+    string  VariablesNbinTemp;
+    string  VariablesMinValueTemp;
+    string  VariablesMaxValueTemp;
+    string  VariablesTitleTemp;
     
     line >> VariablesTemp >> VariablesNbinTemp >> VariablesMinValueTemp >> VariablesMaxValueTemp >> VariablesTitleTemp ;
     for(size_t ifound = 0 ; ifound < VariablesTitleTemp.size() ; ifound++) {
@@ -92,11 +99,11 @@ int ReadInputVariableFile( const std::string & InputVariableList , std::vector<v
 }
 
 
-int ReadInputVariableFile( const std::string & InputVariableList , std::vector<std::string> & varContainer){
+int ReadInputVariableFile( const string & InputVariableList , vector<string> & varContainer){
 
 
-  std::ifstream inputFile (InputVariableList.c_str());
-  std::string buffer;
+  ifstream inputFile (InputVariableList.c_str());
+  string buffer;
 
   if(inputFile.fail()) return -1; 
   while(!inputFile.eof()){
@@ -104,9 +111,9 @@ int ReadInputVariableFile( const std::string & InputVariableList , std::vector<s
     getline(inputFile,buffer);
 
     if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
-    std::stringstream line(buffer);
+    stringstream line(buffer);
 
-    std::string  VariablesTemp;
+    string  VariablesTemp;
     
     line >> VariablesTemp ;
 
@@ -117,11 +124,11 @@ int ReadInputVariableFile( const std::string & InputVariableList , std::vector<s
 
 }
 
-int ReadInputCutFile( const std::string & InputCutList , std::vector<cutContainer> & CutContainer){
+int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutContainer){
 
 
-  std::ifstream inputFile (InputCutList.c_str());
-  std::string buffer;
+  ifstream inputFile (InputCutList.c_str());
+  string buffer;
 
   if(inputFile.fail()) return -1; 
 
@@ -131,24 +138,24 @@ int ReadInputCutFile( const std::string & InputCutList , std::vector<cutContaine
 
     if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
 
-    std::stringstream line(buffer);      
+    stringstream line(buffer);      
 
-    std::string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagVeto, jetPUID;    
+    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagVeto, jetPUID;    
 
     line >> layerName >> ptL1 >> ptL2 >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagVeto >> jetPUID;     
 
     cutContainer dummy(layerName,
-                       std::make_pair(stod(ptL1),stod(ptL2)),
+                       make_pair(stod(ptL1),stod(ptL2)),
                        stod(chargeSign),
                        stod(flavour),
                        stoi(nLep),
                        stoi(nextra),
                        stod(MET),
-                       std::make_pair(stod(ptJet1),stod(ptJet2)),
+                       make_pair(stod(ptJet1),stod(ptJet2)),
                        stod(DetaJJ),
                        stod(Mjj),
-                       std::make_pair(stod(MllMin),stod(MllMax)),
-                       std::make_pair(stod(MllZVetoMin),stod(MllZVetoMax)),
+                       make_pair(stod(MllMin),stod(MllMax)),
+                       make_pair(stod(MllZVetoMin),stod(MllZVetoMax)),
                        stod(bTagVeto), 
                        stod(jetPUID));
 

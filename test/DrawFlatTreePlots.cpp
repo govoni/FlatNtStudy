@@ -29,7 +29,7 @@ int main (int argc, char ** argv) {
 
   // check number of inpt parameters
   if(argc < 2){
-    cerr<<"Forgot to parse the cfg file --> exit "<<std::endl;
+    cerr<<"Forgot to parse the cfg file --> exit "<<endl;
     return -1;
   }
  
@@ -41,34 +41,34 @@ int main (int argc, char ** argv) {
   config.Form("%s",argv[1]);
 
   if(!(gConfigParser->init(config))){
-      std::cout << ">>> parseConfigFile::Could not open configuration file " << config << std::endl;
+      cout << ">>> parseConfigFile::Could not open configuration file " << config << endl;
       return -1;
   }
 
   // import base directory where samples are located and txt file with the directory name + other info
-  std::string InputBaseDirectory           = gConfigParser -> readStringOption("Input::InputBaseDirectory");
-  std::string InputSampleList              = gConfigParser -> readStringOption("Input::InputSampleList");
+  string InputBaseDirectory           = gConfigParser -> readStringOption("Input::InputBaseDirectory");
+  string InputSampleList              = gConfigParser -> readStringOption("Input::InputSampleList");
 
-  std::map<std::string,std::vector<sampleContainer> > sampleMap ;
+  map<string,vector<sampleContainer> > sampleMap ;
   if(ReadInputSampleFile(InputSampleList,sampleMap) <= 0){
-    std::cerr<<" Empty Input Sample File or not Exisisting --> Exit "<<std::endl; return -1;}
+    cerr<<" Empty Input Sample File or not Exisisting --> Exit "<<endl; return -1;}
   
   // treeName
-  std::string treeName           = gConfigParser -> readStringOption("Input::TreeName");
+  string treeName           = gConfigParser -> readStringOption("Input::TreeName");
 
   // take the cut list
-  std::string InputCutList       = gConfigParser -> readStringOption("Input::InputCutList");
+  string InputCutList       = gConfigParser -> readStringOption("Input::InputCutList");
 
-  std::vector <cutContainer> CutList;
+  vector <cutContainer> CutList;
   if(ReadInputCutFile(InputCutList,CutList) <= 0){
-    std::cerr<<" Empty Cut List File or not Exisisting --> Exit "<<std::endl; return -1;}
+    cerr<<" Empty Cut List File or not Exisisting --> Exit "<<endl; return -1;}
 
   // take the variable list to be plotted
-  std::string InputVariableList  = gConfigParser -> readStringOption("Input::InputVariableList");
-  std::vector<variableContainer> variableList;
+  string InputVariableList  = gConfigParser -> readStringOption("Input::InputVariableList");
+  vector<variableContainer> variableList;
 
   if(ReadInputVariableFile(InputVariableList,variableList) <= 0 ){
-    std::cerr<<" Empty Variable List File or not Exisisting --> Exit "<<std::endl; return -1;}
+    cerr<<" Empty Variable List File or not Exisisting --> Exit "<<endl; return -1;}
 
   double lumi  =  gConfigParser -> readDoubleOption("Option::Lumi"); // fb^(-1)
   lumi *= 1000. ;   // transform into pb^(-1)
@@ -82,7 +82,7 @@ int main (int argc, char ** argv) {
   leptonIsoCutLoose   = gConfigParser -> readDoubleOption("Option::leptonIsoCutLoose");
 
   // output directory
-  std::string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
+  string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
   system(("mkdir -p output/"+outputPlotDirectory).c_str());
   system(("rm -r output/"+outputPlotDirectory+"/*").c_str());
 
@@ -90,16 +90,16 @@ int main (int argc, char ** argv) {
   
   plotter analysisPlots (lumi,"output") ;
 
-  std::map<string,TH1F*> histoCutEff ;
+  map<string,TH1F*> histoCutEff ;
 
-  for( std::map<std::string,std::vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){
+  for( map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){
 
    TChain* chain = new TChain (treeName.c_str()) ;  
    int numBefore = 0;
    // take input files
    for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
     numBefore += itSample->second.at(iContainer).numBefore; 
-    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
    }
 
    int totEvent = chain->GetEntries();
@@ -144,6 +144,7 @@ int main (int argc, char ** argv) {
     itMap->second->Scale(1./itMap->second->GetBinContent(1));
     itMap->second->Write();
   }
+
   outputEfficiency->Close();    
 
   return 0 ;

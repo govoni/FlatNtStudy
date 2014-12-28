@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <fstream>
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
@@ -17,6 +18,10 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TChain.h"
+#include "TStyle.h"
+#include "TROOT.h"
+#include "TLatex.h"
+#include "TMath.h"
 
 using namespace std ;
 
@@ -25,7 +30,7 @@ using namespace std ;
 
 // generic functions implemented in the cc
 double deltaPhi (double phi1, double phi2) ;
-bool   FillChain (TChain& chain, const std::string& inputFileList) ;
+bool   FillChain (TChain& chain, const string& inputFileList) ;
 // give an histogram set the poisson error bars
 void   setPoissonErrorsToHisto (TH1F * input) ;
 // add the overflow bin as real bin to the histo
@@ -44,7 +49,7 @@ class layer {
   layer (string name = "dummy") :
   m_layerName (name) {} ;
   string m_layerName ;
-  unordered_map<std::string, TH1F *> m_histos ;
+  unordered_map<string, TH1F *> m_histos ;
 } ;
 
 

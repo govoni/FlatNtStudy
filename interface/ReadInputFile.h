@@ -10,20 +10,22 @@
 #include <algorithm>
 #include <map>
 
-// sample container class                                                                                                                                                                  
+using namespace std;
+
+// sample container class                                                                                                                                             
 class sampleContainer {
  public :
   sampleContainer(){};
   ~sampleContainer(){};
 
- sampleContainer(std::string sampleName, int color, double xsec, int numBefore, int isSignal):
+ sampleContainer(string sampleName, int color, double xsec, int numBefore, int isSignal):
   sampleName(sampleName),
     color(color),
     xsec(xsec),
     numBefore(numBefore),
     isSignal(isSignal){};
 
-  std::string sampleName ;
+  string sampleName ;
   int    color;
   double xsec;
   int numBefore;
@@ -37,18 +39,18 @@ class cutContainer {
   cutContainer(){};
   ~cutContainer(){};
 
- cutContainer(std::string cutLayerName, 
-              std::pair<double,double> ptL, 
+ cutContainer(string cutLayerName, 
+              pair<double,double> ptL, 
               double  chargeSign, 
               double  flavour,
               int     nLep, 
               int     nextra,             
               double  MET, 
-              std::pair<double,double> ptJet, 
+              pair<double,double> ptJet, 
               double DetaJJ, 
               double Mjj, 
-              std::pair<double,double> Mll, 
-              std::pair<double,double> MllZVeto, 
+              pair<double,double> Mll, 
+              pair<double,double> MllZVeto, 
               double bTagVeto, double jetPUID ):
     cutLayerName(cutLayerName),
       ptL( ptL),
@@ -65,18 +67,18 @@ class cutContainer {
       bTagVeto(bTagVeto),
       jetPUID(jetPUID){};
 
-  std::string cutLayerName ;
-  std::pair<double,double> ptL;
+  string cutLayerName ;
+  pair<double,double> ptL;
   double  chargeSign;
   double  flavour;
   int     nLep;
   int     nextra;
   double  MET;
-  std::pair<double,double> ptJet;  
+  pair<double,double> ptJet;  
   double  DetaJJ;
   double  Mjj;
-  std::pair<double,double>  Mll;
-  std::pair<double,double>  MllZVeto;
+  pair<double,double>  Mll;
+  pair<double,double>  MllZVeto;
   double  bTagVeto;
   double  jetPUID;
 };
@@ -88,28 +90,28 @@ class variableContainer {
   variableContainer(){};
   ~variableContainer(){};
 
-  variableContainer(std::string variableName, int Nbin, double min, double max, std::string label):
+  variableContainer(string variableName, int Nbin, double min, double max, string label):
    variableName(variableName),
     Nbin(Nbin),
     min(min),
     max(max),
     label(label){}; 
 
-   std::string variableName ;
+   string variableName ;
    int Nbin ;
    double min;
    double max;
-   std::string label;
+   string label;
 
 };
 
 
-int ReadInputSampleFile   (const std::string & , std::map<std::string, std::vector<sampleContainer> > & );
+int ReadInputSampleFile   (const string & , map<string, vector<sampleContainer> > & );
 
-int ReadInputVariableFile (const std::string & , std::vector<variableContainer> & );
+int ReadInputVariableFile (const string & , vector<variableContainer> & );
 
-int ReadInputVariableFile (const std::string & , std::vector<std::string> & );
+int ReadInputVariableFile (const string & , vector<string> & );
 
-int ReadInputCutFile      (const std::string & , std::vector<cutContainer> &);
+int ReadInputCutFile      (const string & , vector<cutContainer> &);
 
 #endif
