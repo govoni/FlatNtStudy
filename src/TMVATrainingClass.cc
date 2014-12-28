@@ -406,12 +406,12 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
 
 void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
-					       const double & minPtLeptonCut,
-					       const double & minPtLeptonCutCleaning,
-					       const double & leptonIsoCut,
-					       const double & leptonIsoLooseCut,
-					       const double & matchingCone,
-					       const double & minJetCutPt     
+					       const float & minPtLeptonCut,
+					       const float & minPtLeptonCutCleaning,
+					       const float & leptonIsoCut,
+					       const float & leptonIsoLooseCut,
+					       const float & matchingCone,
+					       const float & minJetCutPt     
 					       ){
 
   usePuppiAsDefault_ = usePuppiAsDefault;
@@ -425,8 +425,8 @@ void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 }
     
 // Book MVA Training Variables 
-void TMVATrainingClass::BookMVATrees (const vector<double> & signalGlobalWeight, 
-				      const vector<double> & backgroundGlobalWeight){
+void TMVATrainingClass::BookMVATrees (const vector<float> & signalGlobalWeight, 
+				      const vector<float> & backgroundGlobalWeight){
   
   SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
  
@@ -451,7 +451,7 @@ void TMVATrainingClass::BookMVATrees (const vector<double> & signalGlobalWeight,
 }
 
 // set global event weight
-void TMVATrainingClass::SetGlobalSampleWeight (const vector<double> & signalGlobalWeight, const vector<double> & backgroundGlobalWeight){
+void TMVATrainingClass::SetGlobalSampleWeight (const vector<float> & signalGlobalWeight, const vector<float> & backgroundGlobalWeight){
 
   signalGlobalWeight_.clear();
   backgroundGlobalWeight_.clear();
@@ -892,70 +892,70 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
   // loop on the variable and find the values
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
     if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
-      variableValue.push_back(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())); 
+      variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))); 
     }
     else if(variableList.at(iVar) == "mjj" and RecoJets.size() >= 2){
-      variableValue.push_back(L_dijet.M());
+      variableValue.push_back(float(L_dijet.M()));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
-      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_));
+      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)));
     }
     else if(variableList.at(iVar) == "mll"){
-      variableValue.push_back(L_dilepton.M());
+      variableValue.push_back(float(L_dilepton.M()));
     }
     else if(variableList.at(iVar) == "Asim_j"){
-      variableValue.push_back(asimJ);
+      variableValue.push_back(float(asimJ));
     }
     else if(variableList.at(iVar) == "Asim_l"){
-      variableValue.push_back(asimL);
+      variableValue.push_back(float(asimL));
     }
     else if(variableList.at(iVar) == "R"){
-      variableValue.push_back(Rvar);
+      variableValue.push_back(float(Rvar));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
-      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_));
+      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LMet"){
-      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met));
+      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)));
     }     
     else if(variableList.at(iVar) == "DeltaPhi_LLMet"){
-      variableValue.push_back(L_dilepton.DeltaPhi(L_met));
+      variableValue.push_back(float(L_dilepton.DeltaPhi(L_met)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_TLMet"){
-      variableValue.push_back(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met));
+      variableValue.push_back(float(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJ"   and RecoJets.size()>=2){
-      variableValue.push_back(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_));
+      variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()>=2){
-      variableValue.push_back(L_dijet.DeltaPhi(L_met));
+      variableValue.push_back(float(L_dijet.DeltaPhi(L_met)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()>=1){
-      variableValue.push_back(RecoJets.at(0).jet4V_.DeltaPhi(L_met));
+      variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(L_met)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() >=2){
-      variableValue.push_back(RecoJets.at(1).jet4V_.DeltaPhi(L_met));
+      variableValue.push_back(float(RecoJets.at(1).jet4V_.DeltaPhi(L_met)));
     }
     else if(variableList.at(iVar) == "npu"){
-      variableValue.push_back(reader_-> npu);
+      variableValue.push_back(float(reader_-> npu));
     }
     else if(variableList.at(iVar) == "ptj1" and RecoJets.size()>=1){
-      variableValue.push_back(RecoJets.at(0).jet4V_.Pt());
+      variableValue.push_back(float(RecoJets.at(0).jet4V_.Pt()));
     }
     else if(variableList.at(iVar) == "ptj2" and RecoJets.size()>=2){
-      variableValue.push_back(RecoJets.at(1).jet4V_.Pt());
+      variableValue.push_back(float(RecoJets.at(1).jet4V_.Pt()));
     }
     else if(variableList.at(iVar) == "ptl1"){
-      variableValue.push_back(leptonsIsoTight.at(0).lepton4V_.Pt());
+      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.Pt()));
     }
     else if(variableList.at(iVar) == "ptl2"){
-      variableValue.push_back(leptonsIsoTight.at(1).lepton4V_.Pt());
+      variableValue.push_back(float(leptonsIsoTight.at(1).lepton4V_.Pt()));
     }
     else if(variableList.at(iVar) == "met"){
-      variableValue.push_back(L_met.Pt());
+      variableValue.push_back(float(L_met.Pt()));
     }
     //        else if(variableList.at(iVar) == "weight"){
-    //	  variableValue.push_back(reader_->weight);
+    //	  variableValue.push_back(float(reader_->weight));
     //}
   }
 }

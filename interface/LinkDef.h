@@ -8,6 +8,7 @@
 #include "ConfigParser.h"
 #include "ReadInputFile.h"
 #include "TMVATrainingClass.h"
+#include "TMVAPlotClass.h"
 
 #ifdef __CINT__
 
@@ -30,5 +31,8 @@
 #pragma link C++ class variableContainer+;
 #pragma link C++ class sampleContainer+;
 #pragma link C++ class TMVATrainingClass+;
+#pragma link C++ class significanceBox;
+#pragma link C++ class TMVAPlotClass;
+
 
 #endif

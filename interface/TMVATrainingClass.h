@@ -59,8 +59,8 @@ class TMVATrainingClass {
   ~TMVATrainingClass();
 
   // Set global event weight for signal and background
-  void BookMVATrees ( const vector<double> & signalGlobalWeight,        // global cross section weight for each signal file or tree
-                      const vector<double> & backgroundGlobalWeight) ;  // global cross section weight for each background file or tree
+  void BookMVATrees ( const vector<float> & signalGlobalWeight,        // global cross section weight for each signal file or tree
+                      const vector<float> & backgroundGlobalWeight) ;  // global cross section weight for each background file or tree
 
   // Set Training and Spectator Variables
   void AddTrainingVariables ( const vector<string> & mapTrainingVariables,   // input list of training variables
@@ -176,8 +176,8 @@ class TMVATrainingClass {
   void SetLabel ( const string & Label );
 
   // Set Global Event re-weight due to the luminosity
-  void SetGlobalSampleWeight (const vector<double> & signalGlobalWeight, 
-                              const vector<double> & backgroundGlobalWeight) ;
+  void SetGlobalSampleWeight (const vector<float> & signalGlobalWeight, 
+                              const vector<float> & backgroundGlobalWeight) ;
 
   // Set Event re-weight : pile-Up, efficiency, cps, interference, btag .. etc
   void SetEventWeight ( const string & weightStringSignal, 
@@ -188,27 +188,27 @@ class TMVATrainingClass {
 
   //Set basic event info for cut
   void SetBasicEventCutInfo ( const bool & usePuppiAsDefault = false,
-			      const double & minPtLeptonCut  = 10,
-			      const double & minPtLeptonCutCleaning = 15,
-			      const double & leptonIsoCut      = 0.4,
-			      const double & leptonIsoLooseCut = 0.7,
-			      const double & matchingCone      = 0.3,
-			      const double & minJetCutPt       = 30
+			      const float & minPtLeptonCut  = 10,
+			      const float & minPtLeptonCutCleaning = 15,
+			      const float & leptonIsoCut      = 0.4,
+			      const float & leptonIsoLooseCut = 0.7,
+			      const float & matchingCone      = 0.3,
+			      const float & minJetCutPt       = 30
 			    );
 
  private : 
 
   // basic cut info
   bool   usePuppiAsDefault_;
-  double minPtLeptonCut_;
-  double minPtLeptonCutCleaning_;
-  double leptonIsoCut_;
-  double leptonIsoLooseCut_;
-  double matchingCone_;
-  double minJetCutPt_;
+  float minPtLeptonCut_;
+  float minPtLeptonCutCleaning_;
+  float leptonIsoCut_;
+  float leptonIsoLooseCut_;
+  float matchingCone_;
+  float minJetCutPt_;
 
   // PU range of training 
-  pair<double,double> npuRange_ ;
+  pair<float,float> npuRange_ ;
 
   // list of trees for signal and background
   vector<TTree*> signalTreeList_ ;
@@ -226,8 +226,8 @@ class TMVATrainingClass {
   vector<string> mapSpectatorVariables_ ;
 
   // Global re-weight for luminosity
-  vector<double> signalGlobalWeight_ ;
-  vector<double> backgroundGlobalWeight_ ;
+  vector<float> signalGlobalWeight_ ;
+  vector<float> backgroundGlobalWeight_ ;
    
   // TreeName
   string TreeName_ ;
