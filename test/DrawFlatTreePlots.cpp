@@ -8,7 +8,6 @@
 #include "TChain.h"
 #include "TLorentzVector.h"
 
-#include "readTree.h"
 #include "plotter.h"
 #include "ConfigParser.h"
 #include "readTree.h"
