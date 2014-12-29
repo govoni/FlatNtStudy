@@ -1,5 +1,5 @@
-#ifndef ReadInputFile_h
-#define ReadInputFile_h
+#ifndef ReadInpinutFile_h
+#define ReadInpinutFile_h
 
 #include <iostream>
 #include <cstdlib>
@@ -9,6 +9,8 @@
 #include <sstream>
 #include <algorithm>
 #include <map>
+
+#include "TString.h"
 
 using namespace std;
 
@@ -90,27 +92,49 @@ class variableContainer {
   variableContainer(){};
   ~variableContainer(){};
 
-  variableContainer(string variableName, int Nbin, double min, double max, string label):
-   variableName(variableName),
+ variableContainer(string variableName, int Nbin, double min, double max, string label):
+  variableName(variableName),
     Nbin(Nbin),
     min(min),
     max(max),
     label(label){}; 
 
-   string variableName ;
-   int Nbin ;
-   double min;
-   double max;
-   string label;
+  string variableName ;
+  int Nbin ;
+  double min;
+  double max;
+  string label;
 
 };
 
+class trainingContainer {
+
+ public: 
+
+  trainingContainer(){};
+  ~trainingContainer(){};
+
+ trainingContainer(string fileName, string varNameReduced, pair<int,int> puBin, vector<string> methodName):
+  fileName(fileName),
+    varNameReduced(varNameReduced),
+    puBin(puBin),
+    methodName(methodName)
+  {};
+
+  string fileName;
+  string varNameReduced;
+  pair<int,int> puBin;
+  vector<string> methodName;
+
+};
 
 int ReadInputSampleFile   (const string & , map<string, vector<sampleContainer> > & );
 
 int ReadInputVariableFile (const string & , vector<variableContainer> & );
 
 int ReadInputVariableFile (const string & , vector<string> & );
+
+int ReadInputTrainingFile (const string & , vector<trainingContainer> & );
 
 int ReadInputCutFile      (const string & , vector<cutContainer> &);
 

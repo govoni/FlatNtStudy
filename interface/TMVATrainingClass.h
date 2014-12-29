@@ -55,6 +55,15 @@ class TMVATrainingClass {
 		    const string & Label,                      // label
 		    const string & transformation = "");       // transformation to be applied on the input variables
 
+  // constructor from list of trees
+  TMVATrainingClass(const vector<TChain*> & signalChainList,     // signal tree list
+		    const vector<TChain*> & backgroundChainList, // background tree list
+		    const string & TreeName,                   // tree name
+		    const string & outputFilePath ,            // output path for storing TMVA files
+		    const string & outputFileName,             // output file name
+		    const string & Label,                      // label
+		    const string & transformation = "");       // transformation to be applied on the input variables
+
   // default de-constructor
   ~TMVATrainingClass();
 
@@ -148,9 +157,9 @@ class TMVATrainingClass {
   // Set Signal Tree giving file
   void SetSignalTree (const vector<TFile*> & signalFileList,  
                       const string & TreeName = "easyDelphes");
-
   // Set Signal Tree giving tree
-  void SetSignalTree (const vector<TTree*> & signalTreeList);
+  void SetSignalTree (const vector<TTree*>  & signalTreeList);
+  void SetSignalTree (const vector<TChain*> & signalChainList);
 
   // Set Background Tree giving file
   void SetBackgroundTree (const vector<TFile*> & backgroundFileList, 
@@ -158,6 +167,7 @@ class TMVATrainingClass {
 
   // Set Background Tree giving tree
   void SetBackgroundTree (const vector<TTree*> & backgroundTreeList);
+  void SetBackgroundTree (const vector<TChain*> & backgroundChainList);
 
   // Set the training variables name
   void SetTrainingVariables  (const vector<string > & mapTrainingVariables);
