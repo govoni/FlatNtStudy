@@ -167,3 +167,54 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
   return CutContainer.size() ;
 
 }
+
+int ReadInputTrainingFile (const string & InputTrainingList, vector<trainingContainer> & trainContainer){
+
+
+  ifstream inputFile (InputTrainingList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+
+    stringstream line(buffer);      
+
+    string fileName, varNameReduced, puMin, puMax;
+    vector<string> methodName;
+
+    line >> fileName >> varNameReduced >> puMin >> puMax;
+
+    TString line_temp (line.str());
+    line_temp.ReplaceAll(fileName.c_str(),"");  
+    line_temp.ReplaceAll(varNameReduced.c_str(),"");  
+    line_temp.ReplaceAll(puMin.c_str(),"");  
+    line_temp.ReplaceAll(puMax.c_str(),"");  
+    line_temp.ReplaceAll(" ","");  
+  
+    string segment;
+    stringstream vect(line_temp.Data());
+    while(getline(vect, segment,':')){
+      methodName.push_back(segment);
+    }
+
+
+    trainingContainer dummy(fileName,
+			    varNameReduced,
+			    make_pair(stoi(puMin),stoi(puMax)),
+			    methodName
+			    );
+
+    
+    trainContainer.push_back(dummy);
+
+  }
+
+  return trainContainer.size() ;
+
+
+}

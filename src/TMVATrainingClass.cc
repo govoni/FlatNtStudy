@@ -51,6 +51,31 @@ TMVATrainingClass::TMVATrainingClass(const vector<TTree*> & signalTreeList,
 				transformation.c_str()));
 }
 
+// constructor giving tree
+TMVATrainingClass::TMVATrainingClass(const vector<TChain*> & signalTreeList, 
+				     const vector<TChain*> & backgroundTreeList,  
+				     const string & TreeName,
+				     const string & outputFilePath , 
+				     const string & outputFileName, 
+				     const string & Label,
+				     const string & transformation){
+   
+
+  SetTreeName       (TreeName) ;
+  SetSignalTree     (signalTreeList) ;
+  SetBackgroundTree (backgroundTreeList) ;
+  SetLabel (Label);
+  SetOutputFile (outputFilePath,outputFileName) ;
+  SetTransformations(transformation);
+
+  if(factory_!=0) delete factory_;
+
+  factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
+				outputFile_,
+				Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",
+				transformation.c_str()));
+}
+
 // Deconstructor
 TMVATrainingClass::~TMVATrainingClass(){
 
@@ -82,7 +107,8 @@ TMVATrainingClass::~TMVATrainingClass(){
 
 
 //Set Signal Tree Name
-void TMVATrainingClass::SetSignalTree (const vector<TFile*> & signalFileList, const string & TreeName){
+void TMVATrainingClass::SetSignalTree (const vector<TFile*> & signalFileList, 
+				       const string & TreeName){
 
   if(TreeName!="") TreeName_ = TreeName ;
   else TreeName_ = "easyDelphes" ;
@@ -112,8 +138,24 @@ void TMVATrainingClass::SetSignalTree (const vector<TTree*> & signalTreeList){
 
 }
 
+void TMVATrainingClass::SetSignalTree (const vector<TChain*> & signalChainList){
+
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(unsigned int iTree = 0; iTree< signalChainList.size(); iTree++){
+    if(signalChainList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalChainList.at(iTree)) ; 
+  }
+  return ;
+
+}
+
+
+
+
 // Set Background Tree Name
-void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFileList, const string & TreeName){
+void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFileList, 
+					   const string & TreeName){
 
   if(TreeName!="") TreeName_ = TreeName ;
   else TreeName_ = "easyDelphes" ;
@@ -144,6 +186,18 @@ void TMVATrainingClass::SetBackgroundTree (const vector<TTree*> & backgroundTree
 
 }
 
+void TMVATrainingClass::SetBackgroundTree (const vector<TChain*> & backgroundChainList){
+
+  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
+  signalTreeList_.clear();
+
+  for(unsigned int iTree = 0; iTree< backgroundChainList.size(); iTree++){
+    if(backgroundChainList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundChainList.at(iTree)) ; 
+  }
+   return ;
+
+}
+
 // Set label
 void TMVATrainingClass::SetLabel (const string & Label ){
   Label_ = Label ;
@@ -161,7 +215,8 @@ void TMVATrainingClass::SetTreeName (const string & TreeName ){
 }
 
 // set output file
-void TMVATrainingClass::SetOutputFile ( const string & outputFilePath , const string & outputFileName ){
+void TMVATrainingClass::SetOutputFile ( const string & outputFilePath , 
+					const string & outputFileName ){
   
   if( !outputFilePath.empty() && !outputFileName.empty()) { 
  
@@ -649,25 +704,26 @@ void TMVATrainingClass::BookandTrainLinearDiscriminant(){
 
 // Train MLP
 void TMVATrainingClass::BookandTrainMLP(const int & nCycles, 
-                                       const string & HiddenLayers, 
-				       const string & NeuronType,
-				       const string & TrainingMethod, 
-				       const int & TestRate, 
-				       const int & ConvergenceTests){
+					const string & HiddenLayers, 
+					const string & NeuronType,
+					const string & TrainingMethod, 
+					const int & TestRate, 
+					const int & ConvergenceTests){
 
 
   string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
   int result = system(command.c_str());
   if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
-  // Set Name of the Weight file for TMVA evaluating procedure                                                                                                                               
-  outputFileWeightName_["MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_;
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP_"+NeuronType+"_"+TrainingMethod+"_"+Label_];
+
+  // Set Name of the Weight file for TMVA evaluating procedure                                                                                                            
+  outputFileWeightName_["MLP_"+Label_] = outputFilePath_+"/TMVAWeight_MLP_"+Label_;
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP_"+Label_];
 
   TString Option = Form ("!H:!V:NCycles=%d:CalculateErrors:HiddenLayers=%s:NeuronType=%s:CreateMVAPdfs:TrainingMethod=%s:TestRate=%d"
 			 ":ConvergenceTests=%d:UseRegulator%s",nCycles,HiddenLayers.c_str(),NeuronType.c_str(),TrainingMethod.c_str(),TestRate,
                          ConvergenceTests,transformations_.c_str());
 
-  factory_->BookMethod( TMVA::Types::kMLP, "MLP_"+NeuronType+"_"+TrainingMethod, Option.Data());
+  factory_->BookMethod( TMVA::Types::kMLP, "MLP", Option.Data());
   
   factory_->TrainAllMethods();
 
@@ -720,13 +776,13 @@ void TMVATrainingClass::BookandTrainTMlpANN  ( const int & nCycles, const string
   if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                                            
-  outputFileWeightName_["TMlpANN_"+TrainingMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_TMlpANN_"+TrainingMethod+"_"+Label_;
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["TMlpANN_"+TrainingMethod+"_"+Label_];
+  outputFileWeightName_["TMlpANN_"+Label_] = outputFilePath_+"/TMVAWeight_TMlpANN_"+Label_;
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["TMlpANN_"+Label_];
 
   TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:LearningMethod=%s:ValidationFraction=%f:CreateMVAPdfs%s",
 			 nCycles,HiddenLayers.c_str(),TrainingMethod.c_str(),ValidationFraction,transformations_.c_str());
 
-  factory_->BookMethod( TMVA::Types::kTMlpANN, "TMlpANN_"+TrainingMethod,Option.Data());
+  factory_->BookMethod( TMVA::Types::kTMlpANN, "TMlpANN",Option.Data());
 
   factory_->TrainAllMethods();
 
@@ -757,12 +813,12 @@ void TMVATrainingClass::BookandTrainBDT ( const int & NTrees,
   if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                          
-  outputFileWeightName_["BDT_"+BoostType+"_"+PruneMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_BDT_"+BoostType+"_"+PruneMethod+"_"+Label_;
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDT_"+BoostType+"_"+PruneMethod+"_"+Label_];
+  outputFileWeightName_["BDT_"+Label_] = outputFilePath_+"/TMVAWeight_BDT_"+Label_;
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDT_"+Label_];
   
   TString Option = Form ("!H:!V:CreateMVAPdfs:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=200%s",NTrees,BoostType.c_str(),AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
 
-  factory_->BookMethod( TMVA::Types::kBDT, "BDT_"+BoostType+"_"+PruneMethod, Option.Data());
+  factory_->BookMethod( TMVA::Types::kBDT, "BDT", Option.Data());
 
   if(optimizeMethods) factory_->OptimizeAllMethods();                                                                                                                                                            
   factory_->TrainAllMethods();
@@ -793,12 +849,12 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
   if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                          
-  outputFileWeightName_["BDTG_"+PruneMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_BDTG_"+PruneMethod+"_"+Label_;
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+PruneMethod+"_"+Label_];
+  outputFileWeightName_["BDTG_"+Label_] = outputFilePath_+"/TMVAWeight_BDTG_"+Label_;
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
 
   TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000%s",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
 
-  factory_->BookMethod( TMVA::Types::kBDT, "BDTG_"+PruneMethod, Option.Data());
+  factory_->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
   
   if(optimizeMethods) factory_->OptimizeAllMethods();                                                                                                                     
                                  
@@ -829,14 +885,14 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
   if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                                 
-  outputFileWeightName_["BDTF_"+PruneMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_BDTF_"+PruneMethod+"_"+Label_;
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTF_"+PruneMethod+"_"+Label_];
+  outputFileWeightName_["BDTF_"+Label_] = outputFilePath_+"/TMVAWeight_BDTF_"+Label_;
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTF_"+Label_];
 
   TString Option = Form ("!H:!V:CreateMVAPdfs:UseFisherCuts:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:"
                          "PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.10:nCuts=20%s",NTrees,BoostType.c_str(),
                           AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
 
-  factory_->BookMethod( TMVA::Types::kBDT,"BDTF_"+PruneMethod+"_", Option.Data());
+  factory_->BookMethod( TMVA::Types::kBDT,"BDTF", Option.Data());
 
   if(optimizeMethods) factory_->OptimizeAllMethods();
                                                                                                                                                              
