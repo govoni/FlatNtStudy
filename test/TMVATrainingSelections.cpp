@@ -66,7 +66,7 @@ int main (int argc, char** argv){
   if(ReadInputSampleFile(InputSampleList,sampleMap) <= 0){
     cerr<<" Empty Input Sample File or not Exisisting --> Exit "<<endl; return -1;}
 
-  // treeName                                                                                                                                                                   
+  // treeName                                                                                                                                                               
   string treeName ;
   try{ 
     treeName  = gConfigParser -> readStringOption("Input::TreeName");
@@ -76,7 +76,7 @@ int main (int argc, char** argv){
     cerr<<" set treeName to the default : easyDelphes "<<endl;
   } 
 
-  // take the cut list                                                                                                                                                          
+  // take the cut list                                                                                                                                                         
   string InputCutList       = gConfigParser -> readStringOption("Input::InputCutList");
 
   vector <cutContainer> CutList;
@@ -105,6 +105,16 @@ int main (int argc, char** argv){
     spectatorList.push_back(variableContainer("npu",300,0,300,"N_{PU}"));
   } 
 
+  //take input variable transformation
+  string variableTransformation ;
+  try {
+    variableTransformation = gConfigParser -> readStringOption("Input::VariableTransformation");
+  }
+  catch(char* exceptionString){
+    variableTransformation = "I:N";
+    cerr<<" set default transformation --> I:N"<<endl;
+  }
+
   // take the method to be trained
   vector<string> TrainMVAMethodName;
   try{
@@ -118,7 +128,7 @@ int main (int argc, char** argv){
   // label in order to name the output file
   string Label;
   try{
-    Label = gConfigParser -> readStringOption("Option::Label");
+    Label = gConfigParser -> readStringOption("Input::Label");
   }
   catch(char* exceptionString){
     cerr<<" Label set to Test "<<endl; 
@@ -160,7 +170,7 @@ int main (int argc, char** argv){
     eventWeight  = gConfigParser -> readStringOption("Option::eventWeight");
   }
   catch(char* exceptionString){
-    cout<<" eventWeight --> not found --> empty string "<<endl;
+    cerr<<" eventWeight --> not found --> empty string "<<endl;
   }
 
   vector<int> pileUpBin;
@@ -176,7 +186,6 @@ int main (int argc, char** argv){
   // output directory                                                                                                                                                       
   string outputFileDirectory = gConfigParser -> readStringOption("Output::outputFileDirectory");
   system(("mkdir -p output/"+outputFileDirectory).c_str());
-  system(("rm -r output/"+outputFileDirectory+"/*").c_str());
   outputFileDirectory = "output/"+outputFileDirectory;
 
   string outputFileName ;
@@ -195,8 +204,7 @@ int main (int argc, char** argv){
   vector <TChain*> signalChain;
   vector <TChain*> backgroundChain;
 
-  cout<<" Building Tree List for Signal And Background  "<<endl;
-  cout<<endl;
+  cout<<"Building Tree List for Signal And Background  "<<endl;
 
   map<string,vector<sampleContainer> >::iterator itBackgroundSample = sampleMap.begin(); // loop on the sample map
   for( ; itBackgroundSample != sampleMap.end() ; ++itBackgroundSample){
@@ -210,9 +218,10 @@ int main (int argc, char** argv){
     // take input files                                                                                                                                                        
     for(size_t iContainer = 0; iContainer < itBackgroundSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itBackgroundSample->second.at(iContainer).numBefore;
-      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
     }
 
+    
     TObjArray *fileElements = 0;
     fileElements = backgroundChainOriginal.back()->GetListOfFiles();
     TIter next(fileElements);
@@ -224,27 +233,26 @@ int main (int argc, char** argv){
       if (fFileTemp->IsZombie()){
         if(fFileTemp!=0) fFileTemp->Delete();
         continue;                  //file is unusable
-      }
+      }      
       if (fFileTemp->TestBit(TFile::kRecovered)){
 	if(fFileTemp!=0) fFileTemp->Delete();
 	continue;  //file has been recovered
       }
       backgroundChain.back()->Add(chElement->GetTitle());
-      if(chElement!=0) chElement->Delete();
-      if(fFileTemp!=0) fFileTemp->Delete();
+      if(fFileTemp!=0) fFileTemp->Delete();     
     }
-
+    
     int totEvent = backgroundChain.back()->GetEntries();
     // add  sample to the analysis plot container                                                                                                                              
     if(numBefore < totEvent) itBackgroundSample->second.at(0).numBefore = totEvent ;
-
+    cout<<"Background Base Sample Name : "<<itBackgroundSample->first<<" Num Events Before "<<itBackgroundSample->second.at(0).numBefore<<" XS "<<itBackgroundSample->second.at(0).xsec<<" lumi "<<lumi<<endl;
     if(fileElements!=0) fileElements->Delete();
-
+   
   }
 
   for_each(backgroundChainOriginal.begin(),backgroundChainOriginal.end(), default_delete<TChain>());
   backgroundChainOriginal.clear();
-
+  
   // signal
   map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin(); // loop on the sample map
   for( ; itSignalSample != sampleMap.end() ; ++itSignalSample){
@@ -258,7 +266,7 @@ int main (int argc, char** argv){
     // take input files                                                                                                                                                        
     for(size_t iContainer = 0; iContainer < itSignalSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itSignalSample->second.at(iContainer).numBefore;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
     }
 
     TObjArray *fileElements = 0;
@@ -278,7 +286,6 @@ int main (int argc, char** argv){
 	continue;  //file has been recovered
       }
       signalChain.back()->Add(chElement->GetTitle());
-      if(chElement!=0) chElement->Delete();
       if(fFileTemp!=0) fFileTemp->Delete();
     }
 
@@ -286,12 +293,12 @@ int main (int argc, char** argv){
     // add  sample to the analysis plot container                                                                                                                              
     if(numBefore < totEvent) itSignalSample->second.at(0).numBefore = totEvent ;
     if(fileElements!=0) fileElements->Delete();
+    cout<<"Signal Base Sample Name : "<<itSignalSample->first<<" Num Events Before "<<itSignalSample->second.at(0).numBefore<<" XS "<<itSignalSample->second.at(0).xsec<<" lumi "<<lumi<<endl;
   }
 
   for_each(signalChainOriginal.begin(),signalChainOriginal.end(), default_delete<TChain>());
   signalChainOriginal.clear();
-
-
+  
   // Book MVA Training Object --> one for each PU bin 
   vector<TMVATrainingClass*> trainingVector ;
 
@@ -301,48 +308,49 @@ int main (int argc, char** argv){
 
   for(size_t puBin = 0; puBin+1 < pileUpBin.size() ; puBin++){
 
-    cout<<" pu bin of Training: Min = "<<pileUpBin.at(puBin)<<" Max = "<<pileUpBin.at(puBin+1)<<endl;
- 
+    cout<<"PU Bin of Training: Min = "<<pileUpBin.at(puBin)<<" Max = "<<pileUpBin.at(puBin+1)<<endl;
+    
     TString LabelTemp ;
     if(pileUpBin.size() > 2) 
       LabelTemp = Form("%s_PU_%d_%d",Label.c_str(),int(pileUpBin.at(puBin)),int(pileUpBin.at(puBin+1))) ;
     else Label = LabelTemp ;
-
+    
     for(size_t iCut = 0 ; iCut < CutList.size(); iCut++){
 
-      if(CutList.size() > 1 ) outputFileName += CutList.at(iCut).cutLayerName;
+      if(CutList.size() > 1 ) outputFileName += "_"+CutList.at(iCut).cutLayerName;
 
       if(isTrainEachVariable == true){ // train independently each variable in the variable list
-	for(size_t iVar = 0 ; iVar < variableList.size() ; iVar++){
 
+	for(size_t iVar = 0 ; iVar < variableList.size() ; iVar++){
+	  
 	  trainingVector.push_back(new TMVATrainingClass(signalChain, 
 							 backgroundChain, 
 							 treeName, 
 							 outputFileDirectory, 
 							 outputFileName+"_"+variableList.at(iVar).variableName, 
 							 Label,
-							 ":TransformationsI,N"));
-	  // Set Input and Spectator Variables
-	  cout<<endl;
-	  cout<<" Start to set input variable  "<<variableList.at(iVar).variableName<<endl;
-	  cout<<endl;
-	  
+							 ":Transformations="+variableTransformation));
+	  // Set Input and Spectator Variables	  
+          cout<<endl;
+	  cout<<"Start to set input variable  "<<variableList.at(iVar).variableName<<endl;	  
+	  	  
 	  trainingVector.back()->AddTrainingVariables(variableList.at(iVar).variableName,GetVariableList(spectatorList));
 
-	  // Set Global Weight and signal + background Tree for MVA Training
+	  // Set Global Weight and signal + background Tree for MVA Training	  
 	  signalGlobalWeight.clear();
 	  backgroundGlobalWeight.clear();
 	  signalGlobalWeight.assign(signalChain.size(),0.);
 	  backgroundGlobalWeight.assign(backgroundChain.size(),0.);
 	  
-	  cout<<" Building Global Event Weight  + Add Trees "<<endl;
 	  cout<<endl; 
-	    
+	  cout<<"Building Global Event Weight  + Add Trees "<<endl;
+	  
 	  int iBackg = 0;
 	  map<string,vector<sampleContainer> >::iterator itBackgroundSample = sampleMap.begin();
 	  for( ; itBackgroundSample != sampleMap.end() ; itBackgroundSample++){          
 	    if(itBackgroundSample->second.at(0).isSignal == 1) continue ; // skip if signal
 	    backgroundGlobalWeight.at(iBackg) = itBackgroundSample->second.at(0).xsec*lumi/(float(itBackgroundSample->second.at(0).numBefore));
+            cout<<"Backg "<<itBackgroundSample->first<<" weight "<<backgroundGlobalWeight.at(iBackg)<<endl;
 	    iBackg++;
 	  }
 
@@ -350,14 +358,14 @@ int main (int argc, char** argv){
 	  map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin();
 	  for( ; itSignalSample != sampleMap.end() ; itSignalSample++){          
 	    if(itSignalSample->second.at(0).isSignal == 0) continue ; // skip if signal
-	    backgroundGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
+	    signalGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
+            cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight.at(iSignal)<< endl;
 	    iSignal++;
 	  }
-
+	  
 	  // Prepare and Set the MVA Factory
 	  cout<<endl;
-	  cout<<" Prepare MVA  "<<endl;
-	  cout<<endl;
+	  cout<<"Prepare MVA  "<<endl;
 
 	  //set the basic cut information
 	  trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
@@ -367,7 +375,7 @@ int main (int argc, char** argv){
 						      leptonIsoCutLoose,
 						      matchingCone,
 						      minJetCutPt);
-	    
+	  
 	  //prepare the TNtuple looping on the events before the training
 	  trainingVector.back()->AddPrepareTraining(CutList.at(iCut),
 						    eventWeight,
@@ -375,14 +383,14 @@ int main (int argc, char** argv){
 						    make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1))
 						    );
 
-						      
+	  					      
           // Add the ntuple to the MVA factory with the right cross section weight
 	  trainingVector.back()->BookMVATrees(signalGlobalWeight, 
 					      backgroundGlobalWeight);  
      
   
 	  // Book and Run TMVA Training and testing for the selected methods
-	  cout<<" Loop on the Selected Methods  "<<endl;
+	  cout<<"Loop on the Selected Methods  "<<endl;
 	  cout<<endl;
 	  
 	  for(size_t iMethod = 0; iMethod < TrainMVAMethodName.size(); iMethod++){
@@ -435,12 +443,10 @@ int main (int argc, char** argv){
 	  }
 
 	  trainingVector.back()->CloseTrainingAndTesting();
-
 	  //Print Output Plots
 	  cout<<" Save Output Image after training and testing ..  "<<endl;
-	  cout<<endl;
-      
-	}
+	  cout<<endl;    	  
+	}	
       }
       else{ // train a set of variables at the same time
 
@@ -450,11 +456,11 @@ int main (int argc, char** argv){
 						      outputFileDirectory, 
 						      outputFileName, 
 						      Label,
-						      ":Transformations=I,N:"));
+						      ":Transformations="+variableTransformation));
 
 	// Set Input and Spectator Variables
 	cout<<endl;
-	cout<<" Set Training and Spectator Variables  "<<endl;
+	cout<<"Set Training and Spectator Variables  "<<endl;
 	cout<<endl;
 
 	trainingVector.back()->AddTrainingVariables(GetVariableList(variableList),GetVariableList(spectatorList));
@@ -465,7 +471,7 @@ int main (int argc, char** argv){
 	signalGlobalWeight.assign(signalChain.size(),0.);
 	backgroundGlobalWeight.assign(backgroundChain.size(),0.);
 	  
-	cout<<" Building Global Event Weight  + Add Trees "<<endl;
+	cout<<"Building Global Event Weight  + Add Trees "<<endl;
 	cout<<endl; 
 	    
 	int iBackg = 0;
@@ -473,6 +479,7 @@ int main (int argc, char** argv){
 	for( ; itBackgroundSample != sampleMap.end() ; itBackgroundSample++){          
 	  if(itBackgroundSample->second.at(0).isSignal == 1) continue ; // skip if signal
 	  backgroundGlobalWeight.at(iBackg) = itBackgroundSample->second.at(0).xsec*lumi/(float(itBackgroundSample->second.at(0).numBefore));
+	  cout<<"Backg "<<itBackgroundSample->first<<" weight "<<backgroundGlobalWeight.at(iBackg)<<endl;
 	  iBackg++;
 	}
 
@@ -480,13 +487,14 @@ int main (int argc, char** argv){
 	map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin();
 	for( ; itSignalSample != sampleMap.end() ; itSignalSample++){          
 	  if(itSignalSample->second.at(0).isSignal == 0) continue ; // skip if signal
-	  backgroundGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
+	  signalGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
+	  cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight.at(iSignal)<< endl;
 	  iSignal++;
 	}
 
 	// Prepare and Set the MVA Factory
 	cout<<endl;
-	cout<<" Prepare MVA  "<<endl;
+	cout<<"Prepare MVA  "<<endl;
 	cout<<endl;
 
 	//set the basic cut information
@@ -512,7 +520,7 @@ int main (int argc, char** argv){
      
   
 	// Book and Run TMVA Training and testing for the selected methods
-	cout<<" Loop on the Selected Methods  "<<endl;
+	cout<<"Loop on the Selected Methods  "<<endl;
 	cout<<endl;
 	  
 	for(size_t iMethod = 0; iMethod < TrainMVAMethodName.size(); iMethod++){
@@ -570,7 +578,7 @@ int main (int argc, char** argv){
 	cout<<" Save Output Image after training and testing ..  "<<endl;
 	cout<<endl;
       }
-    }
+    }   
   }
        
   return 0 ;

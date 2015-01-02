@@ -17,8 +17,6 @@ TMVATrainingClass::TMVATrainingClass(const vector<TFile*> & signalFileList,
   SetOutputFile     (outputFilePath,outputFileName) ;
   SetTransformations(transformation);
 
-  if(factory_!=0) delete factory_;
-
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
                                 outputFile_, 
                                 Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",
@@ -43,12 +41,11 @@ TMVATrainingClass::TMVATrainingClass(const vector<TTree*> & signalTreeList,
   SetOutputFile (outputFilePath,outputFileName) ;
   SetTransformations(transformation);
 
-  if(factory_!=0) delete factory_;
-
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
 				outputFile_,
 				Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",
 				transformation.c_str()));
+
 }
 
 // constructor giving tree
@@ -65,15 +62,14 @@ TMVATrainingClass::TMVATrainingClass(const vector<TChain*> & signalTreeList,
   SetSignalTree     (signalTreeList) ;
   SetBackgroundTree (backgroundTreeList) ;
   SetLabel (Label);
+  SetTransformations(transformation);  
   SetOutputFile (outputFilePath,outputFileName) ;
-  SetTransformations(transformation);
-
-  if(factory_!=0) delete factory_;
-
+  
   factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
 				outputFile_,
 				Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",
 				transformation.c_str()));
+  
 }
 
 // Deconstructor
@@ -115,12 +111,12 @@ void TMVATrainingClass::SetSignalTree (const vector<TFile*> & signalFileList,
 
   for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
   signalTreeList_.clear();
-
+  
   for(size_t iFile = 0 ; iFile < signalFileList.size() ; iFile ++){
    if(signalFileList.at(iFile)!=0) 
     signalTreeList_.push_back((TTree*) signalFileList.at(iFile)->Get(TreeName_.c_str()));
   }   
-
+  
   return ;
 
 }
@@ -142,10 +138,11 @@ void TMVATrainingClass::SetSignalTree (const vector<TChain*> & signalChainList){
 
   for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
   signalTreeList_.clear();
-
+  
   for(unsigned int iTree = 0; iTree< signalChainList.size(); iTree++){
     if(signalChainList.at(iTree)->GetEntries()>0) signalTreeList_.push_back(signalChainList.at(iTree)) ; 
   }
+  
   return ;
 
 }
@@ -162,8 +159,6 @@ void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFile
      
   for_each(backgroundTreeList_.begin(),backgroundTreeList_.end(), default_delete<TTree>());
   backgroundTreeList_.clear();
-  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
-  signalTreeList_.clear();
 
   for(size_t iFile = 0 ; iFile < backgroundFileList.size() ; iFile ++){
    if(backgroundFileList.at(iFile)!=0) 
@@ -176,8 +171,8 @@ void TMVATrainingClass::SetBackgroundTree (const vector<TFile*> & backgroundFile
 
 void TMVATrainingClass::SetBackgroundTree (const vector<TTree*> & backgroundTreeList){
 
-  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
-  signalTreeList_.clear();
+  for_each(backgroundTreeList_.begin(),backgroundTreeList_.end(), default_delete<TTree>());
+  backgroundTreeList_.clear();
 
   for(unsigned int iTree = 0; iTree< backgroundTreeList.size(); iTree++){
     if(backgroundTreeList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundTreeList.at(iTree)) ; 
@@ -188,13 +183,14 @@ void TMVATrainingClass::SetBackgroundTree (const vector<TTree*> & backgroundTree
 
 void TMVATrainingClass::SetBackgroundTree (const vector<TChain*> & backgroundChainList){
 
-  for_each(signalTreeList_.begin(),signalTreeList_.end(), default_delete<TTree>());
-  signalTreeList_.clear();
-
+  for_each(backgroundTreeList_.begin(),backgroundTreeList_.end(), default_delete<TTree>());
+  backgroundTreeList_.clear();
+  
   for(unsigned int iTree = 0; iTree< backgroundChainList.size(); iTree++){
     if(backgroundChainList.at(iTree)->GetEntries()>0) backgroundTreeList_.push_back(backgroundChainList.at(iTree)) ; 
   }
-   return ;
+  
+  return ;
 
 }
 
@@ -231,11 +227,9 @@ void TMVATrainingClass::SetOutputFile ( const string & outputFilePath ,
    replace(outputFileName_.begin(),outputFileName_.end(),':','_');
 
    outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
+   cout<<"TMVATrainingClass::SetOutputFile "<<outputFilePath_+"/"+outputFileName_+"_"+Label_+".root"<<endl;
 
-   if(outputFile_!=0) delete outputFile_ ;
-
-   outputFile_ = new TFile((outputFilePath_+"/"+outputFileName_+"_"+Label_+".root").c_str(),"RECREATE");
-   
+   outputFile_ = new TFile((outputFilePath_+"/"+outputFileName_+"_"+Label_+".root").c_str(),"RECREATE");   
    outputFile_->cd();
  }
 
@@ -261,12 +255,12 @@ void TMVATrainingClass::AddTrainingVariables ( const vector<string> & mapTrainin
   SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<" train " <<mapTrainingVariables_.at(iVar)<<endl;
+    cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<endl;
     factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
   }
 
   for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<" spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
+    cout<<"TMVATrainingClass::AddTrainingVariables spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
     factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
   }    
 }
@@ -280,12 +274,12 @@ void TMVATrainingClass::AddTrainingVariables ( const string& mapTrainingVariable
   SetSpectatorVariables(mapSpectatorVariables);
 
   for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<" train " <<mapTrainingVariables_.at(iVar)<<" type "<<endl;
+    cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<endl;
     factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
   }
 
   for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<" spectator " <<mapSpectatorVariables_.at(iVar)<<" type "<<endl;
+    cout<<"TMVATrainingClass::AddTrainingVariables : spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
     factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
   }    
 }
@@ -331,13 +325,15 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
   SetEventWeight (weightStringSignal,weightStringBackground); // set the event basis weight in the factoryy
   factory_->PrepareTrainingAndTestTree("","",Option.Data());  // set the options
-
+  
+  
   // create the varlist for the TNtupla --> variables to be used as input, spectator and weights
   string varListSignal ;
   for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){ // loop on training variables
     if(iVar!=0) varListSignal += ":"+mapTrainingVariables_.at(iVar);
     else        varListSignal += mapTrainingVariables_.at(iVar);
   }
+  varListSignal += ":" ;
 
   for(size_t iVar = 0; iVar < mapSpectatorVariables_.size() ; iVar++){ // loop on spectator variables
     if(iVar!=0) varListSignal += ":"+mapSpectatorVariables_.at(iVar);
@@ -347,6 +343,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
   string varListBackground ;
   varListBackground = varListSignal ;
 
+  
   // the re-weight can be different for signal and background, while the input and spectator must be the same
   replace(weightStringBackground.begin(),weightStringBackground.end(),'*',':');
   replace(weightStringBackground.begin(),weightStringBackground.end(),'=',':');
@@ -367,6 +364,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
     backgroundTNtuplaForTraining_.push_back(new TNtuple(TreeName_.c_str(),"",varListBackground.c_str()));
   }
 
+ 
   // make a list with the name of all the variables to be used --> split the weight expression
   vector<string> totalSignalVariableList;
   string segment;
@@ -380,28 +378,26 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
   while(getline(backg_temp, segment,':')){
       totalBackgroundVariableList.push_back(segment);
   } 
-
+  
   
   // Now loop on tress and events, applying cuts
   vector<float> variableValue;
   map<string,TH1F*> vect;
 
   for(size_t iTree = 0; iTree  < signalTNtuplaForTraining_.size() ; iTree++){
-    if(reader_!=0) delete reader_;
-    reader_  = new readTree((TTree*)(signalTreeList_.at(iTree))); // create a reader of each tree
+    reader_  = new readTree((TTree*)(signalTreeList_.at(iTree))); // create a reader of each tree    
     for(int iEvent = 0; iEvent < signalTreeList_.at(iTree)->GetEntries(); iEvent++){ // Loop on each tree entries
       reader_->fChain->GetEntry(iEvent) ;
       variableValue.clear();  
-      if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
+      if (iEvent % 10000 == 0) cout << "reading signal event " << iEvent << "\n" ;
       // skip event with less than two leptons by default                    
       if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
       if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
       if(reader_->jetpt_puppi1 < 0 or reader_->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet                                                      
 
-      if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range
-          
+      if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
       vect.clear();
-   
+      
       // apply analysis cut from utils.h 
       if(!passCutContainerSelection(reader_,
 				    cutEvent_,
@@ -414,23 +410,21 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    matchingCone_,
 				    minJetCutPt_,
 				    vect)) continue;
-
-
+      
       FillVariablesNtupla(variableValue,totalSignalVariableList); // fill the vector with variables value     
-      signalTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event
-    }    
+      signalTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event      
+    }      
   }
   
   // Now loop on tress and events, applying cuts
   for(size_t iTree = 0; iTree  < backgroundTNtuplaForTraining_.size() ; iTree++){
-    if(reader_!=0) delete reader_;
     reader_  = new readTree((TTree*)(backgroundTreeList_.at(iTree)));
     for(int iEvent = 0; iEvent < backgroundTreeList_.at(iTree)->GetEntries(); iEvent++){ // loop on backg events
 
       reader_->fChain->GetEntry(iEvent) ;    
       variableValue.clear();
 
-      if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
+      if (iEvent % 10000 == 0) cout << "reading bkg event " << iEvent << "\n" ;
       // skip event with less than two leptons by default                    
       if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
       if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
@@ -454,8 +448,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
       FillVariablesNtupla(variableValue,totalBackgroundVariableList); // fill the vector with variables value     
       backgroundTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event
-    }
-  }
+    }  
+  }  
 }
 
 
@@ -561,15 +555,15 @@ void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod,
   }
 
   else{
-        TString Option = Form("!H:!V:FitMethod=MC:EffSel%s",transformations_.c_str());
+        TString Option = Form("!H:!V:FitMethod=MC:EffSel");
 
         factory_->BookMethod( TMVA::Types::kCuts, "CutsMC"+FitMethod,Option.Data());
 
-        Option = Form("!H:!V:FitMethod=GA::CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95%s",transformations_.c_str());
+        Option = Form("!H:!V:FitMethod=GA::CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95");
 
         factory_->BookMethod( TMVA::Types::kCuts, "CutsGA"+FitMethod,Option.Data());
 
-        Option = Form("!H:!V:FitMethod=SA:EffSel:MaxCalls=150000:KernelTemp=IncAdaptive:InitialTemp=1e+6:MinTemp=1e-6:Eps=1e-10:UseDefaultScale%s",transformations_.c_str());
+        Option = Form("!H:!V:FitMethod=SA:EffSel:MaxCalls=150000:KernelTemp=IncAdaptive:InitialTemp=1e+6:MinTemp=1e-6:Eps=1e-10:UseDefaultScale");
 
         factory_->BookMethod( TMVA::Types::kCuts, "CutsSA"+FitMethod,Option.Data());
 
@@ -605,27 +599,27 @@ void TMVATrainingClass::BookandTrainLikelihood ( const string & LikelihoodType )
   if( LikelihoodType == "LikelihoodKDE") { 
     Option = Form("LikelihoodKDE");
     factory_->BookMethod(TMVA::Types::kLikelihood, Option.Data(),"!H:!V:IgnoreNegWeightsInTraining:!TransformOutput:PDFInterpol=KDE:KDEtype=Gauss:"
-			                                         "KDEiter=Adaptive:CreateMVAPdfs:KDEFineFactor=0.3:KDEborder=None%s"+transformations_);
+			                                         "KDEiter=Adaptive:CreateMVAPdfs:KDEFineFactor=0.3:KDEborder=None");
   }
   else if( LikelihoodType == "PDERS") { 
       Option = Form("%s",LikelihoodType.c_str());
       factory_->BookMethod(TMVA::Types::kPDERS, Option.Data(),
-                           "!H:!V:VolumeRangeMode=Adaptive:KernelEstimator=Gauss:CreateMVAPdfs:DeltaFrac=4:GaussSigma=0.3:NormTree=T"+transformations_);
+                           "!H:!V:VolumeRangeMode=Adaptive:KernelEstimator=Gauss:CreateMVAPdfs:DeltaFrac=4:GaussSigma=0.3:NormTree=T");
   }
   else if( LikelihoodType == "PDEFoam") { 
        Option = Form("%s",LikelihoodType.c_str());
        factory_->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),"!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:SigBgSeparate=F:TailCut=0.001"
-                                                                 ":VolFrac=0.0666:nActiveCells=500:nSampl=2000:nBin=5:Nmin=100:Kernel=None:Compress=T"+transformations_);
+                                                                 ":VolFrac=0.0666:nActiveCells=500:nSampl=2000:nBin=5:Nmin=100:Kernel=None:Compress=T");
   }
   else if( LikelihoodType == "PDEFoamBoost") { 
       Option = Form("%s",LikelihoodType.c_str());
       factory_->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),
                            "!H:!V:IgnoreNegWeightsInTraining:Boost_Num=30:CreateMVAPdfs:Boost_Transform=linear:SigBgSeparate=F:MaxDepth=4"
-                           ":UseYesNoCell=T:DTLogic=MisClassificationError:FillFoamWithOrigWeights=F:TailCut=0:nActiveCells=300:nBin=20:Nmin=300:Kernel=None:Compress=T"+transformations_);
+                           ":UseYesNoCell=T:DTLogic=MisClassificationError:FillFoamWithOrigWeights=F:TailCut=0:nActiveCells=300:nBin=20:Nmin=300:Kernel=None:Compress=T");
   }
   else{ Option = Form("%s",LikelihoodType.c_str());
         factory_->BookMethod( TMVA::Types::kLikelihood, Option.Data(),"!H:!V:!TransformOutput:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpol=Spline2"
-			                                              ":NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50"+transformations_);
+			                                              ":NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50");
   }
 
 
@@ -657,7 +651,7 @@ void TMVATrainingClass::BookandTrainFisherDiscriminant(){
 
 
   factory_->BookMethod( TMVA::Types::kFisher, "Fisher",
-                        "!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10:Fisher"+transformations_ );
+                        "!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10:Fisher");
 
 
   factory_->TrainAllMethods();
@@ -687,7 +681,7 @@ void TMVATrainingClass::BookandTrainLinearDiscriminant(){
 
   // Training Testing and Evaluating   
   outputFile_->cd();
-  factory_->BookMethod( TMVA::Types::kLD, "LD", "H:!V:VarTransform=I,N,D,P:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10"+transformations_);
+  factory_->BookMethod( TMVA::Types::kLD, "LD", "H:!V:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10");
 
   factory_->TrainAllMethods();
 
@@ -720,8 +714,8 @@ void TMVATrainingClass::BookandTrainMLP(const int & nCycles,
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP_"+Label_];
 
   TString Option = Form ("!H:!V:NCycles=%d:CalculateErrors:HiddenLayers=%s:NeuronType=%s:CreateMVAPdfs:TrainingMethod=%s:TestRate=%d"
-			 ":ConvergenceTests=%d:UseRegulator%s",nCycles,HiddenLayers.c_str(),NeuronType.c_str(),TrainingMethod.c_str(),TestRate,
-                         ConvergenceTests,transformations_.c_str());
+			 ":ConvergenceTests=%d:UseRegulator",nCycles,HiddenLayers.c_str(),NeuronType.c_str(),TrainingMethod.c_str(),TestRate,
+                         ConvergenceTests);
 
   factory_->BookMethod( TMVA::Types::kMLP, "MLP", Option.Data());
   
@@ -750,7 +744,7 @@ void TMVATrainingClass::BookandTrainCFMlpANN ( const int & nCycles,
   outputFileWeightName_["CFMlpANN_"+Label_] = outputFilePath_+"/TMVAWeight_CFMlpANN_"+Label_;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["CFMlpANN_"+Label_];
 
-  TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:CreateMVAPdfs%s",nCycles,HiddenLayers.c_str(),transformations_.c_str());
+  TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:CreateMVAPdfs",nCycles,HiddenLayers.c_str());
 
   factory_->BookMethod( TMVA::Types::kCFMlpANN, "CFMlpANN",Option.Data());
 
@@ -779,8 +773,8 @@ void TMVATrainingClass::BookandTrainTMlpANN  ( const int & nCycles, const string
   outputFileWeightName_["TMlpANN_"+Label_] = outputFilePath_+"/TMVAWeight_TMlpANN_"+Label_;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["TMlpANN_"+Label_];
 
-  TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:LearningMethod=%s:ValidationFraction=%f:CreateMVAPdfs%s",
-			 nCycles,HiddenLayers.c_str(),TrainingMethod.c_str(),ValidationFraction,transformations_.c_str());
+  TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:LearningMethod=%s:ValidationFraction=%f:CreateMVAPdfs",
+			 nCycles,HiddenLayers.c_str(),TrainingMethod.c_str(),ValidationFraction);
 
   factory_->BookMethod( TMVA::Types::kTMlpANN, "TMlpANN",Option.Data());
 
@@ -816,7 +810,7 @@ void TMVATrainingClass::BookandTrainBDT ( const int & NTrees,
   outputFileWeightName_["BDT_"+Label_] = outputFilePath_+"/TMVAWeight_BDT_"+Label_;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDT_"+Label_];
   
-  TString Option = Form ("!H:!V:CreateMVAPdfs:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=200%s",NTrees,BoostType.c_str(),AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
+  TString Option = Form ("!H:!V:CreateMVAPdfs:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=200",NTrees,BoostType.c_str(),AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
   factory_->BookMethod( TMVA::Types::kBDT, "BDT", Option.Data());
 
@@ -852,7 +846,7 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
   outputFileWeightName_["BDTG_"+Label_] = outputFilePath_+"/TMVAWeight_BDTG_"+Label_;
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
 
-  TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000%s",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
+  TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
   factory_->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
   
@@ -889,8 +883,8 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
   (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTF_"+Label_];
 
   TString Option = Form ("!H:!V:CreateMVAPdfs:UseFisherCuts:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:"
-                         "PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.10:nCuts=20%s",NTrees,BoostType.c_str(),
-                          AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str(),transformations_.c_str());
+                         "PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.10:nCuts=20",NTrees,BoostType.c_str(),
+                          AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
   factory_->BookMethod( TMVA::Types::kBDT,"BDTF", Option.Data());
 
@@ -909,7 +903,6 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
 }
 
 void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const vector<string> & variableList){
-
 
   TLorentzVector L_dilepton, L_met;
 
@@ -1013,5 +1006,8 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     //        else if(variableList.at(iVar) == "weight"){
     //	  variableValue.push_back(float(reader_->weight));
     //}
+    else if(variableList.at(iVar) == "1"){
+      variableValue.push_back(float(1));
+    }
   }
 }
