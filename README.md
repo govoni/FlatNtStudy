@@ -37,7 +37,7 @@ FlatNtStudy
     cfg/PlottingCfg/WZ_SF/plotBasic_WZ_SF_EE.cfg --> example for WZ SF eee    analysis       
     cfg/PlottingCfg/WZ_SF/plotBasic_WZ_SF_UU.cfg --> example for WZ SF mumumu analysis       
 
-   ##############
+   ##############   
    CFG parmeters:
    ##############
 
@@ -203,3 +203,55 @@ FlatNtStudy
        input variable value for each event (also the weight value is used in case).
     -> Loop on the input TMVA methods and run the training + testing for each of them.
     -> Close the loops and exit
+
+6) Code to plot MVA training results from the produced root file
+
+    test/TMVAPlotSignificance.cpp
+
+   this is how to run it:
+   
+    ./bin/TMVAPlotSignificance.exe <cfg file>
+
+  
+   There are different cfg files located in the cfg/TrainingCfg directory. In particular there are 4 sub-directories with templates:
+
+    cfg/TrainingCfg/WW_SS_DF/plotTrainBasic_WW_SS_DF.cfg    --> example for WW SS DF analysis
+    cfg/TrainingCfg/WW_SS_SF/plotTrainBasic_WW_SS_SF_EE.cfg --> example for WW SS SF ee final state
+    cfg/TrainingCfg/WW_SS_SF/plotTrainBasic_WW_SS_SF_UU.cfg --> example for WW SS SF mumu final state
+
+    cfg/TrainingCfg/WZ_DF/plotTrainBasic_WZ_DF.cfg --> example for WZ DF analysis       
+    cfg/TrainingCfg/WZ_SF/plotTrainBasic_WZ_SF_EE.cfg --> example for WZ SF eee    analysis       
+    cfg/TrainingCfg/WZ_SF/plotTrainBasic_WZ_SF_UU.cfg --> example for WZ SF mumumu analysis       
+
+   ##############
+   CFG parmeters:
+   ##############
+
+    InputTrainingFileList = text file with the list of all the training result to be considered and plotted by the code	
+    plotType              = 0 to make ROC as eff_sig vs eff_bkg, 1 to make eff_sig vs fake rate
+    lumi                  = luminosity to be considered in fb ^{-1}
+    outputPlotDirectory   = output directory where to put plots .. will be created under output/ dir   
+
+   ##############
+   Training List:
+   ##############
+
+   you need to create a txt file with this define set of column:
+
+    -> fileName : path of each .root file created by TMVA to be considered
+    -> varNameReduced : reduced name of the variable associated to this file
+    -> puMin : min PU
+    -> puMax : max PU
+    -> methodName: a list of string separeted by ':' that indicates all the method used in that root file .. if more than one
+       
+   ####################################
+   The code TMVAPlotSignificance.cpp:
+   ####################################
+
+    -> read the config file parameter
+    -> read the training list txt file
+    -> make the roc considering all the methods in all the input files overlayed in the same canvas
+    -> Loop on the input file
+    -> For each method in each file print: MVA distribution if present, overtraining and probability plots
+    -> Take the number of signal and background events used in the testing from the TTree inside the root file, taking into account weights
+    -> plot the significance for that number of expected signal and background events

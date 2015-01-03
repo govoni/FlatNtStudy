@@ -184,12 +184,12 @@ int ReadInputTrainingFile (const string & InputTrainingList, vector<trainingCont
 
     stringstream line(buffer);      
 
-    string fileName, varNameReduced, puMin, puMax;
+    string fileName, varNameReduced, puMin, puMax, methodTemp;
     vector<string> methodName;
 
-    line >> fileName >> varNameReduced >> puMin >> puMax;
+    line >> fileName >> varNameReduced >> puMin >> puMax >> methodTemp;
 
-    TString line_temp (line.str());
+    TString line_temp (methodTemp);
     line_temp.ReplaceAll(fileName.c_str(),"");  
     line_temp.ReplaceAll(varNameReduced.c_str(),"");  
     line_temp.ReplaceAll(puMin.c_str(),"");  

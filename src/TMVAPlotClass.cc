@@ -6,35 +6,17 @@ using namespace std;
 TMVAPlotClass::TMVAPlotClass(){
 
   // ROC plots 
-  if(cROC_!=0) cROC_->Delete();
   cROC_        = NULL;
-
-  if(frameROC_!=0) frameROC_->Delete();
   frameROC_    = NULL;
-
-  if(cROCLog_!=0) cROCLog_->Delete();
   cROCLog_     = NULL;
-
-  if(frameROCLog_!=0) frameROCLog_->Delete();
   frameROCLog_ = NULL;
-
-  if(legROC_!=0) legROC_->Delete();
   legROC_      = NULL;
-
-  if(bannerROC_!=0) bannerROC_->Delete();
-  bannerROC_      = NULL;
+  bannerROC_   = NULL;
 
   // MVA output, correlation and Significance 
-  if(cMVAs_!=0) cMVAs_->Delete();
   cMVAs_                  = NULL ;
-
-  if(cCorrelationSignal_!=0) cCorrelationSignal_->Delete();
   cCorrelationSignal_     = NULL ;
-
-  if(cCorrelationBackground_!=0) cCorrelationBackground_->Delete();
   cCorrelationBackground_ = NULL ;
-
-  if(cSignificance_!=0) cSignificance_->Delete();
   cSignificance_          = NULL ;
 
   // method informations 
@@ -47,13 +29,9 @@ TMVAPlotClass::TMVAPlotClass(){
   fSignificanceBox_.clear() ;
 
   // histograms
-  if(histoSignal_!=0) histoSignal_->Delete();
   histoSignal_     = NULL ;
-  if(histoBackground_!=0) histoBackground_->Delete();
   histoBackground_ = NULL ;
-  if(effSignal_!=0) effSignal_->Delete();
   effSignal_       = NULL ;
-  if(effBackground_!=0) effBackground_->Delete();
   effBackground_   = NULL ;
 
   signalType_     = false ;
@@ -74,22 +52,36 @@ TMVAPlotClass::TMVAPlotClass(){
 
 TMVAPlotClass::~TMVAPlotClass(){
 
-  if(cROC_    !=NULL)     cROC_->Delete();
-  if(frameROC_!=NULL)     frameROC_->Delete();
-  if(cROCLog_    !=NULL)  cROCLog_->Delete();
-  if(frameROCLog_!=NULL)  frameROCLog_->Delete();
-  if(legROC_  !=NULL)     legROC_->Delete();
-  if(bannerROC_!=0)       bannerROC_->Delete();
+  if(cROC_    != NULL)   
+    cROC_->Delete();
+  if(frameROC_ != NULL)     
+    frameROC_->Delete();
+  if(cROCLog_    != NULL)  
+    cROCLog_->Delete();
+  if(frameROCLog_ != NULL)  
+    frameROCLog_->Delete();
+  if(legROC_  != NULL)     
+    legROC_->Delete();
+  if(bannerROC_ != NULL)       
+    bannerROC_->Delete();
 
-  if(cMVAs_ != NULL)                   cMVAs_->Delete();
-  if(cCorrelationSignal_ != NULL)      cCorrelationSignal_->Delete();
-  if(cCorrelationBackground_ != NULL)  cCorrelationBackground_->Delete();
-  if(cSignificance_!= NULL)            cSignificance_->Delete();
+  if(cMVAs_ != NULL)                   
+    cMVAs_->Delete();
+  if(cCorrelationSignal_ != NULL)      
+    cCorrelationSignal_->Delete();
+  if(cCorrelationBackground_ != NULL)  
+    cCorrelationBackground_->Delete();
+  if(cSignificance_!= NULL)            
+    cSignificance_->Delete();
 
-  if(histoSignal_!=NULL)      histoSignal_->Delete();
-  if(histoBackground_!=NULL)  histoBackground_->Delete();
-  if(effSignal_!=NULL)        effSignal_->Delete();
-  if(effBackground_!=NULL)    effBackground_->Delete();
+  if(histoSignal_!=NULL)      
+    histoSignal_->Delete();
+  if(histoBackground_!=NULL)  
+    histoBackground_->Delete();
+  if(effSignal_!=NULL)        
+    effSignal_->Delete();
+  if(effBackground_!=NULL)    
+    effBackground_->Delete();
 
   for_each(inputFiles_.begin(),inputFiles_.end(), default_delete<TFile>());
   inputFiles_.clear() ;
@@ -476,13 +468,11 @@ int TMVAPlotClass::GetListOfTitles( TDirectory *rfdir,
    return 0;
  }
 
- delete keys ;
- 
- TIter rfnext(rfdir->GetListOfKeys());
+ TIter rfnext(keys);
  TKey *rfkey;
  titles.Clear();
  titles.SetOwner(kFALSE);
- 
+
  while ((rfkey = (TKey*)rfnext())) { // make sure, that we only look at histograms
    TClass *cl = gROOT->GetClass(rfkey->GetClassName());
    if (cl->InheritsFrom("TDirectory")) {
@@ -490,7 +480,9 @@ int TMVAPlotClass::GetListOfTitles( TDirectory *rfdir,
      ni++;
    }
  }
+
  return ni;
+ 
 }
 
 
@@ -709,17 +701,23 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 				  const float & puMax, 
 				  const string & outputPlotDirectory){
 
+  cout<<"TMVAPlotClass::makeROCsPlot --> start the method "<<endl;
+
   // Plot the ROC curve with a proper style from root file originated by TMVA                                                                                             
-  if(cROC_ == NULL) (*this).CreateCanvasandFrameROC(plotType,puMin,puMax); 
+  if(cROC_ == NULL) 
+    (*this).CreateCanvasandFrameROC(plotType,puMin,puMax); 
       
   TH1F *h = NULL; 
-  for(size_t iFile = 0; iFile <  inputFiles_.size();  iFile++){ // loop on the input file list
- 
+
+  for(size_t iFile = 0; iFile <  inputFiles_.size();  iFile++){ // loop on the input file list 
    inputFiles_.at(iFile)->cd();
    TList TrainingMethods;
    TList hists;
    int res = (*this).GetListOfMethods(TrainingMethods); // take the methods used for this training
-   if(res == 0) cout<<" TMVAPlotClass::plotEfficiency --> no methods found "<<endl ;
+
+   if(res == 0) 
+     cout<<"TMVAPlotClass::makeROCsPlot --> no methods found "<<endl ;
+   
    TIter next(&TrainingMethods);
    TKey *key = 0, *hkey = 0;
 
@@ -727,14 +725,20 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
    while ((key = (TKey*)next())) {
      TDirectory *myDir = (TDirectory*)key->ReadObj();
      TList Titles;
+     cout<<"TMVAPlotClass::makeROCsPlot training methods : "<<myDir->GetName()<<endl;
+
      int nTitles = (*this).GetListOfTitles(myDir,Titles); // get the titles list for eack method                                                                         
-     if(nTitles == 0) cout<<" TMVAPlotClass::plotEfficiency --> no titles found "<<endl ;
+     if(nTitles == 0) 
+       cout<<"TMVAPlotClass::makeROCsPlot --> no titles found "<<endl ;     
+
      TIter nextTitle(&Titles);
      TKey *titkey = 0;
      TDirectory *titDir = 0;
      while ((titkey = (*this).NextKey(nextTitle,"TDirectory"))) {
+
        titDir = (TDirectory*)titkey->ReadObj(); // read each object and take again the method title for each element of the list
        TString methodTitle;
+       cout<<"TMVAPlotClass::makeROCsPlot title method : "<<titDir->GetName()<<endl;       
        (*this).GetMethodTitle(methodTitle,titDir);
        TIter nextKey( titDir->GetListOfKeys() ); // loop and the list of keys
        while ((hkey = (*this).NextKey(nextKey,"TH1"))) { // take only the TH1 object type
@@ -753,6 +757,8 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 	       h->Draw("csame");
 	       hists.Add(h);
 	       color_index_ = color_index_+1;
+	       legROC_->AddEntry(h,inputMethodName_.at(method_index_).c_str(),"l");
+	       method_index_ ++ ;
 	     }
 	     else{
 	       h->SetLineWidth(vec_linewidth[color_index_-vec_color.size()]);
@@ -764,6 +770,8 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 	       h->Draw("csame");
 	       hists.Add(h);
 	       color_index_ = color_index_+1;
+	       legROC_->AddEntry(h,inputMethodName_.at(method_index_).c_str(),"l");
+	       method_index_ ++ ;
 	     }	
 	   }
 	 }
@@ -779,6 +787,8 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 	       h->Draw("csame");
 	       hists.Add(h);
 	       color_index_ = color_index_+1;
+	       legROC_->AddEntry(h,inputMethodName_.at(method_index_).c_str(),"l");
+	       method_index_ ++ ;
 	     }
 	     else{
 	       h->SetLineWidth(vec_linewidth[color_index_-vec_color.size()]);
@@ -790,13 +800,15 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 	       h->Draw("csame");
 	       hists.Add(h);
 	       color_index_ = color_index_+1;
+	       legROC_->AddEntry(h,inputMethodName_.at(method_index_).c_str(),"l");
+	       method_index_ ++ ;
 	     }	
 	   }
 	 }
-       }
+       }       
      }
    }
-
+   
    /// Loop on the different histos                                                                                                                                          
    while (hists.GetSize()) {
      TListIter hIt(&hists); // define an iterator                                                                                                                         
@@ -815,13 +827,11 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
        break;
      }    
       
-     // set legend names 
-     legROC_->AddEntry(histWithLargestInt,inputMethodName_.at(method_index_).c_str(),"l");
-     method_index_ ++ ;
+     // set legend names      
      hists.Remove(histWithLargestInt);
-   }
+   }   
   }
- 
+   
   cROC_->cd();  
   legROC_->Draw("same");
   cROC_->Update();
@@ -831,7 +841,6 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
   cROCLog_->Update();
   
   return;
-
 }
 
 // method in order to plot correlation matrix betwenn input variables
@@ -966,7 +975,6 @@ void TMVAPlotClass::makeCorrelationMatrixPlot(TFile* inputFile,
 
 // plot MVA output, probability and overtraining 
 void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,  
-				 const string & inputName, 
 				 HistType htype, 
 				 const string & outputPlotDirectory){
 
@@ -992,7 +1000,7 @@ void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,
       TDirectory *titDir = (TDirectory *)titkey->ReadObj();
       TString methodTitle;
       (*this).GetMethodTitle(methodTitle,titDir); // get the tutke of the method (another directory found)
-      cout << "--- Found directory for method: " << methodName << "::" << methodTitle << flush;
+      cout << "--- Found directory for method: " << methodName << "::" << methodTitle << endl;
 
       TString hname = "MVA_" + methodTitle;
       if      (htype == ProbaType  ) hname += "_Proba";
@@ -1037,6 +1045,7 @@ void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,
         histoSignal_->SetTitle( Form("Rarity for classifier: %s", methodTitle.Data()) );
       else if (htype == CompareType)
 	histoSignal_->SetTitle( Form("Overtraining check for classifier: %s", methodTitle.Data()) );                                                                        
+      
 
       TString cCanvasTitle = ((htype == MVAType)     ? Form("Response %s",methodTitle.Data()) :
 			      (htype == ProbaType)   ? Form("Probability %s",methodTitle.Data()) :
@@ -1094,6 +1103,7 @@ void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,
 
       if      (htype == ProbaType  ) frame->GetXaxis()->SetTitle( "Signal probability" );
       else if (htype == RarityType ) frame->GetXaxis()->SetTitle( "Signal rarity" );
+
       frame->GetYaxis()->SetTitle("(1/N) dN/dx");
 
       frame->SetLineWidth(2);
@@ -1145,7 +1155,10 @@ void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,
 	bgdOv = dynamic_cast<TH1*>(titDir->Get( ovname + "_B" ));
 
 	// normalise both signal and background                                                                                                              
-	if (sigOv == 0 || bgdOv == 0) cout << "+++ overtraining check histograms do not exist" << endl; return;
+	if (sigOv == 0 || bgdOv == 0){
+	  cout << "+++ overtraining check histograms do not exist" << endl; 
+	  return;
+	}
 	(*this).NormalizeHists((TH1F*)sigOv,(TH1F*)bgdOv );
 
 	Int_t col = histoSignal_->GetLineColor();
@@ -1265,10 +1278,10 @@ void TMVAPlotClass::makeMVAsPlot(TFile* inputFile,
       methodTitle.ReplaceAll("{","_");
       methodTitle.ReplaceAll("}","_");
 
-      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),inputName.c_str())));
-      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, string(Form("%s/probability_%s",outputPlotDirectory.c_str(),inputName.c_str())));
-      else if (htype == CompareType) (*this).PrintImage(cMVAs_, string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),inputName.c_str())));
-      else                           (*this).PrintImage(cMVAs_, string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),inputName.c_str())));
+      if      (htype == MVAType)     (*this).PrintImage(cMVAs_, string(Form("%s/mva_output_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
+      else if (htype == ProbaType)   (*this).PrintImage(cMVAs_, string(Form("%s/probability_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
+      else if (htype == CompareType) (*this).PrintImage(cMVAs_, string(Form("%s/overtraining_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
+      else                           (*this).PrintImage(cMVAs_, string(Form("%s/rarity_%s",outputPlotDirectory.c_str(),methodTitle.Data())));
     
       mvas_index_ = mvas_index_  +1 ;
 
@@ -1328,36 +1341,47 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
   cout << "--- " << str << endl;
   cout << "--- " << setfill('-') << setw(str.Length()) << "" << setfill(' ') << endl;
 
-
   // loop on the histo list   
   for ( ;itList!=(*this).fSignificanceBox_.end(); ++itList) {
     if(signalType_)
-      (*itList)->significance_ = new TH1F(Form("significance_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_%s_%s_stype%d",inputName.c_str(),(*itList)->methodTitle_.Data(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
     else
-      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%s_stype%d",(*itList)->methodTitle_.Data(),inputName.c_str(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
+      (*itList)->significance_ = new TH1F(Form("significance_eff_%s_%s_stype%d",inputName.c_str(),(*itList)->methodTitle_.Data(),stype),"",(*itList)->efficiencySignal_->GetNbinsX(),(*itList)->efficiencySignal_->GetBinLowEdge(1),(*itList)->efficiencySignal_->GetBinLowEdge((*itList)->efficiencySignal_->GetNbinsX()+1));
 
     for (Int_t iBin = 1; iBin<=(*itList)->efficiencySignal_->GetNbinsX(); iBin++) {
       Float_t S = 0;
-      if(!signalType_) S = (*itList)->efficiencySignal_->GetBinContent(iBin)*numberSignalEvents;
-      else S = (*itList)->efficiencySignal_->GetBinContent(iBin) ;      
+      if(!signalType_) 
+	S = (*itList)->efficiencySignal_->GetBinContent(iBin)*numberSignalEvents;
+      else 
+	S = (*itList)->efficiencySignal_->GetBinContent(iBin) ;      
 
       Float_t B = 0;
-      if(!backgroundType_) B = (*itList)->efficiencyBackground_->GetBinContent(iBin)*numberBackgroundEvents;
-      else B = (*itList)->efficiencyBackground_->GetBinContent(iBin) ;
+      if(!backgroundType_) 
+	B = (*itList)->efficiencyBackground_->GetBinContent(iBin)*numberBackgroundEvents;
+      else 
+	B = (*itList)->efficiencyBackground_->GetBinContent(iBin) ;
 
       Float_t significance = 0. ;
       Float_t sigErr = 0.;
 
       // evaluate the significance
-      if     (stype == 0 && B != 0 )   significance = significanceFormula.Eval(S,B);
-      else if(stype == 1 && B != 0 )   significance = significanceFormula.Eval(S,B);
-      else if(stype == 2 && S+B != 0 ) significance = significanceFormula.Eval(S,B);
-      else significance = significanceFormula.Eval(S,B);
+      if     (stype == 0 && B != 0 )   
+	significance = significanceFormula.Eval(S,B);
+      else if(stype == 1 && B != 0 )   
+	significance = significanceFormula.Eval(S,B);
+      else if(stype == 2 && S+B != 0 ) 
+	significance = significanceFormula.Eval(S,B);
+      else 
+	significance = significanceFormula.Eval(S,B);
 
-      if ((*this).GetFormulaString() == "S/B")              sigErr = sqrt(S/(B*B)+S*S/(B*B*B));	
-      else if ((*this).GetFormulaString() == "S/sqrt(B)")   sigErr = significance * sqrt( 1./S + 1./(2.*B));	
-      else if ((*this).GetFormulaString() == "S/sqrt(S+B)") sigErr = sqrt(S*(TMath::Power(1-0.5/sqrt(S+B),2))*1/(S+B)+B*S*S/(4*(S+B)));	
-      else if ((*this).GetFormulaString() == "2*(sqrt(S+B)-sqrt(B))") sigErr = sqrt(S*TMath::Power(1/sqrt(S+B),2)+B*TMath::Power(1/sqrt(S+B)-1/sqrt(B),2));	
+      if ((*this).GetFormulaString() == "S/B")              
+	sigErr = sqrt(S/(B*B)+S*S/(B*B*B));	
+      else if ((*this).GetFormulaString() == "S/sqrt(B)")   
+	sigErr = significance * sqrt( 1./S + 1./(2.*B));	
+      else if ((*this).GetFormulaString() == "S/sqrt(S+B)") 
+	sigErr = sqrt(S*(TMath::Power(1-0.5/sqrt(S+B),2))*1/(S+B)+B*S*S/(4*(S+B)));	
+      else if ((*this).GetFormulaString() == "2*(sqrt(S+B)-sqrt(B))") 
+	sigErr = sqrt(S*TMath::Power(1/sqrt(S+B),2)+B*TMath::Power(1/sqrt(S+B)-1/sqrt(B),2));	
 
       // set value and error                  
       (*itList)->significance_->SetBinContent(iBin,significance);
@@ -1372,9 +1396,9 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
   for ( ; itSignificanceBox!=(*this).fSignificanceBox_.end(); ++itSignificanceBox ){
   // create new canvas                                                                                                                                                        
    if(signalType_)
-     cSignificance_ = new TCanvas( Form("cSignificance_%s_%s_type_%d",(*itSignificanceBox)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itSignificanceBox)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_%s_%s_type_%d",inputName.c_str(),(*itSignificanceBox)->methodTitle_.Data(),stype),Form("Efficiencies Classifier : %s",(*itSignificanceBox)->methodTitle_.Data()),180,52,550,550);
    else
-     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%s_type_%d",(*itSignificanceBox)->methodTitle_.Data(),inputName.c_str(),stype),Form("Efficiencies Classifier : %s",(*itSignificanceBox)->methodTitle_.Data()),180,52,550,550);
+     cSignificance_ = new TCanvas( Form("cSignificance_eff_%s_%s_type_%d",inputName.c_str(),(*itSignificanceBox)->methodTitle_.Data(),stype),Form("Efficiencies Classifier : %s",(*itSignificanceBox)->methodTitle_.Data()),180,52,550,550);
 
    cSignificance_->cd();
    cSignificance_->SetTickx(1);
@@ -1615,7 +1639,8 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     effline->Delete() ;
 
   }
-
   return ;
 
 }
+
+//  LocalWords:  ReplaceAll

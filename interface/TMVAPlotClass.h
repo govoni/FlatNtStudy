@@ -245,7 +245,6 @@ class TMVAPlotClass {
 
   // plot output distribution
   void makeMVAsPlot( TFile* inputFile = 0, 
-		     const string & inputName = "", 
 		     HistType htype = MVAType, 
 		     const string & outputPlotDirectory = "");
 

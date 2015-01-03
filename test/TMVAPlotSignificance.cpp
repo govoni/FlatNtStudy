@@ -55,9 +55,6 @@ int main (int argc, char **argv){
   string ROOTStyle;
   if(getenv ("ROOTStyle")!=NULL){
     ROOTStyle = getenv ("ROOTStyle");
-    gROOT->ProcessLine((".x "+ROOTStyle+"/rootLogon.C").c_str());
-    gROOT->ProcessLine((".x "+ROOTStyle+"/rootPalette.C").c_str());
-    gROOT->ProcessLine((".x "+ROOTStyle+"/rootColors.C").c_str());
     gROOT->ProcessLine((".x "+ROOTStyle+"/setTDRStyle.C").c_str());
   }
   
@@ -115,13 +112,13 @@ int main (int argc, char **argv){
   system(("rm -r output/"+outputPlotDirectory+"/*").c_str());
   outputPlotDirectory = "output/"+outputPlotDirectory;
 
-    
+  
   // Declare the object for the manipolation of the TMVA ROOT file
   TMVAPlotClass* TMVATrainingPlot = new TMVAPlotClass();
 
   TMVATrainingPlot->openFileInput(GetInputFileList(trainingList)); // open all the input files
   TMVATrainingPlot->SetMethodName(GetInputMethodList(trainingList)); // set all the trained methods
-
+  
   // plot ROC curves 
   TMVATrainingPlot->makeROCsPlot(gDirectory, // give the current global directory
 				 plotType, // 0 means eff sign vs eff back , 1 eff sign vs 1-eff bkg
@@ -130,7 +127,7 @@ int main (int argc, char **argv){
 
   TMVATrainingPlot->PrintImageROC(gDirectory,
 				  outputPlotDirectory); // make the plot
-
+  
   vector<TFile*> inputFiles = TMVATrainingPlot->GetInputFile(); // take back the input file list
     
   for(size_t iFile = 0 ; iFile < inputFiles.size(); iFile++){
@@ -138,15 +135,16 @@ int main (int argc, char **argv){
     TMVATrainingPlot->makeCorrelationMatrixPlot(inputFiles.at(iFile),
 						trainingList.at(iFile).varNameReduced,
 						outputPlotDirectory); // make correlation plots
+    
     // make MVA output plot
-    TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),trainingList.at(iFile).varNameReduced,TMVATrainingPlot->MVAType,outputPlotDirectory);
+    TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->MVAType,outputPlotDirectory);
     // make TMVA probability plot
-    TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),trainingList.at(iFile).varNameReduced,TMVATrainingPlot->ProbaType,outputPlotDirectory);
+    //TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->ProbaType,outputPlotDirectory);
     // make TMVA overtraining plot
-    TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),trainingList.at(iFile).varNameReduced,TMVATrainingPlot->CompareType,outputPlotDirectory);
+    TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->CompareType,outputPlotDirectory);
 
+    
     // take signal and background expected yield from the file:
-
     TTree *testTree = 0;
     int classID     = 0;
     float weight    = 0;
@@ -155,7 +153,7 @@ int main (int argc, char **argv){
     float nBackgroundEvent = 0;
 
     testTree = (TTree*) inputFiles.at(iFile)->Get("TestTree");
-    testTree->SetBranchAddress("ClassID",&classID);
+    testTree->SetBranchAddress("classID",&classID);
     testTree->SetBranchAddress("weight",&weight);
 
     for(int iEntry; iEntry < testTree->GetEntries(); iEntry++){      
@@ -175,8 +173,10 @@ int main (int argc, char **argv){
 					   false, // use signal efficiency instead of yield
 					   false, // use background efficiency instead of yield
 					   outputPlotDirectory);
+    
   }
     
   return 0 ;
+  
 }
 
