@@ -3,7 +3,7 @@
 ####################################################################
 detajj                      30      0       7          #Delta#eta_{jj}
 mjj                         45      0      7000        M_{jj}   
-mll                         35      0      1500        M_{ll}
+#mll                         35      0      1500        M_{ll}
 #ptl1                        30      0      300         pt_{l1}
 #ptl2                        30      0      300         pt_{l2}
 #met                         30      0      300         E_{T}^{miss}
@@ -11,8 +11,8 @@ mll                         35      0      1500        M_{ll}
 #ptj2                        40      0      600         pt_{j2}
 #Asim_j                      50      0      2           Asim_{J}
 #Asim_l                      25      0      2           Asim_{L}
-#R                           25      0      5           R
-DeltaPhi_LL                 25      0      3.14        #Delta#phi_{LL} 
+R 			     25      0      5           R
+#DeltaPhi_LL                 25      0      3.14        #Delta#phi_{LL} 
 #DeltaPhi_LMet               25      0      3.14        #Delta#phi_{LMet} 
 #DeltaPhi_LLMet              25      0      3.14        #Delta#phi_{LLMet}
 #DeltaPhi_TLMet              25      0      3.14        #Delta#phi_{TLMet}

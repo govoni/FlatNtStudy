@@ -624,7 +624,7 @@ bool passCutContainerSelection (readTree* reader,
 
   // identify tight leptons and require exactly nLep                                                                                                                       
   if (int(leptonsIsoTight.size()) != Cut.nLep ) return false;                                                                                                    
-      
+
   if(vect.size()!=0){
     vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
@@ -677,7 +677,7 @@ bool passCutContainerSelection (readTree* reader,
 
   if(isZMassVeto and Cut.nLep == 2) return false;                                                                                                                   
   if(not isZMassVeto and Cut.nLep == 3) return false;
-                             
+
   if(vect.size()!=0){
     vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Z veto");
@@ -703,7 +703,7 @@ bool passCutContainerSelection (readTree* reader,
     int flavour = 0;
     int sameflavour = 0;
     for(size_t leptSize = 0; leptSize < leptonsIsoTight.size(); leptSize++) // loop on tight leptns
-      flavour = fabs(leptonsIsoTight.at(leptSize).flavour_) ;
+      flavour += fabs(leptonsIsoTight.at(leptSize).flavour_) ;
     if(flavour/leptonsIsoTight.size() == 11 or flavour/leptonsIsoTight.size() == 13 ) sameflavour = 1;
     else sameflavour = -1;
     if(sameflavour != Cut.flavour) return false;
@@ -738,7 +738,7 @@ bool passCutContainerSelection (readTree* reader,
     vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mll");
     iBin++;   
   }
-     
+
   TLorentzVector L_dijet;
   if(RecoJets.size() > 2){
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;                                                                                                    

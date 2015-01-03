@@ -401,7 +401,6 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
       if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
       vect.clear();
-      
       // apply analysis cut from utils.h 
       if(!passCutContainerSelection(reader_,
 				    cutEvent_,
