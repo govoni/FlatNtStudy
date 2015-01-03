@@ -27,7 +27,7 @@ FlatNtStudy
     ./bin(DrawFlatTreePlots.exe <cfg file>
 
   
-   There are different cfg files located in the cfg/ directory. In particular there are 4 sub-directories with templates:
+   There are different cfg files located in the cfg/PlottingCfg directory. In particular there are 4 sub-directories with templates:
 
     cfg/PlottingCfg/WW_SS_DF/plotBasic_WW_SS_DF.cfg    --> example for WW SS DF analysis
     cfg/PlottingCfg/WW_SS_SF/plotBasic_WW_SS_SF_EE.cfg --> example for WW SS SF ee final state
@@ -133,4 +133,73 @@ FlatNtStudy
     -> loop on the cut list and apply them
     -> for each cut and for each event loop on the variable list and store the value in a histogram.
     -> cut efficiency are calculated for each cut entry and for each sample. A root file with histogram is created under output/<outputPlotDirectory> and can
-       be used to check the efficiency on signal and background samples of the applied selections.y
+       be used to check the efficiency on signal and background samples of the applied selections.
+
+
+
+5) Code for train MVA methods for selection optimization
+
+    test/TMVATrainingSelections.cpp
+
+   this is how to run it:
+   
+    ./bin/TMVATrainingSelections.exe <cfg file>
+
+  
+   There are different cfg files located in the cfg/TrainingCfg directory. In particular there are 4 sub-directories with templates:
+
+    cfg/TrainingCfg/WW_SS_DF/trainBasic_WW_SS_DF.cfg    --> example for WW SS DF analysis
+    cfg/TrainingCfg/WW_SS_SF/trainBasic_WW_SS_SF_EE.cfg --> example for WW SS SF ee final state
+    cfg/TrainingCfg/WW_SS_SF/trainBasic_WW_SS_SF_UU.cfg --> example for WW SS SF mumu final state
+
+    cfg/TrainingCfg/WZ_DF/trainBasic_WZ_DF.cfg --> example for WZ DF analysis       
+    cfg/TrainingCfg/WZ_SF/trainBasic_WZ_SF_EE.cfg --> example for WZ SF eee    analysis       
+    cfg/TrainingCfg/WZ_SF/trainBasic_WZ_SF_UU.cfg --> example for WZ SF mumumu analysis       
+
+   ##############
+   CFG parmeters:
+   ##############
+
+    InputBaseDirectory = base dir on eos or local where all the subdirectory with files are locate
+    InputSampleList    = text file where the list of sample to be used are defined and classified as signal and background
+    InputVariableList  = text file with the list of variables to be considered in the training
+    InputSpectatorList = text file with the list of spectator variables 
+    InputCutList       = text file where the cut are defined
+    TreeName           = name of the flat tree
+    TrainMVAMethodName = list of MVA methods to be considered (comma as separator); examples are CutsSA, CutsGA, Likelihood, BDTG, MLP .. etc
+    VariableTransformation = list of transformation to be applied on the input variables follwoing TMVA convention (I,N,D,P,G)
+    Label              = used when the final directory with xml files and output root file are created
+
+    Lumi                = lumi in fb-1 to be considered
+    matchingCone        = used to match jets with leptons
+    minLeptonCleaningPt = min lepton pt when jets are cleaned from isolated leptons
+    minLeptonCutPt      = is the minimum threshold for defining isolated and loose isolated leptons
+    minJetCutPt         = jet pt cut for jet counting
+    usePuppiAsDefault   = use puppi jet as default when cut are applied instead of reco jets
+    leptonIsoCut        = tight isolation cut
+    leptonIsoCutLoose   = loose isolation cut
+
+    eventWeight         = to be applied as event based weight, can be a branch of the input trees... if you want we can plugin different weight strings for S and B
+    pileUpBin           = training can be performed in independent pileup bins in case
+    TrainEachVariable   = each variable in the list are trained independelty .. this option is useful when you want to train cut based selection on a huge set 
+                          of input variables to se which is the most discriminating one
+   
+    outputFilrDirectory = output dir name for xml and root TMVA output files, under output/ directory
+    outputFileName      = root of the .root output file
+
+    
+   ####################################
+   The code TMVATrainingSelections.cpp:
+   ####################################
+
+    -> read the config file parameter
+    -> read the sample txt file
+    -> read the cut txt file
+    -> read the variable txt file
+    -> make a chain with all the background samples with the right lumi weight, and chain with all the signal ones
+    -> Loop on the defined pileup bins, and loop on the cut list --> for each cut run the same set of training, the cut is used to pre-select events used in the training
+    -> if train each variable is true a loop on the input var is done, otherwise the variable list is set as input of TMVA factory.
+    -> loop on the chain event for both signal and background samples, apply the cut specified in the cutContainer and int the cfg file. Fill a TNtupla with the
+       input variable value for each event (also the weight value is used in case).
+    -> Loop on the input TMVA methods and run the training + testing for each of them.
+    -> Close the loops and exit
