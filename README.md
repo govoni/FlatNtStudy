@@ -29,16 +29,17 @@ FlatNtStudy
   
    There are different cfg files located in the cfg/ directory. In particular there are 4 sub-directories with templates:
 
-    cfg/WW_SS_DF/plotBasic_WW_SS_DF.cfg    --> example for WW SS DF analysis
-    cfg/WW_SS_SF/plotBasic_WW_SS_SF_EE.cfg --> example for WW SS SF ee final state
-    cfg/WW_SS_SF/plotBasic_WW_SS_SF_UU.cfg --> example for WW SS SF mumu final state
+    cfg/PlottingCfg/WW_SS_DF/plotBasic_WW_SS_DF.cfg    --> example for WW SS DF analysis
+    cfg/PlottingCfg/WW_SS_SF/plotBasic_WW_SS_SF_EE.cfg --> example for WW SS SF ee final state
+    cfg/PlottingCfg/WW_SS_SF/plotBasic_WW_SS_SF_UU.cfg --> example for WW SS SF mumu final state
 
-    cfg/WZ_DF/plotBasic_WZ_DF.cfg --> example for WZ DF analysis       
-    cfg/WZ_SF/plotBasic_WZ_SF_EE.cfg --> example for WZ SF eee    analysis       
-    cfg/WZ_SF/plotBasic_WZ_SF_UU.cfg --> example for WZ SF mumumu analysis       
+    cfg/PlottingCfg/WZ_DF/plotBasic_WZ_DF.cfg --> example for WZ DF analysis       
+    cfg/PlottingCfg/WZ_SF/plotBasic_WZ_SF_EE.cfg --> example for WZ SF eee    analysis       
+    cfg/PlottingCfg/WZ_SF/plotBasic_WZ_SF_UU.cfg --> example for WZ SF mumumu analysis       
 
-
-5) CFG parmeters:
+   ##############
+   CFG parmeters:
+   ##############
 
     InputBaseDirectory = base dir on eos or local where all the subdirectory with files are locate
     InputSampleList    = text file where the list of sample to be plotted are defined
@@ -57,7 +58,9 @@ FlatNtStudy
    
     outputPlotDirectory = output dir name for plots, under output/ directory
 
-6) Sample List file:
+   #################
+   Sample List file:
+   #################
 
    You need to create a text file specifing in each column:
 
@@ -74,7 +77,9 @@ FlatNtStudy
     -> number entries before: in case some skim have been done .. in our case should be always fixed to 1 since we can read directly the entries of the chain of root files
     -> isSignal = declare if the sample should be considered as signal or background for plotting and significance reasons
 
-7) Layer Cut file:
+   ###############
+   Layer Cut file:
+   ###############
 
    You need to create a text file speciing some values for cuts to be applied (the code that loops on the event and apply these cuts is in src/utils.cc, fillHisto):
 
@@ -98,7 +103,9 @@ FlatNtStudy
 
        if at least one lepton pair fire this condition, the event can be skipped or used.
 
-8) Variable List file:
+   ###################
+   Variable List file:
+   ###################
 
    You need to create a text file in which you need to specify:
 
@@ -112,8 +119,10 @@ FlatNtStudy
    fill the variable inside src/utils.cc (fillHisto method).
 
    if you comment out some line of the file with a #, those variables are not filled and not plotted.
-
-9) The code DrawFlatTreePlots.cpp:
+   
+   ###############################
+   The code DrawFlatTreePlots.cpp:
+   ###############################
 
     -> read the config file parameter
     -> read the sample txt file
