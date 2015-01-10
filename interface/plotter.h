@@ -50,6 +50,7 @@ class layer {
   m_layerName (name) {} ;
   string m_layerName ;
   unordered_map<string, TH1F *> m_histos ;
+  unordered_map<string, TH2F *> m_2Dhistos ;
 } ;
 
 
@@ -97,24 +98,35 @@ class plotter { // generic plotter class
   ~plotter () {} ;
   
   // adding methods
-  void addSample        (string sampleName, float XS, int totInitialEvents, bool isSignal, int color) ;
+  void addSample        (string sampleName, float XS, int totInitialEvents, 
+                         bool isSignal, int color) ;
   void addLayerToSample (string sampleName, string layerName) ;
   void addPlotToLayer   (string sampleName, string layerName, string plotName, 
                          int nBins, float xMin, float xMax, string labelName = "") ;
+  void add2DPlotToLayer (string sampleName, string layerName, string plotName, 
+                         int nBinsX, float xMinX, float xMaxX,
+                         int nBinsY, float xMinY, float xMaxY,
+                         string labelNameX = "", string labelNameY = "") ;
   // copy methods
   void copyLayerInSample   (string sampleName, string target, string origin) ;
-  void copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
+  void copySampleStructure (string target, string origin, float newXS, 
+                            int newTotInitialEvents, bool isSignal, int newColor) ;
   // print structure
   void printStructure () ;
-  void printEventNumber(string layerName, string histoName);
+  void printEventNumber (string layerName, string histoName) ;
   // init legend
   TLegend initLegend (int sampleNum) ;
   // fill histo
-  void fillHisto     (string sampleName, string layerName, string histoName, float value, float weight) ;
+  void fillHisto     (string sampleName, string layerName, string histoName, 
+                      float value, float weight) ;
+  void fill2DHisto   (string sampleName, string layerName, string histoName, 
+                      float valueX, float valueY, float weight) ;
   void setRootAspect () ;
-  void prepareCanvas (float xmin, float xmax, float ymin, float ymax, string xaxisTitle, string yaxisTitle, bool hasPull) ;
+  void prepareCanvas (float xmin, float xmax, float ymin, float ymax, 
+                      string xaxisTitle, string yaxisTitle, bool hasPull) ;
   void prepareSampleForPlotting (string sampleName) ;
-
+  void cleanFromLateX (TString & Name) ;
+ 
   // plotting methods
   void plotSingleSample (string sampleName, string layerName, string histoName,
 			 string xaxisTitle, string yaxisTitle, int isLog = 0,
@@ -126,9 +138,14 @@ class plotter { // generic plotter class
 
   // compare S and B
   void compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle,
-		    bool isNormalized = false, float scaleSignal = 1., int isLog = 0.,
+		    bool isNormalized = false, float scaleSignal = 1., int isLog = 0,
 		    string folderName = "") ;
   void compareStoBFullLayer (string layerName, string folderTag = "") ;
+  void compareStoB2D (string layerName, string histoName, 
+            string xaxisTitle, string yaxisTitle, 
+            bool isNormalized = false, float scaleSignal = 1., int isLog = 0, 
+            string folderName = "") ;
+  void compareStoBFullLayer2D (string layerName, string folderTag = "") ;
 
   // Plot relatve excess
   void plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle,
@@ -142,6 +159,11 @@ class plotter { // generic plotter class
 
   // scale all histos
   void normaliseAllHistos () ;
+  void normaliseAll1DHistos () ;
+  void normaliseAll2DHistos () ;
+
+  // save all histos
+  void saveAllHistos (string filename) ;
 
   // poissonian errors
   void setPoissonErrors () ;
@@ -191,20 +213,13 @@ class plotter { // generic plotter class
 
       if(plotCanvas){
        string filename = folderName + histo.at (0)->GetName () ;
-       TString Name (filename.c_str());       
-       Name.ReplaceAll("#","");
-       Name.ReplaceAll("{","");
-       Name.ReplaceAll("}","");
-       Name.ReplaceAll("[","");
-       Name.ReplaceAll("]","");
-       Name.ReplaceAll("^","");
-       Name.ReplaceAll("__","_");
-       Name.ReplaceAll("..",".");
+       TString Name (filename.c_str());     
+       cleanFromLateX (Name) ;  
        if (histo.size () > 1) Name += "_compare" ;
        if (isLog) Name += "_log" ;
        Name += ".pdf" ;
        m_canvas.Print (Name, "pdf") ;
-       Name.ReplaceAll("pdf","png");
+       Name.ReplaceAll(".pdf",".png");
        m_canvas.Print (Name, "png") ;
       }
       
@@ -212,7 +227,50 @@ class plotter { // generic plotter class
       if (isLog) m_canvas.SetLogy (0) ;
 
       return;
- }
+    } // DrawPlots
+
+  template <class T>
+  void Draw2DPlots (vector<T*> histo, TLegend leg, int sampleNum,
+		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true)
+    {
+      if (isLog) m_canvas.SetLogz () ;
+      float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
+      float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
+      float ymin = histo.at (0)->GetYaxis ()->GetXmin () ;
+      float ymax = histo.at (0)->GetYaxis ()->GetXmax () ;
+      if ("" == xaxisTitle) xaxisTitle = histo.at (0)->GetXaxis ()->GetTitle () ;
+      if ("" == yaxisTitle) yaxisTitle = histo.at (0)->GetYaxis ()->GetTitle () ;
+
+      prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
+
+      string options = "same cont2" ;
+      for (size_t i = 0 ; i < histo.size () ; ++i) 
+        {
+          histo.at (i)->Draw (options.c_str ()) ;
+        }
+      leg.Draw () ;
+      m_canvas.RedrawAxis () ;
+
+      if (plotCanvas)
+        {
+          string filename = folderName + histo.at (0)->GetName () ;
+          TString Name (filename.c_str ()) ;       
+          cleanFromLateX (Name) ;  
+          if (histo.size () > 1) Name += "_compare" ;
+          if (isLog) Name += "_log" ;
+          Name += ".pdf" ;
+          m_canvas.Print (Name, "pdf") ;
+          Name.ReplaceAll (".pdf",".png") ;
+          m_canvas.Print (Name, "png") ;
+        }
+
+      if (isLog) m_canvas.SetLogz (0) ;
+
+      return;
+    } // Draw2DPlots
+
+
+
  private:
 
  string m_folderName ; 

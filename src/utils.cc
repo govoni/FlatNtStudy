@@ -246,7 +246,9 @@ void fillRecoLeptonsArray (vector<leptonContainer> & lepVector, readTree & reade
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
-vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons, float isocut, float minptcut){
+//PG FIXME add the two isolation cuts, one for electrons and one for muons
+vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons, 
+                                      float isocut, float minptcut){
   vector<leptonContainer>  goodLeptons ;
   for (size_t i = 0 ; i < TL_leptons.size() ; ++i){
     if (TL_leptons.at(i).iso_  > isocut) continue ;
