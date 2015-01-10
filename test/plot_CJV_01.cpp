@@ -108,14 +108,14 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       float TKJ_SumHT_ThreeGeV_IN = 0. ;
       float TKJ_SumHT_FourGeV_IN  = 0. ;
 
-      OUTt TKJ_num_OUT              = 0 ;
-      OUTt TKJ_num_ThreeGeV_OUT     = 0 ;
-      OUTt TKJ_num_FourGeV_OUT      = 0 ;
+      int TKJ_num_OUT              = 0 ;
+      int TKJ_num_ThreeGeV_OUT     = 0 ;
+      int TKJ_num_FourGeV_OUT      = 0 ;
       float TKJ_SumHT_OUT          = 0. ;
       float TKJ_SumHT_ThreeGeV_OUT = 0. ;
       float TKJ_SumHT_FourGeV_OUT  = 0. ;
 
-      float deltaEtaThreshold = 0.7 ;
+      float deltaEtaThreshold = 0.6 ;
        // loop over track jets
       for (unsigned int iJet = 0 ; iJet < TL_trackJets.size () ; ++iJet)      
         {
@@ -241,6 +241,7 @@ int main (int argc, char ** argv)
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta",               50, -5., 5.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep",               75, -2., 2.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt_IN",             200, 0., 200.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetPt_OUT",             200, 0., 200.) ; 
 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetEta_FourGeV",       50, -5., 5.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetZep_FourGeV",       75, -2., 2.) ; 
@@ -260,12 +261,12 @@ int main (int argc, char ** argv)
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT",             200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV",     200, 0., 1000.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV",    200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_IN",          200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_IN",  200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_OUT",          200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_OUT",  200, 0., 1000.) ; 
-  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 200, 0., 1000.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_IN",           50, 0., 100.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_IN",   50, 0., 100.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_IN",  50, 0., 100.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_OUT",          50, 0., 100.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_OUT",  50, 0., 100.) ; 
+  analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 50, 0., 100.) ; 
 
   fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126") ;
 
