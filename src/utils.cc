@@ -452,6 +452,39 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "mll"){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),1);   
 	}
+	else if(VariableList.at(iVar).variableName == "met"){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_met.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "met_puppi"){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_puppi_met.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "met_gen"){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_gen_met.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptl1"){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptl2"){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj1" and RecoJets.size() >= 1){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj1_puppi" and PuppiJets.size() >= 1){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj1_gen" and GenJets.size() >= 1){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj2" and RecoJets.size() >= 2){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj2_puppi" and PuppiJets.size() >= 2){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(1).jet4V_.Pt(),1);   
+	}
+	else if(VariableList.at(iVar).variableName == "ptj2_gen" and GenJets.size() >= 2){
+ 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Pt(),1);   
+	}
 	else if(VariableList.at(iVar).variableName == "Asim_j"){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,asimJ,1);   
 	}
@@ -515,14 +548,17 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet" and RecoJets.size()>=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_met),1);   
 	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet_puppi" and RecoJets.size()>=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_puppi_met),1);   
+	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet_gen" and RecoJets.size()>=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_gen_met),1);   
+	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met" and GenJets.size()>=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.DeltaPhi(L_met),1);   
 	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_puppi_Met" and PuppiJets.size()>=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_puppi.DeltaPhi(L_met),1);   
-	} 
-	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_Met_puppi" and RecoJets.size()>=2){
-	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaPhi(L_puppi_met),1);   
 	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi" and GenJets.size()>=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.DeltaPhi(L_puppi_met),1);   
@@ -551,8 +587,14 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet_puppi" and RecoJets.size()>=1){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
 	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet_gen" and RecoJets.size()>=1){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaPhi(L_gen_met),1);   
+	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met_puppi" and PuppiJets.size()>=1){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
+	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_puppi_Met_gen" and PuppiJets.size()>=1){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(0).jet4V_.DeltaPhi(L_gen_met),1);   
 	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met_puppi" and GenJets.size()>=1){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaPhi(L_puppi_met),1);   
@@ -569,8 +611,14 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet_puppi" and RecoJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   
 	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet_gen" and RecoJets.size() >=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaPhi(L_gen_met),1);   
+	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met_puppi" and PuppiJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   
+	} 
+	else if(VariableList.at(iVar).variableName == "DeltaPhi_TJ_puppi_Met_gen" and PuppiJets.size() >=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,PuppiJets.at(1).jet4V_.DeltaPhi(L_gen_met),1);   
 	} 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_puppi" and GenJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.DeltaPhi(L_puppi_met),1);   

@@ -21,7 +21,7 @@ ptj2_gen                    40      0      600         pt_{j2}^{gen}
 ptj2_puppi                  40      0      600         pt_{j2}^{puppi}
 Asim_j                      50      0      2           Asim_{J}
 Asim_j_puppi                25      0      2           Asim_{J}^{puppi}
-Asim_j_pgen                 25      0      2           Asim_{J}^{gen}
+Asim_j_gen		    25      0      2           Asim_{J}^{gen}
 Asim_l                      25      0      2           Asim_{L}
 R                           25      0      5           R
 R_puppi                     25      0      5           R^{puppi}
@@ -40,13 +40,13 @@ DeltaPhi_JJ                 25      0      3.14        #Delta#phi_{JJ}
 DeltaPhi_JJ_puppi           25      0      3.14        #Delta#phi_{JJ}^{puppi}
 DeltaPhi_JJ_gen             25      0      3.14        #Delta#phi_{JJ}^{gen}
 DeltaPhi_JJMet              25      0      3.14        #Delta#phi_{JJMet}
+DeltaPhi_JJMet_puppi        25      0      3.14        #Delta#phi_{JJMet^{puppi}}
+DeltaPhi_JJMet_gen          25      0      3.14        #Delta#phi_{JJMet^{gen}}
 DeltaPhi_JJ_gen_Met         25      0      3.14        #Delta#phi_{JJ^{gen}Met}
 DeltaPhi_JJ_puppi_Met       25      0      3.14        #Delta#phi_{JJ^{puppi}Met}
-DeltaPhi_JJMet_puppi        25      0      3.14        #Delta#phi_{JJMet^{puppi}}
 DeltaPhi_JJ_gen_Met_puppi   25      0      3.14        #Delta#phi_{JJ^{gen}Met^{puppi}}
-DeltaPhi_JJ_puppi_Met_puppi 25      0      3.14        #Delta#phi_{JJ^{puppi}Met^{puppi}}
-DeltaPhi_JJMet_gen          25      0      3.14        #Delta#phi_{JJMet^{gen}}
 DeltaPhi_JJ_gen_Met_gen     25      0      3.14        #Delta#phi_{JJ^{gen}Met^{gen}}
+DeltaPhi_JJ_puppi_Met_puppi 25      0      3.14        #Delta#phi_{JJ^{puppi}Met^{puppi}}
 DeltaPhi_JJ_puppi_Met_gen   25      0      3.14        #Delta#phi_{JJ^{puppi}Met^{gen}}
 DeltaPhi_LJMet              25      0      3.14        #Delta#phi_{LJMet}
 DeltaPhi_LJ_Met_puppi       25      0      3.14        #Delta#phi_{LJMet^{puppi}}
