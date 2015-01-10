@@ -1,4 +1,4 @@
-// H4ConfigFileLine.h
+// H4configfileline-.h
 //
 // A class representing a (continued) line in the configuration
 // file, that is a pair of an option name and a (list of) value(s) 
@@ -13,11 +13,13 @@
 #include <string>
 #include <list>
 
+using namespace std;
+
 class ConfigFileLine {
  public:
 
   //! Constructor with name of the option and a single option value (no list!)
-  ConfigFileLine(const std::string &option, const std::string &value="");
+  ConfigFileLine(const string &option, const string &value="");
 
   //! Destructor: Does currently nothing
   virtual ~ConfigFileLine();
@@ -29,7 +31,7 @@ class ConfigFileLine {
   void appendList(const ConfigFileLine &other);
 
   //! Check whether name of option is "name"
-  bool isOption(const std::string &name) const{
+  bool isOption(const string &name) const{
     return name==option;
   }
 
@@ -39,38 +41,38 @@ class ConfigFileLine {
   }
 
   //! Return the list of configuration values
-  std::list<std::string> getValues() const{
+  list<string> getValues() const{
     // This operation is somewhat time-consuming!
     return values;
   }
 
   //! Sets the list of configuration values
-  void setValues(const std::list<std::string> &v){
+  void setValues(const list<string> &v){
     values=v;
   }
 
   //! Get option name
-  const std::string &getOptionName() const{
+  const string &getOptionName() const{
     return option;
   }
 
   //! Sets the scope by prepending "scope":: to the option name
-  void setScope(const std::string &scope);
+  void setScope(const string &scope);
   
   //! Print the contents of the rule to stdout
   void print() const;
 
   //! stream operator
-  friend std::ostream & operator<< (std::ostream & out, const ConfigFileLine & line) ;
+  friend ostream & operator<< (ostream & out, const ConfigFileLine & line) ;
 
  private:
 
-  std::string option;                //!< The name of the option
-  std::list<std::string> values;     //!< The list of option values
+  string option;                //!< The name of the option
+  list<string> values;     //!< The list of option values
 
   //! For convinience a ValueIterator type is defined which walks along
   //! the list of option strings
-  typedef std::list<std::string>::const_iterator ValueIterator;
+  typedef list<string>::const_iterator ValueIterator;
 
 };
 

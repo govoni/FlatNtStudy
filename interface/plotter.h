@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <fstream>
+
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
@@ -17,34 +18,30 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TChain.h"
+#include "TStyle.h"
+#include "TROOT.h"
+#include "TLatex.h"
+#include "TMath.h"
 
 using namespace std ;
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-
 // generic functions implemented in the cc
-
 double deltaPhi (double phi1, double phi2) ;
-bool   FillChain (TChain& chain, const std::string& inputFileList) ;
-
+bool   FillChain (TChain& chain, const string& inputFileList) ;
 // give an histogram set the poisson error bars
-void     setPoissonErrorsToHisto (TH1F * input) ;
-
+void   setPoissonErrorsToHisto (TH1F * input) ;
 // add the overflow bin as real bin to the histo
-void     addOverFlow (TH1F * input) ;            
-
+void   addOverFlow (TH1F * input) ;            
 // take an histogram with bin errors
-TH1F*    getHistoOfErrors (TH1F * input, int isLog) ; 
-
+TH1F*  getHistoOfErrors (TH1F * input, int isLog) ; 
 // create a stack from a histo
 THStack* CreateStack (TH1F * histo) ; 
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
 // one set of histograms given a cut layer
 // layer is alias for cut ... simple class with a string and a map of TH1
 class layer { 
@@ -52,7 +49,7 @@ class layer {
   layer (string name = "dummy") :
   m_layerName (name) {} ;
   string m_layerName ;
-  unordered_map<std::string, TH1F *> m_histos ;
+  unordered_map<string, TH1F *> m_histos ;
 } ;
 
 
@@ -102,12 +99,13 @@ class plotter { // generic plotter class
   // adding methods
   void addSample        (string sampleName, float XS, int totInitialEvents, bool isSignal, int color) ;
   void addLayerToSample (string sampleName, string layerName) ;
-  void addPlotToLayer   (string sampleName, string layerName, string plotName, int nBins, float xMin, float xMax) ;
+  void addPlotToLayer   (string sampleName, string layerName, string plotName, int nBins, float xMin, float xMax, string labelName) ;
   // copy methods
   void copyLayerInSample   (string sampleName, string target, string origin) ;
   void copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;
   // print structure
   void printStructure () ;
+  void printEventNumber(string layerName, string histoName);
   // init legend
   TLegend initLegend (int sampleNum) ;
   // fill histo

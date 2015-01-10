@@ -58,36 +58,36 @@ void ConfigFileLine::setScope(const string &scope){
   option=s;
 }
 void ConfigFileLine::print() const{
-  std::cout << "Option '" << option <<"' ";
+  cout << "Option '" << option <<"' ";
   if (!values.empty() ){
     ValueIterator I=values.begin();
-    std::cout << "set to '";
+    cout << "set to '";
     while (I != values.end()) {
-      std::cout << *I ;
+      cout << *I ;
       I++;
-      if(I != values.end()) std::cout << ", ";
+      if(I != values.end()) cout << ", ";
     }
-    std::cout << "'" << std::endl;
+    cout << "'" << endl;
   } else {
-    std::cout << "is defined!" << std::endl;
+    cout << "is defined!" << endl;
   }
 }
 //! stream operator
-std::ostream & operator<< (std::ostream & out, const ConfigFileLine & line)
+ostream & operator<< (ostream & out, const ConfigFileLine & line)
 {
   out << "Option '" << line.option <<"' ";
   if (!line.values.empty() ){
     // line.ValueIterator I=line.values.begin();
-    std::list<std::string>::const_iterator I=line.values.begin();
+    list<string>::const_iterator I=line.values.begin();
     out << "set to '";
     while (I != line.values.end()) {
       out << *I ;
       I++;
       if(I != line.values.end()) out << ", ";
     }
-    out << "'" << std::endl;
+    out << "'" << endl;
   } else {
-    out << "is defined!" << std::endl;
+    out << "is defined!" << endl;
   }
   return out ;
 }

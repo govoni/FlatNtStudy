@@ -1,10 +1,5 @@
 #include "plotter.h"
 
-#include "TLegend.h"
-#include "TStyle.h"
-#include "TROOT.h"
-#include "TLatex.h"
-
 using namespace std ;
 
 
@@ -124,12 +119,13 @@ void plotter::addLayerToSample (string sampleName, string layerName)
 
 // add a plot to a layer of a given sample
 void plotter::addPlotToLayer (string sampleName, string layerName, 
-                              string plotName, int nBins, float xMin, float xMax)
+                              string plotName, int nBins, float xMin, float xMax, string labelName)
 {
   string h_name = sampleName + "_" + layerName + "_" + plotName ;
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
-//  dummy->Sumw2 () ;
-  m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
+  dummy->GetXaxis()->SetTitle(labelName.c_str()); 
+ //  dummy->Sumw2 () ;
+ m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
 }
 
 
@@ -206,19 +202,46 @@ void plotter::printStructure ()
           cout << " + " << name << "\t" 
                << iSample->second.m_sampleContent[name].m_layerName << "\n" ;
           // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+           for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
                iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
                ++iHisto)
-            {
-              cout << "    + " << iHisto->first << "\t"
+             { 
+                 cout << "    + " << iHisto->first << "\t"
                    << iHisto->second->GetName () << "\t"
-                   << iHisto->second->GetEntries () << "\t"
+                   << iHisto->second->Integral () << "\t"
                    << iHisto->second->GetNbinsX () << "\n" ;
-            } // loop over histos
+            } // loop over histos	  
         } // loop over layers
     } // loop over samples
 }
 
+void plotter::printEventNumber(string layerName, string histoName){
+
+  // loop over samples
+  cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<<"<<endl;
+  cout<<"Event number for : Layer Name "<<layerName<<" Histo Name "<<histoName<<endl;
+
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample)
+    {
+      cout << iSample->first << "\t" ;
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
+        {
+          string name = iSample->second.m_layersSequence.at (iLayer) ;
+          if(name != layerName) continue ;
+          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+               ++iHisto){
+   
+           if(histoName != iHisto->first) continue ;
+	   cout << setprecision(5) <<" events "<< iHisto->second->Integral () << "\n";
+	  }
+	}
+    }
+}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -373,10 +396,19 @@ void plotter::plotFullLayer (string layerName)
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto)
     {
+      if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str (), "#sigma #times lumi", 1, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str (), "#sigma #times lumi", 0, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 0, outFolderName) ;
+      }
+      else {
+      plotSingleLayer (layerName, iHisto->first.c_str (), 
+                       iHisto->first.c_str(), "#sigma #times lumi", 1, outFolderName) ;
+      plotSingleLayer (layerName, iHisto->first.c_str (), 
+                       iHisto->first.c_str(), "#sigma #times lumi", 0, outFolderName) ;
+
+      }
     }   
   
   return ;
@@ -521,6 +553,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   nH_stack->Add (h_noH) ;
   name = "diff_" ;
   name += h_noH->GetName () ;
+
   TH1F * diff = (TH1F *) h_noH->Clone (name.c_str ()) ;
   diff->Add (h_sigSM, -1.) ;
   diff->SetLineColor (4) ;
@@ -598,15 +631,29 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   TLegend leg2 = initLegend (2) ;
   TH1F * h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
   TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
+  TH1F * h_significance  = (TH1F *) diff->Clone(("h_significance_"+string(h_noH->GetName())).c_str()) ;  
+
+  for(int iBin = 0; iBin < h_significance->GetNbinsX()+1; iBin++){
+    if(h_tot_SM_err->GetBinContent(iBin+1) == 0) h_significance->SetBinContent(iBin+1,0.);
+    else h_significance->SetBinContent(iBin+1,diff->GetBinContent(iBin+1)/ h_tot_SM_err->GetBinContent(iBin+1));
+  }
+
   h_tot_SM_err->SetLineColor (1) ;
   h_tot_SM_err->SetFillColor (1) ;
   h_tot_SM_err->SetFillStyle (3001) ;
+
+  h_significance->SetLineColor (2) ;
+  h_significance->SetLineWidth (2) ;
+  
+
   leg2.AddEntry (h_tot_SM_err, "SM fluct", "fl") ;
   leg2.AddEntry (diff, "noH - 126", "fl") ;
+  leg2.AddEntry (h_significance, "(noH - 126)/#sigma_{SM} ", "l") ;
 
   vector<TH1F *> histos2 ;
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
+  histos2.push_back (h_significance) ;
   DrawPlots (histos2, leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
 
   return ;

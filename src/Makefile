@@ -39,7 +39,8 @@ FFLAGS = -c
 
 LD       =  g++
 LDFLAGS  =  -rdynamic -shared $(ARCHL)
-SONAME	 =  libPlotter.so
+SONAME	 =  libFlatNtStudy.so
+SONAME2  =  FlatNtStudy
 SOFLAGS  =  -Wl,-soname,$(SONAME)
 
 GLIBS   =  -lm -ldl -rdynamic $(ROOTGLIBS) -lGenVector -lFoam -lMinuit -lTMVA -lMLP -lXMLIO -lGpad  -lTreePlayer 
@@ -85,6 +86,7 @@ $(OBJ)%$(ObjSuf): %$(SrcSuf) $(HDRS)
 
 $(OBJ)mydict.cc: $(DICTHDRS)
 	@echo "Generating dictionary for  ..."
+	@echo $(DICTHDRS)
 	rootcling -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
 
 $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
@@ -92,7 +94,7 @@ $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
         @echo "Linking $(SONAME):"
 
 $(BIN)%$(BinSuf): $(PRG)%$(PrgSuf) $(HDRS) $(LIB)$(SONAME)
-	$(CPP) $<  -lPlotter $(CPPFLAGS) -L$(LIB) $(GLIBS)  -o $@
+	$(CPP) $<  -l$(SONAME2) $(CPPFLAGS) -L$(LIB) $(GLIBS)  -o $@
 
 
 clean:

@@ -18,6 +18,8 @@
 #include <stdexcept>
 #include <vector>
 
+using namespace std;
+
 class ConfigParser {
  public:
 
@@ -40,7 +42,7 @@ class ConfigParser {
   bool deleteLine(const char *name, const char *scope=0);
 
   // Override an option
-  bool overrideOption(const char *name, std::list<std::string> &values,
+  bool overrideOption(const char *name, list<string> &values,
 		      const char *scope = 0);
 
   // Is this option defined?
@@ -62,29 +64,33 @@ class ConfigParser {
   const char *readStringOption(const char *name) const throw(const char *);
   
   // Read Integer List Option
-  std::vector<int> readIntListOption(const char *name) const throw(const char *);
+  vector<int> readIntListOption(const char *name) const throw(const char *);
 
   // Read Double List Option
-  std::vector<double> readDoubleListOption(const char *name) 
+  vector<double> readDoubleListOption(const char *name) 
+    const throw(const char *);
+
+  // Read Double List Option
+  vector<float> readFloatListOption(const char *name) 
     const throw(const char *);
   
   // Read String List Option
-  std::vector<std::string> readStringListOption(const char *name)
+  vector<string> readStringListOption(const char *name)
     const throw(const char *);
 
   // Print all options
   void print() const;
 
   //! stream operator
-  friend std::ostream & operator<< (std::ostream & out, const ConfigParser & conf) ;
+  friend ostream & operator<< (ostream & out, const ConfigParser & conf) ;
 
  private:
 
-  std::list<ConfigFileLine *> configLines; //!< A list of configuration file lines
+  list<ConfigFileLine *> configLines; //!< A list of configuration file lines
   
   //! For convinience a ValueIterator type is defined which walks along
   //! the list of option strings
-  typedef std::list<ConfigFileLine *>::const_iterator LineIterator;
+  typedef list<ConfigFileLine *>::const_iterator LineIterator;
 
 };
 

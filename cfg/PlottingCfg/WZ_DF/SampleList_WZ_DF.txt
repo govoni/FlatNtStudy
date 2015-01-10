@@ -1,0 +1,13 @@
+##############################################################################################################################################
+#  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
+##############################################################################################################################################
+PHANTOM_WZ_EWK_DF_126_TK2p5_UE                              WZ_EWK_126          861       1.96E-003                        1               1
+PHANTOM_WZ_EWK_DF_126_TK2p5_EU                              WZ_EWK_126          861       1.96E-003                        1               1
+PHANTOM_WZ_EWK_DF_noH_TK2p5_UE                              WZ_EWK_noH          861       1.96E-003                        1               1
+PHANTOM_WZ_EWK_DF_noH_TK2p5_EU                              WZ_EWK_noH          861       1.96E-003                        1               1
+PHANTOM_WZ_QCD_DF_TK2p5_EU                                  WZ_QCD              801       2.47E-003                        1               0 
+PHANTOM_WZ_QCD_DF_TK2p5_UE                                  WZ_QCD              801       2.47E-003                        1               0 
+PHANTOM_SS_EWK_DF_126_2p5                                   WW_EWK_SS_126       2         4.13649215685881443E-003         1               0
+PHANTOM_SS_QCD_DF_2p5                                       WW_QCD_SS           417       1.06691296353271774E-003         1               0
+PHANTOM_OS_EWK_DF_126_2p5                                   WW_EWK_OS_126       2         2.85627819273796338E-002         1               0
+PHANTOM_OS_QCD_DF_2p5                                       WW_QCD_OS           417       1.041934e-01                     1               0

@@ -14,6 +14,8 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
+
 int yylex();
 int yyerror(char *m);
 
@@ -26,7 +28,7 @@ extern int last_error_line_number;
 /* Do not forget to set yydebug = 1 in ConfigParser */
 #define YYDEBUG 1
 
-std::string context;
+string context;
 
  // #define YYPRINT(file,type,value) yyprint(file type,value)
 
@@ -915,8 +917,8 @@ case 9:
 #line 54 "config_parser.y"
 { if(yyvsp[0] &&
 			(last_error_line_number!=config_file_line_number)){ 
-	                      std::cout << "Near token: " << (yyvsp[0]->getOptionName());
-			      std::cout << std::endl;
+	                      cout << "Near token: " << (yyvsp[0]->getOptionName());
+			      cout << endl;
 			      last_error_line_number=config_file_line_number;
                             }
                             yyval=0; }
@@ -941,8 +943,8 @@ case 14:
 #line 67 "config_parser.y"
 { if(yyvsp[-2] && 
 			(last_error_line_number!=config_file_line_number)){
-	                      std::cout << "Error parsing list of options: " 
-					<< (yyvsp[-2]->getOptionName()) << std::endl;
+	                      cout << "Error parsing list of options: " 
+					<< (yyvsp[-2]->getOptionName()) << endl;
 			      last_error_line_number=config_file_line_number;
                             }
 			    yyval=0; }
@@ -1188,15 +1190,15 @@ yyreturn:
 
   
       int yyerror(char *m){
-	std::cout << "Error in config file, line "<< config_file_line_number 
-		  << ": " << m << std::endl;
+	cout << "Error in config file, line "<< config_file_line_number 
+		  << ": " << m << endl;
 	return (0);
       }
      
       int yylex ()
       {
         int c;
-	std::string s;
+	string s;
 	int optname;
      
         /* skip white space  */
@@ -1227,7 +1229,7 @@ yyreturn:
 	   }
 	   ungetc(c,gConfigParser->config_file);
 	   yylval=new ConfigFileLine(s);
-	   //	   std::cout << "Found " << s<< std::endl;
+	   //	   cout << "Found " << s<< endl;
 	   if(optname) return OPT;
            return STRING;
          }
@@ -1236,7 +1238,7 @@ yyreturn:
        if (c == EOF) return END_OF_FILE;
 
        /* return single chars */
-       // std::cout << "Returning single char '" << (char) c << "'"<< std::endl;
+       // cout << "Returning single char '" << (char) c << "'"<< endl;
        if ( c== '\n' ) config_file_line_number++;
        return c;
      }
@@ -1244,5 +1246,5 @@ yyreturn:
       /* extern int yydebug; */
 
 /* void yyprint(FILE *file, int type, YYSTYPE value){ */
-/*   std::cout << type << std::endl; */
+/*   cout << type << endl; */
 /* } */
