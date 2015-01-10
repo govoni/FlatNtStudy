@@ -99,7 +99,8 @@ class plotter { // generic plotter class
   // adding methods
   void addSample        (string sampleName, float XS, int totInitialEvents, bool isSignal, int color) ;
   void addLayerToSample (string sampleName, string layerName) ;
-  void addPlotToLayer   (string sampleName, string layerName, string plotName, int nBins, float xMin, float xMax, string labelName) ;
+  void addPlotToLayer   (string sampleName, string layerName, string plotName, 
+                         int nBins, float xMin, float xMax, string labelName = "") ;
   // copy methods
   void copyLayerInSample   (string sampleName, string target, string origin) ;
   void copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor) ;

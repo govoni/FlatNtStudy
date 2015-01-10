@@ -119,8 +119,10 @@ void plotter::addLayerToSample (string sampleName, string layerName)
 
 // add a plot to a layer of a given sample
 void plotter::addPlotToLayer (string sampleName, string layerName, 
-                              string plotName, int nBins, float xMin, float xMax, string labelName)
+                              string plotName, int nBins, float xMin, float xMax, 
+                              string labelName)
 {
+  if (labelName == "") labelName = plotName ;
   string h_name = sampleName + "_" + layerName + "_" + plotName ;
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
   dummy->GetXaxis()->SetTitle(labelName.c_str()); 
