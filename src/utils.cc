@@ -715,6 +715,16 @@ bool passCutContainerSelection (readTree* reader,
     iBin++;   
   }
 
+  // met cut
+  if(reader->pfmet_puppi < Cut.MET) return false;  
+
+  if(vect.size()!=0){
+    vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"met selection");
+    iBin++;   
+  }
+
+
   // take jets
   vector<jetContainer> RecoJets;
   RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, Cut.bTagVeto, Cut.jetPUID, minPtLeptonCutCleaning, matchingCone);   
