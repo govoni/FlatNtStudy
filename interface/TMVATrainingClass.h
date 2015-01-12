@@ -200,7 +200,8 @@ class TMVATrainingClass {
   void SetBasicEventCutInfo ( const bool & usePuppiAsDefault = false,
 			      const float & minPtLeptonCut  = 10,
 			      const float & minPtLeptonCutCleaning = 15,
-			      const float & leptonIsoCut      = 0.4,
+			      const float & leptonIsoCut_mu   = 0.6,
+			      const float & leptonIsoCut_el   = 0.55,
 			      const float & leptonIsoLooseCut = 0.7,
 			      const float & matchingCone      = 0.3,
 			      const float & minJetCutPt       = 30
@@ -209,10 +210,11 @@ class TMVATrainingClass {
  private : 
 
   // basic cut info
-  bool   usePuppiAsDefault_;
+  bool  usePuppiAsDefault_;
   float minPtLeptonCut_;
   float minPtLeptonCutCleaning_;
-  float leptonIsoCut_;
+  float leptonIsoCut_mu_;
+  float leptonIsoCut_el_;
   float leptonIsoLooseCut_;
   float matchingCone_;
   float minJetCutPt_;

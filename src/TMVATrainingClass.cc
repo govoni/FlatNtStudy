@@ -408,7 +408,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
-				    leptonIsoCut_,
+				    leptonIsoCut_mu_,
+				    leptonIsoCut_el_,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
@@ -442,7 +443,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
-				    leptonIsoCut_,
+				    leptonIsoCut_mu_,
+				    leptonIsoCut_el_,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
@@ -460,7 +462,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 					       const float & minPtLeptonCut,
 					       const float & minPtLeptonCutCleaning,
-					       const float & leptonIsoCut,
+					       const float & leptonIsoCut_mu,
+					       const float & leptonIsoCut_el,
 					       const float & leptonIsoLooseCut,
 					       const float & matchingCone,
 					       const float & minJetCutPt     
@@ -469,7 +472,8 @@ void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
   usePuppiAsDefault_ = usePuppiAsDefault;
   minPtLeptonCut_         = minPtLeptonCut;
   minPtLeptonCutCleaning_ = minPtLeptonCutCleaning;
-  leptonIsoCut_      = leptonIsoCut;
+  leptonIsoCut_mu_   = leptonIsoCut_mu;
+  leptonIsoCut_el_   = leptonIsoCut_el;
   leptonIsoLooseCut_ = leptonIsoLooseCut;
   matchingCone_ = matchingCone;
   minJetCutPt_  = minJetCutPt;
@@ -975,7 +979,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
   fillRecoLeptonsArray (LeptonsAll, *reader_);
   // dump tight leptons                                                                                                                                                    
   vector<leptonContainer> leptonsIsoTight ;
-  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_, minPtLeptonCut_);
+  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu_, leptonIsoCut_el_, minPtLeptonCut_);
     
   L_dilepton = leptonsIsoTight.at(0).lepton4V_ + leptonsIsoTight.at(1).lepton4V_ ;
   if(not usePuppiAsDefault_)
