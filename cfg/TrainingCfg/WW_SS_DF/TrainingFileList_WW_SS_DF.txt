@@ -1,0 +1,5 @@
+################################################################################################################
+# fileName                                       reducedVarName    puMin    puMax     MethodList
+################################################################################################################
+output/outTrain_WW_SS_DF/TMVAoutput_detajj.root  detajj              0         200     #Delta#eta_{jj}
+output/outTrain_WW_SS_DF/TMVAoutput_mjj.root     mjj                 0         200     M_{jj}
