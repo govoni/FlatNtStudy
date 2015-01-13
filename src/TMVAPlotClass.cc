@@ -25,9 +25,6 @@ TMVAPlotClass::TMVAPlotClass(){
   mvas_index_   = 0;
   thisMethod_   = 0 ;
 
-  for_each(fSignificanceBox_.begin(),fSignificanceBox_.end(), default_delete<significanceBox>());
-  fSignificanceBox_.clear() ;
-
   // histograms
   histoSignal_     = NULL ;
   histoBackground_ = NULL ;
@@ -40,12 +37,6 @@ TMVAPlotClass::TMVAPlotClass(){
   inputMethodName_.clear();
   originalMethodName_.clear();
   
-  for_each(inputFiles_.begin(),inputFiles_.end(), default_delete<TFile>());
-  inputFiles_.clear() ;
-
-  for_each(canvasLabel_.begin(),canvasLabel_.end(), default_delete<TLatex>());
-  canvasLabel_.clear() ;
-
   (*this).DestroyCanvases();
 
 }
@@ -586,9 +577,8 @@ void TMVAPlotClass::SetInputFiles (const vector<TFile*> & inputFiles){
 
 // methods to read efficiency histograms for each method in order to do significance plot
 void TMVAPlotClass::ReadHistograms (TFile* inputFile){
-  
-  for_each(fSignificanceBox_.begin(),fSignificanceBox_.end(), default_delete<significanceBox>());
-  fSignificanceBox_.clear();
+
+  fSignificanceBox_.clear();  
 
   // search for the right histograms in full list of keys                                                                                                                   
   TIter next(inputFile->GetListOfKeys());
@@ -720,7 +710,7 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
    
    TIter next(&TrainingMethods);
    TKey *key = 0, *hkey = 0;
-
+   
    // loop over all methods stored in the TList TrainingMethods                                                                                                              
    while ((key = (TKey*)next())) {
      TDirectory *myDir = (TDirectory*)key->ReadObj();
@@ -734,17 +724,18 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
      TIter nextTitle(&Titles);
      TKey *titkey = 0;
      TDirectory *titDir = 0;
+     
      while ((titkey = (*this).NextKey(nextTitle,"TDirectory"))) {
 
        titDir = (TDirectory*)titkey->ReadObj(); // read each object and take again the method title for each element of the list
        TString methodTitle;
        cout<<"TMVAPlotClass::makeROCsPlot title method : "<<titDir->GetName()<<endl;       
        (*this).GetMethodTitle(methodTitle,titDir);
-       TIter nextKey( titDir->GetListOfKeys() ); // loop and the list of keys
+       TIter nextKey( titDir->GetListOfKeys() ); // loop and the list of keys       
        while ((hkey = (*this).NextKey(nextKey,"TH1"))) { // take only the TH1 object type
 	 h = (TH1F*)hkey->ReadObj();
 	 TString hname = h->GetName();    // only the one which are called rejBvsS
-	 h -> SetName(Form("%s_%s",inputFiles_.at(iFile)->GetName(),h->GetName()));	
+	 h -> SetName(Form("%s_%s",inputFiles_.at(iFile)->GetName(),h->GetName()));		 
 	 if(plotType == 0){ // plotType 0 means eff sig vs eff bkg
 	   if(hname.Contains("effBvsS") && hname.BeginsWith("MVA_") && not hname.Contains("effBvsSLocal")) {
 	     if(size_t(color_index_) <= vec_color.size()){
@@ -803,10 +794,10 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
 	       legROC_->AddEntry(h,inputMethodName_.at(method_index_).c_str(),"l");
 	       method_index_ ++ ;
 	     }	
-	   }
-	 }
-       }       
-     }
+	   }	 
+	 }       
+       }               
+     }   
    }
    
    /// Loop on the different histos                                                                                                                                          
@@ -839,7 +830,7 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
   cROCLog_->cd();  
   legROC_->Draw("same");
   cROCLog_->Update();
-  
+
   return;
 }
 
@@ -1340,7 +1331,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
   cout << "--- " << setfill('=') << setw(str.Length()) << "" << setfill(' ') << endl;
   cout << "--- " << str << endl;
   cout << "--- " << setfill('-') << setw(str.Length()) << "" << setfill(' ') << endl;
-
+  
   // loop on the histo list   
   for ( ;itList!=(*this).fSignificanceBox_.end(); ++itList) {
     if(signalType_)
@@ -1390,7 +1381,6 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     
   }
 
-  
   /// Plot the results  
   vector<significanceBox*>::iterator itSignificanceBox = fSignificanceBox_.begin();
   for ( ; itSignificanceBox!=(*this).fSignificanceBox_.end(); ++itSignificanceBox ){
@@ -1502,11 +1492,11 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     TString opt = Form( "%%%is:  (%%8.4g,%%8.4g)    %%9.4g   %%10.6g  %%8.7g  %%8.7g %%8.4g %%8.4g",maxLenTitle);     
     cout << "--- "<< Form( opt.Data(), (*itSignificanceBox)->methodTitle_.Data(), numberSignalEvents, numberBackgroundEvents, (*itSignificanceBox)->significance_->GetXaxis()->GetBinCenter(maxbin),(*itSignificanceBox)->maxSig_,(*itSignificanceBox)->efficiencySignal_->GetBinContent(maxbin)*numberSignalEvents, (*itSignificanceBox)->efficiencyBackground_->GetBinContent( maxbin )*numberBackgroundEvents,(*itSignificanceBox)->efficiencySignal_->GetBinContent(maxbin), (*itSignificanceBox)->efficiencyBackground_->GetBinContent(maxbin) ) <<endl;
 
-
     // scale the significance plot to one in order to be put in the same canvas with efficiencies
     (*itSignificanceBox)->significance_->Scale(1/(*itSignificanceBox)->significance_->GetMaximum());
     (*itSignificanceBox)->significance_->Draw("samehistl");
-   
+
+    
     // Draw legend                                                                                                                                                            
     TLegend *legend1= new TLegend( cSignificance_->GetLeftMargin()+0.05,1-cSignificance_->GetTopMargin()-0.17,cSignificance_->GetLeftMargin()+0.25,1-cSignificance_->GetTopMargin()-0.02);
     legend1->SetFillStyle(0);
@@ -1530,7 +1520,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
 
     legend2->AddEntry((*itSignificanceBox)->significance_,Form("Significance %s",(*this).GetLatexFormula().Data()),"L");
     legend2->Draw("same");
-
+    
     // line to indicate maximum efficiency                                                                                                                                 
     TLine* effline = 0 ;
     if ((*itSignificanceBox)->methodTitle_.Contains("Cuts")) effline = new TLine(0.1,1,1,1);
@@ -1541,12 +1531,14 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     effline->Draw("same");
 
     cSignificance_->Update();
-
+    
     // print comments                                                                                                                                                         
     for_each(canvasLabel_.begin(),canvasLabel_.end(), default_delete<TLatex>());
+    
     canvasLabel_.clear() ;
-
+    
     canvasLabel_.push_back(new TLatex(0.95,0.92," 14 TeV"));
+    
     canvasLabel_.back()->SetNDC();
     canvasLabel_.back()->SetTextAlign(31);
     canvasLabel_.back()->SetTextFont(42);
@@ -1565,7 +1557,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     canvasLabel_.back()->SetTextSize(0.0304);
     canvasLabel_.back()->SetLineWidth(2);
     canvasLabel_.back()->Draw();
-    cMVAs_->Update();
+
     
     TString name = Form("For %.4g signal and %.4g background",numberSignalEvents,numberBackgroundEvents);
     TPaveText* line1 = new TPaveText(0.22,0.21,0.5,0.26,"NDC");
@@ -1586,7 +1578,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     line2->SetTextSize(0.027);
     line2->SetTextFont(42);
     //    line2->Draw("same");
-
+    
     TGaxis* rightAxis = new TGaxis(cSignificance_->GetUxmax(),cSignificance_->GetUymin(),cSignificance_->GetUxmax(),cSignificance_->GetUymax(),0,(*itSignificanceBox)->maxSig_*1.3,510,"+L");
     rightAxis->SetLineColor (kBlack);
     rightAxis->SetLabelColor(kBlack);
@@ -1637,10 +1629,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
     line1->Delete() ;
     line2->Delete() ;
     effline->Delete() ;
-
   }
   return ;
-
+  
 }
-
-//  LocalWords:  ReplaceAll

@@ -66,11 +66,11 @@ class significanceBox {
 
   // defailt de-constructor
   ~significanceBox(){
-    if(Signal_!=NULL)     delete Signal_;
+  if(Signal_!=NULL)     delete Signal_;
     if(Background_!=NULL) delete Background_;
-    if(efficiencySignal_!=NULL)     delete efficiencySignal_;
-    if(efficiencyBackground_!=NULL) delete efficiencyBackground_;
-    if(significance_!=NULL) delete significance_ ;
+  if(efficiencySignal_!=NULL)     delete efficiencySignal_;
+  if(efficiencyBackground_!=NULL) delete efficiencyBackground_;
+  if(significance_!=NULL) delete significance_ ;
   } 
 
   // public members 

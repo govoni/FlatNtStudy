@@ -1,5 +1,6 @@
 #include "TMVATrainingClass.h"
 #include "utils.h"
+#include "TSystem.h"
 
 // constructor giving files 
 TMVATrainingClass::TMVATrainingClass(const vector<TFile*> & signalFileList, 
@@ -17,11 +18,9 @@ TMVATrainingClass::TMVATrainingClass(const vector<TFile*> & signalFileList,
   SetOutputFile     (outputFilePath,outputFileName) ;
   SetTransformations(transformation);
 
-  factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
-                                outputFile_, 
-                                Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",
-                                gROOT->IsBatch()?"!":"",transformation.c_str()));
-
+  factory_.push_back(new TMVA::Factory (TreeName_+"_"+Label_,
+					outputFile_.back(), 
+					Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformation.c_str())));
 }
 
 // constructor giving tree
@@ -41,10 +40,9 @@ TMVATrainingClass::TMVATrainingClass(const vector<TTree*> & signalTreeList,
   SetOutputFile (outputFilePath,outputFileName) ;
   SetTransformations(transformation);
 
-  factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
-				outputFile_,
-				Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",
-				transformation.c_str()));
+  factory_.push_back(new TMVA::Factory (TreeName_+"_"+Label_,
+					outputFile_.back(),
+					Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformation.c_str())));
 
 }
 
@@ -65,10 +63,9 @@ TMVATrainingClass::TMVATrainingClass(const vector<TChain*> & signalTreeList,
   SetTransformations(transformation);  
   SetOutputFile (outputFilePath,outputFileName) ;
   
-  factory_ = new TMVA::Factory (TreeName_+"_"+Label_,
-				outputFile_,
-				Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",
-				transformation.c_str()));
+  factory_.push_back(new TMVA::Factory (TreeName_+"_"+Label_,
+					outputFile_.back(),
+					Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformation.c_str())));
   
 }
 
@@ -96,8 +93,14 @@ TMVATrainingClass::~TMVATrainingClass(){
   
   outputFileWeightName_.clear();
 
-  if(outputFile_!=0) outputFile_->Close();
-  if(factory_!=0)    factory_->Delete();
+  for(size_t iFile = 0; iFile < outputFile_.size(); iFile++)
+    outputFile_.at(iFile)->Close();
+  for_each(outputFile_.begin(),outputFile_.end(), default_delete<TFile>());
+  outputFile_.clear();
+
+  for_each(factory_.begin(),factory_.end(), default_delete<TMVA::Factory>());
+  factory_.clear();
+
   if(reader_!=0)     delete reader_;
 }
 
@@ -216,25 +219,25 @@ void TMVATrainingClass::SetOutputFile ( const string & outputFilePath ,
   
   if( !outputFilePath.empty() && !outputFileName.empty()) { 
  
-   outputFilePath_ = outputFilePath; 
-   outputFileName_ = outputFileName;
+    outputFilePath_.push_back(outputFilePath); 
+    outputFileName_.push_back(outputFileName);
 
-   replace(outputFileName_.begin(),outputFileName_.end(),'/','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),'[','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),']','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),'(','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),')','_');
-   replace(outputFileName_.begin(),outputFileName_.end(),':','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),'/','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),'[','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),']','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),'(','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),')','_');
+    replace(outputFileName_.back().begin(),outputFileName_.back().end(),':','_');
 
    if(Label_!="") 
-     outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+"_"+Label_+".root" ;
+     outputFileNameComplete_.push_back(outputFilePath_.back()+"/"+outputFileName_.back()+"_"+Label_+".root");
    else
-     outputFileNameComplete_ = outputFilePath_+"/"+outputFileName_+".root" ;
+     outputFileNameComplete_.push_back(outputFilePath_.back()+"/"+outputFileName_.back()+".root");
  
-   cout<<"TMVATrainingClass::SetOutputFile "<<outputFileNameComplete_<<endl;
+   cout<<"TMVATrainingClass::SetOutputFile "<<outputFileNameComplete_.back()<<endl;
 
-   outputFile_ = new TFile((outputFileNameComplete_).c_str(),"RECREATE");   
-   outputFile_->cd();
+   outputFile_.push_back(new TFile((outputFileNameComplete_.back()).c_str(),"RECREATE"));   
+   outputFile_.back()->cd();
  }
 
   return ;
@@ -253,40 +256,48 @@ void TMVATrainingClass::SetTransformations (const std::string & transformations)
 
 // AddTrainingVariables in the MVA
 void TMVATrainingClass::AddTrainingVariables ( const vector<string> & mapTrainingVariables, 
-					       const vector<string> & mapSpectatorVariables){
+					       const vector<string> & mapSpectatorVariables,
+					       const bool & trainEachVarIndependently){
 
   SetTrainingVariables(mapTrainingVariables);
   SetSpectatorVariables(mapSpectatorVariables);
 
-  for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<endl;
-    factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
-  }
+  trainEachVarIndependently_ = trainEachVarIndependently;
 
-  for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<"TMVATrainingClass::AddTrainingVariables spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
-    factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
-  }    
+  if(trainEachVarIndependently_ == false){
+    for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
+      cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<endl;
+      factory_.back()->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
+    }
+
+    for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
+      cout<<"TMVATrainingClass::AddTrainingVariables : spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
+      factory_.back()->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
+    }    
+  }
+  else{
+
+    factory_.clear();
+    outputFile_.clear();
+    for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
+      TString Name = Form("%s_%s_%s",TreeName_.c_str(),Label_.c_str(),mapTrainingVariables_.at(iVar).c_str());
+      SetOutputFile     (outputFilePath_.back(),outputFileName_.at(0)+"_"+mapTrainingVariables_.at(iVar)) ;
+      factory_.push_back(new TMVA::Factory (Name,
+					    outputFile_.back(),
+					    Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformations_.c_str())));
+      cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<" factory "<<factory_.back()->RootBaseDir()->GetName()<<endl;
+      factory_.back()->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
+    }
+    
+    for(size_t iFact = 0; iFact < factory_.size(); iFact++){
+      for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
+	cout<<"TMVATrainingClass::AddTrainingVariables spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
+	factory_.at(iFact)->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
+      }
+    }
+  }
 }
 
-// AddTrainingVariables in the MVA
-void TMVATrainingClass::AddTrainingVariables ( const string& mapTrainingVariables, 
-					       const vector<string> & mapSpectatorVariables){
-
-  
-  mapTrainingVariables_.push_back(mapTrainingVariables);
-  SetSpectatorVariables(mapSpectatorVariables);
-
-  for( size_t iVar = 0 ; iVar < mapTrainingVariables_.size() ; iVar ++ ){
-    cout<<"TMVATrainingClass::AddTrainingVariables : train " <<mapTrainingVariables_.at(iVar)<<endl;
-    factory_->AddVariable(mapTrainingVariables_.at(iVar)+" := "+mapTrainingVariables_.at(iVar),'F');
-  }
-
-  for( size_t iVar = 0 ; iVar < mapSpectatorVariables_.size() ; iVar ++ ){
-    cout<<"TMVATrainingClass::AddTrainingVariables : spectator " <<mapSpectatorVariables_.at(iVar)<<endl;
-    factory_->AddSpectator(mapSpectatorVariables_.at(iVar),'F');
-  }    
-}
 
 // Set Training Variables 
 void TMVATrainingClass::SetTrainingVariables  (const vector<string> & mapTrainingVariables){
@@ -328,72 +339,111 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
                          nTraining,nTraining,nTesting,nTesting,splitMode.c_str(),NormMode.c_str());
 
   SetEventWeight (weightStringSignal,weightStringBackground); // set the event basis weight in the factoryy
-  factory_->PrepareTrainingAndTestTree("","",Option.Data());  // set the options
-  
+  for(size_t ifact = 0; ifact < factory_.size(); ifact++){
+    factory_.at(ifact)->PrepareTrainingAndTestTree("","",Option.Data());  // set the options
+  }
   
   // create the varlist for the TNtupla --> variables to be used as input, spectator and weights
-  string varListSignal ;
-  for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){ // loop on training variables
-    if(iVar!=0) varListSignal += ":"+mapTrainingVariables_.at(iVar);
-    else        varListSignal += mapTrainingVariables_.at(iVar);
-  }
-  varListSignal += ":" ;
+  vector<string> varListSignal ;
+  vector<string> varListBackground ;
 
-  for(size_t iVar = 0; iVar < mapSpectatorVariables_.size() ; iVar++){ // loop on spectator variables
-    if(iVar!=0) varListSignal += ":"+mapSpectatorVariables_.at(iVar);
-    else        varListSignal += mapSpectatorVariables_.at(iVar);
-  }
+  if(trainEachVarIndependently_ == false){
 
-  string varListBackground ;
-  varListBackground = varListSignal ;
+    varListSignal.assign(1,"");
+
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){ // loop on training variables
+      if(iVar!=0) varListSignal.at(0) += ":"+mapTrainingVariables_.at(iVar);
+      else        varListSignal.at(0) += mapTrainingVariables_.at(iVar);
+    }
+    varListSignal.at(0) += ":" ;
+
+    for(size_t iVar = 0; iVar < mapSpectatorVariables_.size() ; iVar++){ // loop on spectator variables
+      if(iVar!=0) varListSignal.at(0) += ":"+mapSpectatorVariables_.at(iVar);
+      else        varListSignal.at(0) += mapSpectatorVariables_.at(iVar);
+    }
+
+    varListBackground = varListSignal ;
 
   
-  // the re-weight can be different for signal and background, while the input and spectator must be the same
-  replace(weightStringBackground.begin(),weightStringBackground.end(),'*',':');
-  replace(weightStringBackground.begin(),weightStringBackground.end(),'=',':');
-  replace(weightStringBackground.begin(),weightStringBackground.end(),'/',':');
-  varListBackground += ":"+weightStringBackground;
+    // the re-weight can be different for signal and background, while the input and spectator must be the same
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'*',':');
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'=',':');
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'/',':');
+    varListBackground.at(0) += ":"+weightStringBackground;
 
-  replace(weightStringSignal.begin(),weightStringSignal.end(),'*',':');
-  replace(weightStringSignal.begin(),weightStringSignal.end(),'=',':');
-  replace(weightStringSignal.begin(),weightStringSignal.end(),'/',':');
-  varListSignal += ":"+weightStringSignal;  
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'*',':');
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'=',':');
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'/',':');
+    varListSignal.at(0) += ":"+weightStringSignal;  
 
+  }
+  else{
+
+    varListSignal.assign(mapTrainingVariables_.size(),"");
+    
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){ // loop on training variables
+      varListSignal.at(iVar) += mapTrainingVariables_.at(iVar)+":";
+    }
+
+    for(size_t iVar = 0; iVar < mapSpectatorVariables_.size() ; iVar++){ // loop on spectator variables
+      for(size_t iVar2 = 0; iVar2 < mapTrainingVariables_.size() ; iVar2++){ // loop on training variables     
+	varListSignal.at(iVar2) += mapSpectatorVariables_.at(iVar)+":";
+      }
+    }
+
+    varListBackground = varListSignal ;
+
+  
+    // the re-weight can be different for signal and background, while the input and spectator must be the same
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'*',':');
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'=',':');
+    replace(weightStringBackground.begin(),weightStringBackground.end(),'/',':');
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){
+      varListBackground.at(iVar) += weightStringBackground;
+    }
+    
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'*',':');
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'=',':');
+    replace(weightStringSignal.begin(),weightStringSignal.end(),'/',':');
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size() ; iVar++){
+      varListSignal.at(iVar) += weightStringSignal;  
+    }
+  }
+
+
+  
   // create the TNtuple structure for both signal and background
   for(size_t iTree = 0; iTree < signalTreeList_.size() ; iTree++){
-    signalTNtuplaForTraining_.push_back(new TNtuple(TreeName_.c_str(),"",varListSignal.c_str()));
+    for(size_t iVar = 0; iVar < varListSignal.size(); iVar++){   
+      signalTNtuplaForTraining_.push_back(new TNtuple(Form("%s_%d_%d",TreeName_.c_str(),int(iTree*varListSignal.size()),int(iVar)),"",varListSignal.at(iVar).c_str()));
+    }
   }
 
   for(size_t iTree = 0; iTree < backgroundTreeList_.size() ; iTree++){
-    backgroundTNtuplaForTraining_.push_back(new TNtuple(TreeName_.c_str(),"",varListBackground.c_str()));
+    for(size_t iVar = 0; iVar < varListBackground.size(); iVar++){   
+      backgroundTNtuplaForTraining_.push_back(new TNtuple(Form("%s_%d_%d",TreeName_.c_str(),int(iTree*varListBackground.size()),int(iVar)),"",varListBackground.at(iVar).c_str()));
+    }
   }
 
- 
-  // make a list with the name of all the variables to be used --> split the weight expression
-  vector<string> totalSignalVariableList;
-  string segment;
-  stringstream signal_temp(varListSignal); 
-  while(getline(signal_temp, segment,':')){
-      totalSignalVariableList.push_back(segment);
-  } 
-
-  vector<string> totalBackgroundVariableList;
-  stringstream backg_temp(varListBackground); 
-  while(getline(backg_temp, segment,':')){
-      totalBackgroundVariableList.push_back(segment);
-  } 
-  
   
   // Now loop on tress and events, applying cuts
   vector<float> variableValue;
+  vector<string> totalSignalVariableList;
+  vector<string> totalBackgroundVariableList;
   map<string,TH1F*> vect;
 
-  for(size_t iTree = 0; iTree  < signalTNtuplaForTraining_.size() ; iTree++){
+  for(size_t iTree = 0; iTree  < signalTreeList_.size() ; iTree++){
+
     reader_  = new readTree((TTree*)(signalTreeList_.at(iTree))); // create a reader of each tree    
+    
     for(int iEvent = 0; iEvent < signalTreeList_.at(iTree)->GetEntries(); iEvent++){ // Loop on each tree entries
       reader_->fChain->GetEntry(iEvent) ;
+
+      // make a list with the name of all the variables to be used --> split the weight expression
       variableValue.clear();  
-      if (iEvent % 10000 == 0) cout << "reading signal event " << iEvent << "\n" ;
+      totalSignalVariableList.clear();
+
+      if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading signal event " << iEvent << "\n" ;
       // skip event with less than two leptons by default                    
       if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
       if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
@@ -414,21 +464,33 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    matchingCone_,
 				    minJetCutPt_,
 				    vect)) continue;
-      
-      FillVariablesNtupla(variableValue,totalSignalVariableList); // fill the vector with variables value     
-      signalTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event      
-    }      
+
+      for(size_t iVar = 0; iVar < varListSignal.size(); iVar++){
+	totalSignalVariableList.clear();
+	string segment;
+	stringstream signal_temp(varListSignal.at(iVar)); 
+	while(getline(signal_temp, segment,':')){
+	  totalSignalVariableList.push_back(segment);
+	} 
+	variableValue.clear();
+	FillVariablesNtupla(variableValue,totalSignalVariableList); // fill the vector with variables value     
+        if(iTree == 0)	signalTNtuplaForTraining_.at(iTree+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event      
+        else signalTNtuplaForTraining_.at(iTree*varListSignal.size()+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event      
+      }
+    }
   }
   
   // Now loop on tress and events, applying cuts
-  for(size_t iTree = 0; iTree  < backgroundTNtuplaForTraining_.size() ; iTree++){
+  for(size_t iTree = 0; iTree  < backgroundTreeList_.size() ; iTree++){
     reader_  = new readTree((TTree*)(backgroundTreeList_.at(iTree)));
     for(int iEvent = 0; iEvent < backgroundTreeList_.at(iTree)->GetEntries(); iEvent++){ // loop on backg events
 
       reader_->fChain->GetEntry(iEvent) ;    
-      variableValue.clear();
 
-      if (iEvent % 10000 == 0) cout << "reading bkg event " << iEvent << "\n" ;
+      variableValue.clear();  
+      totalBackgroundVariableList.clear();
+
+      if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading bkg event " << iEvent << "\n" ;
       // skip event with less than two leptons by default                    
       if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
       if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
@@ -451,10 +513,21 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    vect)) continue;
 
 
-      FillVariablesNtupla(variableValue,totalBackgroundVariableList); // fill the vector with variables value     
-      backgroundTNtuplaForTraining_.at(iTree)->Fill(&variableValue[0]); // fill the ntupla for this event
-    }  
-  }  
+      for(size_t iVar = 0; iVar < varListBackground.size(); iVar++){
+
+	totalBackgroundVariableList.clear();
+	string segment;
+	stringstream signal_temp(varListBackground.at(iVar)); 
+	while(getline(signal_temp, segment,':')){
+	  totalBackgroundVariableList.push_back(segment);
+	} 
+	variableValue.clear();
+	FillVariablesNtupla(variableValue,totalBackgroundVariableList); // fill the vector with variables value     
+	backgroundTNtuplaForTraining_.at(iTree*varListBackground.size()+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event       
+      }
+    }
+  } 
+  
 }
 
 
@@ -469,12 +542,12 @@ void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 					       const float & minJetCutPt     
 					       ){
 
-  usePuppiAsDefault_ = usePuppiAsDefault;
+  usePuppiAsDefault_      = usePuppiAsDefault;
   minPtLeptonCut_         = minPtLeptonCut;
   minPtLeptonCutCleaning_ = minPtLeptonCutCleaning;
-  leptonIsoCut_mu_   = leptonIsoCut_mu;
-  leptonIsoCut_el_   = leptonIsoCut_el;
-  leptonIsoLooseCut_ = leptonIsoLooseCut;
+  leptonIsoCut_mu_        = leptonIsoCut_mu;
+  leptonIsoCut_el_        = leptonIsoCut_el;
+  leptonIsoLooseCut_      = leptonIsoLooseCut;
   matchingCone_ = matchingCone;
   minJetCutPt_  = minJetCutPt;
 
@@ -485,25 +558,68 @@ void TMVATrainingClass::BookMVATrees (const vector<float> & signalGlobalWeight,
 				      const vector<float> & backgroundGlobalWeight){
   
   SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
- 
-  if(signalGlobalWeight.size() == signalTNtuplaForTraining_.size()){
-    for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++) 
-      factory_->AddSignalTree (signalTNtuplaForTraining_.at(iTree),signalGlobalWeight.at(iTree)) ;
-  }
-  else{        
-    for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++) 
-      factory_->AddSignalTree (signalTNtuplaForTraining_.at(iTree),1.0) ;
-  }
 
-  if(backgroundGlobalWeight.size() == backgroundTNtuplaForTraining_.size()){
-    for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) 
-      factory_->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),backgroundGlobalWeight.at(iTree)) ;
+  if( trainEachVarIndependently_ == false){
+    if(signalGlobalWeight.size() == signalTNtuplaForTraining_.size()){
+      for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++) {
+	factory_.back()->RootBaseDir()->cd();
+	factory_.back()->AddSignalTree (signalTNtuplaForTraining_.at(iTree),signalGlobalWeight.at(iTree)) ;
+      }
+    }
+    else{        
+      for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree ++){ 
+	factory_.back()->RootBaseDir()->cd();
+	factory_.back()->AddSignalTree (signalTNtuplaForTraining_.at(iTree),1.0) ;
+      }
+    }
+
+    if(backgroundGlobalWeight.size() == backgroundTNtuplaForTraining_.size()){
+      for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) {
+	factory_.back()->RootBaseDir()->cd();
+	factory_.back()->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),backgroundGlobalWeight.at(iTree)) ;
+      }
+    }
+    else{        
+      for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) {
+	factory_.back()->RootBaseDir()->cd();
+	factory_.back()->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),1.0) ;
+      }
+    }
   }
-  else{        
-    for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++) 
-      factory_->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree),1.0) ;
+  else{
+    if(signalGlobalWeight.size() == signalTNtuplaForTraining_.size()/mapTrainingVariables_.size()){
+      for(size_t iTree = 0; iTree < signalGlobalWeight.size(); iTree ++) {
+        for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
+	  factory_.at(iVar)->RootBaseDir()->cd();
+	  factory_.at(iVar)->AddSignalTree (signalTNtuplaForTraining_.at(iTree*mapTrainingVariables_.size()+iVar),signalGlobalWeight.at(iTree)) ;
+	}
+      }
+    }
+    else{        
+      for(size_t iTree = 0; iTree < signalTNtuplaForTraining_.size(); iTree++) 
+        for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
+	  factory_.at(iVar)->RootBaseDir()->cd();
+	  factory_.at(iVar)->AddSignalTree (signalTNtuplaForTraining_.at(iTree*mapTrainingVariables_.size()+iVar),1.0) ;
+	}
+    }
+
+   if(backgroundGlobalWeight.size() == backgroundTNtuplaForTraining_.size()/mapTrainingVariables_.size()){
+      for(size_t iTree = 0; iTree < backgroundGlobalWeight.size(); iTree ++){ 
+	for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
+	  factory_.at(iVar)->RootBaseDir()->cd();
+	  factory_.at(iVar)->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree*mapTrainingVariables_.size()+iVar),backgroundGlobalWeight.at(iTree)) ;
+	}
+      }
+    }
+    else{        
+      for(size_t iTree = 0; iTree < backgroundTNtuplaForTraining_.size(); iTree ++){ 
+        for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
+	  factory_.at(iVar)->RootBaseDir()->cd();
+	  factory_.at(iVar)->AddBackgroundTree (backgroundTNtuplaForTraining_.at(iTree*mapTrainingVariables_.size()+iVar),1.0) ;
+	}
+      }
+    }
   }
-  
 }
 
 // set global event weight
@@ -522,8 +638,11 @@ void TMVATrainingClass::SetGlobalSampleWeight (const vector<float> & signalGloba
 
 void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const string & weightStringBackground){
 
-  factory_->SetSignalWeightExpression(weightStringSignal);
-  factory_->SetBackgroundWeightExpression(weightStringBackground);
+  for(size_t ifact = 0; ifact < factory_.size(); ifact++){
+    factory_.at(ifact)->RootBaseDir()->cd();
+    factory_.at(ifact)->SetSignalWeightExpression(weightStringSignal);
+    factory_.at(ifact)->SetBackgroundWeightExpression(weightStringBackground);
+  }
 
   return ;
 
@@ -531,66 +650,124 @@ void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const
 
 
 // Train Rectangular Cuts
-void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod, 
-						     string variable){
+void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod){
 
   // create output directory if not there and change the variable name in case of a list
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
-  replace(variable.begin(),variable.end(),'/', '_');
-  replace(variable.begin(),variable.end(),'[', '_');
-  replace(variable.begin(),variable.end(),']', '_');
-  replace(variable.begin(),variable.end(),'(', '_');
-  replace(variable.begin(),variable.end(),')', '_');
-  replace(variable.begin(),variable.end(),':', '_');
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
-  // Set Name of the Weight file for TMVA evaluating procedure
-  if(Label_ !=""){
-    outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_+"_"+variable;
-    (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
-  }
-  else {
-    outputFileWeightName_["Cuts"+FitMethod] = outputFilePath_+"/TMVAWeight_Cuts"+FitMethod+"_"+variable;
-    (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod];
-  }
+  if(trainEachVarIndependently_){
 
-  // book the method
-  if(FitMethod!=""){ 
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
 
-     TString Option = Form("!H:!V:FitMethod=%s:EffSel",FitMethod.c_str());
-     TString Name   = Form("Cuts%s",FitMethod.c_str());
+      string variable = mapTrainingVariables_.at(iVar);
+      replace(variable.begin(),variable.end(),'/', '_');
+      replace(variable.begin(),variable.end(),'[', '_');
+      replace(variable.begin(),variable.end(),']', '_');
+      replace(variable.begin(),variable.end(),'(', '_');
+      replace(variable.begin(),variable.end(),')', '_');
+      replace(variable.begin(),variable.end(),':', '_');
 
-     if(TString(Name).Contains("CutsGA"))  
-       Option = Option+":CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95";
+      outputFile_.at(iVar)->cd();
+      factory_.at(iVar)->RootBaseDir()->cd();
 
-     factory_->BookMethod( TMVA::Types::kCuts, Name.Data(),Option.Data());
-  }
+      // Set Name of the Weight file for TMVA evaluating procedure
+      if(Label_ !=""){
+	outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_.back()+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_+"_"+variable;
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
+      }
+      else {
+	outputFileWeightName_["Cuts"+FitMethod] = outputFilePath_.back()+"/TMVAWeight_Cuts"+FitMethod+"_"+variable;
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod];
+      }
 
-  else{
+      // book the method
+      if(FitMethod!=""){ 
+
+	TString Option = Form("!H:!V:FitMethod=%s:EffSel",FitMethod.c_str());
+	TString Name   = Form("Cuts%s",FitMethod.c_str());
+
+	if(TString(Name).Contains("CutsGA"))  
+	  Option = Option+":CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95";
+
+	factory_.at(iVar)->BookMethod( TMVA::Types::kCuts, Name.Data(),Option.Data());
+      }
+
+      else{
+
         TString Option = Form("!H:!V:FitMethod=MC:EffSel");
 
-        factory_->BookMethod( TMVA::Types::kCuts, "CutsMC"+FitMethod,Option.Data());
+        factory_.at(iVar)->BookMethod( TMVA::Types::kCuts, "CutsMC"+FitMethod,Option.Data());
 
         Option = Form("!H:!V:FitMethod=GA::CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95");
-
-        factory_->BookMethod( TMVA::Types::kCuts, "CutsGA"+FitMethod,Option.Data());
-
+	
+        factory_.at(iVar)->BookMethod( TMVA::Types::kCuts, "CutsGA"+FitMethod,Option.Data());
+	
         Option = Form("!H:!V:FitMethod=SA:EffSel:MaxCalls=150000:KernelTemp=IncAdaptive:InitialTemp=1e+6:MinTemp=1e-6:Eps=1e-10:UseDefaultScale");
 
-        factory_->BookMethod( TMVA::Types::kCuts, "CutsSA"+FitMethod,Option.Data());
+        factory_.at(iVar)->BookMethod( TMVA::Types::kCuts, "CutsSA"+FitMethod,Option.Data());
+      }    
 
+      factory_.at(iVar)->TrainAllMethods();
+
+      factory_.at(iVar)->TestAllMethods();
+
+      factory_.at(iVar)->EvaluateAllMethods();
+    
+      factory_.at(iVar)->DeleteAllMethods();
+    }
+  }
+  else{
+
+    outputFile_.back()->cd();
+    factory_.back()->RootBaseDir()->cd();
+
+    // Set Name of the Weight file for TMVA evaluating procedure
+    if(Label_ !=""){
+      outputFileWeightName_["Cuts"+FitMethod+"_"+Label_] = outputFilePath_.back()+"/TMVAWeight_Cuts"+FitMethod+"_"+Label_;
+      (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod+"_"+Label_];
+    }
+    else {
+      outputFileWeightName_["Cuts"+FitMethod] = outputFilePath_.back()+"/TMVAWeight_Cuts"+FitMethod;
+      (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Cuts"+FitMethod];
+    }
+
+    // book the method
+    if(FitMethod!=""){ 
+
+      TString Option = Form("!H:!V:FitMethod=%s:EffSel",FitMethod.c_str());
+      TString Name   = Form("Cuts%s",FitMethod.c_str());
+      
+      if(TString(Name).Contains("CutsGA"))  
+	Option = Option+":CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95";
+      
+      factory_.back()->BookMethod( TMVA::Types::kCuts, Name.Data(),Option.Data());
+    }
+
+    else{
+      TString Option = Form("!H:!V:FitMethod=MC:EffSel");
+      
+      factory_.back()->BookMethod( TMVA::Types::kCuts, "CutsMC"+FitMethod,Option.Data());
+      
+      Option = Form("!H:!V:FitMethod=GA::CutRangeMin[0]=-10:CutRangeMax[0]=10:VarProp[1]=FMax:EffSel:Steps=30:Cycles=3:PopSize=400:SC_steps=10:SC_rate=5:SC_factor=0.95");
+      
+      factory_.back()->BookMethod( TMVA::Types::kCuts, "CutsGA"+FitMethod,Option.Data());
+	
+      Option = Form("!H:!V:FitMethod=SA:EffSel:MaxCalls=150000:KernelTemp=IncAdaptive:InitialTemp=1e+6:MinTemp=1e-6:Eps=1e-10:UseDefaultScale");
+
+      factory_.back()->BookMethod( TMVA::Types::kCuts, "CutsSA"+FitMethod,Option.Data());
+    }    
+
+    factory_.back()->TrainAllMethods();
+    
+    factory_.back()->TestAllMethods();
+    
+    factory_.back()->EvaluateAllMethods();
+    
+    factory_.back()->DeleteAllMethods();
   }
 
-  factory_->TrainAllMethods();
-
-  factory_->TestAllMethods();
-
-  factory_->EvaluateAllMethods();
-
-  factory_->DeleteAllMethods();
-
-  cout<< "==> Wrote root file: " << outputFile_->GetName() << endl;
   cout<< "==> TMVAClassification is done!" << endl;
 
 }
@@ -598,94 +775,106 @@ void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod,
 // Train Likelihood
 void TMVATrainingClass::BookandTrainLikelihood ( const string & LikelihoodType ){
 
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure
   if(Label_ !=""){
-    outputFileWeightName_[LikelihoodType+"_"+Label_] = outputFilePath_+"/TMVAWeight_"+LikelihoodType+"_"+Label_;
+    outputFileWeightName_[LikelihoodType+"_"+Label_] = outputFilePath_.back()+"/TMVAWeight_"+LikelihoodType+"_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_[LikelihoodType+"_"+Label_];
   }
   else {
-    outputFileWeightName_[LikelihoodType] = outputFilePath_+"/TMVAWeight_"+LikelihoodType;
+    outputFileWeightName_[LikelihoodType] = outputFilePath_.back()+"/TMVAWeight_"+LikelihoodType;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_[LikelihoodType];
   }
 
   TString Option ;
 
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
+
   if( LikelihoodType == "LikelihoodKDE") { 
     Option = Form("LikelihoodKDE");
-    factory_->BookMethod(TMVA::Types::kLikelihood, Option.Data(),"!H:!V:IgnoreNegWeightsInTraining:!TransformOutput:PDFInterpol=KDE:KDEtype=Gauss:"
+    factory_.back()->BookMethod(TMVA::Types::kLikelihood, Option.Data(),"!H:!V:IgnoreNegWeightsInTraining:!TransformOutput:PDFInterpol=KDE:KDEtype=Gauss:"
 			                                         "KDEiter=Adaptive:CreateMVAPdfs:KDEFineFactor=0.3:KDEborder=None");
   }
   else if( LikelihoodType == "PDERS") { 
       Option = Form("%s",LikelihoodType.c_str());
-      factory_->BookMethod(TMVA::Types::kPDERS, Option.Data(),
+      factory_.back()->BookMethod(TMVA::Types::kPDERS, Option.Data(),
                            "!H:!V:VolumeRangeMode=Adaptive:KernelEstimator=Gauss:CreateMVAPdfs:DeltaFrac=4:GaussSigma=0.3:NormTree=T");
   }
   else if( LikelihoodType == "PDEFoam") { 
        Option = Form("%s",LikelihoodType.c_str());
-       factory_->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),"!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:SigBgSeparate=F:TailCut=0.001"
+       factory_.back()->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),"!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:SigBgSeparate=F:TailCut=0.001"
                                                                  ":VolFrac=0.0666:nActiveCells=500:nSampl=2000:nBin=5:Nmin=100:Kernel=None:Compress=T");
   }
   else if( LikelihoodType == "PDEFoamBoost") { 
       Option = Form("%s",LikelihoodType.c_str());
-      factory_->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),
+      factory_.back()->BookMethod(TMVA::Types::kPDEFoam, Option.Data(),
                            "!H:!V:IgnoreNegWeightsInTraining:Boost_Num=30:CreateMVAPdfs:Boost_Transform=linear:SigBgSeparate=F:MaxDepth=4"
                            ":UseYesNoCell=T:DTLogic=MisClassificationError:FillFoamWithOrigWeights=F:TailCut=0:nActiveCells=300:nBin=20:Nmin=300:Kernel=None:Compress=T");
   }
   else{ Option = Form("%s",LikelihoodType.c_str());
-        factory_->BookMethod( TMVA::Types::kLikelihood, Option.Data(),"!H:!V:!TransformOutput:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpol=Spline2"
+        factory_.back()->BookMethod( TMVA::Types::kLikelihood, Option.Data(),"!H:!V:!TransformOutput:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpol=Spline2"
 			                                              ":NSmoothSig[0]=20:NSmoothBkg[0]=20:NSmoothBkg[1]=10:NSmooth=1:NAvEvtPerBin=50");
   }
 
 
-  factory_->TrainAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->TestAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->DeleteAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
-  cout << "==> TMVAClassification is done!" << endl;
+ cout << "==> TMVAClassification is done!" << endl;
 
 }
 
 // Train Fisher Discriminant
 void TMVATrainingClass::BookandTrainFisherDiscriminant(){
 
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                              
   if(Label_ !=""){
-    outputFileWeightName_["Fisher_"+Label_] = outputFilePath_+"/TMVAWeight_Fisher_"+Label_;
+    outputFileWeightName_["Fisher_"+Label_] = outputFilePath_.back()+"/TMVAWeight_Fisher_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Fisher_"+Label_];
   }
   else{
-    outputFileWeightName_["Fisher"] = outputFilePath_+"/TMVAWeight_Fisher";
+    outputFileWeightName_["Fisher"] = outputFilePath_.back()+"/TMVAWeight_Fisher";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["Fisher"];
   }
 
-  factory_->BookMethod( TMVA::Types::kFisher, "Fisher",
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
+
+  factory_.back()->BookMethod( TMVA::Types::kFisher, "Fisher",
                         "!H:!V:CreateMVAPdfs:IgnoreNegWeightsInTraining:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10:Fisher");
 
 
-  factory_->TrainAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->TestAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->DeleteAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -693,34 +882,39 @@ void TMVATrainingClass::BookandTrainFisherDiscriminant(){
 // Train Linear Discriminant
 void TMVATrainingClass::BookandTrainLinearDiscriminant(){
 
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl;
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl;
  
   // Set Name of the Weight file for TMVA evaluating procedure
   if(Label_ !=""){
-    outputFileWeightName_["LD_"+Label_] = outputFilePath_+"/TMVAWeight_LD_"+Label_;
+    outputFileWeightName_["LD_"+Label_] = outputFilePath_.back()+"/TMVAWeight_LD_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["LD_"+Label_];
   }
   else {
-    outputFileWeightName_["LD"] = outputFilePath_+"/TMVAWeight_LD";
+    outputFileWeightName_["LD"] = outputFilePath_.back()+"/TMVAWeight_LD";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["LD"];
   }
 
   // Training Testing and Evaluating   
-  outputFile_->cd();
-  factory_->BookMethod( TMVA::Types::kLD, "LD", "H:!V:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10");
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
 
-  factory_->TrainAllMethods();
+  factory_.back()->BookMethod( TMVA::Types::kLD, "LD", "H:!V:CreateMVAPdfs:PDFInterpolMVAPdf=Spline2:NbinsMVAPdf=50:NsmoothMVAPdf=10");
 
-  factory_->TestAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
+  factory_.back()->DeleteAllMethods();
+
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -733,18 +927,22 @@ void TMVATrainingClass::BookandTrainMLP(const int & nCycles,
 					const int & TestRate, 
 					const int & ConvergenceTests){
 
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                            
   if(Label_ != ""){
-    outputFileWeightName_["MLP_"+Label_] = outputFilePath_+"/TMVAWeight_MLP_"+Label_;
+    outputFileWeightName_["MLP_"+Label_] = outputFilePath_.back()+"/TMVAWeight_MLP_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP_"+Label_];
   }
   else{
-    outputFileWeightName_["MLP"] = outputFilePath_+"/TMVAWeight_MLP";
+    outputFileWeightName_["MLP"] = outputFilePath_.back()+"/TMVAWeight_MLP";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["MLP"];
   }
 
@@ -752,17 +950,19 @@ void TMVATrainingClass::BookandTrainMLP(const int & nCycles,
 			 ":ConvergenceTests=%d:UseRegulator",nCycles,HiddenLayers.c_str(),NeuronType.c_str(),TrainingMethod.c_str(),TestRate,
                          ConvergenceTests);
 
-  factory_->BookMethod( TMVA::Types::kMLP, "MLP", Option.Data());
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
+
+  factory_.back()->BookMethod( TMVA::Types::kMLP, "MLP", Option.Data());
   
-  factory_->TrainAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->TestAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->DeleteAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -771,33 +971,40 @@ void TMVATrainingClass::BookandTrainMLP(const int & nCycles,
 void TMVATrainingClass::BookandTrainCFMlpANN ( const int & nCycles, 
 					       const string & HiddenLayers){
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
+
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                            
   if(Label_ !=""){
-    outputFileWeightName_["CFMlpANN_"+Label_] = outputFilePath_+"/TMVAWeight_CFMlpANN_"+Label_;
+    outputFileWeightName_["CFMlpANN_"+Label_] = outputFilePath_.back()+"/TMVAWeight_CFMlpANN_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["CFMlpANN_"+Label_];
   }
   else {
-    outputFileWeightName_["CFMlpANN"] = outputFilePath_+"/TMVAWeight_CFMlpANN";
+    outputFileWeightName_["CFMlpANN"] = outputFilePath_.back()+"/TMVAWeight_CFMlpANN";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["CFMlpANN"];
   }
 
   TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:CreateMVAPdfs",nCycles,HiddenLayers.c_str());
+ 
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
 
-  factory_->BookMethod( TMVA::Types::kCFMlpANN, "CFMlpANN",Option.Data());
+  factory_.back()->BookMethod( TMVA::Types::kCFMlpANN, "CFMlpANN",Option.Data());
 
-  factory_->TrainAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->TestAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->DeleteAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -809,34 +1016,41 @@ void TMVATrainingClass::BookandTrainTMlpANN  ( const int & nCycles,
 					       const string & TrainingMethod, 
 					       const float & ValidationFraction){
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
+
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                        
   if(Label_ != ""){         
-    outputFileWeightName_["TMlpANN_"+Label_] = outputFilePath_+"/TMVAWeight_TMlpANN_"+Label_;
+    outputFileWeightName_["TMlpANN_"+Label_] = outputFilePath_.back()+"/TMVAWeight_TMlpANN_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["TMlpANN_"+Label_];
   }
   else {
-    outputFileWeightName_["TMlpANN"] = outputFilePath_+"/TMVAWeight_TMlpANN";
+    outputFileWeightName_["TMlpANN"] = outputFilePath_.back()+"/TMVAWeight_TMlpANN";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["TMlpANN"];
   }
 
   TString Option = Form ("!H:!V:NCycles=%d:HiddenLayers=%s:LearningMethod=%s:ValidationFraction=%f:CreateMVAPdfs",
 			 nCycles,HiddenLayers.c_str(),TrainingMethod.c_str(),ValidationFraction);
 
-  factory_->BookMethod( TMVA::Types::kTMlpANN, "TMlpANN",Option.Data());
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
 
-  factory_->TrainAllMethods();
+  factory_.back()->BookMethod( TMVA::Types::kTMlpANN, "TMlpANN",Option.Data());
 
-  factory_->TestAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
+  factory_.back()->DeleteAllMethods();
+
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -852,34 +1066,41 @@ void TMVATrainingClass::BookandTrainBDT ( const int & NTrees,
 					  const string & SeparationType){
 
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
+
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure
   if(Label_ != ""){                                                          
-    outputFileWeightName_["BDT_"+Label_] = outputFilePath_+"/TMVAWeight_BDT_"+Label_;
+    outputFileWeightName_["BDT_"+Label_] = outputFilePath_.back()+"/TMVAWeight_BDT_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDT_"+Label_];
   }
   else {
-    outputFileWeightName_["BDT"] = outputFilePath_+"/TMVAWeight_BDT";
+    outputFileWeightName_["BDT"] = outputFilePath_.back()+"/TMVAWeight_BDT";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDT"];
   }
 
-  TString Option = Form ("!H:!V:CreateMVAPdfs:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=200",NTrees,BoostType.c_str(),AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+  TString Option = Form ("!H:!V:CreateMVAPdfs:NTrees=%d:BoostType=%s:AdaBoostBeta=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:MinNodeSize=2:nCuts=200",NTrees,BoostType.c_str(),AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
-  factory_->BookMethod( TMVA::Types::kBDT, "BDT", Option.Data());
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
 
-  if(optimizeMethods) factory_->OptimizeAllMethods();                                                                                                                                                            
-  factory_->TrainAllMethods();
+  factory_.back()->BookMethod( TMVA::Types::kBDT, "BDT", Option.Data());
 
-  factory_->TestAllMethods();
+  if(optimizeMethods) factory_.back()->OptimizeAllMethods();                                                                                                                                                            
+  factory_.back()->TrainAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
+  factory_.back()->DeleteAllMethods();
+
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -894,33 +1115,81 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 					   const string & SeparationType){
 
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
-  // Set Name of the Weight file for TMVA evaluating procedure                                                                                                          
-  if(Label_ != ""){
-    outputFileWeightName_["BDTG_"+Label_] = outputFilePath_+"/TMVAWeight_BDTG_"+Label_;
-    (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
-  }
-  else {
-    outputFileWeightName_["BDTG"] = outputFilePath_+"/TMVAWeight_BDTG";
-    (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
-  }
 
-  TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+  if(trainEachVarIndependently_){
 
-  factory_->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
-  
-  if(optimizeMethods) factory_->OptimizeAllMethods();                                                                                                                     
+    for(size_t iVar = 0; iVar < mapTrainingVariables_.size(); iVar++){
+
+      string variable = mapTrainingVariables_.at(iVar);
+      replace(variable.begin(),variable.end(),'/', '_');
+      replace(variable.begin(),variable.end(),'[', '_');
+      replace(variable.begin(),variable.end(),']', '_');
+      replace(variable.begin(),variable.end(),'(', '_');
+      replace(variable.begin(),variable.end(),')', '_');
+      replace(variable.begin(),variable.end(),':', '_');
+
+      outputFile_.at(iVar)->cd();
+      factory_.at(iVar)->RootBaseDir()->cd();
+
+      // Set Name of the Weight file for TMVA evaluating procedure                                                                                                          
+      if(Label_ != ""){
+	outputFileWeightName_["BDTG_"+Label_] = outputFilePath_.back()+"/TMVAWeight_BDTG_"+Label_+"_"+variable;
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
+      }
+      else {
+	outputFileWeightName_["BDTG"] = outputFilePath_.back()+"/TMVAWeight_BDTG_"+variable;
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
+      }
+
+      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000:*IgnoreNegWeightsInTraining*:*MinNodeSize*=2",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+      
+      factory_.at(iVar)->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
+      
+      if(optimizeMethods) factory_.at(iVar)->OptimizeAllMethods();                                                                                                             
                                  
-  factory_->TrainAllMethods();
+      factory_.at(iVar)->TrainAllMethods();
+      
+      factory_.at(iVar)->TestAllMethods();
+  
+      factory_.at(iVar)->EvaluateAllMethods();
 
-  factory_->TestAllMethods();
+      system(("cp "+string(factory_.at(iVar)->RootBaseDir()->GetName())+" "+string(outputFile_.at(iVar)->GetName())).c_str());
+      factory_.at(iVar)->RootBaseDir()->Delete("T*;*");
 
-  factory_->EvaluateAllMethods();
+    }
+  }
+  else{
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
+      // Set Name of the Weight file for TMVA evaluating procedure                                                                                                          
+      if(Label_ != ""){
+	outputFileWeightName_["BDTG_"+Label_] = outputFilePath_.back()+"/TMVAWeight_BDTG_"+Label_;
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
+      }
+      else {
+	outputFileWeightName_["BDTG"] = outputFilePath_.back()+"/TMVAWeight_BDTG_";
+	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
+      }
+
+      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+
+      outputFile_.back()->cd();
+      factory_.back()->RootBaseDir()->cd();
+
+      factory_.back()->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
+      
+      if(optimizeMethods) factory_.back()->OptimizeAllMethods();                                                                                                             
+                                 
+      factory_.back()->TrainAllMethods();
+      
+      factory_.back()->TestAllMethods();
+  
+      factory_.back()->EvaluateAllMethods();
+
+  }
   cout << "==> TMVAClassification is done!" << endl;
 
 }
@@ -936,17 +1205,23 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
 					   const string & SeparationType){
 
 
-  string command = " if [ ! -e "+outputFilePath_+" ] ; then mkdir "+outputFilePath_+" ; fi";
+
+  if(trainEachVarIndependently_) {
+    cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
+    return ;
+  }
+
+  string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
   int result = system(command.c_str());
-  if(result) cout<<"Directory created "<<outputFilePath_<<endl; 
+  if(result) cout<<"Directory created "<<outputFilePath_.back()<<endl; 
 
   // Set Name of the Weight file for TMVA evaluating procedure                                                                                                                 
   if(Label_ !=""){
-    outputFileWeightName_["BDTF_"+Label_] = outputFilePath_+"/TMVAWeight_BDTF_"+Label_;
+    outputFileWeightName_["BDTF_"+Label_] = outputFilePath_.back()+"/TMVAWeight_BDTF_"+Label_;
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTF_"+Label_];
   }
   else{
-    outputFileWeightName_["BDTF"] = outputFilePath_+"/TMVAWeight_BDTF";
+    outputFileWeightName_["BDTF"] = outputFilePath_.back()+"/TMVAWeight_BDTF";
     (TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTF"];
   }
 
@@ -954,19 +1229,21 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
                          "PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.10:nCuts=20",NTrees,BoostType.c_str(),
                           AdaBoostBeta,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
-  factory_->BookMethod( TMVA::Types::kBDT,"BDTF", Option.Data());
+  outputFile_.back()->cd();
+  factory_.back()->RootBaseDir()->cd();
 
-  if(optimizeMethods) factory_->OptimizeAllMethods();
+  factory_.back()->BookMethod( TMVA::Types::kBDT,"BDTF", Option.Data());
+
+  if(optimizeMethods) factory_.back()->OptimizeAllMethods();
                                                                                                                                                              
-  factory_->TrainAllMethods();
+  factory_.back()->TrainAllMethods();
 
-  factory_->TestAllMethods();
+  factory_.back()->TestAllMethods();
 
-  factory_->EvaluateAllMethods();
+  factory_.back()->EvaluateAllMethods();
 
-  factory_->DeleteAllMethods();
+  factory_.back()->DeleteAllMethods();
 
-  cout << "==> Wrote root file: " << outputFile_->GetName() << endl;
   cout << "==> TMVAClassification is done!" << endl;
 }
 
@@ -1000,6 +1277,8 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
   vector<jetContainer> RecoJets;
   RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt_, cutEvent_.bTagVeto, cutEvent_.jetPUID, minPtLeptonCutCleaning_, matchingCone_);
 
+  asimL = (leptonsIsoTight.at(0).lepton4V_.Pt()-leptonsIsoTight.at(1).lepton4V_.Pt())/(leptonsIsoTight.at(0).lepton4V_.Pt()+leptonsIsoTight.at(1).lepton4V_.Pt());
+
   if(RecoJets.size() >= 2){
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;
     asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;
@@ -1013,17 +1292,34 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
       variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))); 
     }
+    if(variableList.at(iVar) == "detajj" and RecoJets.size() < 2){
+      variableValue.push_back(float(-1)); 
+    }
     else if(variableList.at(iVar) == "mjj" and RecoJets.size() >= 2){
       variableValue.push_back(float(L_dijet.M()));
     }
+    else if(variableList.at(iVar) == "mjj" and RecoJets.size() < 2){
+      variableValue.push_back(float(-1));
+    }
+
     else if(variableList.at(iVar) == "etaj1etaj2" and RecoJets.size() >= 2){
       variableValue.push_back(float(RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta()));
     }
+    else if(variableList.at(iVar) == "etaj1etaj2" and RecoJets.size() < 2){
+      variableValue.push_back(float(999));
+    }
+
     else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() >= 2){
       variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
     }
+    else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() < 2){
+      variableValue.push_back(float(999));
+    }
     else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() >= 2){
       variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+    }
+    else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() < 2){
+      variableValue.push_back(float(999));
     }
 
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
@@ -1056,14 +1352,26 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     else if(variableList.at(iVar) == "DeltaPhi_JJ" and RecoJets.size()>=2){
       variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)));
     }
+    else if(variableList.at(iVar) == "DeltaPhi_JJ" and RecoJets.size()<2){
+      variableValue.push_back(float(-999));
+    }
     else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()>=2){
       variableValue.push_back(float(L_dijet.DeltaPhi(L_met)));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()<2){
+      variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()>=1){
       variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(L_met)));
     }
+    else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()<1){
+      variableValue.push_back(float(-999));
+    }
     else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() >=2){
       variableValue.push_back(float(RecoJets.at(1).jet4V_.DeltaPhi(L_met)));
+    }
+    else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() <2){
+      variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "npu"){
       variableValue.push_back(float(reader_-> npu));
@@ -1071,8 +1379,14 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     else if(variableList.at(iVar) == "ptj1" and RecoJets.size()>=1){
       variableValue.push_back(float(RecoJets.at(0).jet4V_.Pt()));
     }
+    else if(variableList.at(iVar) == "ptj1" and RecoJets.size()<1){
+      variableValue.push_back(float(-999));
+    }
     else if(variableList.at(iVar) == "ptj2" and RecoJets.size()>=2){
       variableValue.push_back(float(RecoJets.at(1).jet4V_.Pt()));
+    }
+    else if(variableList.at(iVar) == "ptj2" and RecoJets.size()<2){
+      variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "ptl1"){
       variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.Pt()));
@@ -1090,4 +1404,50 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
       variableValue.push_back(float(1));
     }
   }
+}
+
+void TMVATrainingClass::copyDir(TDirectory *source){
+  //copy all objects and subdirs of directory source as a subdir of the current directory                                                                                       
+  TDirectory *savdir = gDirectory;
+  TDirectory *adir = savdir->mkdir(source->GetName());
+  
+ 
+  //loop on all entries of this directory                                                                                                                                       
+  TKey *key;
+  TIter nextkey(source->GetListOfKeys());  
+  while ((key = (TKey*)nextkey())) {
+    const char *classname = key->GetClassName();
+    TClass *cl = gROOT->GetClass(classname);
+    if (!cl) continue;
+    if (cl->InheritsFrom(TDirectory::Class())) {
+      source->cd(key->GetName());
+      TDirectory *subdir = gDirectory;
+      if(adir!=0) adir->cd();
+      copyDir(subdir);
+      if(adir!=0) adir->cd();
+    } else if (cl->InheritsFrom(TTree::Class())) {
+      TTree *T = (TTree*)source->Get(key->GetName());
+      adir->cd();
+      TTree *newT = T->CloneTree(-1,"fast");
+      newT->Write();
+    } else {
+      source->cd();
+      TObject *obj = key->ReadObj();
+      if(adir!=0) adir->cd();
+      obj->Write();
+      delete obj;
+    }
+  }
+ 
+  if(adir!=0) adir->SaveSelf(kTRUE);
+  savdir->cd();
+}
+
+void TMVATrainingClass::copyFile(TDirectory* f, TFile* outputFile) {
+  //Copy all objects and subdirs of file fname as a subdir of the current directory                                                                                             
+  TDirectory *target = outputFile;
+  target->cd();
+  copyDir(f);
+  target->Close();
+  outputFile->Close();  
 }
