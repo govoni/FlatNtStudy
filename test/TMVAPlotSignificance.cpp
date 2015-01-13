@@ -118,7 +118,7 @@ int main (int argc, char **argv){
 
   TMVATrainingPlot->openFileInput(GetInputFileList(trainingList)); // open all the input files
   TMVATrainingPlot->SetMethodName(GetInputMethodList(trainingList)); // set all the trained methods
-  
+    
   // plot ROC curves 
   TMVATrainingPlot->makeROCsPlot(gDirectory, // give the current global directory
 				 plotType, // 0 means eff sign vs eff back , 1 eff sign vs 1-eff bkg
@@ -129,7 +129,7 @@ int main (int argc, char **argv){
 				  outputPlotDirectory); // make the plot
   
   vector<TFile*> inputFiles = TMVATrainingPlot->GetInputFile(); // take back the input file list
-    
+  
   for(size_t iFile = 0 ; iFile < inputFiles.size(); iFile++){
 
     TMVATrainingPlot->makeCorrelationMatrixPlot(inputFiles.at(iFile),
@@ -142,8 +142,7 @@ int main (int argc, char **argv){
     //TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->ProbaType,outputPlotDirectory);
     // make TMVA overtraining plot
     TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->CompareType,outputPlotDirectory);
-
-    
+  
     // take signal and background expected yield from the file:
     TTree *testTree = 0;
     int classID     = 0;
@@ -155,14 +154,11 @@ int main (int argc, char **argv){
     testTree = (TTree*) inputFiles.at(iFile)->Get("TestTree");
     testTree->SetBranchAddress("classID",&classID);
     testTree->SetBranchAddress("weight",&weight);
-
-    for(int iEntry; iEntry < testTree->GetEntries(); iEntry++){      
+    for(int iEntry = 0; iEntry < testTree->GetEntries(); iEntry++){      
       testTree->GetEntry(iEntry);
       if(classID == 0) nSignalEvent += weight;
       else nBackgroundEvent += weight;
     }
-
-    if(testTree!=0) testTree->Delete();
 
     // make the significance plot
     TMVATrainingPlot->makeSignificancePlot(inputFiles.at(iFile),
@@ -174,8 +170,9 @@ int main (int argc, char **argv){
 					   false, // use background efficiency instead of yield
 					   outputPlotDirectory);
     
+    inputFiles.at(iFile)->Close();
   }
-    
+  
   return 0 ;
   
 }
