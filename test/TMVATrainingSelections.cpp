@@ -220,6 +220,8 @@ int main (int argc, char** argv){
     for(size_t iContainer = 0; iContainer < itBackgroundSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itBackgroundSample->second.at(iContainer).numBefore;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
     }
 
     
@@ -268,6 +270,9 @@ int main (int argc, char** argv){
     for(size_t iContainer = 0; iContainer < itSignalSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itSignalSample->second.at(iContainer).numBefore;
       signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
     }
 
     TObjArray *fileElements = 0;
@@ -307,6 +312,7 @@ int main (int argc, char** argv){
   vector<float> signalGlobalWeight;
   vector<float> backgroundGlobalWeight;
 
+  
   for(size_t puBin = 0; puBin+1 < pileUpBin.size() ; puBin++){
 
     cout<<"PU Bin of Training: Min = "<<pileUpBin.at(puBin)<<" Max = "<<pileUpBin.at(puBin+1)<<endl;
@@ -320,270 +326,133 @@ int main (int argc, char** argv){
 
       if(CutList.size() > 1 ) outputFileName += "_"+CutList.at(iCut).cutLayerName;
 
-      if(isTrainEachVariable == true){ // train independently each variable in the variable list
-
-	for(size_t iVar = 0 ; iVar < variableList.size() ; iVar++){
+      trainingVector.push_back(new TMVATrainingClass(signalChain, 
+						     backgroundChain, 
+						     treeName, 
+						     outputFileDirectory, 
+						     outputFileName,
+						     Label,
+						     ":Transformations="+variableTransformation));
+      // Set Input and Spectator Variables
+      cout<<endl;
+      cout<<"Set Training and Spectator Variables  "<<endl;
+      cout<<endl;
+      
+      trainingVector.back()->AddTrainingVariables(GetVariableList(variableList),GetVariableList(spectatorList),isTrainEachVariable);
+      
+      // Set Global Weight and signal + background Tree for MVA Training
+      signalGlobalWeight.clear();
+      backgroundGlobalWeight.clear();
+      signalGlobalWeight.assign(signalChain.size(),0.);
+      backgroundGlobalWeight.assign(backgroundChain.size(),0.);
 	  
-	  trainingVector.push_back(new TMVATrainingClass(signalChain, 
-							 backgroundChain, 
-							 treeName, 
-							 outputFileDirectory, 
-							 outputFileName+"_"+variableList.at(iVar).variableName, 
-							 Label,
-							 ":Transformations="+variableTransformation));
-	  // Set Input and Spectator Variables	  
-          cout<<endl;
-	  cout<<"Start to set input variable  "<<variableList.at(iVar).variableName<<endl;	  
-	  	  
-	  trainingVector.back()->AddTrainingVariables(variableList.at(iVar).variableName,GetVariableList(spectatorList));
-
-	  // Set Global Weight and signal + background Tree for MVA Training	  
-	  signalGlobalWeight.clear();
-	  backgroundGlobalWeight.clear();
-	  signalGlobalWeight.assign(signalChain.size(),0.);
-	  backgroundGlobalWeight.assign(backgroundChain.size(),0.);
-	  
-	  cout<<endl; 
-	  cout<<"Building Global Event Weight  + Add Trees "<<endl;
-	  
-	  int iBackg = 0;
-	  map<string,vector<sampleContainer> >::iterator itBackgroundSample = sampleMap.begin();
-	  for( ; itBackgroundSample != sampleMap.end() ; itBackgroundSample++){          
-	    if(itBackgroundSample->second.at(0).isSignal == 1) continue ; // skip if signal
-	    backgroundGlobalWeight.at(iBackg) = itBackgroundSample->second.at(0).xsec*lumi/(float(itBackgroundSample->second.at(0).numBefore));
-            cout<<"Backg "<<itBackgroundSample->first<<" weight "<<backgroundGlobalWeight.at(iBackg)<<endl;
-	    iBackg++;
-	  }
-
-	  int iSignal = 0;
-	  map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin();
-	  for( ; itSignalSample != sampleMap.end() ; itSignalSample++){          
-	    if(itSignalSample->second.at(0).isSignal == 0) continue ; // skip if signal
-	    signalGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
-            cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight.at(iSignal)<< endl;
-	    iSignal++;
-	  }
-	  
-	  // Prepare and Set the MVA Factory
-	  cout<<endl;
-	  cout<<"Prepare MVA  "<<endl;
-
-	  //set the basic cut information
-	  trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
-						      minLeptonCutPt,
-						      minLeptonCleaningPt,
-						      leptonIsoCut_mu,
-						      leptonIsoCut_el,
-						      leptonIsoCutLoose,
-						      matchingCone,
-						      minJetCutPt);
-	  
-	  //prepare the TNtuple looping on the events before the training
-	  trainingVector.back()->AddPrepareTraining(CutList.at(iCut),
-						    eventWeight,
-						    eventWeight,
-						    make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1))
-						    );
-
-	  					      
-          // Add the ntuple to the MVA factory with the right cross section weight
-	  trainingVector.back()->BookMVATrees(signalGlobalWeight, 
-					      backgroundGlobalWeight);  
-     
-  
-	  // Book and Run TMVA Training and testing for the selected methods
-	  cout<<"Loop on the Selected Methods  "<<endl;
-	  cout<<endl;
-	  
-	  for(size_t iMethod = 0; iMethod < TrainMVAMethodName.size(); iMethod++){
-	    // Rectangular Cuts
-	    if(TrainMVAMethodName.at(iMethod) == "CutsMC" )      
-	      trainingVector.back()->BookandTrainRectangularCuts("MC",variableList.at(iVar).variableName);
-	    else if(TrainMVAMethodName.at(iMethod) == "CutsGA" ) 
-	      trainingVector.back()->BookandTrainRectangularCuts("GA",variableList.at(iVar).variableName);
-	    else if(TrainMVAMethodName.at(iMethod) == "CutsSA" ) 
-	      trainingVector.back()->BookandTrainRectangularCuts("SA",variableList.at(iVar).variableName);
-	    // Likelihoods
-	    else if(TrainMVAMethodName.at(iMethod) == "Likelihood")     
-	      trainingVector.back()->BookandTrainLikelihood(); 
-	    else if(TrainMVAMethodName.at(iMethod) == "LikelihoodKDE")  
-	      trainingVector.back()->BookandTrainLikelihood("LikelihoodKDE"); 
-	    else if(TrainMVAMethodName.at(iMethod) == "PDERS")          
-	      trainingVector.back()->BookandTrainLikelihood("PDERS"); 
-	    else if(TrainMVAMethodName.at(iMethod) == "PDEFoam")        
-	      trainingVector.back()->BookandTrainLikelihood("PDEFoam"); 
-	    else if(TrainMVAMethodName.at(iMethod) == "PDEFoamBoost")   
-	      trainingVector.back()->BookandTrainLikelihood("PDEFoamBoost"); 	    
-	    // Fisher Discriminant
-	    else if(TrainMVAMethodName.at(iMethod) == "Fisher")  
-	      trainingVector.back()->BookandTrainFisherDiscriminant(); 
-	    // Linear Discriminant
-	    else if(TrainMVAMethodName.at(iMethod) == "LD")      
-	      trainingVector.back()->BookandTrainLinearDiscriminant();
-	    // MLP
-	    else if(TrainMVAMethodName.at(iMethod) == "MLP")        
-	      trainingVector.back()->BookandTrainMLP();
-	    else if(TrainMVAMethodName.at(iMethod) == "MLPBFG")     
-	      trainingVector.back()->BookandTrainMLP(1000,"N+5","sigmoid","BFGS",10,10);
-	    else if(TrainMVAMethodName.at(iMethod) == "CFMlpANN")   
-	      trainingVector.back()->BookandTrainCFMlpANN();
-	    else if(TrainMVAMethodName.at(iMethod) == "TMlpANN")    
-	      trainingVector.back()->BookandTrainTMlpANN();
-	    // BDT
-	    else if(TrainMVAMethodName.at(iMethod) == "BDT")     
-	      trainingVector.back()->BookandTrainBDT();
-	    // BDTG
-	    else if(TrainMVAMethodName.at(iMethod) == "BDTG")    
-	      trainingVector.back()->BookandTrainBDTG();
-	    // BDTF
-	    else if(TrainMVAMethodName.at(iMethod) == "BDTF")    
-	      trainingVector.back()->BookandTrainBDTF();
-	    else { 
-	      cerr<<" Training Method not implemented in the TMVATrainingClass for single variables --> Go to the next one"<<endl; 
-	      cout<<endl;
-	    }
-	  }
-
-	  trainingVector.back()->CloseTrainingAndTesting();
-	  //Print Output Plots
-	  cout<<" Save Output Image after training and testing ..  "<<endl;
-	  cout<<endl;    	  
-	}	
-      }
-      else{ // train a set of variables at the same time
-
-	trainingVector.push_back(new TMVATrainingClass(signalChain, 
-						      backgroundChain, 
-						      treeName, 
-						      outputFileDirectory, 
-						      outputFileName, 
-						      Label,
-						      ":Transformations="+variableTransformation));
-
-	// Set Input and Spectator Variables
-	cout<<endl;
-	cout<<"Set Training and Spectator Variables  "<<endl;
-	cout<<endl;
-
-	trainingVector.back()->AddTrainingVariables(GetVariableList(variableList),GetVariableList(spectatorList));
-
-	// Set Global Weight and signal + background Tree for MVA Training
-	signalGlobalWeight.clear();
-	backgroundGlobalWeight.clear();
-	signalGlobalWeight.assign(signalChain.size(),0.);
-	backgroundGlobalWeight.assign(backgroundChain.size(),0.);
-	  
-	cout<<"Building Global Event Weight  + Add Trees "<<endl;
-	cout<<endl; 
+      cout<<"Building Global Event Weight  + Add Trees "<<endl;
+      cout<<endl; 
 	    
-	int iBackg = 0;
-	map<string,vector<sampleContainer> >::iterator itBackgroundSample = sampleMap.begin();
-	for( ; itBackgroundSample != sampleMap.end() ; itBackgroundSample++){          
-	  if(itBackgroundSample->second.at(0).isSignal == 1) continue ; // skip if signal
-	  backgroundGlobalWeight.at(iBackg) = itBackgroundSample->second.at(0).xsec*lumi/(float(itBackgroundSample->second.at(0).numBefore));
-	  cout<<"Backg "<<itBackgroundSample->first<<" weight "<<backgroundGlobalWeight.at(iBackg)<<endl;
-	  iBackg++;
-	}
-
-	int iSignal = 0;
-	map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin();
-	for( ; itSignalSample != sampleMap.end() ; itSignalSample++){          
-	  if(itSignalSample->second.at(0).isSignal == 0) continue ; // skip if signal
-	  signalGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
-	  cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight.at(iSignal)<< endl;
-	  iSignal++;
-	}
-
-	// Prepare and Set the MVA Factory
-	cout<<endl;
-	cout<<"Prepare MVA  "<<endl;
-	cout<<endl;
-
-	//set the basic cut information
-	trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
-						    minLeptonCutPt,
-						    minLeptonCleaningPt,
-						    leptonIsoCut_mu,
-						    leptonIsoCut_el,
-						    leptonIsoCutLoose,
-						    matchingCone,
-						    minJetCutPt);
-	    
-	//prepare the TNtuple looping on the events before the training
-	trainingVector.back()->AddPrepareTraining(CutList.at(iCut),
-						  eventWeight,
-						  eventWeight,
-						  make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1))
-						  );
-
-						      
-	// Add the ntuple to the MVA factory with the right cross section weight
-	trainingVector.back()->BookMVATrees(signalGlobalWeight, 
-					    backgroundGlobalWeight);  
-     
-  
-	// Book and Run TMVA Training and testing for the selected methods
-	cout<<"Loop on the Selected Methods  "<<endl;
-	cout<<endl;
-	  
-	for(size_t iMethod = 0; iMethod < TrainMVAMethodName.size(); iMethod++){
-	  // Rectangular Cuts
-	  if(TrainMVAMethodName.at(iMethod) == "CutsMC" )      
-	    trainingVector.back()->BookandTrainRectangularCuts("MC");
-	  else if(TrainMVAMethodName.at(iMethod) == "CutsGA" ) 
-	    trainingVector.back()->BookandTrainRectangularCuts("GA");
-	  else if(TrainMVAMethodName.at(iMethod) == "CutsSA" ) 
-	    trainingVector.back()->BookandTrainRectangularCuts("SA");
-	  // Likelihoods
-	  else if(TrainMVAMethodName.at(iMethod) == "Likelihood")     
-	    trainingVector.back()->BookandTrainLikelihood(); 
-	  else if(TrainMVAMethodName.at(iMethod) == "LikelihoodKDE")  
-	    trainingVector.back()->BookandTrainLikelihood("LikelihoodKDE"); 
-	  else if(TrainMVAMethodName.at(iMethod) == "PDERS")          
-	    trainingVector.back()->BookandTrainLikelihood("PDERS"); 
-	  else if(TrainMVAMethodName.at(iMethod) == "PDEFoam")        
-	    trainingVector.back()->BookandTrainLikelihood("PDEFoam"); 
-	  else if(TrainMVAMethodName.at(iMethod) == "PDEFoamBoost")   
-	    trainingVector.back()->BookandTrainLikelihood("PDEFoamBoost"); 	    
-	  // Fisher Discriminant
-	  else if(TrainMVAMethodName.at(iMethod) == "Fisher")  
-	    trainingVector.back()->BookandTrainFisherDiscriminant(); 
-	  // Linear Discriminant
-	  else if(TrainMVAMethodName.at(iMethod) == "LD")      
-	    trainingVector.back()->BookandTrainLinearDiscriminant();
-	  // MLP
-	  else if(TrainMVAMethodName.at(iMethod) == "MLP")        
-	    trainingVector.back()->BookandTrainMLP();
-	  else if(TrainMVAMethodName.at(iMethod) == "MLPBFG")     
-	    trainingVector.back()->BookandTrainMLP(1000,"N+5","sigmoid","BFGS",10,10);
-	  else if(TrainMVAMethodName.at(iMethod) == "CFMlpANN")   
-	    trainingVector.back()->BookandTrainCFMlpANN();
-	  else if(TrainMVAMethodName.at(iMethod) == "TMlpANN")    
-	    trainingVector.back()->BookandTrainTMlpANN();
-	  // BDT
-	  else if(TrainMVAMethodName.at(iMethod) == "BDT")     
-	    trainingVector.back()->BookandTrainBDT();
-	  // BDTG
-	  else if(TrainMVAMethodName.at(iMethod) == "BDTG")    
-	    trainingVector.back()->BookandTrainBDTG();
-	  // BDTF
-	  else if(TrainMVAMethodName.at(iMethod) == "BDTF")    
-	    trainingVector.back()->BookandTrainBDTF();
-	  else { 
-	    cerr<<" Training Method not implemented in the TMVATrainingClass --> Go to the next one"<<endl; 
-	    cout<<endl;
-	  }
-	}
-
-	trainingVector.back()->CloseTrainingAndTesting();
-	
-	//Print Output Plots
-	cout<<" Save Output Image after training and testing ..  "<<endl;
-	cout<<endl;
+      int iBackg = 0;
+      map<string,vector<sampleContainer> >::iterator itBackgroundSample = sampleMap.begin();
+      for( ; itBackgroundSample != sampleMap.end() ; itBackgroundSample++){          
+	if(itBackgroundSample->second.at(0).isSignal == 1) continue ; // skip if signal
+	backgroundGlobalWeight.at(iBackg) = itBackgroundSample->second.at(0).xsec*lumi/(float(itBackgroundSample->second.at(0).numBefore));
+	cout<<"Backg "<<itBackgroundSample->first<<" weight "<<backgroundGlobalWeight.at(iBackg)<<endl;
+	iBackg++;
       }
-    }   
-  }
-       
+
+      int iSignal = 0;
+      map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin();
+      for( ; itSignalSample != sampleMap.end() ; itSignalSample++){          
+	if(itSignalSample->second.at(0).isSignal == 0) continue ; // skip if signal
+	signalGlobalWeight.at(iSignal) = itSignalSample->second.at(0).xsec*lumi/(float(itSignalSample->second.at(0).numBefore));
+	cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight.at(iSignal)<< endl;
+	iSignal++;
+      }
+
+      // Prepare and Set the MVA Factory
+      cout<<endl;
+      cout<<"Prepare MVA  "<<endl;
+      cout<<endl;
+
+      //set the basic cut information
+      trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
+						  minLeptonCutPt,
+						  minLeptonCleaningPt,
+						  leptonIsoCut_mu,
+						  leptonIsoCut_el,
+						  leptonIsoCutLoose,
+						  matchingCone,
+						  minJetCutPt);
+      
+      
+      //prepare the TNtuple looping on the events before the training
+      trainingVector.back()->AddPrepareTraining(CutList.at(iCut),
+						eventWeight,
+						eventWeight,
+						make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1))
+						);
+
+      // Add the ntuple to the MVA factory with the right cross section weight
+      trainingVector.back()->BookMVATrees(signalGlobalWeight, 
+					  backgroundGlobalWeight);  
+     
+      
+      // Book and Run TMVA Training and testing for the selected methods
+      cout<<"Loop on the Selected Methods  "<<endl;
+      cout<<endl;
+
+      for(size_t iMethod = 0; iMethod < TrainMVAMethodName.size(); iMethod++){
+	// Rectangular Cuts
+	if(TrainMVAMethodName.at(iMethod) == "CutsMC" )      
+	  trainingVector.back()->BookandTrainRectangularCuts("MC");
+	else if(TrainMVAMethodName.at(iMethod) == "CutsGA" ) 
+	  trainingVector.back()->BookandTrainRectangularCuts("GA");
+	else if(TrainMVAMethodName.at(iMethod) == "CutsSA" ) 
+	  trainingVector.back()->BookandTrainRectangularCuts("SA");
+	// Likelihoods
+	else if(TrainMVAMethodName.at(iMethod) == "Likelihood")     
+	  trainingVector.back()->BookandTrainLikelihood(); 
+	else if(TrainMVAMethodName.at(iMethod) == "LikelihoodKDE")  
+	  trainingVector.back()->BookandTrainLikelihood("LikelihoodKDE"); 
+	else if(TrainMVAMethodName.at(iMethod) == "PDERS")          
+	  trainingVector.back()->BookandTrainLikelihood("PDERS"); 
+	else if(TrainMVAMethodName.at(iMethod) == "PDEFoam")        
+	  trainingVector.back()->BookandTrainLikelihood("PDEFoam"); 
+	else if(TrainMVAMethodName.at(iMethod) == "PDEFoamBoost")   
+	  trainingVector.back()->BookandTrainLikelihood("PDEFoamBoost"); 	    
+	// Fisher Discriminant
+	else if(TrainMVAMethodName.at(iMethod) == "Fisher")  
+	  trainingVector.back()->BookandTrainFisherDiscriminant(); 
+	// Linear Discriminant
+	else if(TrainMVAMethodName.at(iMethod) == "LD")      
+	  trainingVector.back()->BookandTrainLinearDiscriminant();
+	// MLP
+	else if(TrainMVAMethodName.at(iMethod) == "MLP")        
+	  trainingVector.back()->BookandTrainMLP();
+	else if(TrainMVAMethodName.at(iMethod) == "MLPBFG")     
+	  trainingVector.back()->BookandTrainMLP(1000,"N+5","sigmoid","BFGS",10,10);
+	else if(TrainMVAMethodName.at(iMethod) == "CFMlpANN")   
+	  trainingVector.back()->BookandTrainCFMlpANN();
+	else if(TrainMVAMethodName.at(iMethod) == "TMlpANN")    
+	  trainingVector.back()->BookandTrainTMlpANN();
+	// BDT
+	else if(TrainMVAMethodName.at(iMethod) == "BDT")     
+	  trainingVector.back()->BookandTrainBDT();
+	// BDTG
+	else if(TrainMVAMethodName.at(iMethod) == "BDTG")    
+	  trainingVector.back()->BookandTrainBDTG();
+	// BDTF
+	else if(TrainMVAMethodName.at(iMethod) == "BDTF")    
+	  trainingVector.back()->BookandTrainBDTF();
+	else { 
+	  cerr<<"Training Method not implemented in the TMVATrainingClass --> Go to the next one"<<endl; 
+	  cout<<endl;
+	}
+      }
+
+      trainingVector.back()->CloseTrainingAndTesting();
+     
+    }
+
+  } 
+    
   return 0 ;
-  
 }

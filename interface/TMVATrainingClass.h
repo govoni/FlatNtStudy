@@ -16,6 +16,10 @@
 #include "TNtuple.h"
 #include "TSystem.h"
 #include "TROOT.h"
+#include "TDirectory.h"
+#include "TClass.h"
+#include "TObject.h"
+#include "TKey.h"
 
 #include "ReadInputFile.h"
 #include "readTree.h"
@@ -33,6 +37,10 @@ using namespace std;
 class TMVATrainingClass {
 
  public :
+
+  void copyFile(TDirectory*, TFile*); 
+  void copyDir(TDirectory *source);
+  
 
   // default constructor
   TMVATrainingClass(){};
@@ -73,10 +81,8 @@ class TMVATrainingClass {
 
   // Set Training and Spectator Variables
   void AddTrainingVariables ( const vector<string> & mapTrainingVariables,   // input list of training variables
-                              const vector<string> & mapSpectatorVariables); // input list of spectator ones	       
-
-  void AddTrainingVariables ( const string          & mapTrainingVariables,   // name of training variable
-                              const vector<string>  & mapSpectatorVariables); // spectator ones	       
+                              const vector<string> & mapSpectatorVariables,
+                              const bool & trainEachVarIndependently = false); // input list of spectator ones	       
 
   // prepare events for training
   void AddPrepareTraining (const cutContainer & cutContainer,     // cut to be applied on the input trees
@@ -91,8 +97,7 @@ class TMVATrainingClass {
 
 
   // Train rectangular cut methods
-  void BookandTrainRectangularCuts    ( const string & FitMethod, // type of fit method
-                                        string variable = ""); // variable
+  void BookandTrainRectangularCuts    ( const string & FitMethod);
   // Train Likelihood
   void BookandTrainLikelihood         ( const string & LikelihoodType = "Likelihood"); // Likelihood training
   // Train Linear Discriminant
@@ -152,7 +157,10 @@ class TMVATrainingClass {
   void FillVariablesNtupla(vector<float> & variableValue, const vector<string> & variableList);
 
   // Close the output file
-  void CloseTrainingAndTesting (){ outputFile_->Close();}
+  void CloseTrainingAndTesting (){ 
+    for(size_t iFile = 0; iFile < outputFile_.size(); iFile++)
+      outputFile_.at(iFile)->Close();
+  }
 
   // Set Signal Tree giving file
   void SetSignalTree (const vector<TFile*> & signalFileList,  
@@ -219,6 +227,8 @@ class TMVATrainingClass {
   float matchingCone_;
   float minJetCutPt_;
 
+  bool trainEachVarIndependently_;
+
   // PU range of training 
   pair<float,float> npuRange_ ;
 
@@ -251,22 +261,22 @@ class TMVATrainingClass {
   string transformations_;
 
   // outputFilePath
-  string outputFilePath_ ;
+  vector<string> outputFilePath_ ;
 
   // output Name
-  string outputFileName_ ;
+  vector<string> outputFileName_ ;
 
   // output Complete Name = path + Name
-  string outputFileNameComplete_ ;
+  vector<string> outputFileNameComplete_ ;
 
   // Name of the final file xml with the weights
   map<string,string> outputFileWeightName_ ;
 
   // output file
-  TFile* outputFile_ ;
+  vector<TFile*> outputFile_ ;
 
   // factory object
-  TMVA::Factory* factory_ ; 
+  vector<TMVA::Factory*> factory_ ; 
 
   // readTree
   readTree* reader_;

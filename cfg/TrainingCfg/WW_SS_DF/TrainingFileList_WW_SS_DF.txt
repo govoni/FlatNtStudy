@@ -1,0 +1,19 @@
+################################################################################################################
+# fileName                                       reducedVarName    puMin    puMax     MethodList
+################################################################################################################
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_Asim_j.root         asimj        0        200     Asim_{j}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_Asim_l.root         asiml        0        200     Asim_{l}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_DeltaPhi_LL.root    dphill       0        200     #Delta#phi_{ll} 
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_DeltaPhi_LMet.root  dphillmet    0        200     #Delta#phi_{lMet}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_DeltaPhi_TLMet.root dphitlmet    0        200     #Delta#phi_{tlMet}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_ptj1.root           ptj1         0        200     p_{T}^{j1}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_ptj2.root           ptj2  	     0        200     p_{T}^{j2}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_ptl1.root           ptl1         0        200     p_{T}^{l1}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_ptl2.root           ptl2  	     0        200     p_{T}^{l2}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_R.root              Rvar         0        200     R
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_met.root            met          0        200     MET
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_leadLepZep.root     leadZep      0        200     Zep_{l1}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_trailLepZep.root    trailZep     0        200     Zep_{l2}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_mjj.root            mjj          0        200     M_{jj}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_etaj1etaj2.root     etaj1etaj2   0        200     #eta_{j1}*#eta_{j2}
+output/outTrain_WW_SS_DF_BKG/TMVAoutput_detajj.root         detajj       0        200     #Delta#eta_{jj}
