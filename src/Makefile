@@ -32,13 +32,13 @@ ARCHL = -m64
 CXX  =  g++
 CXXFLAGS  =  -Wall -O -fPIC -I$(HDR) $(ROOTCFLAGS) 
 CPP  =  g++
-CPPFLAGS  = -Wall $(ARCHL) -I$(HDR) $(ROOTCFLAGS) 
+CPPFLAGS  = -Wall  $(ARCHL) -I$(HDR) $(ROOTCFLAGS) 
 
 F    = gfortran
 FFLAGS = -c
 
 LD       =  g++
-LDFLAGS  =  -rdynamic -shared $(ARCHL)
+LDFLAGS  =  -rdynamic -shared -O3 $(ARCHL)
 SONAME	 =  libFlatNtStudy.so
 SONAME2  =  FlatNtStudy
 SOFLAGS  =  -Wl,-soname,$(SONAME)
@@ -56,9 +56,9 @@ ARCHL = -m64
 
 CPPFLAGS  =  -Wall -W -Woverloaded-virtual -O2 $(ARCHL) -pipe -I$(HDR) $(ROOTCFLAGS) 
 
-CXXFLAGS  =  -Wall -W -Woverloaded-virtual -O2 $(ARCHL) -pipe -I$(HDR) $(ROOTCFLAGS) 
+CXXFLAGS  = -fPIC  -Wall -W -Woverloaded-virtual -O2 $(ARCHL) -pipe -I$(HDR) $(ROOTCFLAGS) 
 
-LDFLAGS  =  -dynamiclib -shared -single_module -undefined dynamic_lookup $(ARCHL)
+LDFLAGS  =  -dynamiclib -shared -03 -single_module -undefined dynamic_lookup $(ARCHL)
 SONAME	 =  libPlotter.dylib
 SOFLAGS  =
 endif

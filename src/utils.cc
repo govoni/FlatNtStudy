@@ -246,13 +246,24 @@ void fillRecoLeptonsArray (vector<leptonContainer> & lepVector, readTree & reade
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
-//PG FIXME add the two isolation cuts, one for electrons and one for muons
 vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons, 
                                       float isocut, float minptcut){
   vector<leptonContainer>  goodLeptons ;
   for (size_t i = 0 ; i < TL_leptons.size() ; ++i){
     if (TL_leptons.at(i).iso_  > isocut) continue ;
     if (TL_leptons.at(i).lepton4V_.Pt() < minptcut) continue ;
+    goodLeptons.push_back (TL_leptons.at(i)) ;
+  }
+  return goodLeptons;
+}
+
+vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons, 
+                                      float isocut_mu, float isocut_el, float minptcut){
+  vector<leptonContainer>  goodLeptons ;
+  for (size_t i = 0 ; i < TL_leptons.size() ; ++i){
+    if (TL_leptons.at(i).lepton4V_.Pt() < minptcut) continue ;
+    if (TL_leptons.at(i).iso_  > isocut_mu and fabs(TL_leptons.at(i).flavour_) == 13) continue ;
+    if (TL_leptons.at(i).iso_  > isocut_el and fabs(TL_leptons.at(i).flavour_) == 11) continue ;
     goodLeptons.push_back (TL_leptons.at(i)) ;
   }
   return goodLeptons;
@@ -332,7 +343,7 @@ void fillHistos (plotter & analysisPlots,
                  vector<variableContainer> & VariableList,
                  const string & sampleName,     const bool & usePuppiAsDefault, 
                  const double & minPtLeptonCut, const double & minPtLeptonCutCleaning,
-                 const double & leptonIsoCut,   const double & leptonIsoLooseCut,
+                 const double & leptonIsoCut_mu,const double & leptonIsoCut_el, const double & leptonIsoLooseCut,
                  const double & matchingCone,   const double & minJetCutPt,   
                  map <string,TH1F*> & vect) {
 
@@ -359,7 +370,8 @@ void fillHistos (plotter & analysisPlots,
 				    usePuppiAsDefault,
 				    minPtLeptonCut,
 				    minPtLeptonCutCleaning,
-				    leptonIsoCut,
+				    leptonIsoCut_mu,
+				    leptonIsoCut_el,
 				    leptonIsoLooseCut,
 				    matchingCone,
 				    minJetCutPt,
@@ -373,7 +385,7 @@ void fillHistos (plotter & analysisPlots,
 
       // dump tight leptons                                                                                                                                                     
       vector<leptonContainer> leptonsIsoTight ;
-      leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut, minPtLeptonCut);
+      leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
 
       L_dilepton = leptonsIsoTight.at(0).lepton4V_ + leptonsIsoTight.at(1).lepton4V_ ;               
       L_met.SetPtEtaPhiM       (reader->pfmet,0.,reader->pfmetphi, 0.) ;                                                                                                      
@@ -411,24 +423,24 @@ void fillHistos (plotter & analysisPlots,
 
       asimL = (leptonsIsoTight.at(0).lepton4V_.Pt()-leptonsIsoTight.at(1).lepton4V_.Pt())/(leptonsIsoTight.at(0).lepton4V_.Pt()+leptonsIsoTight.at(1).lepton4V_.Pt()) ;      
 
-      if(RecoJets.size() > 2){
+      if(RecoJets.size() >= 2){
 	L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;                                                                                                    
 	asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;                                        
 	Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;                  
       }
     
-      if(GenJets.size() > 2){
+      if(GenJets.size() >= 2){
 	L_dijet_gen   = GenJets.at(0).jet4V_ + GenJets.at(1).jet4V_;                                                                                              
 	asimGenJ      = (GenJets.at(0).jet4V_.Pt()-GenJets.at(1).jet4V_.Pt())/(GenJets.at(0).jet4V_.Pt()+GenJets.at(1).jet4V_.Pt()) ;                             
 	RvarGen       = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(GenJets.at(0).jet4V_.Pt()*GenJets.at(1).jet4V_.Pt()) ;                     
       }
 
-      if(PuppiJets.size() > 2){
+      if(PuppiJets.size() >= 2){
 	L_dijet_puppi = PuppiJets.at(0).jet4V_ + PuppiJets.at(1).jet4V_ ;                                                                                                 
 	asimPuppiJ    = (PuppiJets.at(0).jet4V_.Pt()-PuppiJets.at(1).jet4V_.Pt())/(PuppiJets.at(0).jet4V_.Pt()+PuppiJets.at(1).jet4V_.Pt()) ;                                  
 	RvarPuppi     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(PuppiJets.at(0).jet4V_.Pt()*PuppiJets.at(1).jet4V_.Pt()) ;                
       }                                                                                                                                            
-         
+
       for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
 	if(VariableList.at(iVar).variableName == "detajj" and RecoJets.size() >= 2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1);   
@@ -637,7 +649,8 @@ bool passCutContainerSelection (readTree* reader,
 				const bool   & usePuppiAsDefault,
 				const double & minPtLeptonCut,
                                 const double & minPtLeptonCutCleaning,
-                                const double & leptonIsoCut,
+                                const double & leptonIsoCut_mu,
+                                const double & leptonIsoCut_el,
                                 const double & leptonIsoLooseCut,
                                 const double & matchingCone,
                                 const double & minJetCutPt,
@@ -651,7 +664,7 @@ bool passCutContainerSelection (readTree* reader,
 
   // dump tight leptons
   vector<leptonContainer> leptonsIsoTight ;                                                                                                                             
-  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut, minPtLeptonCut);                                                                               
+  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);                                                                               
 
   // identify loose leptons                                                                                                                                             
   vector<leptonContainer> leptonsIsoLoose ;                                                                                                                              
@@ -800,7 +813,7 @@ bool passCutContainerSelection (readTree* reader,
   }
 
   TLorentzVector L_dijet;
-  if(RecoJets.size() > 2){
+  if(RecoJets.size() >= 2){
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;                                                                                                    
   }
 

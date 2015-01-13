@@ -408,7 +408,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
-				    leptonIsoCut_,
+				    leptonIsoCut_mu_,
+				    leptonIsoCut_el_,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
@@ -442,7 +443,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
-				    leptonIsoCut_,
+				    leptonIsoCut_mu_,
+				    leptonIsoCut_el_,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
@@ -460,7 +462,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 					       const float & minPtLeptonCut,
 					       const float & minPtLeptonCutCleaning,
-					       const float & leptonIsoCut,
+					       const float & leptonIsoCut_mu,
+					       const float & leptonIsoCut_el,
 					       const float & leptonIsoLooseCut,
 					       const float & matchingCone,
 					       const float & minJetCutPt     
@@ -469,7 +472,8 @@ void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
   usePuppiAsDefault_ = usePuppiAsDefault;
   minPtLeptonCut_         = minPtLeptonCut;
   minPtLeptonCutCleaning_ = minPtLeptonCutCleaning;
-  leptonIsoCut_      = leptonIsoCut;
+  leptonIsoCut_mu_   = leptonIsoCut_mu;
+  leptonIsoCut_el_   = leptonIsoCut_el;
   leptonIsoLooseCut_ = leptonIsoLooseCut;
   matchingCone_ = matchingCone;
   minJetCutPt_  = minJetCutPt;
@@ -975,7 +979,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
   fillRecoLeptonsArray (LeptonsAll, *reader_);
   // dump tight leptons                                                                                                                                                    
   vector<leptonContainer> leptonsIsoTight ;
-  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_, minPtLeptonCut_);
+  leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu_, leptonIsoCut_el_, minPtLeptonCut_);
     
   L_dilepton = leptonsIsoTight.at(0).lepton4V_ + leptonsIsoTight.at(1).lepton4V_ ;
   if(not usePuppiAsDefault_)
@@ -984,7 +988,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     L_met.SetPtEtaPhiM       (reader_->pfmet_puppi,0.,reader_->pfmetphi_puppi, 0.) ; 
     
   TLorentzVector L_dijet;
-  float asimJ = 0, asimL = 0, Rvar = 0;
+  float asimJ = 0, asimL = 0, Rvar = 0, avEta = 0;
 
   vector<jetContainer> RecoJetsAll ;
   if(not usePuppiAsDefault_)
@@ -996,20 +1000,32 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
   vector<jetContainer> RecoJets;
   RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt_, cutEvent_.bTagVeto, cutEvent_.jetPUID, minPtLeptonCutCleaning_, matchingCone_);
 
-  if(RecoJets.size() > 2){
+  if(RecoJets.size() >= 2){
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;
     asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;
     Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
+    avEta    = 0.5 * (RecoJets.at(0).jet4V_.Eta() + RecoJets.at(1).jet4V_.Eta());
   }
       
   // loop on the variable and find the values
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
+
     if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
       variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))); 
     }
     else if(variableList.at(iVar) == "mjj" and RecoJets.size() >= 2){
       variableValue.push_back(float(L_dijet.M()));
     }
+    else if(variableList.at(iVar) == "etaj1etaj2" and RecoJets.size() >= 2){
+      variableValue.push_back(float(RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta()));
+    }
+    else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() >= 2){
+      variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+    }
+    else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() >= 2){
+      variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+    }
+
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
       variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)));
     }
@@ -1037,7 +1053,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     else if(variableList.at(iVar) == "DeltaPhi_TLMet"){
       variableValue.push_back(float(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met)));
     }
-    else if(variableList.at(iVar) == "DeltaPhi_JJ"   and RecoJets.size()>=2){
+    else if(variableList.at(iVar) == "DeltaPhi_JJ" and RecoJets.size()>=2){
       variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()>=2){

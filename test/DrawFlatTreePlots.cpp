@@ -7,6 +7,7 @@
 
 #include "TChain.h"
 #include "TLorentzVector.h"
+#include "TSystem.h"
 
 #include "plotter.h"
 #include "ConfigParser.h"
@@ -19,7 +20,8 @@ double matchingCone ;
 double minLeptonCleaningPt;
 double minLeptonCutPt;
 double minJetCutPt;
-double leptonIsoCut;
+double leptonIsoCut_mu;
+double leptonIsoCut_el;
 double leptonIsoCutLoose;
 bool   usePuppiAsDefault;
 
@@ -31,7 +33,7 @@ int main (int argc, char ** argv) {
     cerr<<"Forgot to parse the cfg file --> exit "<<endl;
     return -1;
   }
- 
+
   // parse config file parameter
   if (gConfigParser) return 1 ;
   gConfigParser = new ConfigParser();
@@ -77,7 +79,8 @@ int main (int argc, char ** argv) {
   minLeptonCutPt      = gConfigParser -> readDoubleOption("Option::minLeptonCutPt");
   minJetCutPt         = gConfigParser -> readDoubleOption("Option::minJetCutPt");
   usePuppiAsDefault   = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
-  leptonIsoCut        = gConfigParser -> readDoubleOption("Option::leptonIsoCut");
+  leptonIsoCut_mu     = gConfigParser -> readDoubleOption("Option::leptonIsoCutMu");
+  leptonIsoCut_el     = gConfigParser -> readDoubleOption("Option::leptonIsoCutEl");
   leptonIsoCutLoose   = gConfigParser -> readDoubleOption("Option::leptonIsoCutLoose");
 
   // output directory
@@ -125,7 +128,7 @@ int main (int argc, char ** argv) {
    }
 
    fillHistos (analysisPlots,ReadTree,CutList,variableList,itSample->first,usePuppiAsDefault,
-               minLeptonCutPt,minLeptonCleaningPt,leptonIsoCut,leptonIsoCutLoose,matchingCone,minJetCutPt,histoCutEff) ; // fill the histogram
+               minLeptonCutPt,minLeptonCleaningPt,leptonIsoCut_mu,leptonIsoCut_el,leptonIsoCutLoose,matchingCone,minJetCutPt,histoCutEff) ; // fill the histogram
   }
 
     

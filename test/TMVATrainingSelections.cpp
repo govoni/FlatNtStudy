@@ -152,7 +152,8 @@ int main (int argc, char** argv){
   float minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
   float minJetCutPt         = gConfigParser -> readFloatOption("Option::minJetCutPt");
   float usePuppiAsDefault   = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
-  float leptonIsoCut        = gConfigParser -> readFloatOption("Option::leptonIsoCut");
+  float leptonIsoCut_mu     = gConfigParser -> readFloatOption("Option::leptonIsoCutMu");
+  float leptonIsoCut_el     = gConfigParser -> readFloatOption("Option::leptonIsoCutEl");
   float leptonIsoCutLoose   = gConfigParser -> readFloatOption("Option::leptonIsoCutLoose");
 
   // option in order to train each variable independently
@@ -371,7 +372,8 @@ int main (int argc, char** argv){
 	  trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
 						      minLeptonCutPt,
 						      minLeptonCleaningPt,
-						      leptonIsoCut,
+						      leptonIsoCut_mu,
+						      leptonIsoCut_el,
 						      leptonIsoCutLoose,
 						      matchingCone,
 						      minJetCutPt);
@@ -501,7 +503,8 @@ int main (int argc, char** argv){
 	trainingVector.back()->SetBasicEventCutInfo(usePuppiAsDefault,
 						    minLeptonCutPt,
 						    minLeptonCleaningPt,
-						    leptonIsoCut,
+						    leptonIsoCut_mu,
+						    leptonIsoCut_el,
 						    leptonIsoCutLoose,
 						    matchingCone,
 						    minJetCutPt);

@@ -125,6 +125,11 @@ vector<leptonContainer> dumpLeptons(vector<leptonContainer> & TL_leptons,
 				    float isocut, 
 				    float minptcut) ;
 
+vector<leptonContainer> dumpLeptons(vector<leptonContainer> & TL_leptons, 
+				    float isocut_mu, 
+				    float isocut_el, 
+				    float minptcut) ;
+
 /*
  - copies jets in the vector
  - removes jets closer than deltaR to the first two leptons, if the first two leptons 
@@ -166,7 +171,8 @@ void fillHistos (plotter & analysisPlots,
 		 const bool & usePuppiAsDefault,
                  const double & minPtLeptonCut, 
 		 const double & minPtLeptonCutCleaning,
-                 const double & leptonIsoCut,   
+                 const double & leptonIsoCut_mu,   
+                 const double & leptonIsoCut_el,   
 		 const double & leptonIsoLooseCut,
                  const double & matchingCone,   
 		 const double & minJetCutPt,
@@ -178,7 +184,8 @@ bool passCutContainerSelection (readTree* readTree,
                                 const bool & usePuppiAsDefault,
 				const double & minPtLeptonCut, 
                                 const double & minPtLeptonCutCleaning,
-				const double & leptonIsoCut,   
+				const double & leptonIsoCut_mu,   
+ 				const double & leptonIsoCut_el,   
                                 const double & leptonIsoLooseCut,
 				const double & matchingCone,   
 				const double & minJetCutPt,
