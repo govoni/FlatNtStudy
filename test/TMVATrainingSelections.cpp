@@ -219,7 +219,9 @@ int main (int argc, char** argv){
     // take input files                                                                                                                                                        
     for(size_t iContainer = 0; iContainer < itBackgroundSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itBackgroundSample->second.at(iContainer).numBefore;
-      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/outDumper_1.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
     }
 
     
@@ -267,7 +269,10 @@ int main (int argc, char** argv){
     // take input files                                                                                                                                                        
     for(size_t iContainer = 0; iContainer < itSignalSample->second.size(); iContainer++){  // for each reduced name loop on the different content
       numBefore += itSignalSample->second.at(iContainer).numBefore;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/outDumper_1.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
     }
 
     TObjArray *fileElements = 0;
@@ -438,7 +443,7 @@ int main (int argc, char** argv){
 	else if(TrainMVAMethodName.at(iMethod) == "BDTF")    
 	  trainingVector.back()->BookandTrainBDTF();
 	else { 
-	  cerr<<" Training Method not implemented in the TMVATrainingClass --> Go to the next one"<<endl; 
+	  cerr<<"Training Method not implemented in the TMVATrainingClass --> Go to the next one"<<endl; 
 	  cout<<endl;
 	}
       }

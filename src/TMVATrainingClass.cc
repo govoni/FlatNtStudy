@@ -1170,7 +1170,7 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG_"+Label_];
       }
       else {
-	outputFileWeightName_["BDTG"] = outputFilePath_.back()+"/TMVAWeight_BDTG_";
+	outputFileWeightName_["BDTG"] = outputFilePath_.back()+"/TMVAWeight_BDTG";
 	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
       }
 

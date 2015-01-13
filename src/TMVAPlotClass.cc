@@ -710,6 +710,7 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
    
    TIter next(&TrainingMethods);
    TKey *key = 0, *hkey = 0;
+   cout<<"TMVAPlotClass::makeROCsPlot training file : "<<inputFiles_.at(iFile)->GetName()<<endl;
    
    // loop over all methods stored in the TList TrainingMethods                                                                                                              
    while ((key = (TKey*)next())) {
@@ -799,7 +800,6 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
        }               
      }   
    }
-   
    /// Loop on the different histos                                                                                                                                          
    while (hists.GetSize()) {
      TListIter hIt(&hists); // define an iterator                                                                                                                         
@@ -826,11 +826,7 @@ void TMVAPlotClass::makeROCsPlot (TDirectory* dir,
   cROC_->cd();  
   legROC_->Draw("same");
   cROC_->Update();
-
-  cROCLog_->cd();  
-  legROC_->Draw("same");
-  cROCLog_->Update();
-
+  
   return;
 }
 
