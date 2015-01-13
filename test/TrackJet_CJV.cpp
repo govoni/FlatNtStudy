@@ -264,8 +264,7 @@ int main (int argc, char ** argv) {
   lumi      *= 1000. ;   // transform into pb^(-1)
 
   // on cmsmi4
-//  string baseFolder = "/data2/govoni/TP/ntuples/2012-12-09/" ;   
-  string baseFolder = "/media/DATA/rgerosa/" ;
+  string baseFolder = "/data2/rgerosa/NTUPLES_TP/" ;
   string etaLimit = argv[1] ;
 
   float scaleSamples = 1.;
