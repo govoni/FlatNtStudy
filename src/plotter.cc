@@ -169,6 +169,7 @@ void plotter::copyLayerInSample (string sampleName, string target, string origin
       string h_name = sampleName + "_" + target + "_" + iHisto->first ;
       m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
       m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
+      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
     }   
   return ;
 }
