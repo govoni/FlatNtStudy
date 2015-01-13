@@ -257,7 +257,7 @@ void TMVAPlotClass::CreateCanvasandFrameROC(const int & plotType,
   if(plotType == 0) // make the legend in the bottom part of the canvas
    legROC_ = new TLegend(0.17,0.43,0.56,0.87,NULL,"brNDC");
   else // make the legend in the upper part of the canvas
-   legROC_ = new TLegend(0.17,0.20,0.55,0.64,NULL,"brNDC");
+   legROC_ = new TLegend(0.17,0.15,0.55,0.66,NULL,"brNDC");
 
   legROC_->SetBorderSize(0);
   legROC_->SetTextSize(0.033);

@@ -1145,7 +1145,7 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
       }
 
-      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000:*IgnoreNegWeightsInTraining*:*MinNodeSize*=2",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nCuts=2000:*IgnoreNegWeightsInTraining*:*MinNodeSize*=2",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
       
       factory_.at(iVar)->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
       
@@ -1174,7 +1174,7 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
       }
 
-      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=200:nCuts=2000",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nCuts=2000",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
 
       outputFile_.back()->cd();
       factory_.back()->RootBaseDir()->cd();
@@ -1285,6 +1285,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
     avEta    = 0.5 * (RecoJets.at(0).jet4V_.Eta() + RecoJets.at(1).jet4V_.Eta());
   }
+
       
   // loop on the variable and find the values
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
@@ -1310,13 +1311,13 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     }
 
     else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() >= 2){
-      variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+      variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-avEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
     }
     else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() < 2){
       variableValue.push_back(float(999));
     }
     else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() >= 2){
-      variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-avEta)/(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+      variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-avEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
     }
     else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() < 2){
       variableValue.push_back(float(999));

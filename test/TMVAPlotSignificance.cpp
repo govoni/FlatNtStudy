@@ -163,7 +163,7 @@ int main (int argc, char **argv){
     // make the significance plot
     TMVATrainingPlot->makeSignificancePlot(inputFiles.at(iFile),
 					   trainingList.at(iFile).varNameReduced,
-					   TMVATrainingPlot->Pvalue, // significance type --> look at the convention in the header file
+					   TMVATrainingPlot->SoverSqrtB, // significance type --> look at the convention in the header file
 					   nSignalEvent, // number of signal events from the testing tree
 					   nBackgroundEvent, // number of background events from the testing tree
 					   false, // use signal efficiency instead of yield
