@@ -1265,7 +1265,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     L_met.SetPtEtaPhiM       (reader_->pfmet_puppi,0.,reader_->pfmetphi_puppi, 0.) ; 
     
   TLorentzVector L_dijet;
-  float asimJ = 0, asimL = 0, Rvar = 0, avEta = 0;
+  float asimJ = 0, asimL = 0, Rvar = 0, aveEta = 0;
 
   vector<jetContainer> RecoJetsAll ;
   if(not usePuppiAsDefault_)
@@ -1283,17 +1283,101 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;
     asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;
     Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
-    avEta    = 0.5 * (RecoJets.at(0).jet4V_.Eta() + RecoJets.at(1).jet4V_.Eta());
+    aveEta    = 0.5 * (RecoJets.at(0).jet4V_.Eta() + RecoJets.at(1).jet4V_.Eta());
   }
 
+
+  // track jet info                                                                                                                                                          
+  float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
+  int   TKJ_num   = 0, TKJ_num_IN   = 0,  TKJ_num_OUT  = 0 ;
+
+  if(RecoJets.size() >=2){
+
+    float deltaEtaThreshold = 0.5 ;
+
+    vector<jetContainer> trackJetsAll;
+    fillTrackJetArray (trackJetsAll,*reader_) ;
+    vector<jetContainer> trackJets ;
+    trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning_, matchingCone_);
+    float TJ_etaMin = RecoJets.at (0).jet4V_.Eta () ;
+    float TJ_etaMax = RecoJets.at (1).jet4V_.Eta () ;
+    float TJ_phiMin = RecoJets.at (0).jet4V_.Phi () ;
+    float TJ_phiMax = RecoJets.at (1).jet4V_.Phi () ;
+    if (TJ_etaMin > TJ_etaMax){
+      swap (TJ_etaMin, TJ_etaMax) ;
+      swap (TJ_phiMin, TJ_phiMax) ;
+    }
+
+
+    // loop over track jets                                                                                                                                                  
+    for (size_t iJet = 0 ; iJet < trackJets.size () ; ++iJet){
+
+      float iJetPhi = trackJets.at (iJet).jet4V_.Phi () ;
+      float iJetEta = trackJets.at (iJet).jet4V_.Eta () ;
+      float iJetPt  = trackJets.at (iJet).jet4V_.Pt () ;
+
+      float dR2_Min = deltaPhi(TJ_phiMin, iJetPhi);
+      dR2_Min *= dR2_Min ;
+      dR2_Min += (iJetEta - TJ_etaMin) * (iJetEta - TJ_etaMin) ;
+      float dR2_Max = deltaPhi (TJ_phiMax, iJetPhi) ;
+      dR2_Max *= dR2_Max ;
+      dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
+
+      // veto the tag jets                                                                                                                                                  
+      if (dR2_Max < deltaEtaThreshold || dR2_Min < deltaEtaThreshold) continue ;
+
+      float iJetModPhi = iJetPhi ;
+      float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
+      if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;
+      else if (iJetZep > 0.5) iJetModPhi -= TJ_phiMax ;
+
+      ++TKJ_num ;
+      TKJ_SumHT += iJetPt ;
+
+      if (iJetEta > TJ_etaMin && iJetEta < TJ_etaMax){
+	++TKJ_num_IN ;
+	TKJ_SumHT_IN += iJetPt ;
+      }
+
+      else if (iJetEta < TJ_etaMin || iJetEta > TJ_etaMax){
+	++TKJ_num_OUT ;
+	TKJ_SumHT_OUT += iJetPt ;
+      }
+    }
+  }
       
   // loop on the variable and find the values
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
 
-    if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
+    if(variableList.at(iVar) == "numTkjets" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_num));
+    }
+
+    else if(variableList.at(iVar) == "numTkjets_In" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_num_IN));
+    }
+
+    else if(variableList.at(iVar) == "numTkjets_Out" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_num_OUT));
+    }
+
+    else if(variableList.at(iVar) == "HTtkjets" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_SumHT));
+    }
+
+    else if(variableList.at(iVar) == "HTtkjets_In" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_SumHT_IN));
+    }
+
+    else if(variableList.at(iVar) == "HTtkjets_Out" and RecoJets.size() >= 2){
+      variableValue.push_back(float(TKJ_SumHT_OUT));
+    }
+
+    else if(variableList.at(iVar) == "detajj" and RecoJets.size() >= 2){
       variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))); 
     }
-    if(variableList.at(iVar) == "detajj" and RecoJets.size() < 2){
+
+    else if(variableList.at(iVar) == "detajj" and RecoJets.size() < 2){
       variableValue.push_back(float(-1)); 
     }
     else if(variableList.at(iVar) == "mjj" and RecoJets.size() >= 2){
@@ -1311,13 +1395,13 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     }
 
     else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() >= 2){
-      variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-avEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
+      variableValue.push_back(float((leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
     }
     else if(variableList.at(iVar) == "leadLepZep" and RecoJets.size() < 2){
       variableValue.push_back(float(999));
     }
     else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() >= 2){
-      variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-avEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
+      variableValue.push_back(float((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))));
     }
     else if(variableList.at(iVar) == "trailLepZep" and RecoJets.size() < 2){
       variableValue.push_back(float(999));

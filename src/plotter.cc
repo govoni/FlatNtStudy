@@ -14,13 +14,14 @@ void addOverFlow (TH1F * input)
     input->GetXaxis ()->GetXmax () + input->GetBinWidth (1)
   ) ;
 //  dummy->Sumw2 () ;
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
-    {
+  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
       dummy->SetBinContent (iBin, input->GetBinContent (iBin)) ;
       dummy->SetBinError (iBin, input->GetBinError (iBin)) ;
-    }
+  }
+
   string name = input->GetName () ;  
-  input->SetName ("trash") ;
+  input->SetName ("trash") ;   
+  dummy->GetXaxis()->SetTitle(input->GetXaxis()->GetTitle());
   dummy->SetName (name.c_str ()) ;
   swap (*input, *dummy) ;
   return ;
@@ -123,11 +124,11 @@ void plotter::addPlotToLayer (string sampleName, string layerName,
                               string labelName)
 {
   if (labelName == "") labelName = plotName ;
-  string h_name = sampleName + "_" + layerName + "_" + plotName ;
+  string h_name = sampleName + "_" + layerName + "_" + plotName ;  
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
   dummy->GetXaxis()->SetTitle(labelName.c_str()); 
- //  dummy->Sumw2 () ;
- m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
+  //  dummy->Sumw2 () ;
+  m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
 }
 
 
@@ -703,7 +704,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   string name = string ("st_SM_") + layerName + "_" + histoName ; // SM = QCD bkg + EWK 126 GeV H
   THStack * SM_stack = new THStack (name.c_str (), "") ;
   name = string ("st_nH_") + layerName + "_" + histoName ;  // no H = QCD bkg + EWK noH
-  THStack * nH_stack = new THStack (name.c_str (), "") ;
+  THStack * nH_stack = new THStack (name.c_str (), "") ;  
   int nsamples = m_samplesSequence.size () ;
 
   TLegend leg = initLegend (nsamples + 1) ;
@@ -724,6 +725,8 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
           continue ;
         }
       TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+      if(string(h_var->GetXaxis()->GetTitle())!="")
+        xaxisTitle = h_var->GetXaxis()->GetTitle();
       SM_stack->Add (h_var) ;
       nH_stack->Add (h_var) ;
       leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -792,7 +795,6 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
   // do the drawing
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  
   DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName, false) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
 

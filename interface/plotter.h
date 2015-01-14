@@ -176,6 +176,9 @@ class plotter { // generic plotter class
     {
       // FIXME add error bands here
       histo.at (0)->Draw () ;
+      if(xaxisTitle == "")
+	xaxisTitle = histo.at (0)->GetXaxis()->GetTitle();
+
       float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
       float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
       float ymin = histo.at (0)->GetMinimum () ;
@@ -202,8 +205,9 @@ class plotter { // generic plotter class
       if (isLog) m_canvas.SetLogy () ;
 
       prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
-
       string options = "same histo" ;
+    
+    
       for (size_t i = 0 ; i < histo.size () ; ++i) 
         {
           histo.at (i)->Draw (options.c_str ()) ;
