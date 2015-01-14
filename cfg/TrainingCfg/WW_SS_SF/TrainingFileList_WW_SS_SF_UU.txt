@@ -18,4 +18,4 @@
 #output/outTrain_WW_SS_SF_UU_BKG/TMVAoutput_etaj1etaj2.root        etaj1etaj2         0       200       #eta_{j1}*#eta_{j2}
 #output/outTrain_WW_SS_SF_UU_BKG/TMVAoutput_mjj.root               mjj                0       200       M_{jj}
 #output/outTrain_WW_SS_SF_UU_BKG/TMVAoutput_MVA.root               MVA                0       200       Fisher:Likelihood:BDT
-output/outTrain_WW_SS_SF_UU_BKG/TMVAoutput_deta_mjj.root           detajjmjj          0       200       cut:LD:Likelihood:BDT
+output/outTrain_WW_SS_SF_UU_4p0_BKG/TMVAoutput_deta_mjj.root           detajjmjj          0       200       cut:LD:Likelihood:BDT

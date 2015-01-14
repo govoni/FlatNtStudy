@@ -499,13 +499,13 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "ptj2_gen" and GenJets.size() >= 2){
  	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Pt(),1);   
 	}
-	else if(VariableList.at(iVar).variableName == "Asim_j"){
+	else if(VariableList.at(iVar).variableName == "Asim_j" and RecoJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,asimJ,1);   
 	}
-	else if(VariableList.at(iVar).variableName == "Asim_j_puppi"){
+	else if(VariableList.at(iVar).variableName == "Asim_j_puppi" and PuppiJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,asimPuppiJ,1);   
 	}
-	else if(VariableList.at(iVar).variableName == "Asim_j_gen"){
+	else if(VariableList.at(iVar).variableName == "Asim_j_gen" and PuppiJets.size() >=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,asimGenJ,1);   
 	}
 	else if(VariableList.at(iVar).variableName == "Asim_l"){
