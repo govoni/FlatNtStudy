@@ -1145,7 +1145,7 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 	(TMVA::gConfig().GetIONames()).fWeightFileDir = outputFileWeightName_["BDTG"];
       }
 
-      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nCuts=2000:*IgnoreNegWeightsInTraining*:*MinNodeSize*=2",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
+      TString Option = Form ("CreateMVAPdfs:NTrees=%d:BoostType=Grad:!UseBaggedGrad:GradBaggingFraction=%f:PruneMethod=%s:PruneStrength=%d:MaxDepth=%d:SeparationType=%s:Shrinkage=0.1:NNodesMax=100000:UseYesNoLeaf=F:nCuts=2000:IgnoreNegWeightsInTraining",NTrees,GradBaggingFraction,PruneMethod.c_str(),PruneStrength,MaxDepth,SeparationType.c_str());
       
       factory_.at(iVar)->BookMethod( TMVA::Types::kBDT, "BDTG", Option.Data());
       
@@ -1156,9 +1156,6 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
       factory_.at(iVar)->TestAllMethods();
   
       factory_.at(iVar)->EvaluateAllMethods();
-
-      system(("cp "+string(factory_.at(iVar)->RootBaseDir()->GetName())+" "+string(outputFile_.at(iVar)->GetName())).c_str());
-      factory_.at(iVar)->RootBaseDir()->Delete("T*;*");
 
     }
   }

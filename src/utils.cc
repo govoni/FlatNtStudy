@@ -979,14 +979,14 @@ void fillHistos (plotter & analysisPlots,
       
         // tranvserse mass
 	else if(VariableList.at(iVar).variableName == "mTH"){
-	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met))),1);   
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1);   
 	}
 	else if(VariableList.at(iVar).variableName == "mTH_puppi"){
-	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,2*L_dilepton.Pt()*L_puppi_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_puppi_met))),1);   
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_puppi_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_puppi_met)))),1);   
 	}
 
 	else if(VariableList.at(iVar).variableName == "mTH_gen"){
-	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,2*L_dilepton.Pt()*L_gen_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_gen_met))),1);   
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_gen_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_gen_met)))),1);   
 	}
 
       }                
