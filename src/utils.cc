@@ -457,12 +457,13 @@ void fillHistos (plotter & analysisPlots,
         
       if(RecoJets.size() >=2){
 
-	float deltaEtaThreshold = 0.5 ;
+	float dRThreshold = 0.5 ;
 
 	vector<jetContainer> trackJetsAll;
 	fillTrackJetArray (trackJetsAll,*reader) ;
 	vector<jetContainer> trackJets ;
-	trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, matchingCone);
+	trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+
 	float TJ_etaMin = RecoJets.at (0).jet4V_.Eta () ;
 	float TJ_etaMax = RecoJets.at (1).jet4V_.Eta () ;
 	float TJ_phiMin = RecoJets.at (0).jet4V_.Phi () ;
@@ -471,7 +472,6 @@ void fillHistos (plotter & analysisPlots,
           swap (TJ_etaMin, TJ_etaMax) ;
           swap (TJ_phiMin, TJ_phiMax) ;
         }
-
 
 	// loop over track jets                                                                                                                                                
 	for (size_t iJet = 0 ; iJet < trackJets.size () ; ++iJet){
@@ -488,7 +488,8 @@ void fillHistos (plotter & analysisPlots,
           dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
 
           // veto the tag jets                                                                                                                                                  
-          if (dR2_Max < deltaEtaThreshold || dR2_Min < deltaEtaThreshold) continue ;
+          if (sqrt(dR2_Max) < dRThreshold || sqrt(dR2_Min) < dRThreshold) continue ;
+
 
           float iJetModPhi = iJetPhi ;
           float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
@@ -676,6 +677,11 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "mll"){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),1);   
 	}
+
+	else if(VariableList.at(iVar).variableName == "etal1etal2"){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Eta()*leptonsIsoTight.at(1).lepton4V_.Eta(),1);   
+	} 
+
 
 	else if(VariableList.at(iVar).variableName == "DeltaPhi_LL"){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_),1);   
@@ -976,7 +982,16 @@ void fillHistos (plotter & analysisPlots,
 	else if(VariableList.at(iVar).variableName == "dR_JJ_LLMet" and RecoJets.size()>=2){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(L_LLmet),1);   
 	}
-      
+
+        // some invariant mass
+        else if(VariableList.at(iVar).variableName == "mlljj" and RecoJets.size()>=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet).M(),1);
+	}
+
+        else if(VariableList.at(iVar).variableName == "mlljjmet" and RecoJets.size()>=2){
+	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet+L_met).M(),1);
+	}
+
         // tranvserse mass
 	else if(VariableList.at(iVar).variableName == "mTH"){
 	  analysisPlots.fillHisto (sampleName,CutList.at(iCut).cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1);   
