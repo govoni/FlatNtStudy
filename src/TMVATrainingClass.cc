@@ -1290,7 +1290,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
 
   if(RecoJets.size() >=2){
 
-    float deltaEtaThreshold = 0.5 ;
+    float deltaRThreshold = 0.5 ;
 
     vector<jetContainer> trackJetsAll;
     fillTrackJetArray (trackJetsAll,*reader_) ;
@@ -1321,7 +1321,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
       dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
 
       // veto the tag jets                                                                                                                                                  
-      if (dR2_Max < deltaEtaThreshold || dR2_Min < deltaEtaThreshold) continue ;
+      if (sqrt(dR2_Max) < deltaRThreshold || sqrt(dR2_Min) < deltaRThreshold) continue ;
 
       float iJetModPhi = iJetPhi ;
       float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
@@ -1410,6 +1410,24 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     else if(variableList.at(iVar) == "mll"){
       variableValue.push_back(float(L_dilepton.M()));
     }
+    else if(variableList.at(iVar) == "mlljj" and RecoJets.size() >=2){
+      variableValue.push_back(float((L_dilepton+L_dijet).M()));
+    }
+    else if(variableList.at(iVar) == "mlljj" and RecoJets.size()  < 2){
+      variableValue.push_back(float(-1));
+    }
+
+    else if(variableList.at(iVar) == "mlljjmet" and RecoJets.size() >=2){
+      variableValue.push_back(float((L_dilepton+L_dijet+L_met).M()));
+    }
+    else if(variableList.at(iVar) == "mlljjmet" and RecoJets.size()  < 2){
+      variableValue.push_back(float(-1));
+    }
+
+    else if(variableList.at(iVar) == "mTH"){
+      variableValue.push_back(float(sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met))))));
+    }
+
     else if(variableList.at(iVar) == "Asim_j"){
       variableValue.push_back(float(asimJ));
     }
@@ -1479,6 +1497,13 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     else if(variableList.at(iVar) == "met"){
       variableValue.push_back(float(L_met.Pt()));
     }
+    else if(variableList.at(iVar) == "etal1etal2"){
+      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.Eta()*leptonsIsoTight.at(1).lepton4V_.Eta()));
+    }
+    else if(variableList.at(iVar) == "DeltaEta_LL"){
+      variableValue.push_back(float(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta())));
+    }
+
     //        else if(variableList.at(iVar) == "weight"){
     //	  variableValue.push_back(float(reader_->weight));
     //}

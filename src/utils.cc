@@ -490,7 +490,6 @@ void fillHistos (plotter & analysisPlots,
           // veto the tag jets                                                                                                                                                  
           if (sqrt(dR2_Max) < dRThreshold || sqrt(dR2_Min) < dRThreshold) continue ;
 
-
           float iJetModPhi = iJetPhi ;
           float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
           if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;

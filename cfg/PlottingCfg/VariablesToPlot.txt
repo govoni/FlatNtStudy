@@ -27,6 +27,7 @@ ptll                        35      0      600         p_{T}^{ll}
 etall                       35     -4      4           #eta_{ll}
 phill                       35     -3.14   3.14        #phi_{ll}
 dRll                        35      0      10          #deltaR_{ll}
+etal1etal2                  25     -10     10          #eta_{l1}*#eta_{l2}
 DeltaPhi_LL                 25      0      3.14        #Delta#phi_{LL} 
 DeltaEta_LL                 25      0      7           #Delta#eta_{LL} 
 Asim_l                      30      0      1           asim_{L}
@@ -60,7 +61,6 @@ dR_TJLL                     35      0      10          #deltaR_{ll,j2}
 DeltaPhi_JJL                25      0      3.14        #Delta#phi_{jj,l1}
 ptJJL                       40      0      500         p_{T}^{jj,l1}
 dR_JJL                      35      0      10          #deltaR_{l1,jj}
-dR_TJL                      35      0      10          #deltaR_{l1,j2}
 DeltaPhi_JJTL               25      0      3.14        #Delta#phi_{jj,l2}
 ptJJTL                      40      0      500         p_{T}^{jj,l2}
 dR_JJTL                     35      0      10          #deltaR_{l2,jj}
@@ -76,7 +76,9 @@ ptTJMet                     40      0       500        p_{T}^{j2,met}
 DeltaPhi_JJ_LLMet           25      0      3.14        #Delta#phi_{jj,llmet}
 ptJJ_LLMet                  40      0       500        p_{T}^{jj,llmet}
 dR_JJ_LLMet                 35      0      10          #deltaR_{llmet,jj}
-mTH                         40      300     5000       m_{T}^{ll,met}
+mTH                         40      100     5000       m_{T}^{ll,met}
+mlljj                       40      100     5000       m_{lljj}
+mlljjmet                    40      100     5000       m_{lljjmet}
 #detajj_gen                  30      0       7          #Delta#eta_{jj}^{gen}
 #detajj_puppi                30      0       7          #Delta#eta_{jj}^{puppi}
 #mjj_gen                     45      200     5000       M_{jj}^{gen}   
