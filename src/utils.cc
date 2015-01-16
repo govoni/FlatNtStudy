@@ -302,9 +302,9 @@ vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, vector<leptonCont
 
 
 void fillTrackJetArray (vector<jetContainer> & jetVector, readTree & reader){
-  for( size_t iJet = 0; iJet < reader.TrackJet_V4.size() ; iJet++){    
+  for( int iJet = 0; iJet < reader.TrackJet_V4_ ; iJet++){    
     jetContainer dummy;
-    dummy.jet4V_.SetPxPyPzE(reader.TrackJet_V4.at(iJet).Px(),reader.TrackJet_V4.at(iJet).Py(),reader.TrackJet_V4.at(iJet).Pz(),reader.TrackJet_V4.at(iJet).E());
+    dummy.jet4V_.SetPxPyPzE(reader.TrackJet_V4_fP_fX[iJet],reader.TrackJet_V4_fP_fY[iJet],reader.TrackJet_V4_fP_fZ[iJet],reader.TrackJet_V4_fE[iJet]);
     dummy.btag_    = -999 ;
     dummy.jetPUID_ = -999;     
     jetVector.push_back(dummy);
@@ -450,11 +450,11 @@ void fillHistos (plotter & analysisPlots,
         aveEta_puppi  = 0.5*(PuppiJets.at(0).jet4V_.Eta()+PuppiJets.at(1).jet4V_.Eta());
       }                                                                                                                                            
 
-
+      
       // track jet info
       float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
       int   TKJ_num   = 0, TKJ_num_IN   = 0,  TKJ_num_OUT  = 0 ;
-        
+
       if(RecoJets.size() >=2){
 
 	float dRThreshold = 0.5 ;
@@ -510,7 +510,7 @@ void fillHistos (plotter & analysisPlots,
 	}
 	
       }
-      
+
       for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
 
         // track jets

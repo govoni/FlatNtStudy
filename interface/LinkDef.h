@@ -10,6 +10,8 @@
 #include "TMVATrainingClass.h"
 #include "TMVAPlotClass.h"
 
+using namespace std;
+
 #ifdef __CINT__
 
 #pragma link off all   globals;
@@ -31,8 +33,10 @@
 #pragma link C++ class variableContainer+;
 #pragma link C++ class sampleContainer+;
 #pragma link C++ class TMVATrainingClass+;
-#pragma link C++ class significanceBox;
-#pragma link C++ class TMVAPlotClass;
+#pragma link C++ class significanceBox+;
+#pragma link C++ class TMVAPlotClass+;
+
+#pragma link C++ class vector<TLorentzVector>+;
 
 
 #endif
