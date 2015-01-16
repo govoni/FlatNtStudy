@@ -20,7 +20,7 @@ using namespace std ;
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
-void fillHistos (plotter & analysisPlots, readTree & reader, const string sampleName,
+float fillHistos (plotter & analysisPlots, readTree & reader, const string sampleName,
                  float scaleSample = 1)
 {
   int maxevents = reader.fChain->GetEntries () * scaleSample ;
@@ -52,6 +52,7 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
 
   float deltaEtaThreshold = 0.5 ;
 
+  int selectedEvents = 0 ;
   // loop over events
   for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent)
     {
@@ -100,6 +101,8 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
 
       // mild VBF cuts
       if (dEta < 2.5) continue ;
+      
+      ++selectedEvents ;
 
       analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (leptonVectTight.at (0).lepton4V_.Eta () - avEta) / dEta, 1.) ;
       analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (leptonVectTight.at (1).lepton4V_.Eta () - avEta) / dEta, 1.) ;
@@ -249,9 +252,13 @@ void fillHistos (plotter & analysisPlots, readTree & reader, const string sample
       analysisPlots.fill2DHisto (sampleName, "total", "tkJetNum_ThreeGeV_OUTvsIN", TKJ_num_ThreeGeV_IN, TKJ_num_ThreeGeV_OUT, 1.) ;
       analysisPlots.fill2DHisto (sampleName, "total", "tkJetNum_FourGeV_OUTvsIN",  TKJ_num_FourGeV_IN,  TKJ_num_FourGeV_OUT,  1.) ;
 
+      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_OUTvsIN",          TKJ_SumHT_IN,          TKJ_SumHT_OUT,          1.) ;
+      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_OUTvsIN", TKJ_SumHT_ThreeGeV_IN, TKJ_SumHT_ThreeGeV_OUT, 1.) ;
+      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_FourGeV_OUTvsIN",  TKJ_SumHT_FourGeV_IN,  TKJ_SumHT_FourGeV_OUT,  1.) ;
+
     } // loop over events
   analysisPlots.setPoissonErrors () ;
-  return ;
+  return (1. * selectedEvents) / maxevents ;
 }
 
 
@@ -342,12 +349,26 @@ int main (int argc, char ** argv) {
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_OUT",  20, 0., 100.) ; 
   analysisPlots.addPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUT", 20, 0., 100.) ; 
 
+  analysisPlots.add2DPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_OUTvsIN",  
+                                  20, 0., 200.,
+                                  20, 0., 200.,
+                                  "SumHT IN", "SumHT OUT") ; 
+  analysisPlots.add2DPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_ThreeGeV_OUTvsIN",  
+                                  20, 0., 200.,
+                                  20, 0., 200.,
+                                  "SumHT IN (pT > 3 GeV)", "SumHT OUT") ; 
+  analysisPlots.add2DPlotToLayer ("EWK_WW2j_126", "total", "tkJetSumHT_FourGeV_OUTvsIN",  
+                                  20, 0., 200.,
+                                  20, 0., 200.,
+                                  "SumHT IN (pT > 4 GeV)", "SumHT OUT") ; 
+
   analysisPlots.add2DPlotToLayer ("EWK_WW2j_126", "total", "strangeTopo",  
                                   20, -2., 2.,
                                   24, -3.14, 3.14,
                                   "zeppenfeld", "rotated phi") ; 
 
-  fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126", scaleSamples) ;
+  float eff_EWK_WW2j_126 = 
+      fillHistos (analysisPlots, reader_EWK_WW2j_126, "EWK_WW2j_126", scaleSamples) ;
  
   // EWK noH sample 
   // ---- ---- ---- ---- ---- ---- ----
@@ -369,7 +390,8 @@ int main (int argc, char ** argv) {
 
   readTree reader_QCD_WW2j_126 (sample_QCD_WW2j_126) ;
   analysisPlots.copySampleStructure ("QCD_WW2j_126", "EWK_WW2j_126", XS_QCD_WW2j_126, totEvents_QCD_WW2j_126, 0, 8) ;
-  fillHistos (analysisPlots, reader_QCD_WW2j_126, "QCD_WW2j_126", scaleSamples) ;
+  float eff_QCD_WW2j_126 = 
+      fillHistos (analysisPlots, reader_QCD_WW2j_126, "QCD_WW2j_126", scaleSamples) ;
 
   // plotting
   // ---- ---- ---- ---- ---- ---- ----
@@ -380,5 +402,8 @@ int main (int argc, char ** argv) {
   analysisPlots.normaliseAllHistos () ;
   analysisPlots.compareStoBFullLayer ("total", "_norm") ;
   analysisPlots.compareStoBFullLayer2D ("total", "_norm") ;
+  
+  cout << "eff_EWK_WW2j_126 : " << eff_EWK_WW2j_126 << endl ; 
+  cout << "eff_QCD_WW2j_126 : " << eff_QCD_WW2j_126 << endl ; 
   return 0 ;
 }  
