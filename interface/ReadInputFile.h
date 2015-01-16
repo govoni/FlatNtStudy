@@ -51,6 +51,7 @@ class cutContainer {
               pair<double,double> ptJet, 
               double DetaJJ, 
               double Mjj, 
+              double DetaLL, 
               pair<double,double> Mll, 
               pair<double,double> MllZVeto, 
               double bTagVeto, double jetPUID ):
@@ -64,6 +65,7 @@ class cutContainer {
       ptJet(ptJet),
       DetaJJ(DetaJJ),
       Mjj(Mjj),
+      DetaLL(DetaLL),
       Mll(Mll),
       MllZVeto(MllZVeto),
       bTagVeto(bTagVeto),
@@ -79,6 +81,7 @@ class cutContainer {
   pair<double,double> ptJet;  
   double  DetaJJ;
   double  Mjj;
+  double  DetaLL;
   pair<double,double>  Mll;
   pair<double,double>  MllZVeto;
   double  bTagVeto;

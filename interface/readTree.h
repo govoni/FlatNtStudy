@@ -17,6 +17,7 @@
 #include <TVector3.h>
 #include <TLorentzVector.h>
 
+using namespace std;
 
 class readTree {
 public :
@@ -152,15 +153,9 @@ public :
    Float_t         jetGenAreaY4;
    Float_t         jetGenAreaZ4;
    Float_t         jetGenAreaT4;
-   Int_t           TrackJet_V4_;
-   UInt_t          TrackJet_V4_fUniqueID[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   UInt_t          TrackJet_V4_fBits[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   UInt_t          TrackJet_V4_fP_fUniqueID[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   UInt_t          TrackJet_V4_fP_fBits[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   Double_t        TrackJet_V4_fP_fX[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   Double_t        TrackJet_V4_fP_fY[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   Double_t        TrackJet_V4_fP_fZ[kMaxTrackJet_V4];   //[TrackJet_V4_]
-   Double_t        TrackJet_V4_fE[kMaxTrackJet_V4];   //[TrackJet_V4_]
+
+   vector<TLorentzVector> TrackJet_V4;
+
    Float_t         HtSoft;
    Float_t         nSoftJets;
    Float_t         mjj;
@@ -925,15 +920,7 @@ public :
    TBranch        *b_jetGenAreaY4;   //!
    TBranch        *b_jetGenAreaZ4;   //!
    TBranch        *b_jetGenAreaT4;   //!
-   TBranch        *b_TrackJet_V4_;   //!
-   TBranch        *b_TrackJet_V4_fUniqueID;   //!
-   TBranch        *b_TrackJet_V4_fBits;   //!
-   TBranch        *b_TrackJet_V4_fP_fUniqueID;   //!
-   TBranch        *b_TrackJet_V4_fP_fBits;   //!
-   TBranch        *b_TrackJet_V4_fP_fX;   //!
-   TBranch        *b_TrackJet_V4_fP_fY;   //!
-   TBranch        *b_TrackJet_V4_fP_fZ;   //!
-   TBranch        *b_TrackJet_V4_fE;   //!
+   TBranch        *b_TrackJet_V4;   //!
    TBranch        *b_HtSoft;   //!
    TBranch        *b_nSoftJets;   //!
    TBranch        *b_mjj;   //!
@@ -1767,15 +1754,7 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("jetGenAreaY4", &jetGenAreaY4, &b_jetGenAreaY4);
    fChain->SetBranchAddress("jetGenAreaZ4", &jetGenAreaZ4, &b_jetGenAreaZ4);
    fChain->SetBranchAddress("jetGenAreaT4", &jetGenAreaT4, &b_jetGenAreaT4);
-   fChain->SetBranchAddress("TrackJet_V4", &TrackJet_V4_, &b_TrackJet_V4_);
-   fChain->SetBranchAddress("TrackJet_V4.fUniqueID", TrackJet_V4_fUniqueID, &b_TrackJet_V4_fUniqueID);
-   fChain->SetBranchAddress("TrackJet_V4.fBits", TrackJet_V4_fBits, &b_TrackJet_V4_fBits);
-   fChain->SetBranchAddress("TrackJet_V4.fP.fUniqueID", TrackJet_V4_fP_fUniqueID, &b_TrackJet_V4_fP_fUniqueID);
-   fChain->SetBranchAddress("TrackJet_V4.fP.fBits", TrackJet_V4_fP_fBits, &b_TrackJet_V4_fP_fBits);
-   fChain->SetBranchAddress("TrackJet_V4.fP.fX", TrackJet_V4_fP_fX, &b_TrackJet_V4_fP_fX);
-   fChain->SetBranchAddress("TrackJet_V4.fP.fY", TrackJet_V4_fP_fY, &b_TrackJet_V4_fP_fY);
-   fChain->SetBranchAddress("TrackJet_V4.fP.fZ", TrackJet_V4_fP_fZ, &b_TrackJet_V4_fP_fZ);
-   fChain->SetBranchAddress("TrackJet_V4.fE", TrackJet_V4_fE, &b_TrackJet_V4_fE);
+   fChain->SetBranchAddress("TrackJet_V4", &TrackJet_V4, &b_TrackJet_V4);
    fChain->SetBranchAddress("HtSoft", &HtSoft, &b_HtSoft);
    fChain->SetBranchAddress("nSoftJets", &nSoftJets, &b_nSoftJets);
    fChain->SetBranchAddress("mjj", &mjj, &b_mjj);

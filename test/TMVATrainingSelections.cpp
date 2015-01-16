@@ -109,10 +109,10 @@ int main (int argc, char** argv){
   string variableTransformation ;
   try {
     variableTransformation = gConfigParser -> readStringOption("Input::VariableTransformation");
+    replace(variableTransformation.begin(),variableTransformation.end(),':',';');
   }
   catch(char* exceptionString){
-    variableTransformation = "I:N";
-    cerr<<" set default transformation --> I:N"<<endl;
+    variableTransformation = "I;N";
   }
 
   // take the method to be trained
@@ -222,6 +222,8 @@ int main (int argc, char** argv){
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*5.root").c_str()) ;
     }
 
     

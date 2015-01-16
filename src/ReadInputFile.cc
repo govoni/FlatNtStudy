@@ -140,9 +140,9 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
 
     stringstream line(buffer);      
 
-    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagVeto, jetPUID;    
+    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, DetaLL, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagVeto, jetPUID;    
 
-    line >> layerName >> ptL1 >> ptL2 >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagVeto >> jetPUID;     
+    line >> layerName >> ptL1 >> ptL2 >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagVeto >> jetPUID;     
 
     cutContainer dummy(layerName,
                        make_pair(stod(ptL1),stod(ptL2)),
@@ -154,6 +154,7 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
                        make_pair(stod(ptJet1),stod(ptJet2)),
                        stod(DetaJJ),
                        stod(Mjj),
+                       stod(DetaLL),
                        make_pair(stod(MllMin),stod(MllMax)),
                        make_pair(stod(MllZVetoMin),stod(MllZVetoMax)),
                        stod(bTagVeto), 

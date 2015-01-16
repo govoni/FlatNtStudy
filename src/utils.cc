@@ -302,9 +302,9 @@ vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, vector<leptonCont
 
 
 void fillTrackJetArray (vector<jetContainer> & jetVector, readTree & reader){
-  for( int iJet = 0; iJet < reader.TrackJet_V4_ ; iJet++){    
+  for( size_t iJet = 0; iJet < reader.TrackJet_V4.size() ; iJet++){    
     jetContainer dummy;
-    dummy.jet4V_.SetPxPyPzE(reader.TrackJet_V4_fP_fX[iJet],reader.TrackJet_V4_fP_fY[iJet],reader.TrackJet_V4_fP_fZ[iJet],reader.TrackJet_V4_fE[iJet]);
+    dummy.jet4V_.SetPxPyPzE(reader.TrackJet_V4.at(iJet).Px(),reader.TrackJet_V4.at(iJet).Py(),reader.TrackJet_V4.at(iJet).Pz(),reader.TrackJet_V4.at(iJet).E());
     dummy.btag_    = -999 ;
     dummy.jetPUID_ = -999;     
     jetVector.push_back(dummy);
@@ -1198,6 +1198,14 @@ bool passCutContainerSelection (readTree* reader,
   if(vect.size()!=0){
     vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaJJ");
+    iBin++;   
+  }
+
+  if(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()) > Cut.DetaLL) return false;
+  
+  if(vect.size()!=0){
+    vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
     iBin++;   
   }
 
