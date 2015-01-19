@@ -11,6 +11,7 @@
 #include <map>
 
 #include "TString.h"
+#include "TH1F.h"
 
 using namespace std;
 
@@ -54,7 +55,9 @@ class cutContainer {
               double DetaLL, 
               pair<double,double> Mll, 
               pair<double,double> MllZVeto, 
-              double bTagVeto, double jetPUID ):
+              double bTagVeto, 
+	      double jetPUID,
+              int polarization = 99):
     cutLayerName(cutLayerName),
       ptL( ptL),
       chargeSign(chargeSign),
@@ -69,7 +72,8 @@ class cutContainer {
       Mll(Mll),
       MllZVeto(MllZVeto),
       bTagVeto(bTagVeto),
-      jetPUID(jetPUID){};
+      jetPUID(jetPUID),
+      polarization(polarization){};
 
   string cutLayerName ;
   pair<double,double> ptL;
@@ -86,6 +90,8 @@ class cutContainer {
   pair<double,double>  MllZVeto;
   double  bTagVeto;
   double  jetPUID;
+  int  polarization;
+
 };
 
 class variableContainer {
@@ -128,6 +134,35 @@ class trainingContainer {
   string varNameReduced;
   pair<int,int> puBin;
   vector<string> methodName;
+
+};
+
+// class in order to make plots                                                                                                                                               
+
+class histoContainer {
+
+ public :
+
+  histoContainer(){};
+
+  ~histoContainer(){};
+
+ histoContainer(string cutName, variableContainer container):
+  cutName(cutName),
+    varName(container.variableName){
+    histogram = new TH1F((cutName+"_"+varName).c_str(),"",container.Nbin,container.min,container.max);
+    histogram->GetXaxis()->SetTitle(container.label.c_str());
+    histogram->Sumw2();
+  }
+
+  bool operator == (const histoContainer & plot2) const {
+    if(plot2.cutName == cutName and plot2.varName == varName ) return true;
+    else return false;
+  }
+
+  string cutName;
+  string varName;
+  TH1F* histogram;
 
 };
 

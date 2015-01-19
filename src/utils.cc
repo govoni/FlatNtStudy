@@ -1023,7 +1023,6 @@ bool passCutContainerSelection (readTree* reader,
                                 map<string,TH1F*> & vect){
 
 
-
   // dump all the lepton in the event
   vector<leptonContainer> LeptonsAll;
   fillRecoLeptonsArray (LeptonsAll, *reader); 
@@ -1202,12 +1201,41 @@ bool passCutContainerSelection (readTree* reader,
   }
 
   if(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()) > Cut.DetaLL) return false;
-  
+
   if(vect.size()!=0){
     vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
     iBin++;   
   }
+
+
+  // polarized cut
+  if(Cut.polarization != 99){
+    int polarizationFlag = 0;
+    if(fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) == 0) 
+      polarizationFlag = 0 ; //LL
+    else if((fabs(reader->vbosonLHEspin1) == 1 and fabs(reader->vbosonLHEspin2) ==0) or (fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) ==1))
+      polarizationFlag = 1 ; //TL
+    else
+      polarizationFlag = 2 ; //TT
+
+    if(polarizationFlag != Cut.polarization) return false;
+
+    if(vect.size()!=0){
+      vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+      vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
+      iBin++;   
+    }
+
+  }
+  else{
+    
+    if(vect.size()!=0){
+      vect[sampleName+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+      vect[sampleName+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
+      iBin++;   
+    }
+  } 
 
   return true;
 

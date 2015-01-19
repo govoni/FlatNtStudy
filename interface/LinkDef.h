@@ -31,6 +31,7 @@ using namespace std;
 #pragma link C++ class jetContainer+;
 #pragma link C++ class cutContainer+;
 #pragma link C++ class variableContainer+;
+#pragma link C++ class histoContainer+;
 #pragma link C++ class sampleContainer+;
 #pragma link C++ class TMVATrainingClass+;
 #pragma link C++ class significanceBox+;
