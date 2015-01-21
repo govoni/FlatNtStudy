@@ -282,7 +282,7 @@ void plotter::printEventNumber(string layerName, string histoName){
                ++iHisto){
    
            if(histoName != iHisto->first) continue ;
-	   cout << setprecision(5) <<" events "<< iHisto->second->Integral () << "\n";
+	   cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1) << "\n";
 	  }
 	}
     }
@@ -818,6 +818,8 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   m_canvas.Print (Name, "pdf") ;
   Name.ReplaceAll("pdf","png");
   m_canvas.Print (Name, "png") ;
+  Name.ReplaceAll("png","root");
+  m_canvas.Print (Name, "root") ;
   
 
   if (isLog) m_canvas.SetLogy (0) ;

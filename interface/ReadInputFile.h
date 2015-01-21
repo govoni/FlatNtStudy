@@ -152,12 +152,20 @@ class histoContainer {
     varName(container.variableName){
     histogram = new TH1F((cutName+"_"+varName).c_str(),"",container.Nbin,container.min,container.max);
     histogram->GetXaxis()->SetTitle(container.label.c_str());
+    histogram->StatOverflows(1);
     histogram->Sumw2();
   }
 
   bool operator == (const histoContainer & plot2) const {
     if(plot2.cutName == cutName and plot2.varName == varName ) return true;
     else return false;
+  }
+
+  bool findCutByLabel ( const string & cutString){
+    TString name = Form("%s",cutName.c_str());
+    if(name.Contains(cutString.c_str())) return true;
+    else return false;
+
   }
 
   string cutName;
