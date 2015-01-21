@@ -18,7 +18,18 @@ FlatNtStudy
     .exe file are in the bin directory
   
 
-4) Code for making plot for both WW (SS,OS) and WZ analysis
+4) Code to make comparison between LHE files of Phantom and MG:
+
+   test/DrawLHEMGvsPH.cpp
+ 
+   this is how to run it:
+
+    ./bin/DrawLHEMGvsPH.exe <cfg file>
+
+   example cfg can be found in cfg/PlottingLHE_MGvsPH/
+
+
+5) Code for making plot for both WW (SS,OS) and WZ analysis
 
     test/DrawFlatTreePlots.cpp
 
@@ -137,7 +148,7 @@ FlatNtStudy
 
 
 
-5) Code for train MVA methods for selection optimization
+6) Code for train MVA methods for selection optimization
 
     test/TMVATrainingSelections.cpp
 
@@ -204,7 +215,7 @@ FlatNtStudy
     -> Loop on the input TMVA methods and run the training + testing for each of them.
     -> Close the loops and exit
 
-6) Code to plot MVA training results from the produced root file
+7) Code to plot MVA training results from the produced root file
 
     test/TMVAPlotSignificance.cpp
 
