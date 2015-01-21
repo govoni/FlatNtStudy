@@ -113,6 +113,8 @@ int main (int argc, char ** argv) {
   int passingLHEFilterPH = 0 ;
   int passingLHEFilterMG_Pt = 0 ;
   int passingLHEFilterPH_Pt = 0 ;
+  int passingLHEFilterMG_Deta = 0 ;
+  int passingLHEFilterPH_Deta = 0 ;
 
   // Loop on the events
   for(int iEventMG = 0; iEventMG < chainMG->GetEntries(); iEventMG++){
@@ -157,6 +159,10 @@ int main (int argc, char ** argv) {
     if(L_lepton1.Pt() < minLeptonCutPt or L_lepton2.Pt() < minLeptonCutPt) continue;
 
     passingLHEFilterMG_Pt++;
+
+    if(L_parton1.Eta()*L_parton2.Eta() > 0) continue;
+
+    passingLHEFilterMG_Deta++;
     
  
     float asimJ = 0, asimL = 0, Rvar = 0;
@@ -178,8 +184,30 @@ int main (int argc, char ** argv) {
 	cerr<<"Problem -->plot not found for MG "<<"  "<<variableList.at(iVar).variableName<<endl;
 	continue ;
       }
-      
 
+     if(variableList.at(iVar).variableName == "ptW1"){
+	itVec->histogram->Fill(L_vboson1.Pt(),1) ; 
+      }
+      else if(variableList.at(iVar).variableName == "ptW2" ){
+	itVec->histogram->Fill(L_vboson2.Pt(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "etaW1" ){
+	itVec->histogram->Fill(L_vboson1.Eta(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "etaW2" ){
+	itVec->histogram->Fill(L_vboson2.Eta(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "detaWW" ){
+	itVec->histogram->Fill(fabs(L_vboson1.Eta()-L_vboson2.Eta()),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "ptWW" ){
+	itVec->histogram->Fill((L_vboson1+L_vboson2).Pt(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "mWW" ){
+	itVec->histogram->Fill((L_vboson1+L_vboson2).M(),1) ;
+      }
+      
+     
       if(variableList.at(iVar).variableName == "ptj1"){
 	itVec->histogram->Fill(L_parton1.Pt(),1) ; 
       }
@@ -362,6 +390,10 @@ int main (int argc, char ** argv) {
 
     passingLHEFilterPH_Pt++;
     
+    if(L_parton1.Eta()*L_parton2.Eta() > 0) continue;
+
+    passingLHEFilterPH_Deta++;
+    
  
     float asimJ = 0, asimL = 0, Rvar = 0;
 
@@ -381,6 +413,29 @@ int main (int argc, char ** argv) {
       if(itVec == plotVectorPH.end()){
 	cerr<<"Problem -->plot not found for PH "<<"  "<<variableList.at(iVar).variableName<<endl;
 	continue ;
+      }
+ 
+      
+      if(variableList.at(iVar).variableName == "ptW1" and readerPH->vbosonLHEpt1 > 0){
+	itVec->histogram->Fill(L_vboson1.Pt(),1) ; 
+      }
+      else if(variableList.at(iVar).variableName == "ptW2" and readerPH->vbosonLHEpt2 > 0){
+	itVec->histogram->Fill(L_vboson2.Pt(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "etaW1" and readerPH->vbosonLHEpt1 > 0){
+	itVec->histogram->Fill(L_vboson1.Eta(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "etaW2" and readerPH->vbosonLHEpt2> 0){
+	itVec->histogram->Fill(L_vboson2.Eta(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "detaWW" and readerPH->vbosonLHEpt1 > 0 and readerPH->vbosonLHEpt2 > 0 ){
+	itVec->histogram->Fill(fabs(L_vboson1.Eta()-L_vboson2.Eta()),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "ptWW"   and readerPH->vbosonLHEpt1 > 0 and readerPH->vbosonLHEpt2 > 0){
+	itVec->histogram->Fill((L_vboson1+L_vboson2).Pt(),1) ;
+      }
+      else if(variableList.at(iVar).variableName == "mWW"    and readerPH->vbosonLHEpt1 > 0 and readerPH->vbosonLHEpt2 > 0){
+	itVec->histogram->Fill((L_vboson1+L_vboson2).M(),1) ;
       }
       
 
@@ -628,6 +683,9 @@ int main (int argc, char ** argv) {
 
   cout<<"PT filter efficiency MG : "<<passingLHEFilterMG_Pt<<" LHE event "<<passingLHEFilterMG<<" efficiency "<<float(passingLHEFilterMG_Pt)/float(passingLHEFilterMG)*100<<" % "<<endl;
   cout<<"PT filter efficiency PH : "<<passingLHEFilterPH_Pt<<" LHE event "<<passingLHEFilterPH<<" efficiency "<<float(passingLHEFilterPH_Pt)/float(passingLHEFilterPH)*100<<" % "<<endl;
+
+  cout<<"Deta filter efficiency MG : "<<passingLHEFilterMG_Deta<<" LHE event "<<passingLHEFilterMG_Pt<<" efficiency "<<float(passingLHEFilterMG_Deta)/float(passingLHEFilterMG_Pt)*100<<" % "<<endl;
+  cout<<"Deta filter efficiency PH : "<<passingLHEFilterPH_Deta<<" LHE event "<<passingLHEFilterPH_Pt<<" efficiency "<<float(passingLHEFilterPH_Deta)/float(passingLHEFilterPH_Pt)*100<<" % "<<endl;
   
   return 0 ;
 }  
