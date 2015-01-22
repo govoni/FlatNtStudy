@@ -68,6 +68,6 @@ ptTJMet                     40      0       500        p_{T}^{j2,met}
 DeltaPhi_JJ_LLMet           25      0      3.14        #Delta#phi_{jj,llmet}
 ptJJ_LLMet                  40      0       500        p_{T}^{jj,llmet}
 dR_JJ_LLMet                 35      0      10          #deltaR_{llmet,jj}
-mTH                         40      100     5000       m_{T}^{ll,met}
+mTH                         40      0      500         m_{T}^{ll,met}
 mlljj                       40      100     5000       m_{lljj}
 mlljjmet                    40      100     5000       m_{lljjmet}

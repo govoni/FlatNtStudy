@@ -139,24 +139,31 @@ int main (int argc, char ** argv) {
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
 
     // filter LHE level leptons
-
     if(lheLevelFilter == 0){
       if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
-	continue;
+        continue;
     }
-    else if(lheLevelFilter == 1){      
+    else if(lheLevelFilter == 1){
       if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
     }
     else if(lheLevelFilter == 2){
       if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
     }
-    else { 
-      cerr<<"Bad event "<<endl;
-      continue;
-    }
-
 
     passingLHEFilter++;
+
+    // if an event pass the cut, fill the associated map                                                                                                                         
+    TLorentzVector L_lepton1, L_lepton2, L_parton1, L_parton2 ;
+
+    L_lepton1.SetPtEtaPhiM(reader->leptonLHEpt1,reader->leptonLHEeta1,reader->leptonLHEphi1,reader->leptonLHEm1);
+    L_lepton2.SetPtEtaPhiM(reader->leptonLHEpt2,reader->leptonLHEeta2,reader->leptonLHEphi2,reader->leptonLHEm2);
+
+    L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
+    L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
+
+    if(L_lepton1.Pt() < minLeptonCutPt or L_lepton2.Pt() < minLeptonCutPt) continue;
+
+    if(L_parton1.Eta()*L_parton2.Eta() > 0) continue;
     
     // Loop  on the cut list --> one cut for each polarization
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
@@ -608,10 +615,12 @@ int main (int argc, char ** argv) {
     }
 
     for(size_t itDen = 0; itDen < denominator.size(); itDen ++){
-      if(itDen == 0 and denTotal == 0 ) 
+      if(itDen == 0 and denTotal == 0 ) {
 	denTotal = (TH1F*) denominator.at(itDen)->Clone(("Den_"+string(denominator.at(itDen)->GetName())).c_str());
-      else if(denTotal !=0)  
+      }
+      else if(denTotal !=0){  
 	denTotal->Add(denominator.at(itDen));
+      }
     }
 
     ratio = new TH1F(("Ratio_"+string(denominator.at(0)->GetName())).c_str(),"",numTotal->GetNbinsX(),numTotal->GetBinLowEdge(1),numTotal->GetBinLowEdge(numTotal->GetNbinsX()+1));
@@ -619,13 +628,14 @@ int main (int argc, char ** argv) {
     ratio->SetMarkerSize(1.1);
 
     for(int iBin = 0; iBin < ratio->GetNbinsX()+1; iBin++){
-      if(denTotal->GetBinContent(iBin) !=0) 
+      if(denTotal->GetBinContent(iBin) !=0){ 
 	ratio->SetBinContent(iBin,numTotal->GetBinContent(iBin)/denTotal->GetBinContent(iBin));
+      }
       else 
 	ratio->SetBinContent(iBin,0.);
     }
  
-    ratio->GetYaxis()->SetRangeUser(0,ratio->GetMaximum()*1.2);
+    ratio->GetYaxis()->SetRangeUser(ratio->GetMinimum()*0.7,ratio->GetMaximum()*1.2);
     ratio->GetXaxis()->SetTitle("");
     ratio->SetLineColor(kBlack);
     ratio->GetXaxis()->SetLabelOffset(999);
