@@ -116,6 +116,40 @@ class variableContainer {
 
 };
 
+class variableContainer2D {
+
+ public :
+
+  variableContainer2D(){};
+  ~variableContainer2D(){};
+
+ variableContainer2D(string variableNameX, int NbinX, double minX, double maxX, string labelX,
+                     string variableNameY, int NbinY, double minY, double maxY, string labelY):
+  variableNameX(variableNameX),
+    NbinX(NbinX),
+    minX(minX),
+    maxX(maxX),
+    labelX(labelX),
+    variableNameY(variableNameY),
+    NbinY(NbinY),
+    minY(minY),
+    maxY(maxY),
+    labelY(labelY){}; 
+
+  string variableNameX ;
+  int NbinX ;
+  double minX;
+  double maxX;
+  string labelX;
+
+  string variableNameY ;
+  int NbinY ;
+  double minY;
+  double maxY;
+  string labelY;
+
+};
+
 class trainingContainer {
 
  public: 
@@ -174,9 +208,13 @@ class histoContainer {
 
 };
 
+// functions
+
 int ReadInputSampleFile   (const string & , map<string, vector<sampleContainer> > & );
 
 int ReadInputVariableFile (const string & , vector<variableContainer> & );
+
+int ReadInputVariableFile (const string & , vector<variableContainer2D> & );
 
 int ReadInputVariableFile (const string & , vector<string> & );
 

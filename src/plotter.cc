@@ -4,8 +4,8 @@ using namespace std ;
 
 
 // add the overflow bin to a histogram
-void addOverFlow (TH1F * input) 
-{
+void addOverFlow (TH1F * input) {
+
   TH1F * dummy = new TH1F (
     "tempo",
     input->GetTitle (),
@@ -13,11 +13,14 @@ void addOverFlow (TH1F * input)
     input->GetXaxis ()->GetXmin (),
     input->GetXaxis ()->GetXmax () + input->GetBinWidth (1)
   ) ;
-//  dummy->Sumw2 () ;
+
   for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
       dummy->SetBinContent (iBin, input->GetBinContent (iBin)) ;
       dummy->SetBinError (iBin, input->GetBinError (iBin)) ;
   }
+
+  if(input->GetDefaultSumw2())
+    dummy->Sumw2 () ;
 
   string name = input->GetName () ;  
   input->SetName ("trash") ;   
@@ -30,23 +33,46 @@ void addOverFlow (TH1F * input)
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void setPoissonErrorsToHisto (TH1F * input) { // set the error in each bin as sqrt(binContent)
 
-
-void setPoissonErrorsToHisto (TH1F * input) 
-{
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
-    {
+  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
       input->SetBinError (iBin, sqrt (input->GetBinContent (iBin))) ;
+  }
+
+  return ;
+}
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void setPoissonErrorsTo2DHisto (TH2F * input) { // set the error in each bin as sqrt(binContent)
+
+  for (int iBinX = 0 ; iBinX <= input->GetNbinsX () + 1 ; ++iBinX) {
+    for (int iBinY = 0 ; iBinY <= input->GetNbinsY () + 1 ; ++iBinY) {
+      input->SetBinError (iBinX,iBinY,sqrt (input->GetBinContent (iBinX,iBinY))) ;
     }
+  }
+
+  return ;
+}
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void setAsymmetricErrorsToHisto (TH1F * input) { // set the error in each bin as sqrt(binContent)
+
+  input->SetBinErrorOption(TH1::kPoisson);
+  return ;
+}
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void setAsymmetricErrorsTo2DHisto (TH2F * input) { // set the error in each bin as sqrt(binContent)
+
+  input->SetBinErrorOption(TH1::kPoisson);
+
   return ;
 }
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+TH1F *  getHistoOfErrors (TH1F * input, int isLog) {
 
-
-TH1F *  getHistoOfErrors (TH1F * input, int isLog)
-{
   string name = "err_" ;
   name += input->GetName () ;
   if(isLog) name +="_log";
@@ -59,19 +85,59 @@ TH1F *  getHistoOfErrors (TH1F * input, int isLog)
     input->GetXaxis ()->GetXmin (),
     input->GetXaxis ()->GetXmax ()
   ) ;
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) 
-    {
+
+  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
       dummy->SetBinContent (iBin, input->GetBinError (iBin)) ;
-    }
+  }
+
   return dummy ;
+
+}
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+TH1F* rollingHistogram (TH2F* histo, int errorType){
+
+  TH1F* dummy = new TH1F("dummy","",(histo->GetNbinsX())*(histo->GetNbinsY()),0,histo->GetNbinsX()*histo->GetNbinsY());
+  dummy->Sumw2();
+
+  for(int iBinX = 0; iBinX < histo->GetNbinsX() ; iBinX++){
+    for(int iBinY = 0; iBinY < histo->GetNbinsY() ; iBinY++){
+      dummy->SetBinContent(iBinX*histo->GetNbinsX()+iBinY,histo->GetBinContent(iBinX,iBinY));
+      dummy->SetBinError(iBinX*histo->GetNbinsX()+iBinY,histo->GetBinError(iBinX,iBinY));
+    }
+  }
+
+
+  for(int iBinY = 0; iBinY < histo->GetNbinsY() ; iBinY++){
+    dummy->SetBinContent(1,iBinY,histo->GetBinContent(1,iBinY)+histo->GetBinContent(0,iBinY));
+    dummy->SetBinError(1,iBinY,sqrt(histo->GetBinError(1,iBinY)*histo->GetBinError(1,iBinY)+histo->GetBinContent(0,iBinY)));
+    dummy->SetBinContent(histo->GetNbinsX(),iBinY,histo->GetBinContent(histo->GetNbinsX(),iBinY)+histo->GetBinContent(histo->GetNbinsX()+1,iBinY));
+    dummy->SetBinError(histo->GetNbinsX(),iBinY,sqrt(histo->GetBinError(histo->GetNbinsX(),iBinY)*histo->GetBinError(histo->GetNbinsX(),iBinY)+histo->GetBinContent(0,iBinY)));
+  }
+
+  for(int iBinX = 0; iBinX < histo->GetNbinsX() ; iBinX++){
+    dummy->SetBinContent(iBinX,1,histo->GetBinContent(iBinX,1)+histo->GetBinContent(iBinX,0));
+    dummy->SetBinError(iBinX,1,sqrt(histo->GetBinError(iBinX,1)*histo->GetBinError(iBinX,1)+histo->GetBinContent(iBinX,0)));
+    dummy->SetBinContent(iBinX,histo->GetNbinsY(),histo->GetBinContent(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1));
+    dummy->SetBinError(iBinX,histo->GetNbinsY(),sqrt(histo->GetBinError(iBinX,histo->GetNbinsY())*histo->GetBinError(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1)));
+  }
+
+  if(errorType == 0){
+    setPoissonErrorsToHisto(dummy);
+  }
+  else if(errorType ==1){
+    setAsymmetricErrorsToHisto(dummy);
+  }
+
+  return dummy;
+
 }
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+THStack * stackMe (TH1F * histo){
 
-
-THStack * stackMe (TH1F * histo)
-{
   string name = histo->GetName () ;
   name += "_st" ;
   THStack * dummy = new THStack (name.c_str (), "") ;
@@ -86,25 +152,18 @@ THStack * stackMe (TH1F * histo)
 plotter::plotter (float lumi, string folderName) :
   m_folderName (folderName) ,
   m_lumi (lumi) ,
-  m_canvas ("can", "can", 500, 500)
-{
-// don't like it, needs improvement
+  m_canvas ("can", "can", 500, 500){
   setRootAspect () ;
 }
 
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
 
 // add an empty structure to collect all the plots relative to a sample
-void plotter::addSample (string sampleName, float XS, int totInitialEvents, bool isSignal, int color)
-{
+void plotter::addSample (string sampleName, float XS, int totInitialEvents, bool isSignal, int color){
+
   m_samples[sampleName] = sample (sampleName, XS, m_lumi, totInitialEvents, isSignal, color) ;
   m_samplesSequence.push_back (sampleName) ;
 }
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
 // add a layer of plots (corresponding to a given cut) to a sample
@@ -121,13 +180,16 @@ void plotter::addLayerToSample (string sampleName, string layerName)
 // add a plot to a layer of a given sample
 void plotter::addPlotToLayer (string sampleName, string layerName, 
                               string plotName, int nBins, float xMin, float xMax, 
-                              string labelName)
+                              string labelName, bool sumW2)
 {
   if (labelName == "") labelName = plotName ;
   string h_name = sampleName + "_" + layerName + "_" + plotName ;  
   TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
   dummy->GetXaxis()->SetTitle(labelName.c_str()); 
-  //  dummy->Sumw2 () ;
+
+  if(sumW2)
+    dummy->Sumw2 () ;
+
   m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
 }
 
@@ -137,10 +199,11 @@ void plotter::addPlotToLayer (string sampleName, string layerName,
 
 // add a plot to a layer of a given sample
 void plotter::add2DPlotToLayer (string sampleName, string layerName, string plotName, 
-                         int nBinsX, float xMinX, float xMaxX,
-                         int nBinsY, float xMinY, float xMaxY,
-                         string labelNameX, string labelNameY)
-{
+				int nBinsX, float xMinX, float xMaxX,
+				int nBinsY, float xMinY, float xMaxY,
+				string labelNameX, string labelNameY,
+                                bool sumW2){
+
   if (labelNameX == "") labelNameX = plotName + "_x" ;
   if (labelNameY == "") labelNameY = plotName + "_y" ;
   string h_name = sampleName + "_" + layerName + "_" + plotName ;
@@ -149,7 +212,10 @@ void plotter::add2DPlotToLayer (string sampleName, string layerName, string plot
                            nBinsY, xMinY, xMaxY) ;
   dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
   dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
- //  dummy->Sumw2 () ;
+
+  if(sumW2)
+    dummy->Sumw2 () ;
+
   m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[plotName] = dummy ;
 }
 
@@ -159,19 +225,31 @@ void plotter::add2DPlotToLayer (string sampleName, string layerName, string plot
 
 
 // duplicate a layer into a new one with a different name, within a single sample
-void plotter::copyLayerInSample (string sampleName, string target, string origin)
-{
-  addLayerToSample (sampleName, target) ;
+void plotter::copyLayerInSample (string sampleName, string target, string origin){
+
+  addLayerToSample (sampleName, target) ; // add a layer to the new target sample
+
   // loop over histos in the layer "origin" of sample "sampleName"
   for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos.begin () ;
        iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos.end () ;
-       ++iHisto)
-    {
+       ++iHisto){
+    
       string h_name = sampleName + "_" + target + "_" + iHisto->first ;
       m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
       m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
       m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
+  }   
+
+  for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos.begin () ;
+       iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos.end () ;
+       ++iHisto){
+    
+      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
+      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
+      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
+  }
+
   return ;
 }
 
@@ -180,35 +258,37 @@ void plotter::copyLayerInSample (string sampleName, string target, string origin
 
 
 // duplicate a sample structure
-void plotter::copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor)
-{
-  addSample (target, newXS, newTotInitialEvents, isSignal, newColor) ;
+void plotter::copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor){
+
+  addSample (target, newXS, newTotInitialEvents, isSignal, newColor) ; // add a new sample
+
   if (m_samples[origin].m_sampleContent.size () == 0) return ;
+
   string firstLayer = m_samples[origin].m_layersSequence.at (0) ;
-  addLayerToSample (target, firstLayer) ;
+  addLayerToSample (target, firstLayer) ; // add the first layer
   
   for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos.begin () ;
        iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos.end () ;
-       ++iHisto)
-    {
+       ++iHisto){
+    
       string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
       m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
       m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }   
+  }
   
   for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos.begin () ;
        iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos.end () ;
-       ++iHisto)
-    {
+       ++iHisto){
+    
       string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
       m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
       m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }   
+  }
   
-  for (unsigned int iLayer = 1 ; iLayer < m_samples[origin].m_layersSequence.size () ; ++iLayer)
-    {
+  for (unsigned int iLayer = 1 ; iLayer < m_samples[origin].m_layersSequence.size () ; ++iLayer){
       copyLayerInSample (target, m_samples[origin].m_layersSequence.at (iLayer), firstLayer) ;
-    }
+  }
+
   return ;    
 }
 
@@ -221,43 +301,44 @@ void plotter::printStructure ()
   // loop over samples
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      cout << iSample->first << "\t" 
-           << iSample->second.m_sampleName << "\t"
-           << iSample->second.m_XS << "\t"
-           << iSample->second.m_totInitialEvents << "\t"
-           << iSample->second.m_isSignal << "\t"
-           << iSample->second.m_color << "\n" ;
+       ++iSample){
+    
+    cout << iSample->first << "\t" 
+	 << iSample->second.m_sampleName << "\t"
+	 << iSample->second.m_XS << "\t"
+	 << iSample->second.m_totInitialEvents << "\t"
+	 << iSample->second.m_isSignal << "\t"
+	 << iSample->second.m_color << "\n" ;
 
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-          cout << " + " << name << "\t" 
-               << iSample->second.m_sampleContent[name].m_layerName << "\n" ;
-          // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-              iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-              ++iHisto)
-            { 
-                 cout << "    + " << iHisto->first << "\t"
-                   << iHisto->second->GetName () << "\t"
-                   << iHisto->second->Integral () << "\t"
-                   << iHisto->second->GetNbinsX () << "\n" ;
-            } // loop over histos	  
-          // loop over 2D histos
-          for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-              iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-              ++iHisto)
-            { 
-                 cout << "    + " << iHisto->first << "\t"
-                   << iHisto->second->GetName () << "\t"
-                   << iHisto->second->Integral () << "\n" ;
-            } // loop over histos	  
-        } // loop over layers
-    } // loop over samples
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+        
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
+      
+      cout << " + " << name << "\t" 
+	   << iSample->second.m_sampleContent[name].m_layerName << "\n" ;
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+             
+	cout << "    + " << iHisto->first << "\t"
+	     << iHisto->second->GetName () << "\t"
+	     << iHisto->second->Integral () << "\t"
+	     << iHisto->second->GetNbinsX () << "\n" ;
+      } // loop over histos	  
+       
+      // loop over 2D histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+             
+	cout << "    + " << iHisto->first << "\t"
+	     << iHisto->second->GetName () << "\t"
+	     << iHisto->second->Integral () << "\n" ;
+      } // loop over histos	  
+    } // loop over layers
+  } // loop over samples
 }
 
 void plotter::printEventNumber(string layerName, string histoName){
@@ -268,24 +349,33 @@ void plotter::printEventNumber(string layerName, string histoName){
 
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      cout << iSample->first << "\t" ;
-
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
-          if(name != layerName) continue ;
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto){
+       ++iSample){
    
-           if(histoName != iHisto->first) continue ;
-	   cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1) << "\n";
-	  }
-	}
+    cout << iSample->first << "\t" ;
+
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
+      if(name != layerName) continue ;
+
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+   
+	if(histoName != iHisto->first) continue ;
+	cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1) << "\n";
+      }
+
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+   
+	if(histoName != iHisto->first) continue ;
+	cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1,0,iHisto->second->GetNbinsY()+1) << "\n";
+      }
     }
+  }
 }
 
 
@@ -293,11 +383,12 @@ void plotter::printEventNumber(string layerName, string histoName){
 
 
 void plotter::fillHisto (string sampleName, string layerName, string histoName, 
-                         float value, float weight) 
-{
+                         float value, float weight) {
+
   //PG NB assuming the histo is existing, not to slow down with cross-checks!
   m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName]->Fill (
       value, weight * m_samples[sampleName].m_weight) ;
+
   return ;
 }
 
@@ -306,8 +397,8 @@ void plotter::fillHisto (string sampleName, string layerName, string histoName,
 
 
 void plotter::fill2DHisto (string sampleName, string layerName, string histoName, 
-                           float valueX,float valueY, float weight) 
-{
+                           float valueX,float valueY, float weight) {
+
   //PG NB assuming the histo is existing, not to slow down with cross-checks!
   m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName]->Fill (
       valueX, valueY, weight * m_samples[sampleName].m_weight) ;
@@ -318,61 +409,57 @@ void plotter::fill2DHisto (string sampleName, string layerName, string histoName
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::prepareSampleForPlotting (string sampleName)
-{
+void plotter::prepareSampleForPlotting (string sampleName){
+
   if (m_samples[sampleName].m_readyForPlotting) return ;
 
   // loop over layers
-  for (unsigned int iLayer = 0 ; iLayer < m_samples[sampleName].m_layersSequence.size () ; ++iLayer)
-    {
+  for (unsigned int iLayer = 0 ; iLayer < m_samples[sampleName].m_layersSequence.size () ; ++iLayer) {
+
       string name = m_samples[sampleName].m_layersSequence.at (iLayer) ;
+
       // loop over histos
       for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[name].m_histos.begin () ;
            iHisto != m_samples[sampleName].m_sampleContent[name].m_histos.end () ;
-           ++iHisto)
-        {
-          addOverFlow (iHisto->second) ; 
-          if (m_samples[sampleName].m_isSignal)
-            {
-              iHisto->second->SetFillColor (0) ;
-              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
-              iHisto->second->SetLineWidth (2) ;
-            }
-          else
-            {  
-              iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
-              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
-            }
-        } // loop over histos
+           ++iHisto){
+
+	addOverFlow (iHisto->second) ; 
+	if (m_samples[sampleName].m_isSignal){
+	  iHisto->second->SetFillColor (0) ;
+	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetLineWidth (2) ;
+	}
+	else{  
+	  iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	}
+      } // loop over histos
 
       // loop over 2D histos
       for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[name].m_2Dhistos.begin () ;
            iHisto != m_samples[sampleName].m_sampleContent[name].m_2Dhistos.end () ;
-           ++iHisto)
-        {
-          if (m_samples[sampleName].m_isSignal)
-            {
-//              iHisto->second->SetFillColor (0) ;
-              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
-//              iHisto->second->SetLineWidth (2) ;
-            }
-          else
-            {  
-//              iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
-              iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
-            }
-        } // loop over 2D histos
+           ++iHisto){
 
+	if (m_samples[sampleName].m_isSignal){
+	  //              iHisto->second->SetFillColor (0) ;
+	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  //              iHisto->second->SetLineWidth (2) ;
+	}
+	else{  
+	  //              iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	}
+      } // loop over 2D histos      
     } // loop over layers
+
   m_samples[sampleName].m_readyForPlotting = true ;
+
 }
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void plotter::cleanFromLateX (TString & Name) {
 
-
-void plotter::cleanFromLateX (TString & Name) 
-{
   Name.ReplaceAll("#","");
   Name.ReplaceAll("{","");
   Name.ReplaceAll("}","");
@@ -389,8 +476,8 @@ void plotter::cleanFromLateX (TString & Name)
 
 
 void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax, 
-                             string xaxisTitle, string yaxisTitle, bool hasPull)
-{
+                             string xaxisTitle, string yaxisTitle, bool hasPull){
+
   TH1F * bkg = m_canvas.DrawFrame (xmin, ymin, xmax, ymax) ;
   bkg->GetXaxis ()->SetTitle (xaxisTitle.c_str ()) ;
   bkg->GetYaxis ()->SetTitle (yaxisTitle.c_str ()) ;
@@ -424,39 +511,39 @@ void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax,
 
 
 void plotter::plotSingleSample (string sampleName, string layerName, string histoName,
-                                string xaxisTitle, string yaxisTitle, int isLog, string folderName)
-{
-  prepareSampleForPlotting (sampleName) ;
+                                string xaxisTitle, string yaxisTitle, int isLog, string folderName){
+
+  prepareSampleForPlotting (sampleName) ; // prepare histo object
+
   std::unordered_map<string, TH1F *>::const_iterator got1D =
-    m_samples[sampleName].m_sampleContent[layerName].m_histos.find (histoName) ;
+    m_samples[sampleName].m_sampleContent[layerName].m_histos.find (histoName) ; // take an iterator on 1D histo for that sample and that layer
 
   // 1D histo found, plotting
-  if ( got1D != m_samples[sampleName].m_sampleContent[layerName].m_histos.end ())
-    {
-//      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      TH1F * h_var = got1D->second ;
-      m_canvas.cd () ;
+  if ( got1D != m_samples[sampleName].m_sampleContent[layerName].m_histos.end ()){
 
-      TLegend leg = initLegend (1) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TH1F * h_var = got1D->second ;
+    m_canvas.cd () ;
 
-      DrawPlots (vector<TH1F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
-    }
+    TLegend leg = initLegend (1) ; // crate the legend
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+
+    DrawPlots (vector<TH1F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ; // draw the histo
+  }
 
   std::unordered_map<string, TH2F *>::const_iterator got2D =
     m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos.find (histoName) ;
 
   // 1D histo found, plotting
-  if ( got2D != m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos.end ())
-    {
-      TH2F * h_var = got2D->second ;
-      m_canvas.cd () ;
+  if ( got2D != m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos.end ()){
 
-      TLegend leg = initLegend (1) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TH2F * h_var = got2D->second ;
+    m_canvas.cd () ;
 
-      Draw2DPlots (vector<TH2F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
-    }
+    TLegend leg = initLegend (1) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+
+    Draw2DPlots (vector<TH2F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
+  }
 
   return ;
 }
@@ -467,8 +554,8 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
 
 // plot a single histogram in a layer
 void plotter::plotSingleLayer (string layerName, string histoName, 
-                               string xaxisTitle, string yaxisTitle, int isLog, string folderName)
-{
+                               string xaxisTitle, string yaxisTitle, int isLog, string folderName){ // plot all the samples in a stack for a layer
+
   string name = string ("st_") + layerName + "_" + histoName ;
   THStack * stack = new THStack (name.c_str (), "") ;
   int nsamples = m_samplesSequence.size () ;
@@ -476,28 +563,28 @@ void plotter::plotSingleLayer (string layerName, string histoName,
   TLegend leg = initLegend (nsamples) ;
 
   // add bkg to the stack
-  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      prepareSampleForPlotting (sampleName) ;
-      if (m_samples[sampleName].m_isSignal == true) continue ;
-      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      stack->Add (h_var) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
-    }
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample){
+
+    string sampleName = m_samplesSequence.at (iSample) ;
+    prepareSampleForPlotting (sampleName) ;
+    if (m_samples[sampleName].m_isSignal == true) continue ;
+    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+    stack->Add (h_var) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  }
   
   // add signal to the stack
-  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      if (m_samples[sampleName].m_isSignal == false) continue ;
-      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      stack->Add (h_var) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
-    }
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample){
+
+    string sampleName = m_samplesSequence.at (iSample) ;
+    if (m_samples[sampleName].m_isSignal == false) continue ;
+    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+    stack->Add (h_var) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  }
 
   DrawPlots (vector<THStack *> (1, stack), leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
-
+  
   return ;
 }
 
@@ -506,32 +593,32 @@ void plotter::plotSingleLayer (string layerName, string histoName,
 
 
 // plot all the histograms of a layer
-void plotter::plotFullLayer (string layerName)
-{
+void plotter::plotFullLayer (string layerName) { // plot all the layers
+ 
   // FIXME needs to be finished
   string outFolderName = m_folderName + "/stacks/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
-
+  
   // loop over variables and call plot single layer
   for (unordered_map<string, TH1F *>::iterator iHisto = 
          m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
-       ++iHisto)
-    {
-      if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
+       ++iHisto){
+
+    if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
       plotSingleLayer (layerName, iHisto->first.c_str (), 
                        iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
                        iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 0, outFolderName) ;
-      }
-      else {
+    }
+    else {
       plotSingleLayer (layerName, iHisto->first.c_str (), 
                        iHisto->first.c_str(), "#sigma #times lumi", 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
                        iHisto->first.c_str(), "#sigma #times lumi", 0, outFolderName) ;
 
-      }
-    }   
+    }
+  }   
   
   return ;
 }
@@ -541,8 +628,8 @@ void plotter::plotFullLayer (string layerName)
 
 
 void plotter::compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
-                           bool isNormalized, float scaleSignal, int isLog, string folderName)
-{
+                           bool isNormalized, float scaleSignal, int isLog, string folderName){
+
   // FIXME isNormalized needs to be implemented
   // FIXME scaleSignal needs to be implemented
   string name = string ("comp_bkg_") + layerName + "_" + histoName ;
@@ -552,28 +639,28 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
   TLegend leg = initLegend (nsamples) ;
 
   // add bkg to the stack
-  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      prepareSampleForPlotting (sampleName) ;
-      if (m_samples[sampleName].m_isSignal == true) continue ;
-      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      bkg_stack->Add (h_var) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
-    }
+  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample){
+    
+    string sampleName = m_samplesSequence.at (iSample) ;
+    prepareSampleForPlotting (sampleName) ;
+    if (m_samples[sampleName].m_isSignal == true) continue ;
+    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+    bkg_stack->Add (h_var) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  }
   
   name = string ("comp_sig_") + layerName + "_" + histoName ;
   THStack * sig_stack = new THStack (name.c_str (), "") ;
 
   // add signal to the stack
-  for (int iSample = 0 ; iSample < nsamples ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      if (m_samples[sampleName].m_isSignal == false) continue ;
-      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      sig_stack->Add (h_var) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
-    }
+  for (int iSample = 0 ; iSample < nsamples ; ++iSample){
+    
+    string sampleName = m_samplesSequence.at (iSample) ;
+    if (m_samples[sampleName].m_isSignal == false) continue ;
+    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+    sig_stack->Add (h_var) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  }
 
   vector<THStack *> histos ;
   histos.push_back (bkg_stack) ;
@@ -588,8 +675,8 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::compareStoBFullLayer (string layerName, string folderTag)
-{
+void plotter::compareStoBFullLayer (string layerName, string folderTag){
+
   // FIXME needs to be finished
   string outFolderName = m_folderName + "/compareStoB" + folderTag + "/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
@@ -598,12 +685,12 @@ void plotter::compareStoBFullLayer (string layerName, string folderTag)
   for (unordered_map<string, TH1F *>::iterator iHisto = 
          m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
-       ++iHisto)
-    {
-      compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-                   0, 1., 0, outFolderName) ;
-      compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-                   0, 1., 1, outFolderName) ;
+       ++iHisto){
+
+    compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
+		 0, 1., 0, outFolderName) ;
+    compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
+		 0, 1., 1, outFolderName) ;
     }   
   
   return ;
@@ -616,8 +703,8 @@ void plotter::compareStoBFullLayer (string layerName, string folderTag)
 void plotter::compareStoB2D (string layerName, string histoName, 
                              string xaxisTitle, string yaxisTitle, 
                              bool isNormalized, float scaleSignal, int isLog, 
-                             string folderName)
-{
+                             string folderName){
+
   // FIXME isNormalized needs to be implemented
   // FIXME scaleSignal needs to be implemented
   string bkgName = string ("comp_bkg_") + layerName + "_" + histoName ;
@@ -628,22 +715,21 @@ void plotter::compareStoB2D (string layerName, string histoName,
   unsigned int nsamples = m_samplesSequence.size () ;
 
   // loop over samples
-  for (unsigned int iSample = 0 ; iSample < nsamples ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      prepareSampleForPlotting (sampleName) ;
-      TH2F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName] ;
-      if (m_samples[sampleName].m_isSignal == true)
-        {
-          if (sig_stack == 0)  sig_stack = (TH2F *) h_var->Clone (sigName.c_str ()) ;
-          else                 sig_stack->Add (h_var) ;
-        }
-      else  
-        {
-          if (bkg_stack == 0)  bkg_stack = (TH2F *) h_var->Clone (bkgName.c_str ()) ;
-          else                 bkg_stack->Add (h_var) ;
-        }
-    } // loop over samples
+  for (unsigned int iSample = 0 ; iSample < nsamples ; ++iSample){
+
+    string sampleName = m_samplesSequence.at (iSample) ;
+    
+    prepareSampleForPlotting (sampleName) ;
+    TH2F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName] ;
+    if (m_samples[sampleName].m_isSignal == true){
+      if (sig_stack == 0)  sig_stack = (TH2F *) h_var->Clone (sigName.c_str ()) ;
+      else                 sig_stack->Add (h_var) ;
+    }
+    else  {
+      if (bkg_stack == 0)  bkg_stack = (TH2F *) h_var->Clone (bkgName.c_str ()) ;
+      else                 bkg_stack->Add (h_var) ;
+    }
+  } // loop over samples
 
   TLegend leg = initLegend (nsamples) ;
   leg.AddEntry (sig_stack, "sig", "fl") ;
@@ -661,9 +747,8 @@ void plotter::compareStoB2D (string layerName, string histoName,
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+void plotter::compareStoBFullLayer2D (string layerName, string folderTag){
 
-void plotter::compareStoBFullLayer2D (string layerName, string folderTag)
-{
   // FIXME needs to be finished
   string outFolderName = m_folderName + "/compareStoB" + folderTag + "/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
@@ -672,13 +757,12 @@ void plotter::compareStoBFullLayer2D (string layerName, string folderTag)
   for (unordered_map<string, TH2F *>::iterator iHisto = 
          m_samples.begin ()->second.m_sampleContent[layerName].m_2Dhistos.begin () ;
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_2Dhistos.end () ; 
-       ++iHisto)
-    {
-      compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
+       ++iHisto){
+    compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
                    0, 1., 0, outFolderName) ;
-      compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
+    compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
                    0, 1., 1, outFolderName) ;
-    }   
+  }   
   
   return ;
 }
@@ -692,12 +776,11 @@ this is in case of two alternative signal samples.
 The one with the smallest XS (and the SM one) is the first, the one with the largest XS is the second.
 This is tailored to the VBS WW same-sign analysis.
 */
+
 void plotter::plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
                                   bool isNormalized, float scaleSignal, int isLog,
-                                  string folderName)
-{
-  // FIXME isNormalized needs to be implemented
-  // FIXME scaleSignal needs to be implemented
+                                  string folderName){
+
   
   // prepare the first stacks
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -714,28 +797,26 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
   int sigSamplesNum = 0 ;
   vector<int> signalPos (2, 0) ;
-  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample)
-    {
-      string sampleName = m_samplesSequence.at (iSample) ;
-      prepareSampleForPlotting (sampleName) ;
-      if (m_samples[sampleName].m_isSignal == true) 
-        {
-          signalPos.at (sigSamplesNum) = iSample ;
-          ++sigSamplesNum ;
-          continue ;
-        }
-      TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-      if(string(h_var->GetXaxis()->GetTitle())!="")
-        xaxisTitle = h_var->GetXaxis()->GetTitle();
-      SM_stack->Add (h_var) ;
-      nH_stack->Add (h_var) ;
-      leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample){
+
+    string sampleName = m_samplesSequence.at (iSample) ;
+    prepareSampleForPlotting (sampleName) ;
+    if (m_samples[sampleName].m_isSignal == true) {
+      signalPos.at (sigSamplesNum) = iSample ;
+      ++sigSamplesNum ;
+      continue ;
     }
-  if (2 != sigSamplesNum)
-    {
-      cout << "ERROR: found " << sigSamplesNum << " signal samples, exiting" << endl ;
-      exit (1) ;
-    }
+    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
+    if(string(h_var->GetXaxis()->GetTitle())!="")
+      xaxisTitle = h_var->GetXaxis()->GetTitle();
+    SM_stack->Add (h_var) ;
+    nH_stack->Add (h_var) ;
+    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+  }
+  if (2 != sigSamplesNum){
+    cout << "ERROR: found " << sigSamplesNum << " signal samples, exiting" << endl ;
+    exit (1) ;
+  }
 
   // add the first signal to the stack, to bild up the total SM expectations
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -864,8 +945,8 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
-{
+void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
+
   // FIXME needs to be finished
   string outFolderName = m_folderName + "/" + basefolder + "/relExcess/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
@@ -874,13 +955,13 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
   for (unordered_map<string, TH1F *>::iterator iHisto = 
          m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
        iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
-       ++iHisto)
-    {
-      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-                          0, 1., 0, outFolderName) ;
-      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-                          0, 1., 1, outFolderName) ;
-    }   
+       ++iHisto){
+
+    plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
+			0, 1., 0, outFolderName) ;
+    plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
+			0, 1., 1, outFolderName) ;
+  }   
   
   return ;
 }
@@ -889,67 +970,64 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::scaleAllHistos (float scaleFactor)
-{
+void plotter::scaleAllHistos (float scaleFactor){
+
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-          // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Scale (scaleFactor) ;
-            } // loop over histos
-          // loop over histos
-          for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Scale (scaleFactor) ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+       ++iSample){
+
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
+      
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+	iHisto->second->Scale (scaleFactor) ;
+      } // loop over histos
+      // loop over histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+	iHisto->second->Scale (scaleFactor) ;
+      } // loop over histos
+    } // loop over layers
+  } // loop over samples
   return ;
 }
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::saveAllHistos (string filename)
-{
+void plotter::saveAllHistos (string filename){
+
   TFile outfile ((m_folderName + "/" + filename).c_str (), "recreate") ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
+       ++iSample){
+
       // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
+      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+
+	string name = iSample->second.m_layersSequence.at (iLayer) ;
           
+	// loop over histos
+	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	     iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
+
+	  iHisto->second->Write () ;
+	} // loop over histos
           // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Write () ;
-            } // loop over histos
-          // loop over histos
-          for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Write () ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto){
+	  iHisto->second->Write () ;
+	} // loop over histos
+      } // loop over layers
+  } // loop over samples
   outfile.Close () ;
   return ;
 }
@@ -957,28 +1035,25 @@ void plotter::saveAllHistos (string filename)
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+void plotter::normaliseAll1DHistos (){
 
-void plotter::normaliseAll1DHistos ()
-{
   cout << "WARNING normalising all the 1D histograms" << endl ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
+       ++iSample){
+
       // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
           
-          // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+	iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+      } // loop over histos
+    } // loop over layers
+  } // loop over samples
   return ;
 }
 
@@ -986,27 +1061,26 @@ void plotter::normaliseAll1DHistos ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::normaliseAll2DHistos ()
-{
+void plotter::normaliseAll2DHistos (){
+
   cout << "WARNING normalising all the 2D histograms" << endl ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
+       ++iSample){
+
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
           
-          // loop over histos
-          for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+      // loop over histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+	iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+      } // loop over histos
+    } // loop over layers
+  } // loop over samples
   return ;
 }
 
@@ -1014,8 +1088,8 @@ void plotter::normaliseAll2DHistos ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::normaliseAllHistos ()
-{
+void plotter::normaliseAllHistos (){
+
   normaliseAll1DHistos () ;
   normaliseAll2DHistos () ;
   return ;
@@ -1025,57 +1099,104 @@ void plotter::normaliseAllHistos ()
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::setPoissonErrors ()
-{
+void plotter::setPoissonErrors (){
+
   cout << "WARNING setting all the histograms to the poisson error\n" ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
+       ++iSample){
+    
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
           
-          // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto)
-            {
-              setPoissonErrorsToHisto (iHisto->second) ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+	setPoissonErrorsToHisto (iHisto->second) ;
+      } // loop over histos
+  
+      // loop over histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+	setPoissonErrorsTo2DHisto (iHisto->second) ;
+      } // loop over histos
+    } // loop over layers
+  } // loop over samples
   return ;
 }
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+
+void plotter::setAsymmetricErrors (){
+
+  cout << "WARNING setting all the histograms to the poisson error\n" ;
+  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+       iSample != m_samples.end () ;
+       ++iSample){
+    
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
+          
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto){
+	setAsymmetricErrorsToHisto (iHisto->second) ;
+      } // loop over histos
+  
+      // loop over histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto){
+	setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+      } // loop over histos
+    } // loop over layers
+  } // loop over samples
+  return ;
+}
+
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::resetAll (float lumi)
-{
+void plotter::resetAll (float lumi){
+
   cout << "WARNING resetting all the stored quantities\n" ;
   cout << "luminosity set to " << lumi << "\n" ;
   m_lumi = lumi ;
   for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
-       ++iSample)
-    {
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer)
-        {
-          string name = iSample->second.m_layersSequence.at (iLayer) ;
+       ++iSample){
+
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+      string name = iSample->second.m_layersSequence.at (iLayer) ;
           
-          // loop over histos
-          for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-               iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-               ++iHisto)
-            {
-              iHisto->second->Reset () ;
-            } // loop over histos
-        } // loop over layers
-    } // loop over samples
+      // loop over histos
+      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+	   ++iHisto)
+	{
+	  iHisto->second->Reset () ;
+	} // loop over histos
+
+      // loop over histos
+      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
+	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	   ++iHisto)
+	{
+	  iHisto->second->Reset () ;
+	} // loop over histos
+
+    } // loop over layers
+  } // loop over samples
   return ;
 }
 
@@ -1083,8 +1204,8 @@ void plotter::resetAll (float lumi)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-TLegend plotter::initLegend (int sampleNum)
-{
+TLegend plotter::initLegend (int sampleNum){
+
   TLegend leg (0.2, 0.95 - 0.1 * sampleNum * 0.33, 0.87, 0.95) ;
   leg.SetNColumns (3) ;
   leg.SetLineStyle (0) ;
@@ -1096,15 +1217,14 @@ TLegend plotter::initLegend (int sampleNum)
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::setRootAspect ()
-{
+void plotter::setRootAspect (){
+
   gStyle->SetCanvasColor (-1) ; 
   gStyle->SetPadColor (-1) ; 
   gStyle->SetFrameFillColor (-1) ; 
   gStyle->SetHistFillColor (-1) ; 
   gStyle->SetTitleFillColor (-1) ; 
   gStyle->SetFillColor (-1) ; 
-//  gStyle->SetFillStyle (4000) ; 
   gStyle->SetStatStyle (0) ; 
   gStyle->SetTitleStyle (0) ; 
   gStyle->SetCanvasBorderSize (0) ; 
@@ -1130,8 +1250,6 @@ void plotter::setRootAspect ()
   gStyle->SetTextFont (42) ;
   gStyle->SetStatFont (42) ;
   gStyle->SetTitleFont (42,"xyz") ;
-  //gStyle->SetPadGridX (1) ;
-  //gStyle->SetPadGridY (1) ;
   
   gStyle->SetTitleXOffset (1.25) ;
   gStyle->SetTitleYOffset (1.4) ;

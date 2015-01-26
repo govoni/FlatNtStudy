@@ -594,6 +594,7 @@ int main (int argc, char ** argv) {
 
         if(itVec->findCutByLabel("LL")){
 	  numerator.push_back(itVec->histogram);
+          denominator.push_back(itVec->histogram);
 	}
         else{ 
           denominator.push_back(itVec->histogram);
@@ -624,12 +625,12 @@ int main (int argc, char ** argv) {
     }
 
     ratio = new TH1F(("Ratio_"+string(denominator.at(0)->GetName())).c_str(),"",numTotal->GetNbinsX(),numTotal->GetBinLowEdge(1),numTotal->GetBinLowEdge(numTotal->GetNbinsX()+1));
-    ratio->GetYaxis()->SetTitle("LL/(TL+TT)");
+    ratio->GetYaxis()->SetTitle("S/(#sqrt{S+B})");
     ratio->SetMarkerSize(1.1);
 
     for(int iBin = 0; iBin < ratio->GetNbinsX()+1; iBin++){
       if(denTotal->GetBinContent(iBin) !=0){ 
-	ratio->SetBinContent(iBin,numTotal->GetBinContent(iBin)/denTotal->GetBinContent(iBin));
+	ratio->SetBinContent(iBin,numTotal->GetBinContent(iBin)/sqrt(denTotal->GetBinContent(iBin)));
       }
       else 
 	ratio->SetBinContent(iBin,0.);

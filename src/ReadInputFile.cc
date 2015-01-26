@@ -98,6 +98,60 @@ int ReadInputVariableFile( const string & InputVariableList , vector<variableCon
 
 }
 
+int ReadInputVariableFile( const string & InputVariableList , vector<variableContainer2D> & varContainer2D){
+
+
+  ifstream inputFile (InputVariableList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+    stringstream line(buffer);
+
+    string  VariablesTempX;
+    string  VariablesNbinTempX;
+    string  VariablesMinValueTempX;
+    string  VariablesMaxValueTempX;
+    string  VariablesTitleTempX;
+
+    string  VariablesTempY;
+    string  VariablesNbinTempY;
+    string  VariablesMinValueTempY;
+    string  VariablesMaxValueTempY;
+    string  VariablesTitleTempY;
+    
+    line >> VariablesTempX >> VariablesNbinTempX >> VariablesMinValueTempX >> VariablesMaxValueTempX >> VariablesTitleTempX >> VariablesTempY >> VariablesNbinTempY >> VariablesMinValueTempY >> VariablesMaxValueTempY >> VariablesTitleTempY ;
+
+    for(size_t ifound = 0 ; ifound < VariablesTitleTempX.size() ; ifound++) {
+      if(VariablesTitleTempX.at(ifound)=='_' && VariablesTitleTempX.at(ifound+1)!='{') VariablesTitleTempX.at(ifound)=' '; 
+    }
+
+    for(size_t ifound = 0 ; ifound < VariablesTitleTempY.size() ; ifound++) {
+      if(VariablesTitleTempY.at(ifound)=='_' && VariablesTitleTempY.at(ifound+1)!='{') VariablesTitleTempY.at(ifound)=' '; 
+    }
+    
+    variableContainer2D dummy (VariablesTempX,
+			       stoi(VariablesNbinTempX),
+			       stod(VariablesMinValueTempX),
+			       stod(VariablesMaxValueTempX),
+			       VariablesTitleTempX,
+			       VariablesTempY,
+			       stoi(VariablesNbinTempY),
+			       stod(VariablesMinValueTempY),
+			       stod(VariablesMaxValueTempY),
+			       VariablesTitleTempY);
+
+    varContainer2D.push_back(dummy);                                  
+  }
+
+  return varContainer2D.size() ;
+
+}
+
 
 int ReadInputVariableFile( const string & InputVariableList , vector<string> & varContainer){
 

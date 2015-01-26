@@ -27,27 +27,57 @@ using namespace std ;
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-// generic functions implemented in the cc
-double deltaPhi (double phi1, double phi2) ;
-bool   FillChain (TChain& chain, const string& inputFileList) ;
-// give an histogram set the poisson error bars
-void   setPoissonErrorsToHisto (TH1F * input) ;
 // add the overflow bin as real bin to the histo
 void   addOverFlow (TH1F * input) ;            
+
+// give an histogram set the poisson error bars
+void   setPoissonErrorsToHisto (TH1F * input) ;
+
+// give an histogram set the poisson error bars
+void   setPoissonErrorsTo2DHisto (TH2F * input) ;
+
+// give an histogram set the poisson error bars
+void   setAsymmetricErrorsToHisto (TH1F * input) ;
+
+// give an histogram set the poisson error bars
+void   setAsymmetricErrorsTo2DHisto (TH2F * input) ;
+
 // take an histogram with bin errors
-TH1F*  getHistoOfErrors (TH1F * input, int isLog) ; 
+TH1F*  getHistoOfErrors (TH1F * input, 
+			 int isLog) ; 
+
 // create a stack from a histo
 THStack* CreateStack (TH1F * histo) ; 
 
+TH1F* rollingHistogram(TH2F* histo, int errorType);
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 // one set of histograms given a cut layer
 // layer is alias for cut ... simple class with a string and a map of TH1
+
 class layer { 
  public:
   layer (string name = "dummy") :
   m_layerName (name) {} ;
+
+  vector<TH1F*> getHistos(){
+    vector<TH1F*> vectHisto ;
+    unordered_map<string,TH1F*>::iterator itHisto = m_histos.begin();
+    for( ; itHisto != m_histos.end(); itHisto++){
+      vectHisto.push_back(itHisto->second);
+    }
+    return vectHisto;
+  }
+
+  vector<TH2F*> getHistos2D(){
+    vector<TH2F*> vectHisto2D ;
+    unordered_map<string,TH2F*>::iterator itHisto = m_2Dhistos.begin();
+    for( ; itHisto != m_2Dhistos.end(); itHisto++){
+      vectHisto2D.push_back(itHisto->second);
+    }
+    return vectHisto2D;
+  }
+
   string m_layerName ;
   unordered_map<string, TH1F *> m_histos ;
   unordered_map<string, TH2F *> m_2Dhistos ;
@@ -76,6 +106,16 @@ class sample {
     m_readyForPlotting (false),
     m_weight (XS * lumi / static_cast<float> (m_totInitialEvents)) // luminosity weight
       {}
+
+
+  vector<layer> getLayer(){
+    vector<layer> vectLayer ;
+    unordered_map<string, layer>::iterator itLay = m_sampleContent.begin();
+    for( ; itLay != m_sampleContent.end(); itLay++){
+      vectLayer.push_back(itLay->second);
+    }
+    return vectLayer;
+  }
       
   string m_sampleName ;
   float m_XS ;
@@ -100,51 +140,70 @@ class plotter { // generic plotter class
   // adding methods
   void addSample        (string sampleName, float XS, int totInitialEvents, 
                          bool isSignal, int color) ;
+
   void addLayerToSample (string sampleName, string layerName) ;
+
   void addPlotToLayer   (string sampleName, string layerName, string plotName, 
-                         int nBins, float xMin, float xMax, string labelName = "") ;
+                         int nBins, float xMin, float xMax, string labelName = "", bool sumW2 = false) ;
+
   void add2DPlotToLayer (string sampleName, string layerName, string plotName, 
                          int nBinsX, float xMinX, float xMaxX,
                          int nBinsY, float xMinY, float xMaxY,
-                         string labelNameX = "", string labelNameY = "") ;
+                         string labelNameX = "", string labelNameY = "",
+			 bool sumW2 = false) ;
+
   // copy methods
   void copyLayerInSample   (string sampleName, string target, string origin) ;
+
   void copySampleStructure (string target, string origin, float newXS, 
                             int newTotInitialEvents, bool isSignal, int newColor) ;
   // print structure
   void printStructure () ;
   void printEventNumber (string layerName, string histoName) ;
-  // init legend
-  TLegend initLegend (int sampleNum) ;
+
+
   // fill histo
   void fillHisto     (string sampleName, string layerName, string histoName, 
                       float value, float weight) ;
   void fill2DHisto   (string sampleName, string layerName, string histoName, 
                       float valueX, float valueY, float weight) ;
-  void setRootAspect () ;
+
+
+  // plotting things
+  void prepareSampleForPlotting (string sampleName) ;
+
   void prepareCanvas (float xmin, float xmax, float ymin, float ymax, 
                       string xaxisTitle, string yaxisTitle, bool hasPull) ;
-  void prepareSampleForPlotting (string sampleName) ;
+
+  TLegend initLegend (int sampleNum) ;
+
+  void setRootAspect () ;
+
   void cleanFromLateX (TString & Name) ;
  
   // plotting methods
   void plotSingleSample (string sampleName, string layerName, string histoName,
 			 string xaxisTitle, string yaxisTitle, int isLog = 0,
 			 string folderName = "") ;
+
   void plotSingleLayer (string layerName, string histoName,
 			string xaxisTitle, string yaxisTitle, int isLog = 0,
 			string folderName = "") ;
+
   void plotFullLayer (string layerName) ;
 
   // compare S and B
   void compareStoB (string layerName, string histoName, string xaxisTitle, string yaxisTitle,
 		    bool isNormalized = false, float scaleSignal = 1., int isLog = 0,
 		    string folderName = "") ;
+
   void compareStoBFullLayer (string layerName, string folderTag = "") ;
+
   void compareStoB2D (string layerName, string histoName, 
-            string xaxisTitle, string yaxisTitle, 
-            bool isNormalized = false, float scaleSignal = 1., int isLog = 0, 
-            string folderName = "") ;
+		      string xaxisTitle, string yaxisTitle, 
+		      bool isNormalized = false, float scaleSignal = 1., int isLog = 0, 
+		      string folderName = "") ;
+
   void compareStoBFullLayer2D (string layerName, string folderTag = "") ;
 
   // Plot relatve excess
@@ -167,6 +226,7 @@ class plotter { // generic plotter class
 
   // poissonian errors
   void setPoissonErrors () ;
+  void setAsymmetricErrors ();
 
   void resetAll (float lumi) ;
 
@@ -273,6 +333,15 @@ class plotter { // generic plotter class
       return;
     } // Draw2DPlots
 
+
+  // get the sample map
+  vector<sample> getSamples(){
+    vector<sample> sampleList ;
+    unordered_map<string, sample>::iterator itSample = m_samples.begin();
+    for( ; itSample != m_samples.end(); itSample++)
+      sampleList.push_back(itSample->second);
+    return sampleList;;
+  }
 
 
  private:
