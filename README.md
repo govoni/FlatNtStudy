@@ -300,11 +300,11 @@ FlatNtStudy
 
 10) Code to create datacards 1D and 2D for the inclusive analysis (WW_EWK cross sectio measurement)
  
-    test/MakeDatacardsInclusive.cpp
+    test/MakeDatacards.cpp
  
    this is how to run it:
 
-    ./bin/MakeDatacardsInclusive.exe <cfg file>
+    ./bin/MakeDatacards.exe <cfg file>
 
    example cfg can be found in :
 
@@ -320,6 +320,27 @@ FlatNtStudy
     finalStateString 	    -> use to define categories in order to combine cards
     outputDataCardDirectory -> directory where all the cards and root files are located.
 
+11) Code to create datacards 1D and 2D for the polarized cross section analysis (WW_EWK cross sectio measurement)
+ 
+    test/MakeDatacards.cpp
+ 
+   this is how to run it:
+
+    ./bin/MakeDatacards.exe <cfg file>
+
+   example cfg can be found in :
+
+    cfg/DataCardCfg/PolarizedCards
+
+   here the cfg structure:
+
+    InputSampleList	-> list of signal and background directories
+    InputVariableList1D -> create a card for each variable with a root file with the histograms
+    InputVariableList2D -> create a card for each pair of variable (unrolling of the TH2 in a TH1)
+    InputCutList 	-> cut to be applied
+    errorType 		    -> 0 means put on all the histogram sqrt(N) as bin content error, 1 set the poissonian mode, 2 meanse use the sum w2 for the MC.
+    finalStateString 	    -> use to define categories in order to combine cards
+    outputDataCardDirectory -> directory where all the cards and root files are located.
 
 
     
