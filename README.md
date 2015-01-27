@@ -20,16 +20,31 @@ FlatNtStudy
 
 4) Code to make comparison between LHE files of Phantom and MG:
 
-   test/DrawLHEMGvsPH.cpp
+    test/DrawLHEMGvsPH.cpp
  
    this is how to run it:
 
     ./bin/DrawLHEMGvsPH.exe <cfg file>
 
-   example cfg can be found in cfg/PlottingLHE_MGvsPH/
+   example cfg can be found in :
+
+    cfg/PlottingLHE_MGvsPH/
 
 
-5) Code for making plot for both WW (SS,OS) and WZ analysis
+5) Code to make comparison between Delphes Trees of Phantom and MG:
+
+    test/DrawDelphesMGvsPH.cpp 
+ 
+   this is how to run it:
+
+    ./bin/DrawDelphesMGvsPH.exe <cfg file>
+
+   example cfg can be found in :
+
+    cfg/PlottingReco_MGvsPH/
+
+
+6) Code for making plot for both WW (SS,OS) and WZ analysis
 
     test/DrawFlatTreePlots.cpp
 
@@ -148,7 +163,7 @@ FlatNtStudy
 
 
 
-6) Code for train MVA methods for selection optimization
+7) Code for train MVA methods for selection optimization
 
     test/TMVATrainingSelections.cpp
 
@@ -215,7 +230,7 @@ FlatNtStudy
     -> Loop on the input TMVA methods and run the training + testing for each of them.
     -> Close the loops and exit
 
-7) Code to plot MVA training results from the produced root file
+8) Code to plot MVA training results from the produced root file
 
     test/TMVAPlotSignificance.cpp
 
@@ -266,3 +281,45 @@ FlatNtStudy
     -> For each method in each file print: MVA distribution if present, overtraining and probability plots
     -> Take the number of signal and background events used in the testing from the TTree inside the root file, taking into account weights
     -> plot the significance for that number of expected signal and background events
+
+
+9) Code to make signal polarized plot on Madgraphonly files:
+
+    test/DrawPolarizationPlots.cpp
+ 
+   this is how to run it:
+
+    ./bin/DrawPolarizationPlots.exe <cfg file>
+
+   example cfg can be found in :
+
+    cfg/PolarizationCfg/
+
+   the only difference is how to define the polarization cut by the LayerCut file and apply a LHE filter on MG samples to select the chose final state
+
+
+10) Code to create datacards 1D and 2D for the inclusive analysis (WW_EWK cross sectio measurement)
+ 
+    test/MakeDatacardsInclusive.cpp
+ 
+   this is how to run it:
+
+    ./bin/MakeDatacardsInclusive.exe <cfg file>
+
+   example cfg can be found in :
+
+    cfg/DataCardCfg/InclusiveCards
+
+   here the cfg structure:
+
+    InputSampleList -> list of signal and background directories
+    InputVariableList1D -> create a card for each variable with a root file with the histograms
+    InputVariableList2D -> create a card for each pair of variable (unrolling of the TH2 in a TH1)
+    InputCutList -> cut to be applied
+    errorType -> 0 means put on all the histogram sqrt(N) as bin content error, 1 set the poissonian mode, 2 meanse use the sum w2 for the MC.
+    finalStateString -> use to define categories in order to combine cards
+    outputDataCardDirectory -> directory where all the cards and root files are located.
+
+
+
+    
