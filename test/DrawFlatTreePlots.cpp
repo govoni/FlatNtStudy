@@ -129,8 +129,23 @@ int main (int argc, char ** argv) {
      }
    }
 
-   fillHistos (analysisPlots,ReadTree,CutList,variableList,itSample->first,usePuppiAsDefault,
-               minLeptonCutPt,minLeptonCleaningPt,leptonIsoCut_mu,leptonIsoCut_el,leptonIsoCutLoose,matchingCone,minJetCutPt,histoCutEff) ; // fill the histogram
+   
+   string sampleName = itSample->first;
+
+   fillHistos (analysisPlots,
+	       ReadTree,
+	       CutList,
+	       variableList,
+	       sampleName,
+	       usePuppiAsDefault,
+               minLeptonCutPt,
+	       minLeptonCleaningPt,
+	       leptonIsoCut_mu,
+	       leptonIsoCut_el,
+	       leptonIsoCutLoose,
+	       matchingCone,
+	       minJetCutPt,
+	       histoCutEff) ; // fill the histogram
   }
 
     

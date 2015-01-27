@@ -162,7 +162,8 @@ void fillHistos (plotter & analysisPlots,
 		 const double & leptonIsoLooseCut,
                  const double & matchingCone,   
 		 const double & minJetCutPt,
-                 map<string,TH1F*> & vect);
+                 map<string,TH1F*> & vect,
+		 const string & finalStateString = "");
 
 void fill2DHistos (plotter & analysisPlots,
 		   readTree* reader,
@@ -176,7 +177,8 @@ void fill2DHistos (plotter & analysisPlots,
 		   const double & leptonIsoCut_el,   
 		   const double & leptonIsoLooseCut,
 		   const double & matchingCone,   
-		   const double & minJetCutPt);
+		   const double & minJetCutPt,
+		   const string & finalStateString = "");
 
 bool passCutContainerSelection (readTree* readTree,
                                 cutContainer & Cut,

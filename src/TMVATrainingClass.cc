@@ -451,10 +451,12 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
       if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
       vect.clear();
+ 
+      string sampleName = "";
       // apply analysis cut from utils.h 
       if(!passCutContainerSelection(reader_,
 				    cutEvent_,
-				    "",
+				    sampleName,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
@@ -499,9 +501,10 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
       if(reader_->npu < npuRange_.first or reader_->npu > npuRange_.second) continue;
         
       vect.clear();
+      string sampleName = "";
       if(!passCutContainerSelection(reader_, // apply analysis cuts
 				    cutEvent_,
-				    "",
+				    sampleName,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,

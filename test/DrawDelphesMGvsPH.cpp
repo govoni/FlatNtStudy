@@ -199,10 +199,13 @@ int main (int argc, char ** argv) {
     
     // Loop  on the cut list --> one cut for each polarization                                                                                                                  
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
+
       // cut the events                                                                                                                                                         
+      string name = "MG";
+
       if(!passCutContainerSelection(readerMG,
                                     CutList.at(iCut),
-                                    "MG",
+                                    name,
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,
@@ -541,9 +544,10 @@ int main (int argc, char ** argv) {
     // Loop  on the cut list --> one cut for each polarization                                                                                                                  
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
       // cut the events                                                                                                                                                         
+      string name = "PH";
       if(!passCutContainerSelection(readerPH,
                                     CutList.at(iCut),
-                                    "PH",
+                                    name,
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,

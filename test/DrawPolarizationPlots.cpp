@@ -169,9 +169,10 @@ int main (int argc, char ** argv) {
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
 
       // cut the events
+      string name = "WW_EWK";
       if(!passCutContainerSelection(reader,
                                     CutList.at(iCut),
-                                    "WW_EWK",
+                                    name,
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,
