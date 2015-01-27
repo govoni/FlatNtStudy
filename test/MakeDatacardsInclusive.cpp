@@ -254,19 +254,13 @@ int main (int argc, char ** argv) {
       datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_Data" <<endl;
       datacard<< "------------------------------------------------------"<< endl;
       
-      int nSignal = 0;
-      int nBackground = 0;
-      for(size_t iSignal = 0; iSignal < SampleVector.size(); iSignal++){
-	if(SampleVector.at(iSignal).m_isSignal)
-          nSignal++;
-      }
-
-      nSignal = -abs(nSignal);
-
       string lineBin     = "bin       ";
       string lineProcess = "process   ";
       string lineProcess2= "process   ";
       string lineRate    = "rate      ";
+
+      int nSignal = 0 ;
+      int nBackground = 1 ;
 
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
 	lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
@@ -285,7 +279,7 @@ int main (int argc, char ** argv) {
 
         if(SampleVector.at(iSample).m_isSignal){
 	  lineProcess2 += Form("%d   ",nSignal);          
-          nSignal++;
+          nSignal--;
 	}
         else {
 	  lineProcess2 += Form("%d   ",nBackground);
@@ -406,13 +400,7 @@ int main (int argc, char ** argv) {
 
       
       int nSignal = 0;
-      int nBackground = 0;
-      for(size_t iSignal = 0; iSignal < SampleVector.size(); iSignal++){
-	if(SampleVector.at(iSignal).m_isSignal)
-          nSignal++;
-      }
-
-      nSignal = -abs(nSignal);
+      int nBackground = 1;
 
       string lineBin     = "bin       ";
       string lineProcess = "process   ";
@@ -433,7 +421,7 @@ int main (int argc, char ** argv) {
 
         if(SampleVector.at(iSample).m_isSignal){
 	  lineProcess2 += Form("%d   ",nSignal);
-          nSignal++;
+          nSignal--;
 	}
         else {
 	  lineProcess2 += Form("%d   ",nBackground);
