@@ -49,7 +49,7 @@ TH1F*  getHistoOfErrors (TH1F * input,
 // create a stack from a histo
 THStack* CreateStack (TH1F * histo) ; 
 
-TH1F* rollingHistogram(TH2F* histo, int errorType);
+TH1F* unRollingHistogram(TH2F* histo, int errorType);
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 // one set of histograms given a cut layer

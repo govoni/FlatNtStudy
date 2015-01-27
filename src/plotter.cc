@@ -96,32 +96,40 @@ TH1F *  getHistoOfErrors (TH1F * input, int isLog) {
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-TH1F* rollingHistogram (TH2F* histo, int errorType){
+TH1F* unRollingHistogram (TH2F* histo, int errorType){
 
   TH1F* dummy = new TH1F("dummy","",(histo->GetNbinsX())*(histo->GetNbinsY()),0,histo->GetNbinsX()*histo->GetNbinsY());
   dummy->Sumw2();
 
-  for(int iBinX = 0; iBinX < histo->GetNbinsX() ; iBinX++){
-    for(int iBinY = 0; iBinY < histo->GetNbinsY() ; iBinY++){
-      dummy->SetBinContent(iBinX*histo->GetNbinsX()+iBinY,histo->GetBinContent(iBinX,iBinY));
-      dummy->SetBinError(iBinX*histo->GetNbinsX()+iBinY,histo->GetBinError(iBinX,iBinY));
+  // copy all the entries (basic structure inside the matrix)
+  for(int iBinX = 1; iBinX <= histo->GetNbinsX() ; iBinX++){
+    for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
+      dummy->SetBinContent((iBinX-1)*histo->GetNbinsY()+iBinY,histo->GetBinContent(iBinX,iBinY));
+      dummy->SetBinError((iBinX-1)*histo->GetNbinsY()+iBinY,histo->GetBinError(iBinX,iBinY));
     }
   }
 
-
-  for(int iBinY = 0; iBinY < histo->GetNbinsY() ; iBinY++){
-    dummy->SetBinContent(1,iBinY,histo->GetBinContent(1,iBinY)+histo->GetBinContent(0,iBinY));
-    dummy->SetBinError(1,iBinY,sqrt(histo->GetBinError(1,iBinY)*histo->GetBinError(1,iBinY)+histo->GetBinContent(0,iBinY)));
-    dummy->SetBinContent(histo->GetNbinsX(),iBinY,histo->GetBinContent(histo->GetNbinsX(),iBinY)+histo->GetBinContent(histo->GetNbinsX()+1,iBinY));
-    dummy->SetBinError(histo->GetNbinsX(),iBinY,sqrt(histo->GetBinError(histo->GetNbinsX(),iBinY)*histo->GetBinError(histo->GetNbinsX(),iBinY)+histo->GetBinContent(0,iBinY)));
+  // now add underflow alogn Y axis
+  for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
+    dummy->SetBinContent(iBinY,histo->GetBinContent(1,iBinY)+histo->GetBinContent(0,iBinY));
   }
 
-  for(int iBinX = 0; iBinX < histo->GetNbinsX() ; iBinX++){
-    dummy->SetBinContent(iBinX,1,histo->GetBinContent(iBinX,1)+histo->GetBinContent(iBinX,0));
-    dummy->SetBinError(iBinX,1,sqrt(histo->GetBinError(iBinX,1)*histo->GetBinError(iBinX,1)+histo->GetBinContent(iBinX,0)));
-    dummy->SetBinContent(iBinX,histo->GetNbinsY(),histo->GetBinContent(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1));
-    dummy->SetBinError(iBinX,histo->GetNbinsY(),sqrt(histo->GetBinError(iBinX,histo->GetNbinsY())*histo->GetBinError(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1)));
+  // now add overflow alogn Y axis
+  for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
+    dummy->SetBinContent(histo->GetNbinsY()*(histo->GetNbinsX()-1)+iBinY,histo->GetBinContent(histo->GetNbinsX(),iBinY)+histo->GetBinContent(histo->GetNbinsX()+1,iBinY));
   }
+
+  // now add underflow alogn X axis
+  for(int iBinX = 1; iBinX <= histo->GetNbinsX() ; iBinX++){
+    dummy->SetBinContent((histo->GetNbinsY()*(iBinX-1)+1),histo->GetBinContent(iBinX,1)+histo->GetBinContent(iBinX,0));
+  }
+
+  // now add overflow alogn X axis
+  for(int iBinX = 1; iBinX <= histo->GetNbinsX() ; iBinX++){
+      
+    dummy->SetBinContent((histo->GetNbinsY()*(iBinX)),histo->GetBinContent(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1));
+  }
+
 
   if(errorType == 0){
     setPoissonErrorsToHisto(dummy);
