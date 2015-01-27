@@ -312,12 +312,12 @@ FlatNtStudy
 
    here the cfg structure:
 
-    InputSampleList -> list of signal and background directories
+    InputSampleList	-> list of signal and background directories
     InputVariableList1D -> create a card for each variable with a root file with the histograms
     InputVariableList2D -> create a card for each pair of variable (unrolling of the TH2 in a TH1)
-    InputCutList -> cut to be applied
-    errorType -> 0 means put on all the histogram sqrt(N) as bin content error, 1 set the poissonian mode, 2 meanse use the sum w2 for the MC.
-    finalStateString -> use to define categories in order to combine cards
+    InputCutList 	-> cut to be applied
+    errorType 		    -> 0 means put on all the histogram sqrt(N) as bin content error, 1 set the poissonian mode, 2 meanse use the sum w2 for the MC.
+    finalStateString 	    -> use to define categories in order to combine cards
     outputDataCardDirectory -> directory where all the cards and root files are located.
 
 
