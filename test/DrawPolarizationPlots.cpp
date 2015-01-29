@@ -68,6 +68,9 @@ int main (int argc, char ** argv) {
   // import from cfg file the cross section value for this sample
   float CrossSection   = gConfigParser -> readFloatOption("Input::CrossSection");
 
+  // total number of events
+  int maxEventNumber   = gConfigParser -> readFloatOption("Input::EventsNumber");
+
   // treeName
   string treeName      = gConfigParser -> readStringOption("Input::TreeName");
 
@@ -131,8 +134,12 @@ int main (int argc, char ** argv) {
 
   int passingLHEFilter = 0 ;
   
+  int maximumEvents = chain->GetEntries () ;
+  if (maxEventNumber > 0 && maxEventNumber < maximumEvents) 
+    maximumEvents = maxEventNumber ;
+  
   // Loop on the events
-  for(int iEvent = 0; iEvent < chain->GetEntries(); iEvent++){
+  for(int iEvent = 0; iEvent < maximumEvents ; iEvent++){
 
     reader->fChain->GetEntry(iEvent) ;
 
@@ -206,9 +213,9 @@ int main (int argc, char ** argv) {
       // take reco jets                                                                                                                                                         
       vector<jetContainer> RecoJetsAll ;
       if(not usePuppiAsDefault)
-	fillRecoJetArray (RecoJetsAll, *reader) ;
+        fillRecoJetArray (RecoJetsAll, *reader) ;
       else 
-	fillPuppiJetArray (RecoJetsAll, *reader) ;
+        fillPuppiJetArray (RecoJetsAll, *reader) ;
 
       // take jets                                                                                                                                                         
       vector<jetContainer> RecoJets;
@@ -222,17 +229,17 @@ int main (int argc, char ** argv) {
         Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
       }
 
-      
+      // loop on variables
       for(size_t iVar = 0; iVar < variableList.size(); iVar++){
         histoContainer tmpPlot;
         tmpPlot.cutName = CutList.at(iCut).cutLayerName;
         tmpPlot.varName = variableList.at(iVar).variableName;
         vector<histoContainer>::iterator itVec ;
-	itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
+        itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
         if(itVec == plotVector.end()){
           cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
           continue ;
-	}
+        }
 
 	if(variableList.at(iVar).variableName == "ptj1" and RecoJets.size() >=2){
           itVec->histogram->Fill(RecoJets.at(0).jet4V_.Pt(),1.*weight) ; 
@@ -241,10 +248,10 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(RecoJets.at(1).jet4V_.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(0).jet4V_.Eta(),weight) ;
+          itVec->histogram->Fill(fabs (RecoJets.at(0).jet4V_.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(1).jet4V_.Eta(),weight) ;
+          itVec->histogram->Fill(fabs (RecoJets.at(1).jet4V_.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "detajj" and RecoJets.size() >=2){
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),weight) ;
@@ -275,10 +282,10 @@ int main (int argc, char ** argv) {
         }
  
 	else if(variableList.at(iVar).variableName == "etal1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Eta(),weight) ;
+          itVec->histogram->Fill(fabs (leptonsIsoTight.at(0).lepton4V_.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etal2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.Eta(),weight) ;
+          itVec->histogram->Fill(fabs (leptonsIsoTight.at(1).lepton4V_.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "mll" and RecoJets.size() >=2){
           itVec->histogram->Fill(L_dilepton.M(),weight) ;
@@ -287,7 +294,7 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etall" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.Eta(),weight) ;
+          itVec->histogram->Fill(fabs (L_dilepton.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "phill" and RecoJets.size() >=2){
           itVec->histogram->Fill(L_dilepton.Phi(),weight) ;
@@ -479,10 +486,10 @@ int main (int argc, char ** argv) {
 	else if(variableList.at(iVar).variableName == "mTH" and RecoJets.size() >=2){
           itVec->histogram->Fill(sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),weight) ;
         } 
-      }  
+      } // loop on variables
       
-    }    
-  }
+    } // Loop  on the cut list
+  } // Loop on the events
 
   TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 
@@ -544,8 +551,6 @@ int main (int argc, char ** argv) {
   legend->SetTextFont(42);
   legend->SetNColumns (3) ;
  
-
-
   // make the plot on the same canvas for each variable (legend entry is the cut layer name)  
   vector<TH1F*>  numerator ;
   vector<TH1F*>  denominator ;
@@ -559,10 +564,10 @@ int main (int argc, char ** argv) {
         tmpPlot.cutName = CutList.at(iCut).cutLayerName;
         tmpPlot.varName = variableList.at(iVar).variableName;
         vector<histoContainer>::iterator itVec ;
-	itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
+        itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
         if(itVec == plotVector.end()){
           cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
-	}
+        }
 
        
         itVec->histogram->GetXaxis()->SetTitleSize(0.04);
@@ -577,9 +582,9 @@ int main (int argc, char ** argv) {
         itVec->histogram->SetLineColor(iCut+1);
 
         if(iCut %2 == 0)
-	  itVec->histogram->SetLineStyle(1);
+          itVec->histogram->SetLineStyle(1);
         else
-	  itVec->histogram->SetLineStyle(2);
+          itVec->histogram->SetLineStyle(2);
 
         itVec->histogram->SetLineWidth(2);
         itVec->histogram->GetYaxis()->SetTitle("#sigma x lumi");
@@ -587,19 +592,14 @@ int main (int argc, char ** argv) {
         upperPad->cd();
 
         if(iCut == 0) 
-	  itVec->histogram->Draw("hist");
+          itVec->histogram->Draw("hist");
         else
-	  itVec->histogram->Draw("hist same");
+          itVec->histogram->Draw("hist same");
 
         legend->AddEntry(itVec->histogram,CutList.at(iCut).cutLayerName.c_str(),"l");
 
-        if(itVec->findCutByLabel("LL")){
-	  numerator.push_back(itVec->histogram);
-          denominator.push_back(itVec->histogram);
-	}
-        else{ 
-          denominator.push_back(itVec->histogram);
-	}
+        if(itVec->findCutByLabel("LL")) numerator.push_back(itVec->histogram);
+        denominator.push_back(itVec->histogram);
     }
   
     // make ratio plot
@@ -608,20 +608,21 @@ int main (int argc, char ** argv) {
     TH1F* numTotal = 0;
     TH1F* denTotal = 0;
     TH1F* ratio    = 0;
+    TH1F* ratioW   = 0;
 
     for(size_t itNum = 0; itNum < numerator.size(); itNum ++){
       if(itNum == 0 and ratio == 0) 
-	numTotal = (TH1F*) numerator.at(itNum)->Clone(("Num_"+string(numerator.at(itNum)->GetName())).c_str());
+        numTotal = (TH1F*) numerator.at(itNum)->Clone(("Num_"+string(numerator.at(itNum)->GetName())).c_str());
       else if(ratio !=0) 
-	numTotal->Add(numerator.at(itNum));
+        numTotal->Add(numerator.at(itNum));
     }
 
     for(size_t itDen = 0; itDen < denominator.size(); itDen ++){
       if(itDen == 0 and denTotal == 0 ) {
-	denTotal = (TH1F*) denominator.at(itDen)->Clone(("Den_"+string(denominator.at(itDen)->GetName())).c_str());
+        denTotal = (TH1F*) denominator.at(itDen)->Clone(("Den_"+string(denominator.at(itDen)->GetName())).c_str());
       }
       else if(denTotal !=0){  
-	denTotal->Add(denominator.at(itDen));
+        denTotal->Add(denominator.at(itDen));
       }
     }
 
@@ -629,17 +630,35 @@ int main (int argc, char ** argv) {
     ratio->GetYaxis()->SetTitle("S/(#sqrt{S+B})");
     ratio->SetMarkerSize(1.1);
 
+    ratioW = new TH1F(("ratioW_"+string(denominator.at(0)->GetName())).c_str(),"",numTotal->GetNbinsX(),numTotal->GetBinLowEdge(1),numTotal->GetBinLowEdge(numTotal->GetNbinsX()+1));
+    ratioW->GetYaxis()->SetTitle("weighted S/(#sqrt{S+B})");
+    ratioW->SetMarkerSize(1.1);
+
+    TString name = "norm_" ;
+    name += denTotal->GetName () ;
+    TH1F * norm_denTotal = (TH1F *) denTotal->Clone (name) ;
+    norm_denTotal->Scale (1. / norm_denTotal->GetMaximum ()) ; 
+    // weight the S/sqrt (B) by the shape of the total, 
+    // so that only bins with a lot of stats become visibly significant
     for(int iBin = 0; iBin < ratio->GetNbinsX()+1; iBin++){
       if(denTotal->GetBinContent(iBin) !=0){ 
-	ratio->SetBinContent(iBin,numTotal->GetBinContent(iBin)/sqrt(denTotal->GetBinContent(iBin)));
+        ratioW->SetBinContent(iBin,
+            norm_denTotal->GetBinContent (iBin) * numTotal->GetBinContent(iBin) / 
+                                                  sqrt(denTotal->GetBinContent(iBin))
+          );
+        ratio->SetBinContent(iBin,
+            numTotal->GetBinContent(iBin) / sqrt(denTotal->GetBinContent(iBin))
+          );
       }
       else 
-	ratio->SetBinContent(iBin,0.);
+	    ratio->SetBinContent(iBin,0.);
     }
  
     ratio->GetYaxis()->SetRangeUser(ratio->GetMinimum()*0.7,ratio->GetMaximum()*1.2);
     ratio->GetXaxis()->SetTitle("");
-    ratio->SetLineColor(kBlack);
+    ratio->SetLineColor(kBlue);
+    ratio->SetLineStyle(2);
+    ratio->SetLineWidth(2);
     ratio->GetXaxis()->SetLabelOffset(999);
     ratio->GetXaxis()->SetLabelSize(0);
     ratio->GetYaxis()->SetLabelSize(0.15);
@@ -647,8 +666,31 @@ int main (int argc, char ** argv) {
     ratio->GetYaxis()->SetTitleOffset(0.30);
     ratio->GetYaxis()->SetNdivisions(504);
 
-    ratio->Draw("p");    
+    ratioW->GetYaxis()->SetRangeUser(ratioW->GetMinimum()*0.7,ratioW->GetMaximum()*1.2);
+    ratioW->GetXaxis()->SetTitle("");
+    ratioW->SetLineColor(kBlack);
+    ratioW->SetLineWidth(2);
+    ratioW->GetXaxis()->SetLabelOffset(999);
+    ratioW->GetXaxis()->SetLabelSize(0);
+    ratioW->GetYaxis()->SetLabelSize(0.15);
+    ratioW->GetYaxis()->SetTitleSize(0.15);
+    ratioW->GetYaxis()->SetTitleOffset(0.30);
+    ratioW->GetYaxis()->SetNdivisions(504);
 
+    TH1F * frame = lowerPad->DrawFrame (ratio->GetXaxis ()->GetXmin (), 0., 
+                                        ratio->GetXaxis ()->GetXmax (), 2.) ;
+    frame->GetXaxis()->SetTitle (ratio->GetXaxis ()->GetTitle ()) ;
+    frame->GetYaxis()->SetTitle (ratio->GetYaxis ()->GetTitle ()) ;
+    frame->GetXaxis()->SetLabelOffset(999);
+    frame->GetXaxis()->SetLabelSize(0);
+    frame->GetYaxis()->SetLabelSize(0.15);
+    frame->GetYaxis()->SetTitleSize(0.15);
+    frame->GetYaxis()->SetTitleOffset(0.30);
+    frame->GetYaxis()->SetNdivisions(504);
+    
+    ratio->Draw("Lsame");    
+    ratioW->Draw("Lsame");    
+    
     upperPad->cd();
 
     tex->Draw("same");
@@ -671,7 +713,7 @@ int main (int argc, char ** argv) {
     */
     legend->Clear();
 
-  }
+  } // loop on var
   
   cout<<"LHE filter efficiency : "<<passingLHEFilter<<" totEvent "<<totEvent<<" efficiency "<<float(passingLHEFilter)/float(totEvent)*100<<" % "<<endl;
   
