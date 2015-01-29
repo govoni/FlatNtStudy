@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 // compare for a single variable the expected stats uncertainty to the difference between H and noH //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -29,9 +29,15 @@ double minJetCutPt;
 double leptonIsoCut_mu;
 double leptonIsoCut_el;
 double leptonIsoCutLoose;
+
 bool   usePuppiAsDefault;
+bool   useObjectSystematics;
+
 int    errorType;
 string finalStateString;
+string scenarioString ;
+
+void addOverAndUnderFlow (TH1F* histo);
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -99,18 +105,26 @@ int main (int argc, char ** argv) {
   leptonIsoCut_mu     = gConfigParser -> readDoubleOption("Option::leptonIsoCutMu");
   leptonIsoCut_el     = gConfigParser -> readDoubleOption("Option::leptonIsoCutEl");
   leptonIsoCutLoose   = gConfigParser -> readDoubleOption("Option::leptonIsoCutLoose");
-  usePuppiAsDefault   = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
+
+  usePuppiAsDefault    = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
+  useObjectSystematics = gConfigParser -> readBoolOption("Option::useObjectSystematics");
+
   errorType           = gConfigParser -> readIntOption("Option::errorType");
+
   finalStateString    = gConfigParser -> readStringOption("Option::finalStateString");
+  scenarioString      = gConfigParser -> readStringOption("Option::scenarioString");
 
   // output datacard directory
   string outputDataCardDirectory = gConfigParser -> readStringOption("Output::outputDataCardDirectory");
   system(("mkdir -p output/"+outputDataCardDirectory).c_str());
   system(("rm -r output/"+outputDataCardDirectory+"/*").c_str());
 
+  system(("mkdir -p output/"+outputDataCardDirectory+"/Card1D/").c_str());
+  system(("mkdir -p output/"+outputDataCardDirectory+"/Card2D/").c_str());
+
   
   ///// Start the analysis --> apply cut and make histos
-  plotter analysisPlots (lumi,"output") ; // use the plotter structure to make the histograms for each sample and each cutLayer and each variable
+  plotter analysisPlots (lumi,"output",useObjectSystematics) ; // use the plotter structure to make the histograms for each sample and each cutLayer and each variable
   map<string,TH1F*> histoCutEff ;
 
   for( map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){ // loop on each sample
@@ -121,7 +135,7 @@ int main (int argc, char ** argv) {
     // take input files
     for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
       numBefore += itSample->second.at(iContainer).numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
     }
 
     int totEvent = chain->GetEntries();
@@ -164,37 +178,25 @@ int main (int argc, char ** argv) {
    else
      sampleName = itSample->first ;
 
-   fillHistos (analysisPlots,      // plotter object
-	       ReadTree,           // reader in order to loop on events
-	       CutList,            // list of cut to apply
-	       variableList1D,       // 1D variables
-	       sampleName,    // sample name
-	       usePuppiAsDefault,  // use puppi flag
-	       minLeptonCutPt,     // lepton pt cut
-	       minLeptonCleaningPt, // cleaning cut
-	       leptonIsoCut_mu,    // isolation for muons
-	       leptonIsoCut_el,    // isolation for electrons
-	       leptonIsoCutLoose,  // isolation for loose leptons
-	       matchingCone,       // matching cone
-	       minJetCutPt,        // min jet pt cut
-	       histoCutEff,
-	       finalStateString) ; // fill the histogram
 
-   // 1D + 2D analysis
-   fill2DHistos (analysisPlots,      // plotter object
-		 ReadTree,           // reader in order to loop on events
-		 CutList,            // list of cut to apply
-		 variableList2D,       // 1D variables
-		 sampleName,    // sample name
-		 usePuppiAsDefault,  // use puppi flag
-		 minLeptonCutPt,     // lepton pt cut
-		 minLeptonCleaningPt, // cleaning cut
-		 leptonIsoCut_mu,    // isolation for muons
-		 leptonIsoCut_el,    // isolation for electrons
-		 leptonIsoCutLoose,  // isolation for loose leptons
-		 matchingCone,       // matching cone
-		 minJetCutPt,
-		 finalStateString) ; // fill the histogram
+   loopOnEvents(analysisPlots,
+		ReadTree,
+		CutList,
+		variableList1D,     // 1D variables
+		variableList2D,     // 2D variables
+		sampleName,         // sample name
+		usePuppiAsDefault,  // use puppi flag
+		minLeptonCutPt,     // lepton pt cut
+		minLeptonCleaningPt,// cleaning cut
+		leptonIsoCut_mu,    // isolation for muons
+		leptonIsoCut_el,    // isolation for electrons
+		leptonIsoCutLoose,  // isolation for loose leptons
+		matchingCone,       // matching cone
+		minJetCutPt,        // min jet pt cut
+		histoCutEff,        // eff cut
+		finalStateString,   // string
+		scenarioString
+		);
 
   }
 
@@ -216,19 +218,22 @@ int main (int argc, char ** argv) {
   vector<sample> SampleVector ;
   SampleVector = analysisPlots.getSamples();   
 
-  //####### TH1 sector
+  //####### TH1 sector /////
+
   //loop on Cuts vector
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
+
     // loop on variables 1D
     for(size_t iVar = 0; iVar < variableList1D.size(); iVar++){
 
       //create a datacard and a TFile for histograms
-      system(("touch output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str());
-      ofstream datacard(("output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str(),ofstream::binary);
+      system(("touch output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str());
+      ofstream datacard(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str(),ofstream::binary);
 
-      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root").c_str(),"RECREATE");
+      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root").c_str(),"RECREATE");
       outputCard->cd();
 
+      // print head of the datacad
       datacard << "## shape analysis WW scattering" << endl;
       datacard << "imax 1 number of channels"       << endl;
       datacard << "jmax * number of background"     << endl;
@@ -236,7 +241,7 @@ int main (int argc, char ** argv) {
       datacard <<"------------------------------------------------------"<< endl;
       datacard <<"bin  "+CutList.at(iCut).cutLayerName+"_"+finalStateString<< endl;
       			     
-      /// loop on samples
+      /// loop on samples to fill the total histogram (dataset)
       TH1F* hTotal   = 0;
       TH1F* observed = 0;
 
@@ -251,16 +256,19 @@ int main (int argc, char ** argv) {
       hTotal->SetBinContent(hTotal->GetNbinsX(),hTotal->GetBinContent(hTotal->GetNbinsX())+hTotal->GetBinContent(hTotal->GetNbinsX()+1)); // add overflow to the last bin
       hTotal->SetBinErrorOption(TH1::kPoisson);
 
-
+      // make a toy on it + setting poisson errors
       observed = (TH1F*)  hTotal->Clone("histo_Data");
       observed->SetBinErrorOption(TH1::kPoisson);
       observed->Reset();
       observed->FillRandom(hTotal,gRandom->Poisson(hTotal->Integral()));            
       observed->Write();
+
       datacard<< Form("observation %d",int(observed->Integral()))<< endl;
-      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_$PROCESS histo_$SYSTEMATIC" <<endl;
+      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
       datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_Data" <<endl;
       datacard<< "------------------------------------------------------"<< endl;
+
+      // count the events and write down rates
       
       string lineBin     = "bin       ";
       string lineProcess = "process   ";
@@ -270,20 +278,18 @@ int main (int argc, char ** argv) {
       int nSignal = 0 ;
       int nBackground = 1 ;
 
+      TH1F* hNominal      = 0;
+
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
+
 	lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	lineProcess += SampleVector.at(iSample).m_sampleName+"   ";
 
-        TH1F* temp = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName];
-        
-        temp->SetBinContent(1,temp->GetBinContent(1)+temp->GetBinContent(0)); // add underflow to the last bin
-        temp->SetBinContent(temp->GetNbinsX(),temp->GetBinContent(temp->GetNbinsX())+temp->GetBinContent(hTotal->GetNbinsX()+1)); // add overflow to the last bin
-        if(!temp->GetDefaultSumw2()){
-	  temp->SetBinError(1,sqrt(temp->GetBinError(1)*temp->GetBinError(1)+temp->GetBinContent(0))); // add underflow to the last bin
-	  temp->SetBinError(temp->GetNbinsX(),sqrt(temp->GetBinError(temp->GetNbinsX())*temp->GetBinError(temp->GetNbinsX())+temp->GetBinContent(temp->GetNbinsX()+1))); // add underflow to the last bin
-	}
-    
-	temp->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
+        hNominal = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName];
+
+        addOverAndUnderFlow(hNominal);
+
+	hNominal->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
 
         if(SampleVector.at(iSample).m_isSignal){
 	  lineProcess2 += Form("%d   ",nSignal);          
@@ -294,7 +300,7 @@ int main (int argc, char ** argv) {
           nBackground++;
 	}
         
-        lineRate += Form("%f   ",temp->Integral());  
+        lineRate += Form("%f   ",hNominal->Integral());  
       }
 
 
@@ -304,14 +310,52 @@ int main (int argc, char ** argv) {
       datacard << left << lineRate << endl;
       datacard<< "------------------------------------------------------"<< endl;
 
-      
+
+      // fill nuisances due to objects:
+      TH1F* hLepScaleUp   = 0;
+      TH1F* hLepScaleDown = 0;
+      TH1F* hLepResUp     = 0;
+      TH1F* hLepResDown   = 0;
+      TH1F* hJetScaleUp   = 0;
+      TH1F* hJetScaleDown = 0;
+      TH1F* hJetResUp     = 0;
+      TH1F* hJetResDown   = 0;
+
+      string lepScale = "CMS_scale_l   lnN    ";
+      string lepRes   = "CMS_res_l     lnN    ";
+      string jetScale = "CMS_scale_j   lnN    ";
+      string jetRes   = "CMS_res_j     lnN    ";
+
+      string lepScaleShape = "";
+      string lepResShape   = "";
+      string jetScaleShape = "";
+      string jetResShape   = "";
+
+
       // stat shapes ;
       TH1F* hStatUp   = 0;
       TH1F* hStatDown = 0;
 
+      string statShape = "";
+
+
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
-	hStatUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
-	hStatDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
+
+        hNominal = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName];
+
+	hLepScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleUp").c_str());
+	hLepScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleDown").c_str());
+	hLepResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resUp").c_str());
+	hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resDown").c_str());
+
+	hJetScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleUp").c_str());
+	hJetScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleDown").c_str());
+	hJetResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resUp").c_str());
+	hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resDown").c_str());
+
+	// stat shapes
+	hStatUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
+	hStatDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
 
         for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
           hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
@@ -319,60 +363,108 @@ int main (int argc, char ** argv) {
           if(hStatDown->GetBinContent(iBin) < 0) 
 	    hStatDown->SetBinContent(iBin,0);
 	}
+ 
+        // add overflow and underflow         
+	addOverAndUnderFlow(hLepScaleUp);
+	addOverAndUnderFlow(hLepScaleDown);
+	addOverAndUnderFlow(hLepResUp);
+	addOverAndUnderFlow(hLepResDown);
+	addOverAndUnderFlow(hJetScaleUp);
+	addOverAndUnderFlow(hJetScaleDown);
+	addOverAndUnderFlow(hJetResUp);
+	addOverAndUnderFlow(hJetResDown);
 
+ 
         // add overflow and underflow
-        hStatUp->SetBinContent(hStatUp->GetNbinsX(),hStatUp->GetBinContent(hStatUp->GetNbinsX())+hStatUp->GetBinContent(hStatUp->GetNbinsX()+1));
-        hStatUp->SetBinContent(1,hStatUp->GetBinContent(1)+hStatUp->GetBinContent(0));
-        if(!hStatUp->GetDefaultSumw2()){
-	  hStatUp->SetBinError(hStatUp->GetNbinsX(),sqrt(hStatUp->GetBinError(hStatUp->GetNbinsX())*hStatUp->GetBinError(hStatUp->GetNbinsX())+
-							 hStatUp->GetBinContent(hStatUp->GetNbinsX()+1)));
-	  hStatUp->SetBinError(1,sqrt(hStatUp->GetBinContent(1)*hStatUp->GetBinError(1)+hStatUp->GetBinContent(0)));
-	}
+        addOverAndUnderFlow(hStatUp);
+        addOverAndUnderFlow(hStatDown);
 
-        hStatDown->SetBinContent(hStatDown->GetNbinsX(),hStatDown->GetBinContent(hStatDown->GetNbinsX())+hStatDown->GetBinContent(hStatDown->GetNbinsX()+1));
-        hStatDown->SetBinContent(1,hStatDown->GetBinContent(1)+hStatDown->GetBinContent(0));
-        if(!hStatDown->GetDefaultSumw2()){
-	  hStatDown->SetBinError(hStatDown->GetNbinsX(),sqrt(hStatDown->GetBinError(hStatDown->GetNbinsX())*hStatDown->GetBinError(hStatDown->GetNbinsX())+
-							     hStatDown->GetBinContent(hStatDown->GetNbinsX()+1)));
+        // write the histograms in the file
+        hLepScaleUp->Write();
+        hLepScaleDown->Write();
+        hLepResUp->Write();
+        hLepResDown->Write();
 
-	  hStatDown->SetBinError(1,sqrt(hStatDown->GetBinError(1)*hStatDown->GetBinError(1)+hStatDown->GetBinContent(0)));
-	}
+        hJetScaleUp->Write();
+        hJetScaleDown->Write();
+        hJetResUp->Write();
+        hJetResDown->Write();
 
 	hStatUp->Write();
 	hStatDown->Write();
 
-        datacard <<SampleVector.at(iSample).m_sampleName<<"_stat_shape   shapeN2 " ;
-        for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
-	  if(iSample2!=iSample)
-	    datacard << " -    " ;
-          else       
-	    datacard << " 1    " ;
+     
+        // norm nuisances
+        lepScale += Form("%0.4f   ",1.+(fabs(hLepScaleUp->Integral()-hNominal->Integral())+fabs(hLepScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
+        lepRes   += Form("%0.4f   ",1.+2*fabs(hLepResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+
+        jetScale += Form("%0.4f   ",1.+(fabs(hJetScaleUp->Integral()-hNominal->Integral())+fabs(hJetScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
+        jetRes   += Form("%0.4f   ",1.+2*fabs(hJetResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+
+        // shape lines
+        lepScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scale    shapeN2 ";
+        lepResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_res      shapeN2 ";
+        jetScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scale    shapeN2 ";
+        jetResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_res      shapeN2 ";
+	statShape     += "CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shape  shapeN2 " ;
+
+           
+	for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
+	  if(iSample2!=iSample){
+	    lepScaleShape += " -    " ;
+	    lepResShape   += " -    " ;
+	    jetScaleShape += " -    " ;
+	    jetResShape   += " -    " ;
+            statShape     += " -    " ;
+	  }
+	  else{       
+	    lepScaleShape += " 1    " ;
+	    lepResShape   += " 1    " ;
+	    jetScaleShape += " 1    " ;
+	    jetResShape   += " 1    " ;
+            statShape     += " 1    " ;
+	  }
 	}
-	datacard << "\n";
+
+	lepScaleShape += "\n" ;
+	lepResShape   += "\n" ;
+	jetScaleShape += "\n" ;
+	jetResShape   += "\n" ;
+	statShape     += "\n" ;
       }
 
-      datacard<< endl;
+      //      datacard<< lepScale << endl;
+      //      datacard<< lepRes << endl;
+      //      datacard<< jetScale << endl;
+      //      datacard<< jetRes << endl;
+
+      datacard<< lepScaleShape ;
+      datacard<< lepResShape ;
+      datacard<< jetScaleShape ;
+      datacard<< jetResShape ;
+      datacard<< statShape ;
       
       datacard.close();
       outputCard->Close(); 
-      
     }
   }
+    
+  //####### TH2 sector ////////
 
-  
-  //####### TH2 sector
   //loop on Cuts vector
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
+
     // loop on variables 2D
     for(size_t iVar = 0; iVar < variableList2D.size(); iVar++){
 
       //create a datacard and a TFile for histograms
-      system(("touch output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str());
-      ofstream datacard(("output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str(),ofstream::binary);
+      system(("touch output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str());
+      ofstream datacard(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str(),ofstream::binary);
 
-      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root").c_str(),"RECREATE");
+      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root").c_str(),"RECREATE");
       outputCard->cd();
 
+      // print head of the datacad
       datacard << "## shape analysis WW scattering" << endl;
       datacard << "imax 1 number of channels"       << endl;
       datacard << "jmax * number of background"     << endl;
@@ -380,7 +472,7 @@ int main (int argc, char ** argv) {
       datacard <<"------------------------------------------------------"<< endl;
       datacard <<"bin  "+CutList.at(iCut).cutLayerName+"_"+finalStateString<< endl;
 			     
-      /// loop on samples
+      /// loop on samples and build the dataset
       TH2F* hTotal   = 0;
       TH1F* observed = 0;
       
@@ -397,16 +489,17 @@ int main (int argc, char ** argv) {
       observed = unRollingHistogram(hTotal,errorType); // rool histo in a TH1F      
       observed->SetName("histo_Data");
       observed->SetBinErrorOption(TH1::kPoisson);
-      TH1F* htemp = (TH1F*) observed->Clone("htemp");
+      TH1F* hNominal = (TH1F*) observed->Clone("hNominal");
       observed->Reset();
-      observed->FillRandom(htemp,gRandom->Poisson(htemp->Integral()));            
+      observed->FillRandom(hNominal,gRandom->Poisson(hNominal->Integral()));            
       observed->Write();
+
       datacard<< Form("observation %d",int(observed->Integral()))<< endl;
-      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root    histo_$PROCESS histo_$SYSTEMATIC" <<endl;
+      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
       datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root    histo_Data" <<endl;
       datacard<< "------------------------------------------------------"<< endl;
 
-      
+            
       int nSignal = 0;
       int nBackground = 1;
 
@@ -415,17 +508,45 @@ int main (int argc, char ** argv) {
       string lineProcess2= "process   ";
       string lineRate    = "rate      ";
 
+
+      // fill nuisances due to objects:
+      TH1F* hLepScaleUp   = 0;
+      TH1F* hLepScaleDown = 0;
+      TH1F* hLepResUp     = 0;
+      TH1F* hLepResDown   = 0;
+      TH1F* hJetScaleUp   = 0;
+      TH1F* hJetScaleDown = 0;
+      TH1F* hJetResUp     = 0;
+      TH1F* hJetResDown   = 0;
+
+      string lepScale = "CMS_scale_l   lnN    ";
+      string lepRes   = "CMS_res_l     lnN    ";
+      string jetScale = "CMS_scale_j   lnN    ";
+      string jetRes   = "CMS_res_j     lnN    ";
+
+      string lepScaleShape = "";
+      string lepResShape   = "";
+      string jetScaleShape = "";
+      string jetResShape   = "";
+
+
       // stat shapes ;
       TH1F* hStatUp   = 0;
       TH1F* hStatDown = 0;
 
+      string statShape = "";
+
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
+
 	lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	lineProcess += SampleVector.at(iSample).m_sampleName+"    ";
 
-        TH1F* htemp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
-        htemp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
-        htemp->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
+        ///un-rool the TH2 in a TH1
+        
+        hNominal = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+
+        hNominal->SetName(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
+        hNominal->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
 
         if(SampleVector.at(iSample).m_isSignal){
 	  lineProcess2 += Form("%d   ",nSignal);
@@ -436,10 +557,11 @@ int main (int argc, char ** argv) {
           nBackground++;
 	}
         
-        lineRate += Form("%f   ",htemp->Integral());  
-	
-	hStatUp   = (TH1F*) htemp->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
-	hStatDown = (TH1F*) htemp->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
+        lineRate += Form("%f   ",hNominal->Integral());  
+
+        // make the sta histograms	
+	hStatUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
+	hStatDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
 
 	for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	  hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
@@ -448,10 +570,74 @@ int main (int argc, char ** argv) {
 	    hStatDown->SetBinContent(iBin,0);
 	}
    
-
 	hStatUp->Write();
 	hStatDown->Write();
 
+        // make systematic variations
+	hLepScaleUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleUp[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+	hLepScaleDown = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleDown[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+	hLepResUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepRes[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+        hLepScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleUp").c_str());
+        hLepScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleDown").c_str());
+        hLepResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resUp").c_str());
+        
+        hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resDown").c_str());
+
+	hJetScaleUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetScaleUp[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+	hJetScaleDown = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetScaleDown[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+	hJetResUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetRes[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
+        hJetScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleUp").c_str());
+        hJetScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleDown").c_str());
+        hJetResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resUp").c_str());
+        
+        hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resDown").c_str());
+
+
+	hLepScaleUp   ->Write();
+	hLepScaleDown ->Write();
+	hLepResUp     ->Write();
+	hLepResDown   ->Write();
+	hJetScaleUp   ->Write();
+	hJetScaleDown ->Write();
+	hJetResUp     ->Write();
+	hJetResDown   ->Write();
+
+	// norm nuisances                                                                                                                                                       
+        lepScale += Form("%0.4f   ",1.+(fabs(hLepScaleUp->Integral()-hNominal->Integral())+fabs(hLepScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
+        lepRes   += Form("%0.4f   ",1.+2*fabs(hLepResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+
+        jetScale += Form("%0.4f   ",1.+(fabs(hJetScaleUp->Integral()-hNominal->Integral())+fabs(hJetScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
+        jetRes   += Form("%0.4f   ",1.+2*fabs(hJetResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+
+        // shape lines                                                                                                                                                          
+        lepScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scale    shapeN2 ";
+        lepResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_res      shapeN2 ";
+        jetScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scale    shapeN2 ";
+        jetResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_res      shapeN2 ";
+        statShape     += "CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shape  shapeN2 " ;
+
+	for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
+          if(iSample2!=iSample){
+            lepScaleShape += " -    " ;
+            lepResShape   += " -    " ;
+            jetScaleShape += " -    " ;
+            jetResShape   += " -    " ;
+            statShape     += " -    " ;
+          }
+          else{
+            lepScaleShape += " 1    " ;
+            lepResShape   += " 1    " ;
+            jetScaleShape += " 1    " ;
+            jetResShape   += " 1    " ;
+            statShape     += " 1    " ;
+          }
+        }
+
+        lepScaleShape += "\n" ;
+        lepResShape   += "\n" ;
+        jetScaleShape += "\n" ;
+        jetResShape   += "\n" ;
+        statShape     += "\n" ;
       }
 
       datacard << lineBin << endl;
@@ -459,27 +645,22 @@ int main (int argc, char ** argv) {
       datacard << lineProcess2 << endl;
       datacard << lineRate << endl;
 
-       
+      //      datacard<< lepScale << endl;
+      //      datacard<< lepRes << endl;
+      //      datacard<< jetScale << endl;
+      //      datacard<< jetRes << endl;
 
-      for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
-	datacard <<SampleVector.at(iSample).m_sampleName<<"_stat_shape   shapeN2 " ;
-	for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
-	  if(iSample2!=iSample)
-	    datacard << " -    " ;
-	  else       
-	    datacard << " 1    " ;
-	}
-	datacard << "\n";
-      }
-
-      datacard<< endl;
-    
+      datacard<< lepScaleShape ;
+      datacard<< lepResShape ;
+      datacard<< jetScaleShape ;
+      datacard<< jetResShape ;
+      datacard<< statShape ;
+      
       datacard.close();
       outputCard->Close(); 
     }
   }
-  
-  
+
   // Make datacards for 1D histograms
   TFile* outputEfficiency = new TFile(("output/"+outputDataCardDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 
@@ -492,4 +673,3 @@ int main (int argc, char ** argv) {
   
   return 0 ;
 }  
-

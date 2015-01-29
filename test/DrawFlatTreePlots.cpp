@@ -101,7 +101,7 @@ int main (int argc, char ** argv) {
    // take input files
    for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
     numBefore += itSample->second.at(iContainer).numBefore; 
-    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*y.root").c_str()) ;
+    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
    }
 
    int totEvent = chain->GetEntries();
@@ -132,20 +132,20 @@ int main (int argc, char ** argv) {
    
    string sampleName = itSample->first;
 
-   fillHistos (analysisPlots,
-	       ReadTree,
-	       CutList,
-	       variableList,
-	       sampleName,
-	       usePuppiAsDefault,
-               minLeptonCutPt,
-	       minLeptonCleaningPt,
-	       leptonIsoCut_mu,
-	       leptonIsoCut_el,
-	       leptonIsoCutLoose,
-	       matchingCone,
-	       minJetCutPt,
-	       histoCutEff) ; // fill the histogram
+   loopOnEvents (analysisPlots,
+		 ReadTree,
+		 CutList,
+		 variableList,
+		 sampleName,
+		 usePuppiAsDefault,
+		 minLeptonCutPt,
+		 minLeptonCleaningPt,
+		 leptonIsoCut_mu,
+		 leptonIsoCut_el,
+		 leptonIsoCutLoose,
+		 matchingCone,
+		 minJetCutPt,
+		 histoCutEff) ; // fill the histogram
   }
 
     
