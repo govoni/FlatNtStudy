@@ -100,27 +100,29 @@ bool closeToLeptons (float eta,
 		     float phi, 
 		     vector<leptonContainer> & TL_leptons, 
 		     float R = 0.3) ;
+
 bool closeToLeptons (float eta, 
-		     float phi, readTree & reader, 
+		     float phi, 
+		     readTree & reader, 
 		     float R = 0.3) ;
 
 // fill Reco Jet Array from the readTree object
 void fillRecoJetArray  (vector<jetContainer> & jetVector, 
 			readTree & reader) ;
+
 void fillPuppiJetArray (vector<jetContainer> & jetVector, 
 			readTree & reader) ;
+
 void fillGenJetArray   (vector<jetContainer> & jetVector, 
 			readTree & reader) ;
 
 void fillRecoLeptonsArray (vector<leptonContainer> & jetVector, 
 			   readTree & reader) ;
 
-/*
- - copies leptons in the vector
- - removes leptons with the minimum pt threshold 
- - applies the isolation according to isocut
-*/
+void fillTrackJetArray (vector<jetContainer> & jetVector, 
+			readTree & reader) ;
 
+// dump isolated leptons
 vector<leptonContainer> dumpLeptons(vector<leptonContainer> & TL_leptons, 
 				    float isocut, 
 				    float minptcut) ;
@@ -130,13 +132,7 @@ vector<leptonContainer> dumpLeptons(vector<leptonContainer> & TL_leptons,
 				    float isocut_el, 
 				    float minptcut) ;
 
-/*
- - copies jets in the vector
- - removes jets closer than deltaR to the first two leptons, if the first two leptons 
-   pass the pt threshold lepminptcut
- - applies the btagging
-*/
-
+// dump cleaned jets
 vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, 
 			       vector<leptonContainer>  & TL_leptons, 
                                float minptcut, 
@@ -145,16 +141,6 @@ vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets,
 			       float lepminptcut, 
 			       float deltaR) ;
 
-/*
- - translates the 8 sets of variables into 8 sets of arrays
-*/
-void fillTrackJetArray (vector<jetContainer> & jetVector, 
-			readTree & reader) ;
-/*
- - copies jets in the vector
- - removes jets closer than deltaR to the first two leptons, if the first two leptons 
-   pass the pt threshold lepminptcut
-*/
 vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets, 
 				    vector<leptonContainer> & TL_leptons, 
                                     float minptcut, 
@@ -176,7 +162,23 @@ void fillHistos (plotter & analysisPlots,
 		 const double & leptonIsoLooseCut,
                  const double & matchingCone,   
 		 const double & minJetCutPt,
-                 map<string,TH1F*> & vect);
+                 map<string,TH1F*> & vect,
+		 const string & finalStateString = "");
+
+void fill2DHistos (plotter & analysisPlots,
+		   readTree* reader,
+		   vector<cutContainer> & CutList,
+		   vector<variableContainer2D> & VariableList2D,
+		   const string & sampleName,     
+		   const bool & usePuppiAsDefault,
+		   const double & minPtLeptonCut, 
+		   const double & minPtLeptonCutCleaning,
+		   const double & leptonIsoCut_mu,   
+		   const double & leptonIsoCut_el,   
+		   const double & leptonIsoLooseCut,
+		   const double & matchingCone,   
+		   const double & minJetCutPt,
+		   const string & finalStateString = "");
 
 bool passCutContainerSelection (readTree* readTree,
                                 cutContainer & Cut,

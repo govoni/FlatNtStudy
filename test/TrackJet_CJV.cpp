@@ -152,7 +152,7 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
           dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
           
           // veto the tag jets
-          if (dR2_Max < deltaEtaThreshold || dR2_Min < deltaEtaThreshold) continue ;
+          if (sqrt(dR2_Max) < deltaEtaThreshold || sqrt(dR2_Min) < deltaEtaThreshold) continue ;
 
           float iJetModPhi = iJetPhi ;
           float iJetZep = (trackJets.at (iJet).jet4V_.Eta () - avEta) / dEta ;

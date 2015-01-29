@@ -101,12 +101,14 @@ int main (int argc, char ** argv) {
    // take input files
    for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
     numBefore += itSample->second.at(iContainer).numBefore; 
-    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*y.root").c_str()) ;
    }
 
    int totEvent = chain->GetEntries();
 
    readTree* ReadTree  = new readTree((TTree*)(chain));
+
+   cout<<"Sample name : "<<itSample->first<<" Lumi (fb-1) "<<lumi/1000<<" entries before "<<totEvent<<" cross section "<<itSample->second.at(0).xsec<<" Nevents before selections "<<lumi*itSample->second.at(0).xsec<<" weight "<<lumi*itSample->second.at(0).xsec/totEvent<<endl;
 
    // add  sample to the analysis plot container
    if(numBefore > totEvent)
@@ -127,8 +129,23 @@ int main (int argc, char ** argv) {
      }
    }
 
-   fillHistos (analysisPlots,ReadTree,CutList,variableList,itSample->first,usePuppiAsDefault,
-               minLeptonCutPt,minLeptonCleaningPt,leptonIsoCut_mu,leptonIsoCut_el,leptonIsoCutLoose,matchingCone,minJetCutPt,histoCutEff) ; // fill the histogram
+   
+   string sampleName = itSample->first;
+
+   fillHistos (analysisPlots,
+	       ReadTree,
+	       CutList,
+	       variableList,
+	       sampleName,
+	       usePuppiAsDefault,
+               minLeptonCutPt,
+	       minLeptonCleaningPt,
+	       leptonIsoCut_mu,
+	       leptonIsoCut_el,
+	       leptonIsoCutLoose,
+	       matchingCone,
+	       minJetCutPt,
+	       histoCutEff) ; // fill the histogram
   }
 
     

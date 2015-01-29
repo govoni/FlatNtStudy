@@ -451,10 +451,12 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
       if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
       vect.clear();
+ 
+      string sampleName = "";
       // apply analysis cut from utils.h 
       if(!passCutContainerSelection(reader_,
 				    cutEvent_,
-				    "",
+				    sampleName,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
@@ -499,9 +501,10 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
       if(reader_->npu < npuRange_.first or reader_->npu > npuRange_.second) continue;
         
       vect.clear();
+      string sampleName = "";
       if(!passCutContainerSelection(reader_, // apply analysis cuts
 				    cutEvent_,
-				    "",
+				    sampleName,
 				    usePuppiAsDefault_,
 				    minPtLeptonCut_,
 				    minPtLeptonCutCleaning_,
@@ -1405,7 +1408,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
     }
 
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
-      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)));
+      variableValue.push_back(float(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_))));
     }
     else if(variableList.at(iVar) == "mll"){
       variableValue.push_back(float(L_dilepton.M()));
@@ -1438,37 +1441,37 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
       variableValue.push_back(float(Rvar));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LL"){
-      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)));
+      variableValue.push_back(float(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LMet"){
-      variableValue.push_back(float(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met))));
     }     
     else if(variableList.at(iVar) == "DeltaPhi_LLMet"){
-      variableValue.push_back(float(L_dilepton.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(L_dilepton.DeltaPhi(L_met))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_TLMet"){
-      variableValue.push_back(float(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJ" and RecoJets.size()>=2){
-      variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)));
+      variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJ" and RecoJets.size()<2){
       variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()>=2){
-      variableValue.push_back(float(L_dijet.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(L_dijet.DeltaPhi(L_met))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_JJMet" and RecoJets.size()<2){
       variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()>=1){
-      variableValue.push_back(float(RecoJets.at(0).jet4V_.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_met))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_LJMet" and RecoJets.size()<1){
       variableValue.push_back(float(-999));
     }
     else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() >=2){
-      variableValue.push_back(float(RecoJets.at(1).jet4V_.DeltaPhi(L_met)));
+      variableValue.push_back(float(fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_met))));
     }
     else if(variableList.at(iVar) == "DeltaPhi_TJMet" and RecoJets.size() <2){
       variableValue.push_back(float(-999));
