@@ -1,17 +1,27 @@
 #include "objectFormula.h"
 
 void objectFormula::setFormula(){
+
+  TString muonScaleUncString ;
+  TString muonResolutionUncString ;
+
+  TString electronScaleUncString ;
+  TString electronResolutionUncString ;
+
+  TString jetScaleUncString ;
+  TString jetResolutionUncString ;
   
+
   if(configurationName == ""){
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.");    
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.");
+    muonScaleUncString      = Form("0.0");
+    muonResolutionUncString = Form("0.0");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.");    
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.");
+    electronScaleUncString      = Form("0.0");
+    electronResolutionUncString = Form("0.0");
 
-    jetScaleUnc        = new TFormula("jetScaleUnc","0.");
-    jetResolutionUnc   = new TFormula("jetResolutionUnc","0.");
+    jetScaleUncString      = Form("0.0");
+    jetResolutionUncString = Form("0.0");
 
   }
 
@@ -21,14 +31,22 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseI_Tracker2p5"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc",  "0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("(abs(eta) < 2.5)*(pt < 30 )*(0.05) +\
+                             (abs(eta) < 2.5)*(pt >= 30 && pt < 60)*(0.03) + \
+                             (abs(eta) < 2.5)*(pt >= 60 && pt < 100)*(0.025) +\
+                             (abs(eta) < 2.5)*(pt >= 100 )*(0.02) +\
+                             (abs(eta) >= 2.5)*(pt < 30 )*(0.06) +\
+                             (abs(eta) >= 2.5)*(pt >= 30 && pt < 60)*(0.04) +\
+                             (abs(eta) >= 2.5)*(pt >= 60 && pt < 100)*(0.035) +\
+                             (abs(eta) >= 2.5)*(pt >= 100 )*(0.03)");
+
+    jetResolutionUncString = Form("0.05");
 
   }
 
@@ -37,15 +55,14 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseI_Tracker4p0"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
- 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }
 
@@ -53,15 +70,15 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseI_Tracker2p5_aged"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }
 
@@ -69,14 +86,14 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseI_Tracker4p0_aged"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
 
   }
@@ -85,14 +102,14 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseII_Tracker2p5_shashlik"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }
 
@@ -100,14 +117,14 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseII_Tracker4p0_shashlik"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
+    electronResolutionUncString = Form("0.02");
+    electronScaleUncString      = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }
 
@@ -115,44 +132,83 @@ void objectFormula::setFormula(){
 
     cout<<"analysis with systematics : setup formula for PhaseII_Tracker2p5_HGC"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
   }
 
   else if(configurationName == "PhaseII_Tracker4p0_HGC"){
 
     cout<<"analysis with systematics : setup formula for PhaseII_Tracker4p0_HGC"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }
   else {
 
     cout<<"analysis with systematics : setup formula for dummy configuration"<<endl;
 
-    muonScaleUnc      = new TFormula("muonScaleUnc","0.01");
-    muonResolutionUnc = new TFormula("muonResolutionUnc","0.01");
+    muonScaleUncString      = Form("0.01");
+    muonResolutionUncString = Form("0.01");
 
-    electronScaleUnc      = new TFormula("electronScaleUnc","0.02");
-    electronResolutionUnc = new TFormula("electronResolutionUnc","0.02");
+    electronScaleUncString      = Form("0.02");
+    electronResolutionUncString = Form("0.02");
 
-    jetScaleUnc      = new TFormula("jetScaleUnc","0.05");
-    jetResolutionUnc = new TFormula("jetResolutionUnc","0.05");
+    jetScaleUncString      = Form("0.05");
+    jetResolutionUncString = Form("0.05");
 
   }  
+
+  muonScaleUncString.ReplaceAll("eta","x");
+  muonScaleUncString.ReplaceAll("pt","y");
+  muonScaleUncString.ReplaceAll("energy","z");
+  muonScaleUncString.ReplaceAll("phi","t");
+
+  muonResolutionUncString.ReplaceAll("eta","x");
+  muonResolutionUncString.ReplaceAll("pt","y");
+  muonResolutionUncString.ReplaceAll("energy","z");
+  muonResolutionUncString.ReplaceAll("phi","t");
+
+  electronScaleUncString.ReplaceAll("eta","x");
+  electronScaleUncString.ReplaceAll("pt","y");
+  electronScaleUncString.ReplaceAll("energy","z");
+  electronScaleUncString.ReplaceAll("phi","t");
+
+  electronResolutionUncString.ReplaceAll("eta","x");
+  electronResolutionUncString.ReplaceAll("pt","y");
+  electronResolutionUncString.ReplaceAll("energy","z");
+  electronResolutionUncString.ReplaceAll("phi","t");
+
+  jetScaleUncString.ReplaceAll("eta","x");
+  jetScaleUncString.ReplaceAll("pt","y");
+  jetScaleUncString.ReplaceAll("energy","z");
+  jetScaleUncString.ReplaceAll("phi","t");
+
+  jetResolutionUncString.ReplaceAll("eta","x");
+  jetResolutionUncString.ReplaceAll("pt","y");
+  jetResolutionUncString.ReplaceAll("energy","z");
+  jetResolutionUncString.ReplaceAll("phi","t");
+
+  muonScaleUnc      = new TFormula("muonScaleUnc",muonScaleUncString.Data());    
+  muonResolutionUnc = new TFormula("muonResolutionUnc",muonResolutionUncString.Data());
+
+  electronScaleUnc      = new TFormula("electronScaleUnc",electronScaleUncString.Data());    
+  electronResolutionUnc = new TFormula("electronResolutionUnc",electronResolutionUncString.Data());
+
+  jetScaleUnc        = new TFormula("jetScaleUnc",jetScaleUncString.Data());
+  jetResolutionUnc   = new TFormula("jetResolutionUnc",jetResolutionUncString.Data());
 
   muonScaleUnc->Compile();    
   muonResolutionUnc->Compile();
