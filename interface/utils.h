@@ -5,10 +5,12 @@
 
 #include "TChain.h"
 #include "TLorentzVector.h"
-#include "plotter.h"
+#include "TRandom3.h"
 
+#include "plotter.h"
 #include "readTree.h"
 #include "ReadInputFile.h"
+#include "objectFormula.h"
 
 using namespace std ;
 
@@ -147,27 +149,29 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets,
 				    float lepminptcut, 
 				    float deltaR) ;
 
-// method to fill histograms                                                                                                                                            
-            
-void fillHistos (plotter & analysisPlots,
-                 readTree* reader,
-                 vector<cutContainer> & CutList,
-                 vector<variableContainer> & VariableList,
-                 const string & sampleName,     
-		 const bool & usePuppiAsDefault,
-                 const double & minPtLeptonCut, 
-		 const double & minPtLeptonCutCleaning,
-                 const double & leptonIsoCut_mu,   
-                 const double & leptonIsoCut_el,   
-		 const double & leptonIsoLooseCut,
-                 const double & matchingCone,   
-		 const double & minJetCutPt,
-                 map<string,TH1F*> & vect,
-		 const string & finalStateString = "");
-
-void fill2DHistos (plotter & analysisPlots,
+// method to loop on events
+                                                                                                                                            
+void loopOnEvents (plotter & analysisPlots,
 		   readTree* reader,
 		   vector<cutContainer> & CutList,
+		   vector<variableContainer> & VariableList,
+		   const string & sampleName,     
+		   const bool & usePuppiAsDefault,
+		   const double & minPtLeptonCut, 
+		   const double & minPtLeptonCutCleaning,
+		   const double & leptonIsoCut_mu,   
+		   const double & leptonIsoCut_el,   
+		   const double & leptonIsoLooseCut,
+		   const double & matchingCone,   
+		   const double & minJetCutPt,
+		   map<string,TH1F*> & vect,
+		   const string & finalStateString = "",
+		   const string & scenarioString = "");
+
+void loopOnEvents (plotter & analysisPlots,
+		   readTree* reader,
+		   vector<cutContainer> & CutList,
+		   vector<variableContainer> & VariableList,
 		   vector<variableContainer2D> & VariableList2D,
 		   const string & sampleName,     
 		   const bool & usePuppiAsDefault,
@@ -178,7 +182,52 @@ void fill2DHistos (plotter & analysisPlots,
 		   const double & leptonIsoLooseCut,
 		   const double & matchingCone,   
 		   const double & minJetCutPt,
-		   const string & finalStateString = "");
+		   map<string,TH1F*> & vect,
+		   const string & finalStateString = "",
+		   const string & scenarioString = "");
+
+//method to fill histograms
+
+void fillHisto( plotter & analysisPlot,
+                const string & sampleName,
+                const string & cutLayerName,
+                vector<variableContainer> & VariableList,
+                vector<leptonContainer> & leptonsIsoTight,
+                vector<jetContainer> & RecoJets,
+		vector<jetContainer> & GenJets,
+		vector<jetContainer> & trackJets,
+                TLorentzVector & L_met,
+                TLorentzVector & L_gen_met,
+                const string & systematicName = ""
+                );
+
+
+void fillHisto2D( plotter & analysisPlot,
+		  const string & sampleName,
+		  const string & cutLayerName,
+		  vector<variableContainer2D> & VariableList2D,
+		  vector<leptonContainer> & leptonsIsoTight,
+		  vector<jetContainer> & RecoJets,
+		  vector<jetContainer> & GenJets,
+		  vector<jetContainer> & trackJets,
+		  TLorentzVector & L_met,
+		  TLorentzVector & L_gen_met,
+		  const string & systematicName = ""
+		  );
+
+// method to apply cuts
+
+bool passCutContainerSelection (cutContainer & Cut,
+                                const string & sampleName,     
+                                readTree* reader,     
+				vector<leptonContainer> & LeptonsAll,
+				vector<leptonContainer> & leptonsIsoTight,
+				vector<jetContainer> & RecoJets,
+				const TLorentzVector & L_met,
+				const double & minPtLeptonCut,                    
+                                const double & leptonIsoLooseCut,
+				map<string,TH1F*> & vect);
+
 
 bool passCutContainerSelection (readTree* readTree,
                                 cutContainer & Cut,

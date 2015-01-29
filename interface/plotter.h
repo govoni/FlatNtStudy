@@ -30,6 +30,8 @@ using namespace std ;
 // add the overflow bin as real bin to the histo
 void   addOverFlow (TH1F * input) ;            
 
+void addOverAndUnderFlow (TH1F* histo);
+
 // give an histogram set the poisson error bars
 void   setPoissonErrorsToHisto (TH1F * input) ;
 
@@ -79,8 +81,29 @@ class layer {
   }
 
   string m_layerName ;
+
   unordered_map<string, TH1F *> m_histos ;
   unordered_map<string, TH2F *> m_2Dhistos ;
+
+  unordered_map<string, TH1F *> m_histos_lepScaleUp ;
+  unordered_map<string, TH2F *> m_2Dhistos_lepScaleUp ;
+
+  unordered_map<string, TH1F *> m_histos_lepScaleDown ;
+  unordered_map<string, TH2F *> m_2Dhistos_lepScaleDown ;
+
+  unordered_map<string, TH1F *> m_histos_jetScaleUp ;
+  unordered_map<string, TH2F *> m_2Dhistos_jetScaleUp ;
+
+  unordered_map<string, TH1F *> m_histos_jetScaleDown ;
+  unordered_map<string, TH2F *> m_2Dhistos_jetScaleDown ;
+
+  unordered_map<string, TH1F *> m_histos_lepRes ;
+  unordered_map<string, TH2F *> m_2Dhistos_lepRes ;
+
+  unordered_map<string, TH1F *> m_histos_jetRes ;
+  unordered_map<string, TH2F *> m_2Dhistos_jetRes ;
+
+
 } ;
 
 
@@ -134,7 +157,7 @@ class sample {
 
 class plotter { // generic plotter class
  public:
-  plotter (float lumi, string folderName = "plots") ;
+  plotter (float lumi, string folderName = "plots", bool includeSystematics = false) ;
   ~plotter () {} ;
   
   // adding methods
@@ -164,9 +187,9 @@ class plotter { // generic plotter class
 
   // fill histo
   void fillHisto     (string sampleName, string layerName, string histoName, 
-                      float value, float weight) ;
+                      float value, float weight, string systematicsName = "") ;
   void fill2DHisto   (string sampleName, string layerName, string histoName, 
-                      float valueX, float valueY, float weight) ;
+                      float valueX, float valueY, float weight, string systematicsName = "") ;
 
 
   // plotting things
@@ -344,11 +367,17 @@ class plotter { // generic plotter class
   }
 
 
+  bool getSystematics(){
+    return m_includeSystematics;
+  }
+
  private:
 
  string m_folderName ; 
  float m_lumi ;
+ bool m_includeSystematics ;
  TCanvas m_canvas ;
+
  unordered_map<string, sample> m_samples ; //map of sample names and sample object
  unordered_map<string, string> m_titles ;
  vector<string> m_samplesSequence ;

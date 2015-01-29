@@ -3,6 +3,7 @@
 #include "plotter.h"
 #include "readTree.h"
 #include "treeReader.h"
+#include "objectFormula.h"
 #include "utils.h"
 #include "ConfigFileLine.h"
 #include "ConfigParser.h"
@@ -36,6 +37,7 @@ using namespace std;
 #pragma link C++ class TMVATrainingClass+;
 #pragma link C++ class significanceBox+;
 #pragma link C++ class TMVAPlotClass+;
+#pragma link C++ class objectFormula+;
 
 #pragma link C++ class vector<TLorentzVector>+;
 
