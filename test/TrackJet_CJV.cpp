@@ -274,6 +274,8 @@ int main (int argc, char ** argv) {
   string baseFolder = "/data2/rgerosa/NTUPLES_TP/" ;
   string etaLimit = argv[1] ;
 
+  cerr << "baseFolder " << baseFolder << endl ;
+
   float scaleSamples = 1.;
   if (argc > 2)
       scaleSamples = atof (argv[2]) ;
