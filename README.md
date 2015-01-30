@@ -7,6 +7,20 @@ FlatNtStudy
     git clone git@github.com:govoni/FlatNtStudy.git ;
     cd FlatNtStudy ;
 
+   Install with combine :
+   
+    cmsrel CMSSW_7_1_5
+    cd CMSSW_7_1_5/src/
+    cmsenv
+    git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
+    cd HiggsAnalysis/CombinedLimit
+    git fetch origin
+    git checkout v5.0.1
+    scramv1 b clean; scramv1 b
+    cd ../../
+    git clone git@github.com:govoni/FlatNtStudy.git ;
+    cd FlatNtStudy ;
+
 2) Compile:
 
     source scripts/setup.sh;
