@@ -357,4 +357,27 @@ FlatNtStudy
     outputDataCardDirectory -> directory where all the cards and root files are located.
 
 
+12) submit combine jobs python/runCombine.py :
     
+   basic option in common for all the methods:
+
+    datacardDIR --> place where the datacard are for all the categories together with root file with histograms
+    outputDIR   --> output directory for the file created by combine (it will be created as sub folder of datacardDIR)
+    channel     --> channel to be analyzed : UU, EE, DF or COMB (combination)
+    inputVariableList --> list of variables used to create the cards, in cfg/DataCards*/
+    is2Dcard    --> in case of run the analysis on 2D cards, by default 1D
+    batchMode  --> submit in LSF
+
+   methods:
+
+    computeAsymptotic --> compute Asymptotic limits: available options, noSystematics --> if 1 compute limit with -S 0 (no systematics taken into account)
+
+    computeProfileLikelihood --> compute significance : observed and expected. When the expected is computed, different option can take into account: outputTree 0 means one toy for each file, 1 means nToys stored in one single output file (toys are performed in order to have a better estimation of the expected sensitivity), injectSignal is the stranght wrt to the signal rate in the datacard to inject.
+
+
+    makeLikelihoodScan --> use the MultDimFit to have a scan of the Likelihood, rMin,rMax are defined in the code up to now.
+
+    generateOnly --> generate the dataset toy from the templates in the card: options.injectSignal used to define the signal to inject, nToys number of toys and outputTree 0 means one output file per toy, 1 means nToys in 1 file.
+
+    maximumLikelihoodFit --> make max likelihood fit, injecting signal with injectSignal, rMin and rMax fixed in the code, nToys to perform toys, outpuTree to store the information
+        
