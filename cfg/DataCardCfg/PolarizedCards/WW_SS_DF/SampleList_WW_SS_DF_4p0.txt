@@ -1,12 +1,12 @@
 ##############################################################################################################################################
 #  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
 ##############################################################################################################################################
-Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_DF_LL      1          0.01022537637                    1               1
-Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_DF_LT      2          0.01022537637                    1               0
-Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_DF_TT      3          0.01022537637                    1               0
-PHANTOM_SS_QCD_DF_126_4p0                                   WW_QCD_SS_DF         417        1.06691296353271774E-003         1               0
-PHANTOM_WZ_EWK_DF_126_4p0_EU                                WZ_EWK_DF            861        1.96E-003                        1               0
-PHANTOM_WZ_EWK_DF_126_4p0_UE   				    WZ_EWK_DF            861        1.96E-003                        1               0
-PHANTOM_WZ_QCD_DF_4p0_EU				    WZ_QCD_DF            801        2.47E-003                        1               0 
-PHANTOM_WZ_QCD_DF_4p0_UE                                    WZ_QCD_DF            801        2.47E-003                        1               0 
+Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_LL      1          0.01022537637                    1               1
+Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_LT      2          0.01022537637                    1               0
+Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_TT      3          0.01022537637                    1               0
+PHANTOM_SS_QCD_DF_126_4p0                                   WW_QCD_SS         417        1.06691296353271774E-003         1               0
+PHANTOM_WZ_EWK_DF_126_4p0_EU                                WZ_EWK            861        1.96E-003                        1               0
+PHANTOM_WZ_EWK_DF_126_4p0_UE   				    WZ_EWK            861        1.96E-003                        1               0
+PHANTOM_WZ_QCD_DF_4p0_EU				    WZ_QCD            801        2.47E-003                        1               0 
+PHANTOM_WZ_QCD_DF_4p0_UE                                    WZ_QCD            801        2.47E-003                        1               0 
 

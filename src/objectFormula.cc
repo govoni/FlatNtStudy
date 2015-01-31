@@ -37,14 +37,14 @@ void objectFormula::setFormula(){
     electronScaleUncString      = Form("0.02");
     electronResolutionUncString = Form("0.02");
 
-    jetScaleUncString      = Form("(abs(eta) < 2.5)*(pt < 30 )*(0.05) +\
-                             (abs(eta) < 2.5)*(pt >= 30 && pt < 60)*(0.03) + \
-                             (abs(eta) < 2.5)*(pt >= 60 && pt < 100)*(0.025) +\
-                             (abs(eta) < 2.5)*(pt >= 100 )*(0.02) +\
-                             (abs(eta) >= 2.5)*(pt < 30 )*(0.06) +\
-                             (abs(eta) >= 2.5)*(pt >= 30 && pt < 60)*(0.04) +\
-                             (abs(eta) >= 2.5)*(pt >= 60 && pt < 100)*(0.035) +\
-                             (abs(eta) >= 2.5)*(pt >= 100 )*(0.03)");
+    jetScaleUncString      = Form("(abs(eta) < 2.5)*(pt < 30 )*(0.03) +\
+                             (abs(eta) < 2.5)*(pt >= 30 && pt < 60)*(0.02) + \
+                             (abs(eta) < 2.5)*(pt >= 60 && pt < 100)*(0.015) +\
+                             (abs(eta) < 2.5)*(pt >= 100 )*(0.01) +\
+                             (abs(eta) >= 2.5)*(pt < 30 )*(0.04) +\
+                             (abs(eta) >= 2.5)*(pt >= 30 && pt < 60)*(0.025) +\
+                             (abs(eta) >= 2.5)*(pt >= 60 && pt < 100)*(0.02) +\
+                             (abs(eta) >= 2.5)*(pt >= 100 )*(0.015)");
 
     jetResolutionUncString = Form("0.05");
 

@@ -116,11 +116,13 @@ int main (int argc, char ** argv) {
 
   // output datacard directory
   string outputDataCardDirectory = gConfigParser -> readStringOption("Output::outputDataCardDirectory");
-  system(("mkdir -p output/"+outputDataCardDirectory).c_str());
-  system(("rm -r output/"+outputDataCardDirectory+"/*").c_str());
 
+  system(("mkdir -p output/"+outputDataCardDirectory).c_str());
   system(("mkdir -p output/"+outputDataCardDirectory+"/Card1D/").c_str());
   system(("mkdir -p output/"+outputDataCardDirectory+"/Card2D/").c_str());
+
+  system(("rm output/"+outputDataCardDirectory+"/Card1D/*_"+finalStateString+"*").c_str());
+  system(("rm output/"+outputDataCardDirectory+"/Card2D/*_"+finalStateString+"*").c_str());
 
   
   ///// Start the analysis --> apply cut and make histos
@@ -135,7 +137,7 @@ int main (int argc, char ** argv) {
     // take input files
     for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
       numBefore += itSample->second.at(iContainer).numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
     }
 
     int totEvent = chain->GetEntries();
@@ -227,10 +229,10 @@ int main (int argc, char ** argv) {
     for(size_t iVar = 0; iVar < variableList1D.size(); iVar++){
 
       //create a datacard and a TFile for histograms
-      system(("touch output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str());
-      ofstream datacard(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".txt").c_str(),ofstream::binary);
+      system(("touch output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+"_"+finalStateString+".txt").c_str());
+      ofstream datacard(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+"_"+finalStateString+".txt").c_str(),ofstream::binary);
 
-      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root").c_str(),"RECREATE");
+      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card1D/"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+"_"+finalStateString+".root").c_str(),"RECREATE");
       outputCard->cd();
 
       // print head of the datacad
@@ -264,8 +266,8 @@ int main (int argc, char ** argv) {
       observed->Write();
 
       datacard<< Form("observation %d",int(observed->Integral()))<< endl;
-      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
-      datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+".root    histo_Data" <<endl;
+      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+"_"+finalStateString+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
+      datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName+"_"+finalStateString+".root    histo_Data" <<endl;
       datacard<< "------------------------------------------------------"<< endl;
 
       // count the events and write down rates
@@ -458,10 +460,10 @@ int main (int argc, char ** argv) {
     for(size_t iVar = 0; iVar < variableList2D.size(); iVar++){
 
       //create a datacard and a TFile for histograms
-      system(("touch output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str());
-      ofstream datacard(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".txt").c_str(),ofstream::binary);
+      system(("touch output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+"_"+finalStateString+".txt").c_str());
+      ofstream datacard(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+"_"+finalStateString+".txt").c_str(),ofstream::binary);
 
-      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root").c_str(),"RECREATE");
+      TFile* outputCard = new TFile(("output/"+outputDataCardDirectory+"/Card2D/"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+"_"+finalStateString+".root").c_str(),"RECREATE");
       outputCard->cd();
 
       // print head of the datacad
@@ -495,8 +497,8 @@ int main (int argc, char ** argv) {
       observed->Write();
 
       datacard<< Form("observation %d",int(observed->Integral()))<< endl;
-      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
-      datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+".root    histo_Data" <<endl;
+      datacard<< "shapes *          * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+"_"+finalStateString+".root    histo_$PROCESS histo_$PROCESS_$SYSTEMATIC" <<endl;
+      datacard<< "shapes data_obs   * "+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY+"_"+finalStateString+".root    histo_Data" <<endl;
       datacard<< "------------------------------------------------------"<< endl;
 
             
