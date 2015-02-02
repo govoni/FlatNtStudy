@@ -80,10 +80,11 @@ int main (int argc, char ** argv)
   TString config ; 
   config.Form ("%s",argv[1]) ;
 
-  if (! (gConfigParser->init (config))){
+  if (! (gConfigParser->init (config)))
+    {
       cout << ">>> parseConfigFile::Could not open configuration file " << config << endl ;
       return -1 ;
-  }
+    }
 
   // import base directory where samples are located and txt file with the directory name + other info
   string InputBaseDirectory  = gConfigParser->readStringOption ("Input::InputBaseDirectory") ;
@@ -125,7 +126,7 @@ int main (int argc, char ** argv)
   minLeptonCleaningPt = gConfigParser->readDoubleOption ("Option::minLeptonCleaningPt") ; 
   minLeptonCutPt      = gConfigParser->readDoubleOption ("Option::minLeptonCutPt") ;
   minJetCutPt         = gConfigParser->readDoubleOption ("Option::minJetCutPt") ;
-  usePuppiAsDefault   = gConfigParser->readBoolOption ("Option::usePuppiAsDefault") ;
+  usePuppiAsDefault   = gConfigParser->readBoolOption   ("Option::usePuppiAsDefault") ;
   leptonIsoCut_mu     = gConfigParser->readDoubleOption ("Option::leptonIsoCutMu") ;
   leptonIsoCut_el     = gConfigParser->readDoubleOption ("Option::leptonIsoCutEl") ;
   leptonIsoCutLoose   = gConfigParser->readDoubleOption ("Option::leptonIsoCutLoose") ;
@@ -134,7 +135,6 @@ int main (int argc, char ** argv)
   string outputPlotDirectory = gConfigParser->readStringOption ("Output::outputPlotDirectory") ;
   system ( ("mkdir -p output/"+outputPlotDirectory).c_str ()) ;
   system ( ("rm -r output/"+outputPlotDirectory+"/*").c_str ()) ;
-
 
   ///// Start the analysis  
   map<string,TH1F*> histoCutEff ;
@@ -145,7 +145,11 @@ int main (int argc, char ** argv)
 
   readTree* reader  = new readTree ( (TTree*) (chain)) ;
 
-  float weight = 1.0 * lumi * CrossSection / float (totEvent) ;
+  int maximumEvents = chain->GetEntries () ;
+  if (maxEventNumber > 0 && maxEventNumber < maximumEvents) 
+    maximumEvents = maxEventNumber ;
+  
+  float weight = 1.0 * lumi * CrossSection / float (maximumEvents) ;
   cout<< "Lumi (fb-1) "                   << lumi/1000.
       << ", entries before : "            << totEvent
       << ", cross section : "             << CrossSection
@@ -167,10 +171,6 @@ int main (int argc, char ** argv)
     }
 
   int passingLHEFilter = 0 ;
-  
-  int maximumEvents = chain->GetEntries () ;
-  if (maxEventNumber > 0 && maxEventNumber < maximumEvents) 
-    maximumEvents = maxEventNumber ;
   
   // Loop on the events
   for (int iEvent = 0 ; iEvent < maximumEvents ; iEvent++)
@@ -533,9 +533,10 @@ int main (int argc, char ** argv)
 
   int Ntoys = gConfigParser->readIntOption ("Option::Ntoys") ;
   int EventsPerToy = gConfigParser->readIntOption ("Option::EventsPerToy") ;
+  int makeDeatailedPlots = gConfigParser->readFloatOption ("Output::makeDetailedPlots") ;
 
-  cout << "running " << Ntoys
-       << " of " << EventsPerToy << " events each\n" ;
+  cout << " + running " << Ntoys
+       << " toys, with " << EventsPerToy << " events each\n" ;
   
   // loop on variables
   for (size_t iVar = 0 ; iVar < variableList.size () ; iVar++)
@@ -578,10 +579,21 @@ int main (int argc, char ** argv)
             }
         } // loop on cuts = loop on polarisations
 
+      h_bkg->Draw () ;
+      h_sig->Draw ("same") ;
+      cCanvas->Print (string ("output/" + outputPlotDirectory + "/" + variableList.at (iVar).variableName + "_beforePlaying.png").c_str (), "png") ;
+
+      TH1F * totalModel = (TH1F *) h_bkg->Clone ("totalModel") ;
+      totalModel->Add (h_sig) ;
+      
       float int_sig = h_sig->Integral () ;
       float int_bkg = h_bkg->Integral () ;
-//      h_sig->Scale (1./int_sig) ;
-//      h_bkg->Scale (1./int_bkg) ;
+      
+      cout << "DEBUG FIXME expected number of SIG events : " << int_sig << endl ;
+      cout << "DEBUG FIXME expected number of BKG events : " << int_bkg << endl ;
+      
+      h_sig->Scale (1./int_sig) ;
+      h_bkg->Scale (1./int_bkg) ;
 
       // prepare the RooDataHist
       RooRealVar x ("x", "x", 
@@ -592,40 +604,53 @@ int main (int argc, char ** argv)
                  h_sig->GetXaxis ()->GetXmax ()) ;   
       RooDataHist rdh_sig ("rdh", "rdh", RooArgList (x), h_sig) ;
       RooDataHist rdh_bkg ("rdh", "rdh", RooArgList (x), h_bkg) ;
+      RooDataHist rdh_totalModel ("rdh", "rdh", RooArgList (x), h_sig) ;
+      RooHistPdf pdf_totalModel ("pdf_totalModel", "pdf_totalModel", RooArgSet (x), rdh_totalModel) ;
       
       RooHistPdf pdf_sig ("pdf_sig", "pdf_sig", RooArgSet (x), rdh_sig) ;
       RooHistPdf pdf_bkg ("pdf_bkg", "pdf_bkg", RooArgSet (x), rdh_bkg) ;
       // fixme scegli i limiti ed il valore centrale!!!
-      float coef_val = int_sig / (int_sig + int_bkg) ;
-      RooRealVar coef_sig ("coef_sig", "coef_sig", coef_val, 0.1 * coef_val, 10. * coef_val) ;   
-      TH1F sig_fitResults ("sig_fitResults", "sig_fitResults", 100, 0.1 * coef_val, 10  * coef_val) ;
-      coef_val = int_bkg / (int_sig + int_bkg) ;
-      RooRealVar coef_bkg ("coef_bkg", "coef_bkg", coef_val, 0.1 * coef_val, 10. * coef_val) ;   
-      TH1F bkg_fitResults ("bkg_fitResults", "bkg_fitResults", 100, 0.1 * coef_val, 10  * coef_val) ;
-      RooAddPdf totalModel ("totalModel", "totalModel", 
+
+//      float sample_fraction = int_sig / (int_sig + int_bkg) ;
+
+      RooRealVar coef_sig ("coef_sig", "coef_sig", int_sig, 0.1 * int_sig, 10. * int_sig) ;   
+      TH1F sig_fitResults ("sig_fitResults", "sig_fitResults", 100, 0.3 * int_sig, 1.7  * int_sig) ;
+      RooRealVar coef_bkg ("coef_bkg", "coef_bkg", int_bkg, 0.1 * int_bkg, 10. * int_bkg) ;   
+      TH1F bkg_fitResults ("bkg_fitResults", "bkg_fitResults", 100, 0.3 * int_bkg, 1.7 * int_bkg) ;
+      RooAddPdf fittingFunction ("fittingFunction", "fittingFunction", 
           RooArgList (pdf_sig, pdf_bkg),
           RooArgList (coef_sig, coef_bkg)
         ) ;  
 
+      if (EventsPerToy == -1) EventsPerToy = int (int_sig + int_bkg) ;
+
       // loop over toy exp
       for (int i = 0 ; i < Ntoys ; ++i)
         {
-          RooDataSet * data = totalModel.generate (RooArgSet (x), EventsPerToy) ;
-          totalModel.fitTo (*data) ;
-          sig_fitResults.Fill (coef_sig.getVal () / EventsPerToy) ;
-          bkg_fitResults.Fill (coef_bkg.getVal () / EventsPerToy) ;
+          RooDataSet * data = pdf_totalModel.generate (RooArgSet (x), EventsPerToy) ;
+          fittingFunction.fitTo (*data, PrintLevel (-10)) ;
+//          fittingFunction.fitTo (*data, Minos (kTRUE), PrintLevel (-10)) ;
+          sig_fitResults.Fill (coef_sig.getVal ()) ;
+          bkg_fitResults.Fill (coef_bkg.getVal ()) ;
+//          sig_fitResults.Fill (coef_sig.getVal () / EventsPerToy) ;
+//          bkg_fitResults.Fill (coef_bkg.getVal () / EventsPerToy) ;
 
-          RooAbsReal* fracInt = totalModel.createIntegral (x) ;
-          cout << " INTEGRAL INTEGRAL INTEGRAL " << fracInt->getVal () << endl ;
+//          RooAbsReal* fracInt = fittingFunction.createIntegral (x) ;
+//          cout << " INTEGRAL INTEGRAL INTEGRAL " << fracInt->getVal () << endl ;
 
-          RooPlot * localxplot = x.frame () ;
-          data->plotOn (localxplot, MarkerColor (kRed)) ;
-          totalModel.plotOn (localxplot, LineColor (kBlue + 2)) ;
-          localxplot->Draw () ;
-          TString fileName = "plot_" ;
-          fileName += i ;
-          fileName += ".png" ;
-          cCanvas->Print (fileName, "png") ;
+          if (makeDeatailedPlots)
+            {
+              RooPlot * localxplot = x.frame () ;
+              data->plotOn (localxplot, MarkerColor (kRed)) ;
+              fittingFunction.plotOn (localxplot, DrawOption ("F"), FillColor (kGray + 2), Components (RooArgSet(pdf_bkg))) ;
+              fittingFunction.plotOn (localxplot, LineColor (kBlue + 2)) ;
+              pdf_totalModel.plotOn (localxplot, LineWidth (1), LineColor (kGreen + 1)) ; //,LineStyle (kDashed)
+              localxplot->Draw () ;
+              TString fileName = "_fit_" ;
+              fileName += i ;
+              fileName += ".png" ;
+              cCanvas->Print ("output/" + outputPlotDirectory + "/" + variableList.at (iVar).variableName + fileName, "png") ;
+            }
         }
 
       sig_fitResults.Draw () ;
@@ -634,7 +659,7 @@ int main (int argc, char ** argv)
       cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/"+variableList.at (iVar).variableName+"_bkg_perf.png").c_str (),"png") ;
 
     } // loop on variables
-
+    
   cout << "LHE filter efficiency : " << passingLHEFilter
        << " totEvent " << totEvent
        << " efficiency " << float (passingLHEFilter)/float (totEvent)*100

@@ -1,45 +1,33 @@
 [Input]
 
-InputBaseDirectory = /data2/rgerosa/NTUPLES_TP/Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0/
-
-CrossSection       = 0.01022537637
-
-InputCutList       = cfg/PolarizationCfg/WW_SS_SF/LayerCut_WW_SS_SF.txt
-
-InputVariableList  = testVarList.txt
-
-TreeName           = easyDelphes
-
-EventsNumber       = 100000
+InputBaseDirectory  = /data2/rgerosa/NTUPLES_TP/Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0/
+# cross-section in pb
+CrossSection        = 0.01022537637
+InputCutList        = cfg/PolarizationCfg/WW_SS_SF/LayerCut_WW_SS_SF.txt
+InputVariableList   = testVarList.txt
+TreeName            = easyDelphes
+EventsNumber        = 100000
 #EventsNumber       = -1
 
 [Option]
 
-Lumi = 3000
-Ntoys = 3 
-EventsPerToy = 500 
-
+# lumi used to fill the histograms, in 1/fb
+Lumi                = 3000
+Ntoys               = 3
+# EventsPerToy if it's -1 use the Lumi, otherwise this number
+EventsPerToy        = -1
 # lheLevelFilter : 0 (mumu), 1 (ee), 2 (DF)
-
 lheLevelFilter      = 0
-
 matchingCone        = 0.3
-
 minLeptonCleaningPt = 15
-
 minLeptonCutPt      = 20
-
 minJetCutPt         = 30
-
 usePuppiAsDefault   = false
-
 leptonIsoCutMu      = 0.6
-
 leptonIsoCutEl      = 0.55
-
 leptonIsoCutLoose   = 0.75
  
-
 [Output]
 
 outputPlotDirectory = outputTestPolarVariables
+makeDetailedPlots   = 1
