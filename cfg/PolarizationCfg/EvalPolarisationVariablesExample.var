@@ -1,0 +1,14 @@
+####################################################################
+# Variable                  Nbin    Min     Max        Label
+####################################################################
+DeltaPhi_JJ                 15      0      3.14        #Delta#phi_{jj}
+ptjj                        35      0      600         p_{T}^{jj} 
+ptl1                        40      0      500         p_{T}^{l1}
+ptl2                        40      0      500         p_{T}^{l2}
+mll                         35      0      1000        m_{ll}
+ptll                        35      0      600         p_{T}^{ll}
+etal1etal2                  25      0      10          #eta_{l1}*#eta_{l2}
+DeltaEta_LL                 25      0      7           #Delta#eta_{LL} 
+R                           40      0      5           R
+ptJJTL                      40      0      500         p_{T}^{jj,l2}
+DeltaPhi_LL                 25      0      3.14        #Delta#phi_{LL} 
