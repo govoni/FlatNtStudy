@@ -10,6 +10,8 @@
 #include "TSystem.h"
 #include "TLatex.h"
 #include "TPad.h"
+#include "TH1.h"
+#include "TH2.h"
 #include "TF1.h"
 #include "TLine.h"
 
@@ -541,12 +543,16 @@ int main (int argc, char ** argv)
   int Ntoys = gConfigParser->readIntOption ("Option::Ntoys") ;
   int EventsPerToy = gConfigParser->readIntOption ("Option::EventsPerToy") ;
   int makeDeatailedPlots = gConfigParser->readFloatOption ("Output::makeDetailedPlots") ;
+  float unc_sig = gConfigParser->readFloatOption ("Option::SigUncertainty") ;
+  float unc_bkg = gConfigParser->readFloatOption ("Option::BkgUncertainty") ;
 
   cout << " + running " << Ntoys
        << " toys, with " << EventsPerToy << " events each\n" ;
   
-  TGraph variablesSigma (variableList.size ()) ;
-  TGraph variablesBias (variableList.size ()) ;
+  TH1F variablesSigma ("variableSigma", "", variableList.size (), 0, variableList.size ()) ;
+  TH1F variablesBiasF ("variableBiasF", "", variableList.size (), 0, variableList.size ()) ;
+  TH1F variablesRMS   ("variableRMS", "", variableList.size (), 0, variableList.size ()) ;
+  TH1F variablesBiasM ("variableBiasM", "", variableList.size (), 0, variableList.size ()) ;
   vector<string> variables_names ;
   
   // loop on variables
@@ -612,9 +618,6 @@ int main (int argc, char ** argv)
       float int_sig = h_sig->Integral () ;
       float int_bkg = h_bkg->Integral () ;
       
-      cout << "DEBUG FIXME expected number of SIG events : " << int_sig << endl ;
-      cout << "DEBUG FIXME expected number of BKG events : " << int_bkg << endl ;
-      
       h_sig->Scale (1./int_sig) ;
       h_bkg->Scale (1./int_bkg) ;
       h_totalModel->Scale (1./(int_sig + int_bkg)) ;
@@ -646,11 +649,9 @@ int main (int argc, char ** argv)
 
       RooRealVar coef_sig ("coef_sig", "coef_sig", int_sig, 0.1 * int_sig, 10. * int_sig) ;   
       RooRealVar coef_bkg ("coef_bkg", "coef_bkg", int_bkg, 0.1 * int_bkg, 10. * int_bkg) ;   
-      float unc_sig = 0.1 ;
       RooGaussian constr_sig ("constr_sig", "constr_sig", coef_sig, 
                               RooConst (int_sig), RooConst (unc_sig * int_sig)) ; 
 
-      float unc_bkg = 0.1 ;
       RooGaussian constr_bkg ("constr_bkg","constr_bkg", coef_bkg, 
                               RooConst (int_bkg), RooConst (unc_bkg * int_bkg)) ; 
 
@@ -698,28 +699,40 @@ int main (int argc, char ** argv)
               cCanvas->Print ("output/" + outputPlotDirectory +"/"+ variableList.at (iVar).variableName +"/"+ fileName, "png") ;
             }
         }
-
+      
       float c_m = sig_fitResults.GetMean () ;
       float c_s = sig_fitResults.GetRMS () ;
-      TLine sig_model_value (int_sig, 0., int_sig, 1.1 * sig_fitResults.GetMaximum ()) ;
-      sig_model_value.SetLineColor (kRed) ;
+      variablesRMS.SetBinContent (iVar+1, c_m / c_s) ;
+      variablesBiasM.SetBinContent (iVar+1, (c_m - int_sig) / int_sig) ;
+      int rebinFactor = 0.1 * Ntoys / sig_fitResults.GetMaximum () ;
+      if (rebinFactor > 1) sig_fitResults.Rebin (rebinFactor + 2) ;
       cCanvas->DrawFrame (c_m - 4 * c_s, 0, c_m + 4 * c_s, 1.1 * sig_fitResults.GetMaximum ()) ;
-      sig_fitResults.SetFillColor (kOrange) ;
-      sig_fitResults.Fit ("gaus") ;
+      sig_fitResults.Fit ("gaus", "L") ;
       c_m = sig_fitResults.GetFunction ("gaus")->GetParameter (1) ;
       c_s = sig_fitResults.GetFunction ("gaus")->GetParameter (2) ;
+      TLine sig_model_value (int_sig, 0., int_sig, 1.1 * sig_fitResults.GetMaximum ()) ;
+      sig_model_value.SetLineColor (kRed) ;
+      sig_model_value.SetLineWidth (2) ;
+      sig_fitResults.SetFillColor (kOrange) ;
       sig_fitResults.Draw ("histo same") ;
       sig_model_value.Draw ("same") ;
       cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/"+variableList.at (iVar).variableName+"_sig_perf.png").c_str (),"png") ;
 
-      variablesSigma.SetPoint (iVar, iVar, c_m / c_s) ;
-      variablesBias.SetPoint (iVar, iVar, (c_m - int_sig) / int_sig) ;
+      variablesSigma.SetBinContent (iVar+1, c_m / c_s) ;
+      variablesBiasF.SetBinContent (iVar+1, (c_m - int_sig) / int_sig) ;
       variables_names.push_back (variableList.at (iVar).variableName) ;
+      cout << "SIGMA " << variableList.at (iVar).variableName << " " 
+           << c_m / c_s << " "
+           << variables_names.size () << endl ;
 
-      c_m = bkg_fitResults.GetMean () ;
-      c_s = bkg_fitResults.GetRMS () ;
+      rebinFactor = 0.1 * Ntoys / bkg_fitResults.GetMaximum () ;
+      if (rebinFactor > 1) bkg_fitResults.Rebin (rebinFactor) ;
+      bkg_fitResults.Fit ("gaus", "L") ;
+      c_m = bkg_fitResults.GetFunction ("gaus")->GetParameter (1) ;
+      c_s = bkg_fitResults.GetFunction ("gaus")->GetParameter (2) ;
       TLine bkg_model_value (int_bkg, 0., int_bkg, 1.1 * bkg_fitResults.GetMaximum ()) ;
       bkg_model_value.SetLineColor (kRed) ;
+      bkg_model_value.SetLineWidth (2) ;
       cCanvas->DrawFrame (c_m - 4 * c_s, 0, c_m + 4 * c_s, 1.1 * bkg_fitResults.GetMaximum ()) ;
       bkg_fitResults.SetFillColor (kGray + 2) ;
       bkg_fitResults.Draw ("histo same") ;
@@ -728,9 +741,24 @@ int main (int argc, char ** argv)
 
     } // loop on variables
     
-  variablesSigma.SetMarkerStyle (8) ;  
-  variablesSigma.Draw ("APL") ;
-  cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/resolution.png").c_str (),"png") ;
+  for (unsigned int i = 0 ; i < variables_names.size () ; ++i)
+    {
+      variablesSigma.GetXaxis ()->SetBinLabel (i+1, variables_names.at (i).c_str ()) ;
+      variablesBiasF.GetXaxis ()->SetBinLabel (i+1, variables_names.at (i).c_str ()) ;
+      variablesRMS  .GetXaxis ()->SetBinLabel (i+1, variables_names.at (i).c_str ()) ;
+      variablesBiasM.GetXaxis ()->SetBinLabel (i+1, variables_names.at (i).c_str ()) ;
+      variablesSigma.GetXaxis()->LabelsOption ("v") ;
+      variablesBiasF.GetXaxis()->LabelsOption ("v") ;
+      variablesRMS  .GetXaxis()->LabelsOption ("v") ;
+      variablesBiasM.GetXaxis()->LabelsOption ("v") ;
+    }            
+  variablesSigma.SetMarkerStyle (29) ;  
+  variablesRMS.SetMarkerStyle (4) ;  
+  variablesRMS.SetMarkerColor (kBlue) ;  
+  variablesRMS.Draw ("P") ;
+  variablesSigma.Draw ("P same") ;
+  variablesRMS.Draw ("P same") ;
+  cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/resolution_RMS.png").c_str (),"png") ;
 
   cout << "LHE filter efficiency : " << passingLHEFilter
        << " totEvent " << totEvent
