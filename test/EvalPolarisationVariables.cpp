@@ -10,6 +10,8 @@
 #include "TSystem.h"
 #include "TLatex.h"
 #include "TPad.h"
+#include "TF1.h"
+#include "TLine.h"
 
 #include "plotter.h"
 #include "ConfigParser.h"
@@ -25,7 +27,9 @@
 #include "RooPlot.h"
 #include "RooDataSet.h"
 #include "RooDataHist.h"
+#include "RooConstVar.h"
 #include "RooRealVar.h"
+#include "RooFitResult.h"
 #include "RooAbsPdf.h"
 #include "RooAddPdf.h"
 #include "RooProdPdf.h"
@@ -33,6 +37,7 @@
 #include "RooPolynomial.h"
 #include "RooGenericPdf.h"
 #include "RooFFTConvPdf.h"
+#include "RooMsgService.h"
 #ifndef __CINT__
 #include "RooGlobalFunc.h"
 #endif 
@@ -54,6 +59,8 @@ int    lheLevelFilter ;
 int main (int argc, char ** argv) 
 {
 
+  RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+  
   // check number of inpt parameters
   if (argc < 2){
     cerr<<"Forgot to parse the cfg file --> exit "<<endl ;
@@ -538,6 +545,10 @@ int main (int argc, char ** argv)
   cout << " + running " << Ntoys
        << " toys, with " << EventsPerToy << " events each\n" ;
   
+  TGraph variablesSigma (variableList.size ()) ;
+  TGraph variablesBias (variableList.size ()) ;
+  vector<string> variables_names ;
+  
   // loop on variables
   for (size_t iVar = 0 ; iVar < variableList.size () ; iVar++)
     {
@@ -579,12 +590,24 @@ int main (int argc, char ** argv)
             }
         } // loop on cuts = loop on polarisations
 
-      h_bkg->Draw () ;
-      h_sig->Draw ("same") ;
+      TH1F * h_totalModel = (TH1F *) h_bkg->Clone ("totalModel") ;
+      h_totalModel->Add (h_sig) ;
+
+      h_bkg->SetLineWidth (2) ;
+      h_sig->SetLineWidth (2) ;
+      h_sig->SetLineColor (kRed) ;
+      h_totalModel->SetLineColor (kGreen + 2) ;
+      cCanvas->DrawFrame (h_totalModel->GetXaxis ()->GetXmin (), 0.,
+                          h_totalModel->GetXaxis ()->GetXmax (), 1.1 * h_totalModel->GetMaximum ()) ;
+      h_totalModel->Draw ("hist same") ;
+      h_bkg->Draw ("hist same") ;
+      h_sig->Draw ("hist same") ;
       cCanvas->Print (string ("output/" + outputPlotDirectory + "/" + variableList.at (iVar).variableName + "_beforePlaying.png").c_str (), "png") ;
 
-      TH1F * totalModel = (TH1F *) h_bkg->Clone ("totalModel") ;
-      totalModel->Add (h_sig) ;
+      h_sig->DrawNormalized ("hist") ;
+      h_bkg->DrawNormalized ("hist same") ;
+      h_totalModel->DrawNormalized ("hist same") ;
+      cCanvas->Print (string ("output/" + outputPlotDirectory + "/" + variableList.at (iVar).variableName + "_beforePlaying_norm.png").c_str (), "png") ;
       
       float int_sig = h_sig->Integral () ;
       float int_bkg = h_bkg->Integral () ;
@@ -594,49 +617,71 @@ int main (int argc, char ** argv)
       
       h_sig->Scale (1./int_sig) ;
       h_bkg->Scale (1./int_bkg) ;
+      h_totalModel->Scale (1./(int_sig + int_bkg)) ;
 
-      // prepare the RooDataHist
+      // prepare the RooFit models and fuctions
+      // ---- ---- ---- ---- ---- ---- ---- ---- ----
+
+      // the integration varible
+
       RooRealVar x ("x", "x", 
                     h_sig->GetXaxis ()->GetXmin (), 
                     h_sig->GetXaxis ()->GetXmax ()) ;   
       x.setRange("allofit",
                  h_sig->GetXaxis ()->GetXmin (), 
                  h_sig->GetXaxis ()->GetXmax ()) ;   
+                 
+      // the input distributions for the fitting and for the event generation           
+
       RooDataHist rdh_sig ("rdh", "rdh", RooArgList (x), h_sig) ;
+      RooHistPdf pdf_sig ("pdf_sig", "pdf_sig", RooArgSet (x), rdh_sig) ;
+
       RooDataHist rdh_bkg ("rdh", "rdh", RooArgList (x), h_bkg) ;
-      RooDataHist rdh_totalModel ("rdh", "rdh", RooArgList (x), h_sig) ;
+      RooHistPdf pdf_bkg ("pdf_bkg", "pdf_bkg", RooArgSet (x), rdh_bkg) ;
+
+      RooDataHist rdh_totalModel ("rdh", "rdh", RooArgList (x), h_totalModel) ;
       RooHistPdf pdf_totalModel ("pdf_totalModel", "pdf_totalModel", RooArgSet (x), rdh_totalModel) ;
       
-      RooHistPdf pdf_sig ("pdf_sig", "pdf_sig", RooArgSet (x), rdh_sig) ;
-      RooHistPdf pdf_bkg ("pdf_bkg", "pdf_bkg", RooArgSet (x), rdh_bkg) ;
-      // fixme scegli i limiti ed il valore centrale!!!
-
-//      float sample_fraction = int_sig / (int_sig + int_bkg) ;
+      // the fitting function: parameters, parameter constraints, fitting function
 
       RooRealVar coef_sig ("coef_sig", "coef_sig", int_sig, 0.1 * int_sig, 10. * int_sig) ;   
-      TH1F sig_fitResults ("sig_fitResults", "sig_fitResults", 100, 0.3 * int_sig, 1.7  * int_sig) ;
       RooRealVar coef_bkg ("coef_bkg", "coef_bkg", int_bkg, 0.1 * int_bkg, 10. * int_bkg) ;   
-      TH1F bkg_fitResults ("bkg_fitResults", "bkg_fitResults", 100, 0.3 * int_bkg, 1.7 * int_bkg) ;
+      float unc_sig = 0.1 ;
+      RooGaussian constr_sig ("constr_sig", "constr_sig", coef_sig, 
+                              RooConst (int_sig), RooConst (unc_sig * int_sig)) ; 
+
+      float unc_bkg = 0.1 ;
+      RooGaussian constr_bkg ("constr_bkg","constr_bkg", coef_bkg, 
+                              RooConst (int_bkg), RooConst (unc_bkg * int_bkg)) ; 
+
       RooAddPdf fittingFunction ("fittingFunction", "fittingFunction", 
           RooArgList (pdf_sig, pdf_bkg),
           RooArgList (coef_sig, coef_bkg)
         ) ;  
 
-      if (EventsPerToy == -1) EventsPerToy = int (int_sig + int_bkg) ;
+      // some output is stored here
+
+      TH1F sig_fitResults ("sig_fitResults", "sig_fitResults", 1000, 0.5 * int_sig, 1.5 * int_sig) ;
+      TH1F bkg_fitResults ("bkg_fitResults", "bkg_fitResults", 1000, 0.5 * int_bkg, 1.5 * int_bkg) ;
+
+      if (makeDeatailedPlots)
+        system ( ("mkdir -p output/"+outputPlotDirectory+"/"+variableList.at (iVar).variableName).c_str ()) ;
 
       // loop over toy exp
+      if (EventsPerToy == -1) EventsPerToy = int (int_sig + int_bkg) ;
       for (int i = 0 ; i < Ntoys ; ++i)
         {
           RooDataSet * data = pdf_totalModel.generate (RooArgSet (x), EventsPerToy) ;
-          fittingFunction.fitTo (*data, PrintLevel (-10)) ;
-//          fittingFunction.fitTo (*data, Minos (kTRUE), PrintLevel (-10)) ;
+          coef_sig = int_sig ;
+          coef_bkg = int_bkg ;
+          RooFitResult * result = 
+            fittingFunction.fitTo (*data, PrintLevel (-1),
+                Minos (kTRUE), 
+                ExternalConstraints (RooArgSet (constr_sig, constr_bkg)),
+                Save ()
+              ) ;
           sig_fitResults.Fill (coef_sig.getVal ()) ;
           bkg_fitResults.Fill (coef_bkg.getVal ()) ;
-//          sig_fitResults.Fill (coef_sig.getVal () / EventsPerToy) ;
-//          bkg_fitResults.Fill (coef_bkg.getVal () / EventsPerToy) ;
-
-//          RooAbsReal* fracInt = fittingFunction.createIntegral (x) ;
-//          cout << " INTEGRAL INTEGRAL INTEGRAL " << fracInt->getVal () << endl ;
 
           if (makeDeatailedPlots)
             {
@@ -644,22 +689,49 @@ int main (int argc, char ** argv)
               data->plotOn (localxplot, MarkerColor (kRed)) ;
               fittingFunction.plotOn (localxplot, DrawOption ("F"), FillColor (kGray + 2), Components (RooArgSet(pdf_bkg))) ;
               fittingFunction.plotOn (localxplot, LineColor (kBlue + 2)) ;
-              pdf_totalModel.plotOn (localxplot, LineWidth (1), LineColor (kGreen + 1)) ; //,LineStyle (kDashed)
+              pdf_totalModel.plotOn (localxplot, LineStyle (kDashed), LineColor (kGreen + 2)) ;
+              data->plotOn (localxplot, MarkerColor (kRed)) ;
               localxplot->Draw () ;
-              TString fileName = "_fit_" ;
+              TString fileName = "fit_" ;
               fileName += i ;
               fileName += ".png" ;
-              cCanvas->Print ("output/" + outputPlotDirectory + "/" + variableList.at (iVar).variableName + fileName, "png") ;
+              cCanvas->Print ("output/" + outputPlotDirectory +"/"+ variableList.at (iVar).variableName +"/"+ fileName, "png") ;
             }
         }
 
-      sig_fitResults.Draw () ;
+      float c_m = sig_fitResults.GetMean () ;
+      float c_s = sig_fitResults.GetRMS () ;
+      TLine sig_model_value (int_sig, 0., int_sig, 1.1 * sig_fitResults.GetMaximum ()) ;
+      sig_model_value.SetLineColor (kRed) ;
+      cCanvas->DrawFrame (c_m - 4 * c_s, 0, c_m + 4 * c_s, 1.1 * sig_fitResults.GetMaximum ()) ;
+      sig_fitResults.SetFillColor (kOrange) ;
+      sig_fitResults.Fit ("gaus") ;
+      c_m = sig_fitResults.GetFunction ("gaus")->GetParameter (1) ;
+      c_s = sig_fitResults.GetFunction ("gaus")->GetParameter (2) ;
+      sig_fitResults.Draw ("histo same") ;
+      sig_model_value.Draw ("same") ;
       cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/"+variableList.at (iVar).variableName+"_sig_perf.png").c_str (),"png") ;
-      bkg_fitResults.Draw () ;
+
+      variablesSigma.SetPoint (iVar, iVar, c_m / c_s) ;
+      variablesBias.SetPoint (iVar, iVar, (c_m - int_sig) / int_sig) ;
+      variables_names.push_back (variableList.at (iVar).variableName) ;
+
+      c_m = bkg_fitResults.GetMean () ;
+      c_s = bkg_fitResults.GetRMS () ;
+      TLine bkg_model_value (int_bkg, 0., int_bkg, 1.1 * bkg_fitResults.GetMaximum ()) ;
+      bkg_model_value.SetLineColor (kRed) ;
+      cCanvas->DrawFrame (c_m - 4 * c_s, 0, c_m + 4 * c_s, 1.1 * bkg_fitResults.GetMaximum ()) ;
+      bkg_fitResults.SetFillColor (kGray + 2) ;
+      bkg_fitResults.Draw ("histo same") ;
+      bkg_model_value.Draw ("same") ;
       cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/"+variableList.at (iVar).variableName+"_bkg_perf.png").c_str (),"png") ;
 
     } // loop on variables
     
+  variablesSigma.SetMarkerStyle (8) ;  
+  variablesSigma.Draw ("APL") ;
+  cCanvas->SaveAs (string ("output/"+outputPlotDirectory+"/resolution.png").c_str (),"png") ;
+
   cout << "LHE filter efficiency : " << passingLHEFilter
        << " totEvent " << totEvent
        << " efficiency " << float (passingLHEFilter)/float (totEvent)*100
