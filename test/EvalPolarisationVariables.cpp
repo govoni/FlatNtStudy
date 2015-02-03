@@ -684,7 +684,7 @@ int main (int argc, char ** argv)
           sig_fitResults.Fill (coef_sig.getVal ()) ;
           bkg_fitResults.Fill (coef_bkg.getVal ()) ;
 
-          if (makeDeatailedPlots)
+          if (makeDeatailedPlots && i < 10)
             {
               RooPlot * localxplot = x.frame () ;
               data->plotOn (localxplot, MarkerColor (kRed)) ;
