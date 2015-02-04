@@ -368,7 +368,7 @@ if __name__ == '__main__':
            print "################################";
 
            if options.noSystematics == 1 :
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -S 0 -s -1 --expectSignal=%d "%(outname,card,options.injectSignal);
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -S 0 -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);
                print "runCmmd ",runCmmd ;
                if options.batchMode:
                    fn = "combineScript_Asymptotic_%s"%(outname);
@@ -380,7 +380,7 @@ if __name__ == '__main__':
 
            elif options.noSystematics == 0 :
 
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -s -1 --expectSignal=%d"%(outname,card,options.injectSignal);                            
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);                            
                print "runCmmd ",runCmmd;
                    
                if options.batchMode:

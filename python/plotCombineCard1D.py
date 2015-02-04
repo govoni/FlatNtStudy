@@ -104,7 +104,7 @@ def getExpectedQuantile(file):
   t_quantileExpected = t.quantileExpected;
   histo_val.Fill(t.limit);
   
- return histo_val.GetMean(), histo_val.GetMeanError();
+ return histo_val.GetMean(), histo_val.GetRMS();
 
 ######################################################################
 #### get signal strencht from max likelihood fit file for S+B fit ####
@@ -386,7 +386,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
 def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
-    nPoints = len(variableName);
+    nPoints = len(filelist);
     
     xbins_exp           = array('f', []);
     ybins_exp           = array('f', []);
