@@ -272,7 +272,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
                 binName.append(variableLabel[ivar]);
                 curAsymLimits = getAsymptoticLimit(filelist[ifile]);
-                xbins.append(ifile+0.5);
+                xbins.append(ivar+0.5);
                 xbins_err_up.append(0.5);
                 xbins_err_dw.append(0.5);
 
@@ -313,7 +313,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     
     ## canvas
     can_SM = ROOT.TCanvas("can_SM","can_SM",1050,650);
-    hrl_SM = can_SM.DrawFrame(0,0.0,nPoints,ROOT.TMath.MaxElement(curGraph_2s.GetN(),curGraph_2s.GetY())*2);
+    hrl_SM = can_SM.DrawFrame(0,0.0,len(binName),ROOT.TMath.MaxElement(curGraph_2s.GetN(),curGraph_2s.GetY())*2);
     hrl_SM.SetBins(len(binName),0,len(binName));
     gStyle.SetPadLeftMargin(0.08);
     hrl_SM.GetYaxis().SetTitle("#mu = #sigma_{95%} / #sigma_{SM}");
@@ -324,6 +324,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     hrl_SM.GetXaxis().SetTitleSize(0.045);
     hrl_SM.GetXaxis().SetTitleFont(42);
 
+    
     for ibin in range(hrl_SM.GetNbinsX()):
         hrl_SM.GetXaxis().SetBinLabel(ibin+1,binName[ibin]);
 
@@ -404,7 +405,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
 
                 binName.append(variableLabel[ivar]);
-                xbins_exp.append(ifile+0.5); 
+                xbins_exp.append(ivar+0.5); 
                 xbins_err.append(0.5); 
                 yval, yval_err =  getExpectedQuantile(filelist[ifile]);
                 ybins_exp.append(yval);
@@ -513,7 +514,7 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
                 binName.append(variableLabel[ivar]);
                 getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
      
-                xbins_mu.append(ifile+0.5); 
+                xbins_mu.append(ivar+0.5); 
                 xbins_mu_err_up.append(0.5); 
                 xbins_mu_err_dn.append(0.5); 
 
