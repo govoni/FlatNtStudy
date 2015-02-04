@@ -432,17 +432,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     fiveSLine = ROOT.TF1("fiveSLine","5",0,nPoints);
     fiveSLine.SetLineColor(ROOT.kRed); fiveSLine.SetLineWidth(2); fiveSLine.SetLineStyle(2);
     
-    ban1s = TLatex(950,2,("1 #sigma"));
-    ban1s.SetTextSize(0.028); ban1s.SetTextColor(1)
-    ban2s = TLatex(950,2,("2 #sigma"));
-    ban2s.SetTextSize(0.028); ban1s.SetTextColor(1)
-    ban3s = TLatex(950,3,("3 #sigma"));
-    ban3s.SetTextSize(0.028); ban2s.SetTextColor(1)
-    ban4s = TLatex(950,4,("4 #sigma"));
-    ban4s.SetTextSize(0.028); ban3s.SetTextColor(1);
-    ban5s = TLatex(950,5,("5 #sigma"));
-    ban5s.SetTextSize(0.028); ban4s.SetTextColor(1)
-
     can = ROOT.TCanvas("can","can",1050,650);
     hrl = can.DrawFrame(0,0,nPoints,ROOT.TMath.MaxElement(gr_exp.GetN(),gr_exp.GetY())*1.2); 
     hrl.SetBins(len(binName),0,len(binName));
@@ -484,11 +473,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     tex3.SetTextSize(0.035);
     tex3.SetLineWidth(2);
     tex3.Draw();
-
-    ban1s.Draw();
-    ban2s.Draw();
-    ban3s.Draw();
-    ban4s.Draw();
 
     can.SaveAs("%s/ProfileLikelihood_%s.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s.pdf"%(options.outputPlotDIR,options.channel));
