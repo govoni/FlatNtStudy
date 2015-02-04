@@ -104,7 +104,7 @@ def getExpectedQuantile(file):
   t_quantileExpected = t.quantileExpected;
   histo_val.Fill(t.limit);
   
- return histo_val.GetMean(), histo_val.GetRMS();
+ return histo_val.GetMean(), histo_val.GetMeanError();
 
 ######################################################################
 #### get signal strencht from max likelihood fit file for S+B fit ####
@@ -252,7 +252,7 @@ def setStyle():
 
 def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
-    nPoints = len(filelist);
+    nPoints = len(variableName);
     
     xbins        = array('f', []); 
     xbins_err_up = array('f', []);
@@ -267,20 +267,20 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     binName = [];     
 
-    for ifile in range(len(filelist)):
-        curAsymLimits = getAsymptoticLimit(filelist[ifile]);
-        xbins.append(ifile+0.5);
-        xbins_err_up.append(0.5);
-        xbins_err_dw.append(0.5);
-
-	ybins_exp.append( curAsymLimits[3] );
-        ybins_2s_dw.append(ROOT.TMath.Abs(curAsymLimits[1]-curAsymLimits[3]));
-	ybins_1s_dw.append(ROOT.TMath.Abs(curAsymLimits[2]-curAsymLimits[3]));
-        ybins_2s_up.append(ROOT.TMath.Abs(curAsymLimits[5]-curAsymLimits[3]));
-	ybins_1s_up.append(ROOT.TMath.Abs(curAsymLimits[4]-curAsymLimits[3]));
-        for ivar in range(len(variableName)) :
+    for ivar in range(len(variableName)) :
+        for ifile in range(len(filelist)):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
                 binName.append(variableLabel[ivar]);
+                curAsymLimits = getAsymptoticLimit(filelist[ifile]);
+                xbins.append(ifile+0.5);
+                xbins_err_up.append(0.5);
+                xbins_err_dw.append(0.5);
+
+                ybins_exp.append( curAsymLimits[3] );
+                ybins_2s_dw.append(ROOT.TMath.Abs(curAsymLimits[1]-curAsymLimits[3]));
+                ybins_1s_dw.append(ROOT.TMath.Abs(curAsymLimits[2]-curAsymLimits[3]));
+                ybins_2s_up.append(ROOT.TMath.Abs(curAsymLimits[5]-curAsymLimits[3]));
+                ybins_1s_up.append(ROOT.TMath.Abs(curAsymLimits[4]-curAsymLimits[3]));
                 break;
 
 
@@ -314,7 +314,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     ## canvas
     can_SM = ROOT.TCanvas("can_SM","can_SM",1050,650);
     hrl_SM = can_SM.DrawFrame(0,0.0,nPoints,ROOT.TMath.MaxElement(curGraph_2s.GetN(),curGraph_2s.GetY())*2);
-    hrl_SM.SetBins(len(binName),0,len(binName)-1);
+    hrl_SM.SetBins(len(binName),0,len(binName));
     gStyle.SetPadLeftMargin(0.08);
     hrl_SM.GetYaxis().SetTitle("#mu = #sigma_{95%} / #sigma_{SM}");
     hrl_SM.GetYaxis().SetTitleOffset(1.15);
@@ -324,7 +324,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     hrl_SM.GetXaxis().SetTitleSize(0.045);
     hrl_SM.GetXaxis().SetTitleFont(42);
 
-    for ibin in range(hrl_SM.GetNbinsX()-1):
+    for ibin in range(hrl_SM.GetNbinsX()):
         hrl_SM.GetXaxis().SetBinLabel(ibin+1,binName[ibin]);
 
     hrl_SM.GetYaxis().SetNdivisions(505);
@@ -386,7 +386,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
 def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
-    nPoints = len(filelist);
+    nPoints = len(variableName);
     
     xbins_exp           = array('f', []);
     ybins_exp           = array('f', []);
@@ -397,17 +397,18 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
     setStyle();
 
-    for ifile in range(len(filelist)):
+    for ivar in range(len(variableName)) :
 
-        xbins_exp.append(ifile+0.5); 
-        xbins_err.append(0.5); 
-        yval, yval_err =  getExpectedQuantile(filelist[ifile]);
-        ybins_exp.append(yval);
-        ybins_err.append(yval_err);
+        for ifile in range(len(filelist)):
 
-        for ivar in range(len(variableName)) :
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
+
                 binName.append(variableLabel[ivar]);
+                xbins_exp.append(ifile+0.5); 
+                xbins_err.append(0.5); 
+                yval, yval_err =  getExpectedQuantile(filelist[ifile]);
+                ybins_exp.append(yval);
+                ybins_err.append(yval_err);
                 break;
 
 
@@ -442,21 +443,13 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     ban5s = TLatex(950,5,("5 #sigma"));
     ban5s.SetTextSize(0.028); ban4s.SetTextColor(1)
 
-    #leg2 = ROOT.TLegend(0.25,0.2,0.6,0.35);
-    #leg2.SetFillStyle(0);
-    #leg2.SetBorderSize(1);
-    #leg2.SetTextFont(42);
-    #leg2.SetTextSize(0.028);
-    
-    #leg2.AddEntry( gr_exp, "exp signif "+options.channel, "pl" );
-
     can = ROOT.TCanvas("can","can",1050,650);
     hrl = can.DrawFrame(0,0,nPoints,ROOT.TMath.MaxElement(gr_exp.GetN(),gr_exp.GetY())*1.2); 
-    hrl.SetBins(len(binName),0,len(binName)-1);
+    hrl.SetBins(len(binName),0,len(binName));
     hrl.GetYaxis().SetTitle("significance");
     hrl.GetYaxis().SetTitleOffset(0.95);
 
-    for ibin in range(hrl.GetNbinsX()-1):
+    for ibin in range(hrl.GetNbinsX()):
         hrl.GetXaxis().SetBinLabel(ibin+1,binName[ibin]);
 
     can.SetGrid();
@@ -492,8 +485,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     tex3.SetLineWidth(2);
     tex3.Draw();
 
-    #leg2.Draw();
-
     ban1s.Draw();
     ban2s.Draw();
     ban3s.Draw();
@@ -510,7 +501,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
 def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
-    nPoints = len(filelist);
+    nPoints = len(variableName);
 
     xbins_mu         = array('f', []);
     xbins_mu_err_up  = array('f', []);
@@ -532,29 +523,29 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
     muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
         
-    for ifile in range(len(filelist)):
-
-        getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
-     
-        xbins_mu.append(ifile+0.5); 
-        xbins_mu_err_up.append(0.5); 
-        xbins_mu_err_dn.append(0.5); 
-
-        ybins_mu.append(muValue.GetMean());
-        ybins_mu_err_up.append(ROOT.TMath.Abs(muErrUpOneSigma.GetMean()-muValue.GetMean()));
-        ybins_mu_err_dn.append(ROOT.TMath.Abs(muErrDownOneSigma.GetMean()-muValue.GetMean()));
-        ybins_mu_err_up_2s.append(ROOT.TMath.Abs(muErrUpTwoSigma.GetMean()-muValue.GetMean()));
-        ybins_mu_err_dn_2s.append(ROOT.TMath.Abs(muErrDownTwoSigma.GetMean()-muValue.GetMean()));
-
-        if muValue.GetMean() >= 0 : 
-            ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
-        else:        
-            ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
-            
-        for ivar in range(len(variableName)) :
+    for ivar in range(len(variableName)) :
+        for ifile in range(len(filelist)):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
                 binName.append(variableLabel[ivar]);
+                getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
+     
+                xbins_mu.append(ifile+0.5); 
+                xbins_mu_err_up.append(0.5); 
+                xbins_mu_err_dn.append(0.5); 
+
+                ybins_mu.append(muValue.GetMean());
+                ybins_mu_err_up.append(ROOT.TMath.Abs(muErrUpOneSigma.GetMean()-muValue.GetMean()));
+                ybins_mu_err_dn.append(ROOT.TMath.Abs(muErrDownOneSigma.GetMean()-muValue.GetMean()));
+                ybins_mu_err_up_2s.append(ROOT.TMath.Abs(muErrUpTwoSigma.GetMean()-muValue.GetMean()));
+                ybins_mu_err_dn_2s.append(ROOT.TMath.Abs(muErrDownTwoSigma.GetMean()-muValue.GetMean()));
+
+                if muValue.GetMean() >= 0 : 
+                    ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
+                else:        
+                    ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
                 break;
+
+            
 
     gr_mu_ratio = ROOT.TGraphAsymmErrors(nPoints,xbins_mu,ybins_mu_ratio);
     gr_mu_ratio.SetLineColor(1); gr_mu_ratio.SetMarkerColor(1); gr_mu_ratio.SetMarkerStyle(20); gr_mu_ratio.SetLineWidth(3);gr_mu_ratio.SetMarkerSize(1.6);
@@ -569,19 +560,12 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     ban1s = TLatex(950,1.,("#mu SM injected"));
     ban1s.SetTextSize(0.028); ban1s.SetTextColor(1)
 
-    #leg2 = ROOT.TLegend(0.25,0.2,0.6,0.35);
-    #leg2.SetFillStyle(0);
-    #leg2.SetBorderSize(1);
-    #leg2.SetTextFont(42);
-    #leg2.SetTextSize(0.028);
-    
-    #leg2.AddEntry( gr_mu_1s, "signal strenght %s "%options.channel, "pl" );
  
     can = ROOT.TCanvas("can","can",1050,650);
     hrl = can.DrawFrame(0,-5,nPoints,5);
     hrl.SetBins(len(binName),0,nPoints);
 
-    for ibin in range(hrl.GetNbinsX()-1):
+    for ibin in range(hrl.GetNbinsX()):
         hrl.GetXaxis().SetBinLabel(ibin+1,binName[ibin]);
 
     hrl.GetYaxis().SetTitle("signal strenght");
@@ -589,8 +573,6 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
     can.SetGrid();
    
-    #leg2.Draw();
-
     gr_mu_2s.Draw("P");
     gr_mu_1s.Draw("Psame"); 
 
@@ -656,48 +638,46 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
     binName = [];
     varName = [];
 
-    for ifile in range(len(filelist)):
-
-        for ivar in range(len(variableName)) :
+    for ivar in range(len(variableName)) :
+        for ifile in range(len(filelist)):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
                 binName.append(variableLabel[ivar]);
                 varName.append(variableName[ivar]);
-                break;
 
-        f = ROOT.TFile(filelist[ifile]);
-        t = f.Get("limit");
+                f = ROOT.TFile(filelist[ifile]);
+                t = f.Get("limit");
         
-        xbins_mu = array('f',[]); 
-        ybins_mu = array('f',[]); 
+                xbins_mu = array('f',[]); 
+                ybins_mu = array('f',[]); 
 
-        for ientry in range(t.GetEntries()):
-            if ientry == 0 : continue ;   
-            t.GetEntry(ientry);   
-            xbins_mu.append(t.r); 
-            ybins_mu.append(2*t.deltaNLL); 
+                for ientry in range(t.GetEntries()):
+                    if ientry == 0 : continue ;   
+                    t.GetEntry(ientry);   
+                    xbins_mu.append(t.r); 
+                    ybins_mu.append(2*t.deltaNLL); 
 
-        gr_mu = ROOT.TGraph(t.GetEntries()-1,xbins_mu,ybins_mu);
-        gr_mu.Sort();
+                gr_mu = ROOT.TGraph(t.GetEntries()-1,xbins_mu,ybins_mu);
+                gr_mu.Sort();
                                     
-        gr_mu.SetLineWidth(2);
-        gr_mu.SetLineColor(2);
-        gr_mu.SetMarkerStyle(20);
+                gr_mu.SetLineWidth(2);
+                gr_mu.SetLineColor(2);
+                gr_mu.SetMarkerStyle(20);
 
-        can = ROOT.TCanvas("can_%s"%(varName[len(varName)-1]),"can_%s"%(varName[len(varName)-1]),700,650);
-        gr_mu.GetYaxis().SetTitle("-2#Delta ln(L)");
-        gr_mu.GetYaxis().SetTitleOffset(1.0);
+                can = ROOT.TCanvas("can_%s"%(varName[len(varName)-1]),"can_%s"%(varName[len(varName)-1]),700,650);
+                gr_mu.GetYaxis().SetTitle("-2#Delta ln(L)");
+                gr_mu.GetYaxis().SetTitleOffset(1.0);
+                
+                gr_mu.GetXaxis().SetTitle("signal strenght (%s)"%(binName[len(binName)-1]));
+                can.SetGrid();
+                gr_mu.Draw("AC");
 
-        gr_mu.GetXaxis().SetTitle("signal strenght (%s)"%(binName[len(binName)-1]));
-        can.SetGrid();
-        gr_mu.Draw("AC");
+                tex.Draw();
+                tex2.Draw();
+                tex3.Draw();
 
-        tex.Draw();
-        tex2.Draw();
-        tex3.Draw();
-
-        can.SaveAs("%s/LikelihoodScan_%s_%s.pdf"%(options.outputPlotDIR,varName[len(varName)-1],options.channel),"pdf");
-        can.SaveAs("%s/LikelihoodScan_%s_%s.png"%(options.outputPlotDIR,varName[len(varName)-1],options.channel),"png");
-                                           
+                can.SaveAs("%s/LikelihoodScan_%s_%s.pdf"%(options.outputPlotDIR,varName[len(varName)-1],options.channel),"pdf");
+                can.SaveAs("%s/LikelihoodScan_%s_%s.png"%(options.outputPlotDIR,varName[len(varName)-1],options.channel),"png");
+                break ;                           
 
 ##################################
 ########### Main Code ############

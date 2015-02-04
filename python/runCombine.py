@@ -284,7 +284,7 @@ if __name__ == '__main__':
 
            if options.outputTree == 0 : ## make a job for each single toy
                for iToy in range(options.nToys):                              
-                   runCmmd =  "combine -M GenerateOnly --saveToys -s -1 -n %s  -m 100 -d %s -v 2 -t 1 --expectSignal=%d "%(outname,card,options.injectSignal);
+                   runCmmd =  "combine -M GenerateOnly --saveToys -s -1 -n %s  -m 100 -d %s  -t 1 --expectSignal=%d "%(outname,card,options.injectSignal);
                    print "runCmmd ",runCmmd;
                    if options.batchMode:
                        fn = "combineScript_generateOnly_%s_iToy_%d"%(outname,iToy);
@@ -296,7 +296,7 @@ if __name__ == '__main__':
                continue ;
 
            else:
-               runCmmd =  "combine -M GenerateOnly --saveToys -s -1 -n %s -m 100 -d %s -v 2 -t %d --expectSignal=%d "%(outname,card,options.nToys,options.injectSignal);
+               runCmmd =  "combine -M GenerateOnly --saveToys -s -1 -n %s -m 100 -d %s -t %d --expectSignal=%d "%(outname,card,options.nToys,options.injectSignal);
                print "runCmmd ",runCmmd;
                if options.batchMode:
                    fn = "combineScript_generateOnly_%s_nToys_%d"%(outname,options.nToys);
@@ -318,7 +318,7 @@ if __name__ == '__main__':
           #################################################
                         
            if options.nToys == 0 : 
-               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s -v 2 --robustFit=1 --do95=1 -s -1"%(rMin,rMax,outname,card);
+               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1"%(rMin,rMax,outname,card);
                print "runCmmd ",runCmmd;
                if options.batchMode:
                    fn = "combineScript_MaxLikelihoodFit_%s"%(outname);
@@ -368,7 +368,7 @@ if __name__ == '__main__':
            print "################################";
 
            if options.noSystematics == 1 :
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -S 0 -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -S 0 -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);
                print "runCmmd ",runCmmd ;
                if options.batchMode:
                    fn = "combineScript_Asymptotic_%s"%(outname);
@@ -380,7 +380,7 @@ if __name__ == '__main__':
 
            elif options.noSystematics == 0 :
 
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -v 2 -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);                            
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);                            
                print "runCmmd ",runCmmd;
                    
                if options.batchMode:
@@ -400,7 +400,7 @@ if __name__ == '__main__':
            
            if options.outputTree == 0:
                for iToy in range(options.nToys):
-                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -v 2 -t 1 --expectSignal=%d -s -1 "%(outname,card,options.injectSignal);
+                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t 1 --expectSignal=%d -s -1 "%(outname,card,options.injectSignal);
                    print "runCmmd ",runCmmd;
                           
                    if options.batchMode:
@@ -411,7 +411,7 @@ if __name__ == '__main__':
                        os.system("mv higgsCombine*"+options.channel+"*Profile* "+options.outputDIR);   
            else:
 
-               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -v 2 -t %d --expectSignal=%d -s -1 "%(outname,card,options.nToys,options.injectSignal);
+               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 "%(outname,card,options.nToys,options.injectSignal);
                print "runCmmd ",runCmmd;
                           
                if options.batchMode:

@@ -103,7 +103,7 @@ def getExpectedQuantile(file):
   t_quantileExpected = t.quantileExpected;
   histo_val.Fill(t.limit);
   
- return histo_val.GetMean(), histo_val.GetRMS();
+ return histo_val.GetMean(), histo_val.GetMeanError();
 
 ######################################################################
 #### get signal strencht from max likelihood fit file for S+B fit ####
