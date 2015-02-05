@@ -3,11 +3,11 @@
 ####################################################################
 ptj1                         25      30     500         p_{T}^{j1}
 ptj2                         25      30     400         p_{T}^{j2}
-R   			      5      0      10          R
+R   			     15      0      10          R
 detajj                       20      3      9           #Delta#eta_{jj}
 ptjj                         25      30     600         p_{T}^{jj} 
 mjj                          25      700    4000        m_{jj}  
-Asim_j			     20      0      0.9         asim_{J}
+Asim_j                       20      0      0.9         asim_{J}
 DeltaPhi_JJ                  25      0      3.14        #Delta#phi_{jj}
 ptl1                         25      20     400         p_{T}^{l1}
 ptl2                         25      20     200         p_{T}^{l2}
