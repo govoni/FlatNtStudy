@@ -137,7 +137,9 @@ int main (int argc, char ** argv) {
     // take input files
     for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
       numBefore += itSample->second.at(iContainer).numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*_2.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*_3.root").c_str()) ;
     }
 
     int totEvent = chain->GetEntries();
@@ -323,15 +325,10 @@ int main (int argc, char ** argv) {
       TH1F* hJetResUp     = 0;
       TH1F* hJetResDown   = 0;
 
-      string lepScale = "CMS_scale_l   lnN    ";
-      string lepRes   = "CMS_res_l     lnN    ";
-      string jetScale = "CMS_scale_j   lnN    ";
-      string jetRes   = "CMS_res_j     lnN    ";
-
-      string lepScaleShape = "";
-      string lepResShape   = "";
-      string jetScaleShape = "";
-      string jetResShape   = "";
+      string lepScaleShape = "CMS_scale_l  shapeN2";
+      string lepResShape   = "CMS_res_l    shapeN2";
+      string jetScaleShape = "CMS_scale_j  shapeN2";
+      string jetResShape   = "CMS_res_j    shapeN2";
 
 
       // stat shapes ;
@@ -345,15 +342,15 @@ int main (int argc, char ** argv) {
 
         hNominal = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName];
 
-	hLepScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleUp").c_str());
-	hLepScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleDown").c_str());
-	hLepResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resUp").c_str());
-	hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resDown").c_str());
+	hLepScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lUp").c_str());
+	hLepScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lDown").c_str());
+	hLepResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lUp").c_str());
+	hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lDown").c_str());
 
-	hJetScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleUp").c_str());
-	hJetScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleDown").c_str());
-	hJetResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resUp").c_str());
-	hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resDown").c_str());
+	hJetScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jUp").c_str());
+	hJetScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jDown").c_str());
+	hJetResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jUp").c_str());
+	hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown").c_str());
 
 	// stat shapes
 	hStatUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
@@ -395,55 +392,31 @@ int main (int argc, char ** argv) {
 	hStatUp->Write();
 	hStatDown->Write();
 
-     
-        // norm nuisances
-        lepScale += Form("%0.4f   ",1.+(fabs(hLepScaleUp->Integral()-hNominal->Integral())+fabs(hLepScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
-        lepRes   += Form("%0.4f   ",1.+2*fabs(hLepResUp->Integral()-hNominal->Integral())/hNominal->Integral());
-
-        jetScale += Form("%0.4f   ",1.+(fabs(hJetScaleUp->Integral()-hNominal->Integral())+fabs(hJetScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
-        jetRes   += Form("%0.4f   ",1.+2*fabs(hJetResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+	// object systematics
+	lepScaleShape = lepScaleShape + "  1  ";
+	lepResShape   = lepResShape + "  1  ";
+	jetScaleShape = jetScaleShape + "  1  ";
+	jetResShape   = jetResShape + "  1  ";
 
         // shape lines
-        lepScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scale    shapeN2 ";
-        lepResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_res      shapeN2 ";
-        jetScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scale    shapeN2 ";
-        jetResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_res      shapeN2 ";
 	statShape     += "CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shape  shapeN2 " ;
-
            
 	for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
 	  if(iSample2!=iSample){
-	    lepScaleShape += " -    " ;
-	    lepResShape   += " -    " ;
-	    jetScaleShape += " -    " ;
-	    jetResShape   += " -    " ;
             statShape     += " -    " ;
 	  }
 	  else{       
-	    lepScaleShape += " 1    " ;
-	    lepResShape   += " 1    " ;
-	    jetScaleShape += " 1    " ;
-	    jetResShape   += " 1    " ;
             statShape     += " 1    " ;
 	  }
 	}
 
-	lepScaleShape += "\n" ;
-	lepResShape   += "\n" ;
-	jetScaleShape += "\n" ;
-	jetResShape   += "\n" ;
 	statShape     += "\n" ;
       }
 
-      //      datacard<< lepScale << endl;
-      //      datacard<< lepRes << endl;
-      //      datacard<< jetScale << endl;
-      //      datacard<< jetRes << endl;
-
-      datacard<< lepScaleShape ;
-      datacard<< lepResShape ;
-      datacard<< jetScaleShape ;
-      datacard<< jetResShape ;
+      datacard<< lepScaleShape +"\n" ;
+      datacard<< lepResShape +"\n" ;
+      datacard<< jetScaleShape +"\n";
+      datacard<< jetResShape +"\n";
       datacard<< statShape ;
       
       datacard.close();
@@ -521,15 +494,10 @@ int main (int argc, char ** argv) {
       TH1F* hJetResUp     = 0;
       TH1F* hJetResDown   = 0;
 
-      string lepScale = "CMS_scale_l   lnN    ";
-      string lepRes   = "CMS_res_l     lnN    ";
-      string jetScale = "CMS_scale_j   lnN    ";
-      string jetRes   = "CMS_res_j     lnN    ";
-
-      string lepScaleShape = "";
-      string lepResShape   = "";
-      string jetScaleShape = "";
-      string jetResShape   = "";
+      string lepScaleShape = "CMS_scale_l  shapeN2";
+      string lepResShape   = "CMS_res_l    shapeN2";
+      string jetScaleShape = "CMS_scale_j  shapeN2";
+      string jetResShape   = "CMS_res_j    shapeN2";
 
 
       // stat shapes ;
@@ -579,20 +547,21 @@ int main (int argc, char ** argv) {
 	hLepScaleUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleUp[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
 	hLepScaleDown = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleDown[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
 	hLepResUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepRes[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
-        hLepScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleUp").c_str());
-        hLepScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scaleDown").c_str());
-        hLepResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resUp").c_str());
-        
-        hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_resDown").c_str());
+
+        hLepScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lUp").c_str());
+        hLepScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lDown").c_str());
+
+        hLepResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lUp").c_str());        
+        hLepResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lDown").c_str());
 
 	hJetScaleUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetScaleUp[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
 	hJetScaleDown = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetScaleDown[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
 	hJetResUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_jetRes[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY],errorType);
-        hJetScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleUp").c_str());
-        hJetScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scaleDown").c_str());
-        hJetResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resUp").c_str());
-        
-        hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_resDown").c_str());
+
+        hJetScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jUp").c_str());
+        hJetScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jDown").c_str());
+        hJetResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jUp").c_str());        
+        hJetResDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown").c_str());
 
 
 	hLepScaleUp   ->Write();
@@ -604,41 +573,24 @@ int main (int argc, char ** argv) {
 	hJetResUp     ->Write();
 	hJetResDown   ->Write();
 
-	// norm nuisances                                                                                                                                                       
-        lepScale += Form("%0.4f   ",1.+(fabs(hLepScaleUp->Integral()-hNominal->Integral())+fabs(hLepScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
-        lepRes   += Form("%0.4f   ",1.+2*fabs(hLepResUp->Integral()-hNominal->Integral())/hNominal->Integral());
-
-        jetScale += Form("%0.4f   ",1.+(fabs(hJetScaleUp->Integral()-hNominal->Integral())+fabs(hJetScaleDown->Integral()-hNominal->Integral()))/hNominal->Integral());
-        jetRes   += Form("%0.4f   ",1.+2*fabs(hJetResUp->Integral()-hNominal->Integral())/hNominal->Integral());
+	// object systematics
+	lepScaleShape = lepScaleShape + "  1  ";
+	lepResShape   = lepResShape + "  1  ";
+	jetScaleShape = jetScaleShape + "  1  ";
+	jetResShape   = jetResShape + "  1  ";
 
         // shape lines                                                                                                                                                          
-        lepScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_scale    shapeN2 ";
-        lepResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_lep_res      shapeN2 ";
-        jetScaleShape += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_scale    shapeN2 ";
-        jetResShape   += "CMS_"+SampleVector.at(iSample).m_sampleName+"_jet_res      shapeN2 ";
         statShape     += "CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shape  shapeN2 " ;
 
 	for(size_t iSample2 = 0; iSample2 < SampleVector.size(); iSample2++){
           if(iSample2!=iSample){
-            lepScaleShape += " -    " ;
-            lepResShape   += " -    " ;
-            jetScaleShape += " -    " ;
-            jetResShape   += " -    " ;
             statShape     += " -    " ;
           }
           else{
-            lepScaleShape += " 1    " ;
-            lepResShape   += " 1    " ;
-            jetScaleShape += " 1    " ;
-            jetResShape   += " 1    " ;
             statShape     += " 1    " ;
           }
         }
 
-        lepScaleShape += "\n" ;
-        lepResShape   += "\n" ;
-        jetScaleShape += "\n" ;
-        jetResShape   += "\n" ;
         statShape     += "\n" ;
       }
 
@@ -647,15 +599,12 @@ int main (int argc, char ** argv) {
       datacard << lineProcess2 << endl;
       datacard << lineRate << endl;
 
-      //      datacard<< lepScale << endl;
-      //      datacard<< lepRes << endl;
-      //      datacard<< jetScale << endl;
-      //      datacard<< jetRes << endl;
+      datacard<< "------------------------------------------------------"<< endl;
 
-      datacard<< lepScaleShape ;
-      datacard<< lepResShape ;
-      datacard<< jetScaleShape ;
-      datacard<< jetResShape ;
+      datacard<< lepScaleShape + "\n";
+      datacard<< lepResShape + "\n";
+      datacard<< jetScaleShape + "\n";
+      datacard<< jetResShape + "\n";
       datacard<< statShape ;
       
       datacard.close();
