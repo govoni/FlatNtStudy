@@ -177,21 +177,21 @@ if __name__ == '__main__':
         outname = card.replace(".txt","");
 
         if options.makeAsymptotic :
-            runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s  -s -1 --expectSignal=%d -t %d"%(outname,card,options.injectSignal,options.nToys);
+            runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s  -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);
             os.system(runCmmd);
             os.system("mv higgsCombine* "+options.outputDIR);
             os.system("rm roostat*");
             continue ;
 
         if options.makeProfileLikelihood :
-            runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 "%(outname,card,options.nToys,options.injectSignal);     
+            runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);     
             os.system(runCmmd);
             os.system("mv higgsCombine* "+options.outputDIR);
             os.system("rm roostat* ");
             continue ;
 
         if options.makeMaxLielihoodFit :
-            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
+            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
             os.system(runCmmd);
             os.system("mv higgsCombine* "+options.outputDIR);
             os.system("mv mlfit* "+options.outputDIR);
