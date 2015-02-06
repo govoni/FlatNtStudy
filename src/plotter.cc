@@ -172,6 +172,30 @@ THStack * stackMe (TH1F * histo){
   return dummy ;
 }
 
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void makePositiveDefine(TH1F* histo){
+
+  for(int iBin = 0; iBin <= histo->GetNbinsX()+1; iBin++){
+    if( histo->GetBinContent(iBin) < 0)
+      histo->SetBinContent(iBin,0);
+  }
+
+  return ;
+}
+
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+void makePositiveDefine(TH2F* histo){
+
+  for(int iBinX = 0; iBinX <= histo->GetNbinsX()+1; iBinX++){
+    for(int iBinY = 0; iBinY <= histo->GetNbinsY()+1; iBinY++){
+      if( histo->GetBinContent(iBinX,iBinY) < 0)
+	histo->SetBinContent(iBinX,iBinY,0);
+    }
+  }
+
+  return ;
+}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 

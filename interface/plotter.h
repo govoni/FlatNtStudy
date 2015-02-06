@@ -30,7 +30,7 @@ using namespace std ;
 // add the overflow bin as real bin to the histo
 void   addOverFlow (TH1F * input) ;            
 
-void addOverAndUnderFlow (TH1F* histo);
+void   addOverAndUnderFlow (TH1F* histo);
 
 // give an histogram set the poisson error bars
 void   setPoissonErrorsToHisto (TH1F * input) ;
@@ -52,6 +52,10 @@ TH1F*  getHistoOfErrors (TH1F * input,
 THStack* CreateStack (TH1F * histo) ; 
 
 TH1F* unRollingHistogram(TH2F* histo, int errorType);
+
+void makePositiveDefine(TH1F* histo);
+
+void makePositiveDefine(TH2F* histo);
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 // one set of histograms given a cut layer
