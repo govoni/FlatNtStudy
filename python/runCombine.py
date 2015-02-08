@@ -210,9 +210,6 @@ if __name__ == '__main__':
 
         os.chdir(options.datacardDIR);        
 
-        if options.channel == "COMB" :
-            os.system("rm *COMB*");
-
         for var in variable :
             if options.channel == "COMB" :
                 os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
