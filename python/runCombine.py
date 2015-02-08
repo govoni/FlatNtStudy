@@ -126,7 +126,7 @@ if __name__ == '__main__':
     datacardList = [];
 
     file = open('%s'%(options.inputVariableList), 'r');
-    
+
     if not options.is2Dcard:
 
         for line in file:
@@ -137,16 +137,19 @@ if __name__ == '__main__':
             linestring = linestring.replace("\t","");
             variable.append(linestring);
 
+        variable.sort();
         print "##### list of variables ", variable ;
         print "##### number of variables ", len(variable) ;
-        
         os.chdir(options.datacardDIR);
 
-        if options.channel == "COMB" :
-            os.system("rm *COMB*");
-        
         for var in variable :
-            os.system("ls  | grep _"+var+"_ | grep txt > list.txt"); # make a list of datacards            
+            if options.channel == "COMB" :
+                os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_COMB | grep txt >> list.txt"); # make a list of datacards            
+            else:
+                os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
+                
             file = open("list.txt", 'r');                
             combineCommand = "combineCards.py ";
 
@@ -188,6 +191,8 @@ if __name__ == '__main__':
                             datacard = datacard.replace("\n","");
                             datacardList.append(datacard);
 
+        datacardList.sort();
+        print datacardList                    
         print "###### datacards to be analyzed ",len(datacardList);        
                         
     else: ## 2D variable 
@@ -200,6 +205,7 @@ if __name__ == '__main__':
             linestring = linestring.replace("\t","");
             variable.append(linestring);
 
+        variable.sort();
         print "##### list of variables ", variable ;
         print "##### number of variables ", len(variable) ;
 
@@ -209,7 +215,13 @@ if __name__ == '__main__':
             os.system("rm *COMB*");
 
         for var in variable :
-            os.system("ls  | grep _"+var+"_ | grep txt > list.txt"); # make a list of datacards            
+            if options.channel == "COMB" :
+                os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_COMB | grep txt >> list.txt"); # make a list of datacards            
+            else:
+                os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
+
             file = open("list.txt", 'r');                
             combineCommand = "combineCards.py ";
 
@@ -252,6 +264,8 @@ if __name__ == '__main__':
                             datacardList.append(datacard);
 
 
+        datacardList.sort();
+        print datacardList ;
         print "###### datacards to be analyzed ",len(datacardList);        
 
 
@@ -423,7 +437,7 @@ if __name__ == '__main__':
 
        elif options.makeLikelihoodScan == 1:
                         
-           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%d,%d -s -1 --expectSignal=%d --toysNoSystematics"%(outname,card,rMin,rMax,options.injectSignal);
+           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%d,%d -s -1 --expectSignal=%d --toysNoSystematics -t %d"%(outname,card,rMin,rMax,options.injectSignal,options.nToys);
            print "runCmmd ",runCmmd;
            if options.batchMode:
                fn = "combineScript_LikelihoodScan_%s"%(outname);
@@ -432,5 +446,4 @@ if __name__ == '__main__':
                os.system(runCmmd);
                os.system("mv higgsCombine*"+options.channel+"*MultiDimFit* "+options.outputDIR);   
                                       
-
 
