@@ -26,6 +26,8 @@ parser.add_option('--inputVariable', action="store", type="string", dest="inputV
 parser.add_option('--inputLumi',     action="store", type="float",  dest="inputLumi",      default=3000)
 parser.add_option('--outputDIR',     action="store", type="string",  dest="outputDIR",     default="")
 
+parser.add_option('--batchMode',      action='store_true', dest='batchMode',      default=False, help='to run jobs on condor fnal')
+parser.add_option('--queque',         action="store",      type="string",         dest="queque",      default="")
 
 parser.add_option('--makeAsymptotic',  action="store_true", dest="makeAsymptotic",        default=0)
 parser.add_option('--makeProfileLikelihood',  action="store_true", dest="makeProfileLikelihood", default=0)
@@ -41,6 +43,47 @@ parser.add_option('--rMax',          action="store", type=float, dest="rMax", de
 luminosity = [20,50,100,250,500,1000,2000,3000];
 
 (options, args) = parser.parse_args()
+
+##########################################                                                                                                                                       
+###### Submit batch job for combine ######                                                                                                                                       
+##########################################                                                                                                                                       
+
+def submitBatchJobCombine(command, fn, fileNames):
+
+    currentDir = os.getcwd();
+
+    # create a dummy bash/csh                                                                                                                                                    
+    outScript = open(fn+".sh","w");
+
+    outScript.write('#!/bin/bash \n');
+    outScript.write('cd '+currentDir+'\n');
+    outScript.write('eval `scram runtime -sh`'+'\n');
+    outScript.write('cd - \n');
+    if options.channel !="COMB" :
+        outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
+    else :
+        outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
+        nametemp = fileNames.replace("COMB","");
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UU* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EE* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*DF* ./ \n');
+
+    outScript.write(command+'\n');
+
+    outScript.write("mv higgsCombine*"+options.channel+"*  "+currentDir+"/"+options.outputDIR+'\n');
+    outScript.write("mv mlfit*"+options.channel+"*  "+currentDir+"/"+options.outputDIR+'\n');
+    
+    outScript.write("rm rootstats* "+'\n');
+    outScript.close();
+
+    os.system("chmod 777 "+currentDir+"/"+fn+".sh");
+
+    if options.queque!="" :
+        os.system("bsub -q "+options.queque+" -o "+currentDir+"/subJob"+fileNames+".log -e "+currentDir+"/subJob"+fileNames+".err "+fn+".sh");
+    else:
+        os.system("bsub -q 1nh -o "+currentDir+"/subJob"+fileNames+".log -e "+currentDir+"/subJob"+fileNames+".err "+fn+".sh");
+        
+
 
 
 ##################################
@@ -178,22 +221,35 @@ if __name__ == '__main__':
 
         if options.makeAsymptotic :
             runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s  -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);
-            os.system(runCmmd);
-            os.system("mv higgsCombine* "+options.outputDIR);
-            os.system("rm roostat*");
+            if options.batchMode:
+                fn = "combineScript_Asymptotic_%s"%(outname);
+                submitBatchJobCombine(runCmmd,fn,outname);
+            else :    
+                os.system(runCmmd);
+                os.system("mv higgsCombine* "+options.outputDIR);
+                os.system("rm roostat*");
             continue ;
 
         if options.makeProfileLikelihood :
             runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);     
-            os.system(runCmmd);
-            os.system("mv higgsCombine* "+options.outputDIR);
-            os.system("rm roostat* ");
+            print "runCmmd ",runCmmd;
+            if options.batchMode:
+                fn = "combineScript_ProfileLikelihood_exp_%s_iToy_%d"%(outname,iToy);
+                submitBatchJobCombine(runCmmd,fn,outname);
+            else:
+                os.system(runCmmd);
+                os.system("mv higgsCombine* "+options.outputDIR);
+                os.system("rm roostat* ");
             continue ;
 
         if options.makeMaxLielihoodFit :
             runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
-            os.system(runCmmd);
-            os.system("mv higgsCombine* "+options.outputDIR);
-            os.system("mv mlfit* "+options.outputDIR);
-            os.system("rm roostat* ");
+            if options.batchMode:
+                fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
+                submitBatchJobCombine(runCmmd,fn,outname);
+            else:
+                os.system(runCmmd);
+                os.system("mv higgsCombine* "+options.outputDIR);
+                os.system("mv mlfit* "+options.outputDIR);
+                os.system("rm roostat* ");
             continue ;

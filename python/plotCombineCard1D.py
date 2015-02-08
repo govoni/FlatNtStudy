@@ -29,8 +29,6 @@ parser.add_option('--channel',   action="store", type="string", dest="channel", 
 parser.add_option('--outputPlotDIR',       action="store", type="string", dest="outputPlotDIR", default="")
 parser.add_option('--inputVariableList',   action="store", type="string", dest="inputVariableList", default="")
 
-parser.add_option('--blindObservedValues', action="store", type="int", dest="blindObservedValues", default=0)
-
 ## make plots
 parser.add_option('--makeAsymptoticPlot',           action="store", type="int",    dest="makeAsymptoticLimitPlot",   default=0)
 parser.add_option('--makeProfileLikelihoodPlot',    action="store", type="int",    dest="makeProfileLikelihoodPlot", default=0)
@@ -56,7 +54,7 @@ def getAsymptoticLimit (file, limitExp, limit1sUp, limit1sDw, limit2sUp, limit2s
   t.GetEntry(i);
   t_quantileExpected = t.quantileExpected;
   t_limit = t.limit;
-        
+
   if t_quantileExpected == -1.: 
       continue ;
   elif t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026: 
@@ -265,8 +263,13 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
                 binName.append(variableLabel[ivar]);
 
-                curAsymLimits = getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);
+                limitExp.Reset("ICES");
+                limitExp1sUp.Reset("ICES");
+                limitExp2sUp.Reset("ICES");
+                limitExp1sDw.Reset("ICES");
+                limitExp2sDw.Reset("ICES");
 
+                getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);
                 xbins.append(ivar+0.5);
                 xbins_err_up.append(0.5);
                 xbins_err_dw.append(0.5);
@@ -387,7 +390,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     ybins_exp           = array('f', []);
     xbins_err           = array('f', []);
     ybins_err           = array('f', []);
-
+    ybin_max            = array('f', []);
     binName = [];     
 
     ## histogram
@@ -400,16 +403,22 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
 
                 binName.append(variableLabel[ivar]);
+
+                signifExp.Reset("ICES");
+
                 xbins_exp.append(ivar+0.5); 
                 xbins_err.append(0.5); 
+
                 getExpectedQuantile(filelist[ifile],signifExp);
+
                 ybins_exp.append(signifExp.GetMean());
-                ybins_err.append(signifExp.GetRMS());
+                ybins_err.append(signifExp.GetRMS());                    
+                ybin_max.append(signifExp.GetMean()+signifExp.GetRMS());
                 break;
 
 
     gr_exp = ROOT.TGraphAsymmErrors(nPoints,xbins_exp,ybins_exp,xbins_err,xbins_err,ybins_err,ybins_err);
-                         
+    gr_max = ROOT.TGraphAsymmErrors(nPoints,xbins_exp,ybin_max,xbins_err,xbins_err,ybins_err,ybins_err);                         
     gr_exp.SetLineColor(1); 
     gr_exp.SetMarkerColor(1); 
     gr_exp.SetMarkerStyle(20); 
@@ -429,7 +438,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     fiveSLine.SetLineColor(ROOT.kRed); fiveSLine.SetLineWidth(2); fiveSLine.SetLineStyle(2);
     
     can = ROOT.TCanvas("can","can",1050,650);
-    hrl = can.DrawFrame(0,0,nPoints,ROOT.TMath.MaxElement(gr_exp.GetN(),gr_exp.GetY())*1.2); 
+    hrl = can.DrawFrame(0,0,nPoints,ROOT.TMath.MaxElement(gr_exp.GetN(),gr_max.GetY())*1.2); 
     hrl.SetBins(len(binName),0,len(binName));
     hrl.GetYaxis().SetTitle("significance");
     hrl.GetYaxis().SetTitleOffset(0.95);
@@ -504,6 +513,13 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
         for ifile in range(len(filelist)):
             if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
                 binName.append(variableLabel[ivar]);
+
+                muValue.Reset("ICES");
+                muErrUpOneSigma.Reset("ICES");
+                muErrUpTwoSigma.Reset("ICES");
+                muErrDownOneSigma.Reset("ICES");
+                muErrDownTwoSigma.Reset("ICES");
+
                 getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
      
                 xbins_mu.append(ivar+0.5); 
@@ -529,7 +545,7 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
  
     can = ROOT.TCanvas("can","can",1050,650);
-    hrl = can.DrawFrame(0,ROOT.TMath.MaxElement(gr_mu_1s.GetN(),gr_mu_1s.GetY())*0.75,nPoints,ROOT.TMath.MaxElement(gr_mu_1s.GetN(),gr_mu_1s.GetY())*1.25);
+    hrl = can.DrawFrame(0,options.rMin*0.75,nPoints,options.rMax*1.25);
     hrl.SetBins(len(binName),0,nPoints);
 
     for ibin in range(hrl.GetNbinsX()):
@@ -613,7 +629,9 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
 
                 f = ROOT.TFile(filelist[ifile]);
                 t = f.Get("limit");
-        
+
+                mapMuDnll.Reset("ICES");
+
                 for ientry in range(t.GetEntries()):
                     if ientry == 0 : continue ;   
                     t.GetEntry(ientry);   

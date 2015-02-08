@@ -41,69 +41,51 @@ parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int", 
 ###### Make Asymptotic Limit Plot ######
 ########################################
 
-def getAsymptoticLimit (file):
-        
+def getAsymptoticLimit (file, limitExp, limit1sUp, limit1sDw, limit2sUp, limit2sDw):
+
  f = ROOT.TFile(file);
- t = f.Get("limit"); 
+ t = f.Get("limit");
 
- lims = [0,0,0,0,0,0];
-
- limit_entries = 0;  
-    
  for i in range(t.GetEntries()):
-        
+
   t.GetEntry(i);
   t_quantileExpected = t.quantileExpected;
   t_limit = t.limit;
-        
-  #print "limit: ", t_limit, ", quantileExpected: ",t_quantileExpected;        
-  if t_quantileExpected == -1.: 
-      lims[0] += t_limit; 
-  elif t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026: 
-      lims[1] += t_limit;
-  elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17: 
-      lims[2] += t_limit;            
-  elif t_quantileExpected == 0.5: 
-      lims[3] += t_limit; 
-      limit_entries += 1 ;            
-  elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85: 
-      lims[4] += t_limit;
-  elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976: 
-      lims[5] += t_limit;
+
+  if t_quantileExpected == -1.:
+      continue ;
+  elif t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026:
+      limit2sDw.Fill(t.limit);
+  elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17:
+      limit1sDw.Fill(t.limit);
+  elif t_quantileExpected == 0.5:
+      limitExp.Fill(t.limit);
+  elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85:
+      limit1sUp.Fill(t.limit);
+  elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976:
+      limit2sUp.Fill(t.limit);
   else: print "Unknown quantile!"
 
- if limit_entries != 0 :
+ return ;
 
-     lims[0] = lims[0]/limit_entries ;
-     lims[1] = lims[1]/limit_entries ;
-     lims[2] = lims[2]/limit_entries ;
-     lims[3] = lims[3]/limit_entries ;
-     lims[4] = lims[4]/limit_entries ;
-     lims[5] = lims[5]/limit_entries ;
-
-    
- return lims;
 
 ####################################################
 ### Get Limit value using expected quantile only ###
 ####################################################
-
-def getExpectedQuantile(file):
+def getExpectedQuantile(file, signifExp):
 
  f = ROOT.TFile(file);
  t = f.Get("limit");
  entries = t.GetEntries();
-
- histo_val = ROOT.TH1F("histo_val","",1000,0,1000);
 
  for i in range(entries):
 
   t.GetEntry(i);
 
   t_quantileExpected = t.quantileExpected;
-  histo_val.Fill(t.limit);
-  
- return histo_val.GetMean(), histo_val.GetMeanError();
+  signifExp.Fill(t.limit);
+
+ return ;
 
 ######################################################################
 #### get signal strencht from max likelihood fit file for S+B fit ####
@@ -249,8 +231,6 @@ def setStyle():
 
 def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
-    setStyle();
-    
     ## the matrix is always squared    
     nvar = len(variableName);
 
@@ -279,7 +259,14 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
 
     varUsed = [];
+
+    limitExp     = ROOT.TH1F("limitExp","",100000,-1,10);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",100000,-1,10);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",100000,-1,10);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",100000,-1,10);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",100000,-1,10);
     
+
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
             if ivarX == ivarY : 
@@ -293,12 +280,19 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
  
                     if filelist[ifile].find(variableName[ivarX]+"_"+variableName[ivarY]+"_"+options.channel) != - 1 :
 
-                        curAsymLimits = getAsymptoticLimit(filelist[ifile]);                                              
-                        histoExp.SetBinContent(ivarX+1,ivarY+1,round(curAsymLimits[3],3));                                     
-                        histo1sUp.SetBinContent(ivarX+1,ivarY+1,round(curAsymLimits[4],3));
-                        histo2sUp.SetBinContent(ivarX+1,ivarY+1,round(curAsymLimits[5],3));
-                        histo1sDw.SetBinContent(ivarX+1,ivarY+1,round(curAsymLimits[2],3));
-                        histo2sDw.SetBinContent(ivarX+1,ivarY+1,round(curAsymLimits[1],3));
+                        limitExp.Reset("ICES");
+                        limitExp1sUp.Reset("ICES");
+                        limitExp2sUp.Reset("ICES");
+                        limitExp1sDw.Reset("ICES");
+                        limitExp2sDw.Reset("ICES");
+
+                        getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);                                              
+
+                        histoExp.SetBinContent(ivarX+1,ivarY+1,round(limitExp.GetMean(),3));                                     
+                        histo1sUp.SetBinContent(ivarX+1,ivarY+1,round(limitExp1sUp.GetMean(),3));
+                        histo2sUp.SetBinContent(ivarX+1,ivarY+1,round(limitExp2sUp.GetMean(),3));
+                        histo1sDw.SetBinContent(ivarX+1,ivarY+1,round(limitExp1sDw.GetMean(),3));
+                        histo2sDw.SetBinContent(ivarX+1,ivarY+1,round(limitExp2sDw.GetMean(),3));
 
        
     histoExp.SetMarkerStyle(20);
@@ -328,17 +322,17 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
                                
     ## canvas
-    can_SM = ROOT.TCanvas("can_SM","can_SM",650,650);
+    can = ROOT.TCanvas("can","can",650,650);
 
-    can_SM.SetGridx(1);
-    can_SM.SetGridy(1);
+    can.SetGridx(1);
+    can.SetGridy(1);
                    
     histoExp.Draw("colz TEXT");
 
-    can_SM.Update();
-    can_SM.RedrawAxis();
-    can_SM.RedrawAxis("g");
-    can_SM.Update();
+    can.Update();
+    can.RedrawAxis();
+    can.RedrawAxis("g");
+    can.Update();
 
     histoExp.GetZaxis().SetLabelSize(0.03);
     histoExp.GetZaxis().SetTitleSize(0.03);
@@ -375,9 +369,9 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     tex3.SetLineWidth(2);
     tex3.Draw();
 
-    can_SM.SaveAs("%s/AsymptoticLimit_%s.png"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_%s.root"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_%s.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_%s.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_%s.root"%(options.outputPlotDIR,options.channel));
     
     histo1sUp.GetZaxis().SetLabelSize(0.03);
     histo1sUp.GetZaxis().SetTitleSize(0.03);
@@ -389,18 +383,18 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp +1#sigma");
     textLeg.Draw();
 
-    can_SM.Update();
-    can_SM.RedrawAxis();
-    can_SM.RedrawAxis("g");
-    can_SM.Update();
+    can.Update();
+    can.RedrawAxis();
+    can.RedrawAxis("g");
+    can.Update();
 
     tex.Draw();
     tex2.Draw();
     tex3.Draw();
 
-    can_SM.SaveAs("%s/AsymptoticLimit_1sUp_%s.png"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_1sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_1sUp_%s.root"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo2sUp.GetZaxis().SetLabelSize(0.03);
     histo2sUp.GetZaxis().SetTitleSize(0.03);
@@ -412,18 +406,18 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp +2#sigma");
     textLeg.Draw();
 
-    can_SM.Update();
-    can_SM.RedrawAxis();
-    can_SM.RedrawAxis("g");
-    can_SM.Update();
+    can.Update();
+    can.RedrawAxis();
+    can.RedrawAxis("g");
+    can.Update();
 
     tex.Draw();
     tex2.Draw();
     tex3.Draw();
 
-    can_SM.SaveAs("%s/AsymptoticLimit_2sUp_%s.png"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_2sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_2sUp_%s.root"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo1sDw.GetZaxis().SetLabelSize(0.03);
     histo1sDw.GetZaxis().SetTitleSize(0.03);
@@ -436,18 +430,18 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp -1#sigma");
     textLeg.Draw();
 
-    can_SM.Update();
-    can_SM.RedrawAxis();
-    can_SM.RedrawAxis("g");
-    can_SM.Update();
+    can.Update();
+    can.RedrawAxis();
+    can.RedrawAxis("g");
+    can.Update();
 
     tex.Draw();
     tex2.Draw();
     tex3.Draw();
 
-    can_SM.SaveAs("%s/AsymptoticLimit_1sDw_%s.png"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_1sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_1sDw_%s.root"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo2sDw.GetZaxis().SetLabelSize(0.03);
     histo2sDw.GetZaxis().SetTitleSize(0.03);
@@ -460,18 +454,18 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp -2#sigma");
     textLeg.Draw();
 
-    can_SM.Update();
-    can_SM.RedrawAxis();
-    can_SM.RedrawAxis("g");
-    can_SM.Update();
+    can.Update();
+    can.RedrawAxis();
+    can.RedrawAxis("g");
+    can.Update();
 
     tex.Draw();
     tex2.Draw();
     tex3.Draw();
 
-    can_SM.SaveAs("%s/AsymptoticLimit_2sDw_%s.png"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_2sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_2sDw_%s.root"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.root"%(options.outputPlotDIR,options.channel));
     
 
 ##############################
@@ -479,8 +473,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 ##############################  
 
 def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
-
-    setStyle();
 
     ## the matrix is always squared                                                                                                                                             
     nvar = len(variableName);
@@ -499,6 +491,8 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
     varUsed = [] ;
 
+    signifExp = ROOT.TH1F("signifExp","",1000000,0,150);
+
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
             if ivarX == ivarY :
@@ -512,10 +506,11 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
                     if filelist[ifile].find(variableName[ivarX]+"_"+variableName[ivarY]+"_"+options.channel) != - 1 :
                         
-                        yval, yval_err = getExpectedQuantile(filelist[ifile]);                
+                        signifExp.Reset("ICES");
+                        getExpectedQuantile(filelist[ifile],signifExp);                
 
-                        histoExp.SetBinContent(ivarX+1,ivarY+1,round(yval,2));
-                        histoExp_err.SetBinContent(ivarX+1,ivarY+1,round(yval_err,2));
+                        histoExp.SetBinContent(ivarX+1,ivarY+1,round(signifExp.GetMean(),2));
+                        histoExp_err.SetBinContent(ivarX+1,ivarY+1,round(signifExp.GetRMS(),2));
 
                          
     histoExp.GetZaxis().SetLabelSize(0.03);
@@ -585,8 +580,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
 
-    setStyle();
-
     ## the matrix is always squared                                                                                                                                             
     nvar = len(variableName);
 
@@ -634,6 +627,12 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
                 for ifile in range(len(filelist)):
 
                     if filelist[ifile].find(variableName[ivarX]+"_"+variableName[ivarY]+"_"+options.channel) != - 1 :
+
+                        muValueTemp.Reset("ICES");
+                        muErrUpOneSigmaTemp.Reset("ICES");
+                        muErrUpTwoSigmaTemp.Reset("ICES");
+                        muErrDwOneSigmaTemp.Reset("ICES");
+                        muErrDwTwoSigmaTemp.Reset("ICES");
 
                         getSignalStrenght(filelist[ifile], muValueTemp, muErrUpOneSigmaTemp, muErrUpTwoSigmaTemp, muErrDownOneSigmaTemp, muErrDownTwoSigmaTemp)
                     
@@ -769,8 +768,6 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
 def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
 
-    setStyle();
-
     ## the matrix is always squared                                                                                                                                             
     nvar = len(variableName);
 
@@ -795,6 +792,8 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
 
     varUsed = [];
 
+    mapMuDnll = ROOT.TH2F("mapMuDnll","",150,options.rMin,options.rMax,100000,0,50);
+
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
             if ivarX == ivarY :
@@ -810,18 +809,15 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
 
                         f = ROOT.TFile(filelist[ifile]);
                         t = f.Get("limit");
-                    
-                        xbins_mu = array('f',[]); 
-                        ybins_mu = array('f',[]); 
+
+                        mapMuDnll.Reset("ICES");
 
                         for ientry in range(t.GetEntries()):
                             if ientry == 0 : continue ;   
                             t.GetEntry(ientry);   
-                            xbins_mu.append(t.r); 
-                            ybins_mu.append(2*t.deltaNLL); 
+                            mapMuDnll.Fill(t.r,2*t.deltaNLL);
 
-                        gr_mu = ROOT.TGraph(t.GetEntries()-1,xbins_mu,ybins_mu);
-                        gr_mu.Sort();
+                        gr_mu = ROOT.TGraphErrors(mapMuDnll.ProfileX("gr_mu"));
                                     
                         gr_mu.SetLineWidth(2);
                         gr_mu.SetLineColor(2);
@@ -879,7 +875,9 @@ if __name__ == '__main__':
 
     for line in file :
      filelist.append(line.split(" ")[0].replace("\n",""));
-    
+
+    setStyle();
+        
     if options.makeAsymptoticPlot :
         makeAsymptoticLimitPlot(filelist,variableName,variableLabel);
     elif options.makeProfileLikelihoodPlot :
