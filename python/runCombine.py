@@ -31,6 +31,7 @@ parser.add_option('--makeLikelihoodScan',       action='store_true', dest='makeL
 ##### submit jobs to condor, lxbatch and hercules 
 parser.add_option('--batchMode',      action='store_true', dest='batchMode',      default=False, help='to run jobs on condor fnal')
 parser.add_option('--lxbatchCern',    action='store_true', dest='lxbatchCern',    default=False, help='run jobs on lxbatch system at cern, default is condor fnal')
+parser.add_option('--noCombineCards',    action='store_true', dest='noCombineCards', default=False, help='not combine again the cards')
 parser.add_option('--queque',         action="store",      type="string",         dest="queque",      default="")
 
 ##### other basci options for all the methods 
@@ -48,8 +49,6 @@ parser.add_option('--noSystematics',         action="store", type=int,      dest
 ###### input set of variables : 
 parser.add_option('--inputVariableList', action="store", type="string", dest="inputVariableList", default="list of variables to be considered")
 parser.add_option('--is2Dcard',          action="store_true", dest="is2Dcard", default=False)
-
-
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
@@ -146,7 +145,7 @@ if __name__ == '__main__':
             if options.channel == "COMB" :
                 os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_COMB | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_DF | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
                 
@@ -180,8 +179,9 @@ if __name__ == '__main__':
                 combinedCard = combinedCard.replace("_DF","_COMB")
                 combineCommand += " > " +combinedCard;
                 datacardList.append(combinedCard);
-                print "combine cards: ",combineCommand;
-                os.system(combineCommand);
+                if not options.noCombineCards :
+                    print "combine cards: ",combineCommand;
+                    os.system(combineCommand);
                 
             else:
                 for line in file : ## loop on these variables, take into account that there should be only 1 card for each variables given a channel
@@ -218,7 +218,7 @@ if __name__ == '__main__':
             if options.channel == "COMB" :
                 os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_COMB | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_DF | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
 
@@ -252,8 +252,9 @@ if __name__ == '__main__':
                 combinedCard = combinedCard.replace("_DF","_COMB")
                 combineCommand += " > "+ combinedCard;
                 datacardList.append(combinedCard);
-                print "combine cards: ",combineCommand;
-                os.system(combineCommand);
+                if not options.noCombineCards :
+                    print "combine cards: ",combineCommand;
+                    os.system(combineCommand);
                 
             else:
                 for line in file : ## loop on these variables, take into account that there should be only 1 card for each variables given a channel
@@ -332,7 +333,7 @@ if __name__ == '__main__':
           #################################################
                         
            if options.nToys == 0 : 
-               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 --toysNoSystematics"%(rMin,rMax,outname,card);
+               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 --toysNoSystematics"%(rMin,rMax,outname,card);
                print "runCmmd ",runCmmd;
                if options.batchMode:
                    fn = "combineScript_MaxLikelihoodFit_%s"%(outname);
@@ -351,7 +352,7 @@ if __name__ == '__main__':
            elif options.nToys != 0  :
                if options.outputTree == 0:  
                    for iToy in range(options.nToys):
-                       runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveToys --saveWithUncertainties --toysNoSystematics -s -1 -n  %s -m 100 -d %s  -t 1 --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.injectSignal);
+                       runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveToys --saveWithUncertainties --toysNoSystematics -s -1 -n  %s -m 100 -d %s  -t 1 --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.injectSignal);
                        print "runCmmd ",runCmmd;
                        if options.batchMode:
                            fn = "combineScript_MaxLikelihoodFit_%s_iToy_%d"%(outname,iToy);
@@ -362,11 +363,11 @@ if __name__ == '__main__':
                            os.system("mv mlfit*"+options.channel+"*"+options.outputDIR);   
                        continue ;
                else:
-                   runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  --toysNoSystematics --saveToys -s -1 -n %s -m 100 -d %s  -t %d --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.nToys,options.injectSignal);
+                   runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  --toysNoSystematics --saveToys -s -1 -n %s -m 100 -d %s  -t %d --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.nToys,options.injectSignal);
                    print "runCmmd ",runCmmd;
                    if options.batchMode:
                        fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
-                       submitBatchJobCombine(runCmmd,fn,outname);
+                       #submitBatchJobCombine(runCmmd,fn,outname);
                    else: 
                        os.system(runCmmd);
                        os.system("mv higgsCombine*"+options.channel+"*MaxLikelihood* "+options.outputDIR);   
@@ -382,7 +383,7 @@ if __name__ == '__main__':
            print "################################";
 
            if options.noSystematics == 1 :
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -S 0 -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -S 0 -s -1 --expectSignal=%d -t %d --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal,options.nToys,rMin,rMax);
                print "runCmmd ",runCmmd ;
                if options.batchMode:
                    fn = "combineScript_Asymptotic_%s"%(outname);
@@ -394,7 +395,7 @@ if __name__ == '__main__':
 
            elif options.noSystematics == 0 :
 
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);                            
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d -t %d --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal,options.nToys);                            
                print "runCmmd ",runCmmd;
                    
                if options.batchMode:
@@ -414,7 +415,7 @@ if __name__ == '__main__':
            
            if options.outputTree == 0:
                for iToy in range(options.nToys):
-                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t 1 --expectSignal=%d -s -1 --toysNoSystematics "%(outname,card,options.injectSignal);
+                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t 1 --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal);
                    print "runCmmd ",runCmmd;
                           
                    if options.batchMode:
@@ -425,7 +426,7 @@ if __name__ == '__main__':
                        os.system("mv higgsCombine*"+options.channel+"*Profile* "+options.outputDIR);   
            else:
 
-               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics "%(outname,card,options.nToys,options.injectSignal);
+               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.nToys,options.injectSignal);
                print "runCmmd ",runCmmd;
                           
                if options.batchMode:
@@ -437,7 +438,7 @@ if __name__ == '__main__':
 
        elif options.makeLikelihoodScan == 1:
                         
-           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%d,%d -s -1 --expectSignal=%d --toysNoSystematics -t %d"%(outname,card,rMin,rMax,options.injectSignal,options.nToys);
+           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%f,%f -s -1 --expectSignal=%d --toysNoSystematics -t %d"%(outname,card,rMin,rMax,options.injectSignal,options.nToys);
            print "runCmmd ",runCmmd;
            if options.batchMode:
                fn = "combineScript_LikelihoodScan_%s"%(outname);
