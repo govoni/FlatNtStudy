@@ -333,7 +333,7 @@ if __name__ == '__main__':
           #################################################
                         
            if options.nToys == 0 : 
-               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 --toysNoSystematics"%(rMin,rMax,outname,card);
+               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 --toysNoSystematics"%(rMin,rMax,outname,card,rMin,rMax);
                print "runCmmd ",runCmmd;
                if options.batchMode:
                    fn = "combineScript_MaxLikelihoodFit_%s"%(outname);
@@ -367,7 +367,7 @@ if __name__ == '__main__':
                    print "runCmmd ",runCmmd;
                    if options.batchMode:
                        fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
-                       #submitBatchJobCombine(runCmmd,fn,outname);
+                       submitBatchJobCombine(runCmmd,fn,outname);
                    else: 
                        os.system(runCmmd);
                        os.system("mv higgsCombine*"+options.channel+"*MaxLikelihood* "+options.outputDIR);   
@@ -395,7 +395,7 @@ if __name__ == '__main__':
 
            elif options.noSystematics == 0 :
 
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d -t %d --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal,options.nToys);                            
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d -t %d --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal,options.nToys,rMin,rMax);                            
                print "runCmmd ",runCmmd;
                    
                if options.batchMode:
@@ -415,7 +415,7 @@ if __name__ == '__main__':
            
            if options.outputTree == 0:
                for iToy in range(options.nToys):
-                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t 1 --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal);
+                   runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t 1 --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.injectSignal,rMin,rMax);
                    print "runCmmd ",runCmmd;
                           
                    if options.batchMode:
@@ -426,7 +426,7 @@ if __name__ == '__main__':
                        os.system("mv higgsCombine*"+options.channel+"*Profile* "+options.outputDIR);   
            else:
 
-               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.nToys,options.injectSignal);
+               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics --rMin %f --rMax %f"%(outname,card,options.nToys,options.injectSignal,rMin,rMax);
                print "runCmmd ",runCmmd;
                           
                if options.batchMode:
