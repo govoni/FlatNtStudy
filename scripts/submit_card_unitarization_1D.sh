@@ -23,11 +23,11 @@ python python/runCombine.py  --computeAsymptotic --datacardDIR output/DataCards_
 python python/runCombine.py  --computeAsymptotic --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeAsymptotic --batchMode --queque cmscaf1nd --channel COMB --nToys 100 --outputTree 1 --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --noCombineCards
 
 
-python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel UU --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --nToys 100 --outputTree 1
+python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel UU --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --outputTree 1
 
-python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel EE --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --nToys 100 --outputTree 1
+python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel EE --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --outputTree 1
 
-python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel DF --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --nToys 100 --outputTree 1
+python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel DF --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --outputTree 1
 
-python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel COMB --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --nToys 100 --outputTree 1 --noCombineCards
+python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_HvsNoH/Card1D/ --outputDIR computeLikelihoodScan --batchMode --queque cmscaf1nh --channel COMB --rMin 0 --rMax 2 --inputVariableList cfg/DataCardCfg/HvsNoHCards/Variables1D.txt --injectSignal 1 --outputTree 1 --noCombineCards
 

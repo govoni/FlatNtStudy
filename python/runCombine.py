@@ -434,7 +434,7 @@ if __name__ == '__main__':
 
        elif options.makeLikelihoodScan == 1:
                         
-           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%f,%f -s -1 --expectSignal=%d --toysNoSystematics -t %d"%(outname,card,rMin,rMax,options.injectSignal,options.nToys);
+           runCmmd = "combine -M MultiDimFit -n %s -m 100 -d %s --algo=grid --points=150 --setPhysicsModelParameterRanges r=%f,%f -s -1 --expectSignal=%d --toysNoSystematics -t -1"%(outname,card,rMin,rMax,options.injectSignal);
            print "runCmmd ",runCmmd;
            if options.batchMode:
                fn = "combineScript_LikelihoodScan_%s"%(outname);

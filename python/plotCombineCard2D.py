@@ -35,6 +35,9 @@ parser.add_option('--makeProfileLikelihoodPlot',    action="store", type="int", 
 parser.add_option('--makeLikelihoodScanPlot',       action="store", type="int",    dest="makeLikelihoodScanPlot",    default=0)
 parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int",    dest="makeMaxLikelihoodFitPlot",  default=0)
 
+parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
+parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
+
 (options, args) = parser.parse_args()
 
 ########################################
@@ -46,6 +49,9 @@ def getAsymptoticLimit (file, limitExp, limit1sUp, limit1sDw, limit2sUp, limit2s
  f = ROOT.TFile(file);
  t = f.Get("limit");
 
+ yMu     = [];  yMu1sUp = [];  yMu1sDw = [];  yMu2sUp = [];  yMu2sDw = [];
+ ievent2sDw = 0;  ievent1sDw = 0;  ievent1sUp = 0; ievent2sUp = 0; ievent = 0;
+
  for i in range(t.GetEntries()):
 
   t.GetEntry(i);
@@ -55,16 +61,46 @@ def getAsymptoticLimit (file, limitExp, limit1sUp, limit1sDw, limit2sUp, limit2s
   if t_quantileExpected == -1.:
       continue ;
   elif t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026:
-      limit2sDw.Fill(t.limit);
+      yMu2sDw.append((ievent2sDw,t.limit));
+      ievent2sDw = ievent2sDw+1;
   elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17:
-      limit1sDw.Fill(t.limit);
+      yMu1sDw.append((ievent1sDw,t.limit));
+      ievent1sDw = ievent1sDw+1;
   elif t_quantileExpected == 0.5:
-      limitExp.Fill(t.limit);
+      yMu.append((ievent,t.limit));
+      ievent = ievent+1;
   elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85:
-      limit1sUp.Fill(t.limit);
+      yMu1sUp.append((ievent1sUp,t.limit));
+      ievent1sUp = ievent1sUp+1;
   elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976:
-      limit2sUp.Fill(t.limit);
+      yMu2sUp.append((ievent2sUp,t.limit));
+      ievent2sUp = ievent2sUp+1;
   else: print "Unknown quantile!"
+
+ #### fill histos                                                                                                                                                                
+ for mu in yMu :
+     limitExp.Fill(mu[1])
+
+ for mu in yMu1sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit1sUp.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu1sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit1sDw.Fill(yMu[i][1]-mu[1])
+
+ for mu in yMu2sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit2sUp.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu2sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit2sDw.Fill(yMu[i][1]-mu[1])
+
 
  return ;
 
@@ -119,6 +155,14 @@ def getSignalStrenght(ifile,muValue,muErrUpOneSigma,muErrUpTwoSigma,muErrDownOne
  t = f.Get("limit");
  entries = t.GetEntries();
 
+ yMu     = []; yMu1sUp = []; yMu1sDw = []; yMu2sUp = []; yMu2sDw = [];
+
+ ievent2sDw = 0;
+ ievent1sDw = 0;
+ ievent1sUp = 0;
+ ievent2sUp = 0;
+ ievent = 0;
+
  for i in range(entries):
 
   t.GetEntry(i);
@@ -126,19 +170,59 @@ def getSignalStrenght(ifile,muValue,muErrUpOneSigma,muErrUpTwoSigma,muErrDownOne
   t_quantileExpected = t.quantileExpected;
   t_limit = t.limit;
 
-  if t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026: 
-      muErrDownTwoSigma.Fill(t_limit);
-  elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17: 
-      muErrDownOneSigma.Fill(t_limit);
-  elif t_quantileExpected == 0.5: 
-      muValue.Fill(t_limit);
-  elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85: 
-      muErrUpOneSigma.Fill(t_limit);
-  elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976: 
-      muErrUpTwoSigma.Fill(t_limit);
+  if t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026 :
+      yMu2sDw.append((ievent2sDw,t_limit));
+      ievent2sDw = ievent2sDw +1
+
+  elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17:
+      yMu1sDw.append((ievent1sDw,t_limit));
+      ievent1sDw = ievent1sDw +1
+
+  elif t_quantileExpected == 0.5:
+      yMu.append((ievent,t_limit));
+      ievent = ievent +1
+
+  elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85:
+      yMu1sUp.append((ievent1sUp,t_limit));
+      ievent1sUp = ievent1sUp +1
+
+  elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976:
+      yMu2sUp.append((ievent2sUp,t_limit));
+      ievent2sUp = ievent2sUp +1
+
   elif t_quantileExpected == -1 :
       continue ;
   else: print "Unknown quantile!"
+
+
+ ## fill histograms                                                                                                                                                              
+ for mu in yMu :
+     muValue.Fill(mu[1])
+
+ for mu in yMu1sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if mu[1]-yMu[i][1] <  0. : continue ;
+             muErrUpOneSigma.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu1sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if yMu[i][1]-mu[1] <  0. : continue ;
+             muErrDownOneSigma.Fill(yMu[i][1]-mu[1])
+
+ for mu in yMu2sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if mu[1]-yMu[i][1] <  0. : continue ;
+             muErrUpTwoSigma.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu2sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if yMu[i][1]-mu[1] < 0. : continue ;
+             muErrDownTwoSigma.Fill(yMu[i][1]-mu[1])
+
 
  return ;
 
@@ -240,6 +324,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     histo1sDw  = ROOT.TH2F("histo1sDw","Asympt. CL_{S} Expected -1#sigma",nvar,0,nvar,nvar,0,nvar);
     histo2sDw  = ROOT.TH2F("histo2sDw","Asympt. CL_{S} Expected -2#sigma",nvar,0,nvar,nvar,0,nvar);
 
+
     for ivar in range(nvar) :
 
         histoExp.GetXaxis().SetBinLabel(ivar+1,variableLabel[ivar]);
@@ -260,12 +345,16 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     varUsed = [];
 
-    limitExp     = ROOT.TH1F("limitExp","",100000,-1,10);
-    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",100000,-1,10);
-    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",100000,-1,10);
-    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",100000,-1,10);
-    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",100000,-1,10);
-    
+    limitExp     = ROOT.TH1F("limitExp","",1000,-1,10);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,10);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,10);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,10);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,10);
+    limitExp.Sumw2();
+    limitExp1sUp.Sumw2();
+    limitExp2sUp.Sumw2();
+    limitExp1sDw.Sumw2();
+    limitExp2sDw.Sumw2();
 
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
@@ -293,6 +382,12 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
                         histo2sUp.SetBinContent(ivarX+1,ivarY+1,round(limitExp2sUp.GetMean(),3));
                         histo1sDw.SetBinContent(ivarX+1,ivarY+1,round(limitExp1sDw.GetMean(),3));
                         histo2sDw.SetBinContent(ivarX+1,ivarY+1,round(limitExp2sDw.GetMean(),3));
+
+                        histoExp.SetBinContent(ivarY+1,ivarX+1,round(limitExp.GetMean(),3));                                     
+                        histo1sUp.SetBinContent(ivarY+1,ivarX+1,round(limitExp1sUp.GetMean(),3));
+                        histo2sUp.SetBinContent(ivarY+1,ivarX+1,round(limitExp2sUp.GetMean(),3));
+                        histo1sDw.SetBinContent(ivarY+1,ivarX+1,round(limitExp1sDw.GetMean(),3));
+                        histo2sDw.SetBinContent(ivarY+1,ivarX+1,round(limitExp2sDw.GetMean(),3));
 
        
     histoExp.SetMarkerStyle(20);
@@ -339,14 +434,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     histoExp.GetZaxis().SetRangeUser(histoExp.GetMinimum()*0.75,histoExp.GetMaximum());
     histoExp.GetZaxis().SetTitleOffset(0.95);
 
-    textLeg = ROOT.TLatex(0.75,0.3,"Asymptotic Limit Exp.");
-    textLeg.SetNDC();
-    textLeg.SetTextAlign(31);
-    textLeg.SetTextFont(42);
-    textLeg.SetTextSize(0.04);
-    textLeg.SetLineWidth(2);
-    textLeg.Draw("same");
-
     tex = ROOT.TLatex(0.91,0.957," 14 TeV");
     tex.SetNDC();
     tex.SetTextAlign(31);
@@ -380,9 +467,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histo1sUp.Draw("colz TEXT");
 
-    textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp +1#sigma");
-    textLeg.Draw();
-
     can.Update();
     can.RedrawAxis();
     can.RedrawAxis("g");
@@ -392,9 +476,9 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_1sUp_%s.root"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sUp_%s.png"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sUp_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo2sUp.GetZaxis().SetLabelSize(0.03);
     histo2sUp.GetZaxis().SetTitleSize(0.03);
@@ -403,9 +487,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histo2sUp.Draw("colz TEXT");
 
-    textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp +2#sigma");
-    textLeg.Draw();
-
     can.Update();
     can.RedrawAxis();
     can.RedrawAxis("g");
@@ -415,9 +496,9 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_2sUp_%s.root"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sUp_%s.png"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sUp_%s.pdf"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sUp_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo1sDw.GetZaxis().SetLabelSize(0.03);
     histo1sDw.GetZaxis().SetTitleSize(0.03);
@@ -427,9 +508,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histo1sDw.Draw("colz TEXT");
 
-    textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp -1#sigma");
-    textLeg.Draw();
-
     can.Update();
     can.RedrawAxis();
     can.RedrawAxis("g");
@@ -439,9 +517,9 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_1sDw_%s.root"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sDw_%s.png"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_1sDw_%s.root"%(options.outputPlotDIR,options.channel));
 
     histo2sDw.GetZaxis().SetLabelSize(0.03);
     histo2sDw.GetZaxis().SetTitleSize(0.03);
@@ -451,9 +529,6 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histo2sDw.Draw("colz TEXT");
 
-    textLeg.SetText(0.75,0.3,"Asymptotic Limit Exp -2#sigma");
-    textLeg.Draw();
-
     can.Update();
     can.RedrawAxis();
     can.RedrawAxis("g");
@@ -463,9 +538,9 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/AsymptoticLimit_2sDw_%s.root"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sDw_%s.png"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sDw_%s.pdf"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/AsymptoticLimit_2sDw_%s.root"%(options.outputPlotDIR,options.channel));
     
 
 ##############################
@@ -491,7 +566,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
     varUsed = [] ;
 
-    signifExp = ROOT.TH1F("signifExp","",1000000,0,150);
+    signifExp = ROOT.TH1F("signifExp","",1000,0,150);
 
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
@@ -511,6 +586,9 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
                         histoExp.SetBinContent(ivarX+1,ivarY+1,round(signifExp.GetMean(),2));
                         histoExp_err.SetBinContent(ivarX+1,ivarY+1,round(signifExp.GetRMS(),2));
+
+                        histoExp.SetBinContent(ivarY+1,ivarX+1,round(signifExp.GetMean(),2));
+                        histoExp_err.SetBinContent(ivarY+1,ivarX+1,round(signifExp.GetRMS(),2));
 
                          
     histoExp.GetZaxis().SetLabelSize(0.03);
@@ -544,15 +622,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     tex3.SetLineWidth(2);
     tex3.Draw();
 
-    textLeg = ROOT.TLatex(0.75,0.3,"Expected Significance");
-    textLeg.SetNDC();
-    textLeg.SetTextAlign(31);
-    textLeg.SetTextFont(42);
-    textLeg.SetTextSize(0.04);
-    textLeg.SetLineWidth(2);
-    textLeg.Draw("same");
-
-
     can.SaveAs("%s/ProfileLikelihood_%s.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s.pdf"%(options.outputPlotDIR,options.channel));
 
@@ -561,9 +630,6 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
 
     histoExp_err.GetZaxis().SetLabelSize(0.03);
     histoExp_err.GetZaxis().SetTitleSize(0.03);
-
-    textLeg.SetText(0.75,0.3,"Expected Significance Uncertainty");
-    textLeg.Draw("same");
 
     tex.Draw();
     tex2.Draw();
@@ -631,20 +697,22 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
                         muValueTemp.Reset("ICES");
                         muErrUpOneSigmaTemp.Reset("ICES");
                         muErrUpTwoSigmaTemp.Reset("ICES");
-                        muErrDwOneSigmaTemp.Reset("ICES");
-                        muErrDwTwoSigmaTemp.Reset("ICES");
+                        muErrDownOneSigmaTemp.Reset("ICES");
+                        muErrDownTwoSigmaTemp.Reset("ICES");
 
                         getSignalStrenght(filelist[ifile], muValueTemp, muErrUpOneSigmaTemp, muErrUpTwoSigmaTemp, muErrDownOneSigmaTemp, muErrDownTwoSigmaTemp)
                     
                         muValue.SetBinContent(ivarX+1,ivarY+1,round(muValueTemp.GetMean(),2));
-
                         muErrUpOneSigma.SetBinContent(ivarX+1,ivarY+1,round(muErrUpOneSigmaTemp.GetMean(),2));
-
                         muErrUpTwoSigma.SetBinContent(ivarX+1,ivarY+1,round(muErrUpTwoSigmaTemp.GetMean(),2));
-
                         muErrDownOneSigma.SetBinContent(ivarX+1,ivarY+1,round(muErrDownOneSigmaTemp.GetMean(),2));
-
                         muErrDownTwoSigma.SetBinContent(ivarX+1,ivarY+1,round(muErrDownTwoSigmaTemp.GetMean(),2));
+
+                        muValue.SetBinContent(ivarY+1,ivarX+1,round(muValueTemp.GetMean(),2));
+                        muErrUpOneSigma.SetBinContent(ivarY+1,ivarX+1,round(muErrUpOneSigmaTemp.GetMean(),2));
+                        muErrUpTwoSigma.SetBinContent(ivarY+1,ivarX+1,round(muErrUpTwoSigmaTemp.GetMean(),2));
+                        muErrDownOneSigma.SetBinContent(ivarY+1,ivarX+1,round(muErrDownOneSigmaTemp.GetMean(),2));
+                        muErrDownTwoSigma.SetBinContent(ivarY+1,ivarX+1,round(muErrDownTwoSigmaTemp.GetMean(),2));
 
 
          
@@ -656,7 +724,7 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
     muValue.GetZaxis().SetLabelSize(0.03);
     muValue.GetZaxis().SetTitleSize(0.03);
-    muValue.GetZaxis().SetRangeUser(0.9,1.1);
+    muValue.GetZaxis().SetRangeUser(0.8,1.2);
 
     tex = ROOT.TLatex(0.892,0.957," 14 TeV");
     tex.SetNDC();
@@ -679,15 +747,6 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     tex3.SetTextSize(0.035);
     tex3.SetLineWidth(2);
     tex3.Draw();
-
-    textLeg = ROOT.TLatex(0.75,0.3,"Fitted #mu (injected #mu = 1)");
-    textLeg.SetNDC();
-    textLeg.SetTextAlign(31);
-    textLeg.SetTextFont(42);
-    textLeg.SetTextSize(0.04);
-    textLeg.SetLineWidth(2);
-    textLeg.Draw("same");
-
    
     can.SaveAs("%s/maximumLikelihoodFit_Mu_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/maximumLikelihoodFit_Mu_%s.png"%(options.outputPlotDIR,options.channel),"png");
@@ -697,14 +756,10 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
  
     muErrUpOneSigma.GetZaxis().SetLabelSize(0.03);
     muErrUpOneSigma.GetZaxis().SetTitleSize(0.03);
-    muErrUpOneSigma.GetZaxis().SetRangeUser(1.6,2);
 
     tex.Draw("same");
     tex2.Draw();
     tex3.Draw();
-
-    textLeg.SetText(0.75,0.3,"#mu +1#sigma");
-    textLeg.Draw("same");
 
    
     can.SaveAs("%s/maximumLikelihoodFit_Mu_Up1s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
@@ -712,41 +767,30 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
     muErrUpTwoSigma.GetZaxis().SetLabelSize(0.03);
     muErrUpTwoSigma.GetZaxis().SetTitleSize(0.03);
-    muErrUpTwoSigma.GetZaxis().SetRangeUser(2.1,2.4);
 
     muErrUpTwoSigma.Draw("colz TEXT");   
 
     tex.Draw("same");
     tex2.Draw();
     tex3.Draw();
-
-    textLeg.SetText(0.75,0.3,"#mu +2#sigma");
-    textLeg.Draw("same");
-
    
-    can.SaveAs("%s/maximumLikelihoodFit_Mu_Up2s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
-    can.SaveAs("%s/maximumLikelihoodFit_Mu_Up2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
+    #can.SaveAs("%s/maximumLikelihoodFit_Mu_Up2s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    #can.SaveAs("%s/maximumLikelihoodFit_Mu_Up2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
     muErrDownOneSigma.GetZaxis().SetLabelSize(0.03);
     muErrDownOneSigma.GetZaxis().SetTitleSize(0.03);
 
     muErrDownOneSigma.Draw("colz TEXT");   
-    muErrDownOneSigma.GetZaxis().SetRangeUser(-0.1,0.3);
 
     tex.Draw("same");
     tex2.Draw();
     tex3.Draw();
-
-    textLeg.SetText(0.75,0.3,"#mu -1#sigma");
-    textLeg.Draw("same");
-
    
     can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw1s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw1s_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
     muErrDownTwoSigma.GetZaxis().SetLabelSize(0.03);
     muErrDownTwoSigma.GetZaxis().SetTitleSize(0.03);
-    muErrDownTwoSigma.GetZaxis().SetRangeUser(-1,0);
 
     muErrDownTwoSigma.Draw("colz TEXT");   
 
@@ -754,12 +798,8 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    textLeg.SetText(0.75,0.3,"#mu -2#sigma");
-    textLeg.Draw("same");
-
-   
-    can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw2s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
-    can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
+    #can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw2s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    #can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
 
 #################################
@@ -792,8 +832,6 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
 
     varUsed = [];
 
-    mapMuDnll = ROOT.TH2F("mapMuDnll","",150,options.rMin,options.rMax,100000,0,50);
-
     for ivarX in range(len(variableName)) :
         for ivarY in range(len(variableName)) :
             if ivarX == ivarY :
@@ -810,15 +848,20 @@ def makeLikelihoodScanPlot(filelist,variableName,variableLabel):
                         f = ROOT.TFile(filelist[ifile]);
                         t = f.Get("limit");
 
-                        mapMuDnll.Reset("ICES");
+                        mapMuDnll = ROOT.TH1F("mapMuDnll","",150,options.rMin,options.rMax);
+
 
                         for ientry in range(t.GetEntries()):
                             if ientry == 0 : continue ;   
                             t.GetEntry(ientry);   
                             mapMuDnll.Fill(t.r,2*t.deltaNLL);
 
-                        gr_mu = ROOT.TGraphErrors(mapMuDnll.ProfileX("gr_mu"));
-                                    
+                        gr_mu = ROOT.TGraph(mapMuDnll);
+                        gr_mu.SetMinimum(options.rMin*1.2);
+                        gr_mu.SetMaximum(options.rMax*0.9);
+                        gr_mu.GetXaxis().SetRangeUser(options.rMin*1.05,options.rMax*0.95);
+                        gr_mu.GetYaxis().SetRangeUser(0,gr_mu.GetMaximum()*0.9);
+
                         gr_mu.SetLineWidth(2);
                         gr_mu.SetLineColor(2);
                         gr_mu.SetMarkerStyle(20);
