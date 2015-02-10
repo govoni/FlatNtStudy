@@ -36,74 +36,92 @@ parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int", 
 
 (options, args) = parser.parse_args()
 
-luminosity     = [20,50,100,250,500,1000,2000,3000];
+luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000];
 
 ########################################
 ###### Make Asymptotic Limit Plot ######
 ########################################
 
-def getAsymptoticLimit (file):
+def getAsymptoticLimit (file, limitExp, limit1sUp, limit1sDw, limit2sUp, limit2sDw):
         
  f = ROOT.TFile(file);
  t = f.Get("limit"); 
 
- lims = [0,0,0,0,0,0];
+ yMu     = [];  yMu1sUp = [];  yMu1sDw = [];  yMu2sUp = [];  yMu2sDw = [];
+ ievent2sDw = 0;  ievent1sDw = 0;  ievent1sUp = 0; ievent2sUp = 0; ievent = 0;
 
- limit_entries = 0;  
-    
  for i in range(t.GetEntries()):
         
   t.GetEntry(i);
   t_quantileExpected = t.quantileExpected;
   t_limit = t.limit;
-        
-  #print "limit: ", t_limit, ", quantileExpected: ",t_quantileExpected;        
+
   if t_quantileExpected == -1.: 
-      lims[0] += t_limit; 
+      continue ;
   elif t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026: 
-      lims[1] += t_limit;
+      yMu2sDw.append((ievent2sDw,t.limit));
+      ievent2sDw = ievent2sDw+1;
   elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17: 
-      lims[2] += t_limit;            
+      yMu1sDw.append((ievent1sDw,t.limit));
+      ievent1sDw = ievent1sDw+1;
   elif t_quantileExpected == 0.5: 
-      lims[3] += t_limit; 
-      limit_entries += 1 ;            
+      yMu.append((ievent,t.limit));
+      ievent = ievent+1;
   elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85: 
-      lims[4] += t_limit;
+      yMu1sUp.append((ievent1sUp,t.limit));
+      ievent1sUp = ievent1sUp+1;    
   elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976: 
-      lims[5] += t_limit;
+      yMu2sUp.append((ievent2sUp,t.limit));
+      ievent2sUp = ievent2sUp+1;
   else: print "Unknown quantile!"
 
- if limit_entries != 0 :
+ #### fill histos
+ for mu in yMu :
+     limitExp.Fill(mu[1])
 
-     lims[0] = lims[0]/limit_entries ;
-     lims[1] = lims[1]/limit_entries ;
-     lims[2] = lims[2]/limit_entries ;
-     lims[3] = lims[3]/limit_entries ;
-     lims[4] = lims[4]/limit_entries ;
-     lims[5] = lims[5]/limit_entries ;
+ for mu in yMu1sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit1sUp.Fill(mu[1]-yMu[i][1])
 
-    
- return lims;
+ for mu in yMu1sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit1sDw.Fill(yMu[i][1]-mu[1])
+
+ for mu in yMu2sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit2sUp.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu2sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             limit2sDw.Fill(yMu[i][1]-mu[1])
+
+
+ return ;
 
 ####################################################
 ### Get Limit value using expected quantile only ###
 ####################################################
 
-def getExpectedQuantile(file):
+
+def getExpectedQuantile(file, signifExp):
 
  f = ROOT.TFile(file);
  t = f.Get("limit");
  entries = t.GetEntries();
 
- histo_val = ROOT.TH1F("histo_val","",1000,0,1000);
  for i in range(entries):
 
   t.GetEntry(i);
 
   t_quantileExpected = t.quantileExpected;
-  histo_val.Fill(t.limit);
+  signifExp.Fill(t.limit);
   
- return histo_val.GetMean(), histo_val.GetMeanError();
+ return ;
+
 
 ######################################################################
 #### get signal strencht from max likelihood fit file for S+B fit ####
@@ -132,12 +150,19 @@ def getSignalStrenghtMLFit(file):
 ######################################################################
 #### get signal strencht from max likelihood fit from limit tree ####
 ######################################################################
-
 def getSignalStrenght(ifile,muValue,muErrUpOneSigma,muErrUpTwoSigma,muErrDownOneSigma,muErrDownTwoSigma):
 
  f = ROOT.TFile(ifile);
  t = f.Get("limit");
  entries = t.GetEntries();
+
+ yMu     = []; yMu1sUp = []; yMu1sDw = []; yMu2sUp = []; yMu2sDw = [];
+
+ ievent2sDw = 0;
+ ievent1sDw = 0;
+ ievent1sUp = 0;
+ ievent2sUp = 0;
+ ievent = 0;
 
  for i in range(entries):
 
@@ -146,21 +171,62 @@ def getSignalStrenght(ifile,muValue,muErrUpOneSigma,muErrUpTwoSigma,muErrDownOne
   t_quantileExpected = t.quantileExpected;
   t_limit = t.limit;
 
-  if t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026: 
-      muErrDownTwoSigma.Fill(t_limit);
+  if t_quantileExpected >= 0.024 and t_quantileExpected <= 0.026 : 
+      yMu2sDw.append((ievent2sDw,t_limit));
+      ievent2sDw = ievent2sDw +1
+
   elif t_quantileExpected >= 0.15 and t_quantileExpected <= 0.17: 
-      muErrDownOneSigma.Fill(t_limit);
+      yMu1sDw.append((ievent1sDw,t_limit));
+      ievent1sDw = ievent1sDw +1
+
   elif t_quantileExpected == 0.5: 
-      muValue.Fill(t_limit);
+      yMu.append((ievent,t_limit));
+      ievent = ievent +1
+
   elif t_quantileExpected >= 0.83 and t_quantileExpected <= 0.85: 
-      muErrUpOneSigma.Fill(t_limit);
+      yMu1sUp.append((ievent1sUp,t_limit));
+      ievent1sUp = ievent1sUp +1
+
   elif t_quantileExpected >= 0.974 and t_quantileExpected <= 0.976: 
-      muErrUpTwoSigma.Fill(t_limit);
+      yMu2sUp.append((ievent2sUp,t_limit));
+      ievent2sUp = ievent2sUp +1
+
   elif t_quantileExpected == -1 :
       continue ;
   else: print "Unknown quantile!"
 
+
+ ## fill histograms
+ for mu in yMu :
+     muValue.Fill(mu[1])
+
+ for mu in yMu1sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if mu[1]-yMu[i][1] <  0. : continue ;
+             muErrUpOneSigma.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu1sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if yMu[i][1]-mu[1] <  0. : continue ;
+             muErrDownOneSigma.Fill(yMu[i][1]-mu[1])
+
+ for mu in yMu2sUp :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if mu[1]-yMu[i][1] <  0. : continue ;
+             muErrUpTwoSigma.Fill(mu[1]-yMu[i][1])
+
+ for mu in yMu2sDw :
+     for i, v in enumerate(yMu) :
+         if v[0] == mu[0]:
+             if yMu[i][1]-mu[1] < 0. : continue ;
+             muErrDownTwoSigma.Fill(yMu[i][1]-mu[1])
+
+
  return ;
+
 
 #####################################
 ###### definition of the style ######
@@ -260,14 +326,31 @@ def makeAsymptoticLimitPlot(filelist):
     ybins_1s_dw  = array('f', []); 
     ybins_2s_dw  = array('f', []);
 
-    setStyle();
+    ## histograms for the limit values
+    limitExp     = ROOT.TH1F("limitExp","",1000,-1,10);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,10);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,10);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,10);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,10);
+    limitExp.Sumw2();
+    limitExp1sUp.Sumw2();
+    limitExp2sUp.Sumw2();
+    limitExp1sDw.Sumw2();
+    limitExp2sDw.Sumw2();
+
 
     for lumi in luminosity :
         for ifile in range(len(filelist)):
             if filelist[ifile].find("_%d"%(lumi)) != -1 :
 
-                curAsymLimits = getAsymptoticLimit(filelist[ifile]);
+                limitExp.Reset("ICES");
+                limitExp1sUp.Reset("ICES");
+                limitExp2sUp.Reset("ICES");
+                limitExp1sDw.Reset("ICES");
+                limitExp2sDw.Reset("ICES");
 
+                getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);
+     
                 xbins.append(lumi);
                 if lumi < 50 :
                     xbins_err_up.append(10);
@@ -278,16 +361,19 @@ def makeAsymptoticLimitPlot(filelist):
                 elif lumi < 500 :
                     xbins_err_up.append(40);
                     xbins_err_dw.append(40);
+                elif lumi < 1500 :
+                    xbins_err_up.append(100);
+                    xbins_err_dw.append(100);
                 else :
                     xbins_err_up.append(200);
                     xbins_err_dw.append(200);
 
+                ybins_exp.append(limitExp.GetMean());
+                ybins_2s_dw.append(limitExp2sDw.GetMean());
+                ybins_1s_dw.append(limitExp1sDw.GetMean());
+                ybins_2s_up.append(limitExp2sUp.GetMean());
+                ybins_1s_up.append(limitExp1sUp.GetMean());
 
-                ybins_exp.append( curAsymLimits[3] );
-                ybins_2s_dw.append(ROOT.TMath.Abs(curAsymLimits[1]-curAsymLimits[3]));
-                ybins_1s_dw.append(ROOT.TMath.Abs(curAsymLimits[2]-curAsymLimits[3]));
-                ybins_2s_up.append(ROOT.TMath.Abs(curAsymLimits[5]-curAsymLimits[3]));
-                ybins_1s_up.append(ROOT.TMath.Abs(curAsymLimits[4]-curAsymLimits[3]));
                 break;
 
 
@@ -321,7 +407,7 @@ def makeAsymptoticLimitPlot(filelist):
     oneLine.SetLineWidth(3);
     
     ## canvas
-    can_SM = ROOT.TCanvas("can_SM","can_SM",650,650);
+    can_SM = ROOT.TCanvas("can_SM","can_SM",800,650);
 
     curGraph_2s.GetYaxis().SetTitle("#mu = #sigma_{95%} / #sigma_{SM}");
     curGraph_2s.GetYaxis().SetTitleOffset(1.1);
@@ -399,7 +485,9 @@ def makeProfileLikelihoodPlot(filelist):
     xbins_err           = array('f', []);
     ybins_err           = array('f', []);
 
-    setStyle();
+    ## histogram
+    signifExp = ROOT.TH1F("signifExp","",10000,0,150);
+    signifExp.Sumw2();
 
     for lumi in luminosity :
         for ifile in range(len(filelist)):
@@ -407,9 +495,13 @@ def makeProfileLikelihoodPlot(filelist):
 
                 xbins_exp.append(lumi); 
                 xbins_err.append(0.); 
-                yval, yval_err =  getExpectedQuantile(filelist[ifile]);
-                ybins_exp.append(yval);
-                ybins_err.append(yval_err);
+
+                signifExp.Reset("ICES");
+
+                getExpectedQuantile(filelist[ifile],signifExp);
+
+                ybins_exp.append(signifExp.GetMean());
+                ybins_err.append(signifExp.GetMeanError());
                 break;
 
 
@@ -433,7 +525,7 @@ def makeProfileLikelihoodPlot(filelist):
     fiveSLine = ROOT.TF1("fiveSLine","5",0,luminosity[len(luminosity)-1]+500);
     fiveSLine.SetLineColor(ROOT.kRed); fiveSLine.SetLineWidth(2); fiveSLine.SetLineStyle(2);
     
-    can = ROOT.TCanvas("can","can",650,650);
+    can = ROOT.TCanvas("can","can",800,650);
 
     gr_exp.GetYaxis().SetTitleOffset(0.95);
     gr_exp.GetYaxis().SetTitle("significance (#sigma)");
@@ -497,17 +589,28 @@ def makeMaxLikelihoodFitPlot(filelist):
     ybins_mu_err_up_2s  = array('f', []);
     ybins_mu_err_dn_2s  = array('f', []);
 
-    setStyle();
+    muValue         = ROOT.TH1F("muValue","",100,-5,5);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-5,5);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-5,5);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-5,5);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-5,5);
 
-    muValue         = ROOT.TH1F("muValue","",100,-10,10);
-    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
-    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
-    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
-    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+    muValue.Sumw2();
+    muErrUpOneSigma.Sumw2();
+    muErrUpTwoSigma.Sumw2();
+    muErrDownOneSigma.Sumw2();
+    muErrDownTwoSigma.Sumw2();
+
         
     for lumi in luminosity :
         for ifile in range(len(filelist)):
             if filelist[ifile].find("_%d"%(lumi)) != -1 :
+
+                muValue.Reset("ICES");
+                muErrUpOneSigma.Reset("ICES");
+                muErrUpTwoSigma.Reset("ICES");
+                muErrDownOneSigma.Reset("ICES");
+                muErrDownTwoSigma.Reset("ICES");
 
                 getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
      
@@ -516,22 +619,15 @@ def makeMaxLikelihoodFitPlot(filelist):
                 xbins_mu_err_dn.append(0); 
 
                 ybins_mu.append(muValue.GetMean());
-                ybins_mu_err_up.append(ROOT.TMath.Abs(muErrUpOneSigma.GetMean()-muValue.GetMean()));
-                ybins_mu_err_dn.append(ROOT.TMath.Abs(muErrDownOneSigma.GetMean()-muValue.GetMean()));
-                ybins_mu_err_up_2s.append(ROOT.TMath.Abs(muErrUpTwoSigma.GetMean()-muValue.GetMean()));
-                ybins_mu_err_dn_2s.append(ROOT.TMath.Abs(muErrDownTwoSigma.GetMean()-muValue.GetMean()));
+                ybins_mu_err_up.append(muErrUpOneSigma.GetMean());
+                ybins_mu_err_dn.append(muErrDownOneSigma.GetMean());
+                ybins_mu_err_up_2s.append(muErrUpTwoSigma.GetMean());
+                ybins_mu_err_dn_2s.append(muErrDownTwoSigma.GetMean());                
 
-                if muValue.GetMean() >= 0 : 
-                    ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
-                else:        
-                    ybins_mu_ratio.append(muValue.GetMean()/muErrDownOneSigma.GetMean());
+
                 break;
 
             
-
-    gr_mu_ratio = ROOT.TGraphAsymmErrors(len(luminosity),xbins_mu,ybins_mu_ratio);
-    gr_mu_ratio.SetLineColor(1); gr_mu_ratio.SetMarkerColor(1); gr_mu_ratio.SetMarkerStyle(20); gr_mu_ratio.SetLineWidth(3);gr_mu_ratio.SetMarkerSize(1.6);
-
 
     gr_mu_1s = ROOT.TGraphAsymmErrors(len(luminosity),xbins_mu,ybins_mu,xbins_mu_err_dn,xbins_mu_err_up,ybins_mu_err_dn,ybins_mu_err_up);
     gr_mu_1s.SetLineColor(1); gr_mu_1s.SetMarkerColor(1); gr_mu_1s.SetMarkerStyle(20); gr_mu_1s.SetLineWidth(5); gr_mu_1s.SetMarkerSize(1.6);
@@ -543,7 +639,7 @@ def makeMaxLikelihoodFitPlot(filelist):
     ban1s.SetTextSize(0.028); ban1s.SetTextColor(1)
 
  
-    can = ROOT.TCanvas("can","can",1050,650);
+    can = ROOT.TCanvas("can","can",800,650);
 
     gr_mu_2s.GetYaxis().SetTitle("signal strenght");
     gr_mu_2s.GetYaxis().SetTitleOffset(0.95)
@@ -581,12 +677,6 @@ def makeMaxLikelihoodFitPlot(filelist):
     can.SaveAs("%s/maximumLikelihoodFit_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/maximumLikelihoodFit_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
-    can.SetLogy();
-
-    can.SaveAs("%s/maximumLikelihoodFit_%s_log.pdf"%(options.outputPlotDIR,options.channel),"pdf");
-    can.SaveAs("%s/maximumLikelihoodFit_%s_log.png"%(options.outputPlotDIR,options.channel),"png");
-
-
 ##################################
 ########### Main Code ############
 ##################################    
@@ -606,6 +696,9 @@ if __name__ == '__main__':
     file = open("list.txt",'r')
     filelist = [];
 
+    setStyle();
+
+
     for line in file :
         filelist.append(line.split(" ")[0].replace("\n",""));
 
@@ -613,8 +706,6 @@ if __name__ == '__main__':
         makeAsymptoticLimitPlot(filelist);
     elif options.makeProfileLikelihoodPlot :
         makeProfileLikelihoodPlot(filelist);
-    elif options.makeLikelihoodScanPlot :
-        makeLikelihoodScanPlot(filelist);    
     elif options.makeMaxLikelihoodFitPlot :
         makeMaxLikelihoodFitPlot(filelist);
 

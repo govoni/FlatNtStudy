@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+## example python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Inclusive/Card1D/lumiExtrapolation/ --inputVariable ptjj --outputDIR computeAsymptotic --makeAsymptotic --injectSignal 1 --nToys 100 --rMin 0.85 --rMax 1.15
+
 import os
 import glob
 import math
@@ -29,6 +31,8 @@ parser.add_option('--outputDIR',     action="store", type="string",  dest="outpu
 parser.add_option('--batchMode',      action='store_true', dest='batchMode',      default=False, help='to run jobs on condor fnal')
 parser.add_option('--queque',         action="store",      type="string",         dest="queque",      default="")
 
+parser.add_option('--noGenerateCards',    action='store_true', dest='noGenerateCards', default=False, help='not generate again the cards')
+
 parser.add_option('--makeAsymptotic',  action="store_true", dest="makeAsymptotic",        default=0)
 parser.add_option('--makeProfileLikelihood',  action="store_true", dest="makeProfileLikelihood", default=0)
 parser.add_option('--makeMaxLikelihoodFit',   action="store_true", dest="makeMaxLikelihoodFit",  default=0)
@@ -39,39 +43,40 @@ parser.add_option('--nToys',                 action="store", type="int",    dest
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
-
-luminosity = [20,50,100,250,500,1000,2000,3000];
+luminosity     = [20,50,75,100,150,250,500,750,1200,1800,2400,3000];
 
 (options, args) = parser.parse_args()
 
-##########################################                                                                                                                                       
-###### Submit batch job for combine ######                                                                                                                                       
-##########################################                                                                                                                                       
+##########################################                                                                                                                                      
+###### Submit batch job for combine ######                                                                                                                                      
+##########################################                                                                                                                                     
 
 def submitBatchJobCombine(command, fn, fileNames):
 
     currentDir = os.getcwd();
 
-    # create a dummy bash/csh                                                                                                                                                    
+    # create a dummy bash/csh                                                                                                                                                   
     outScript = open(fn+".sh","w");
 
     outScript.write('#!/bin/bash \n');
     outScript.write('cd '+currentDir+'\n');
     outScript.write('eval `scram runtime -sh`'+'\n');
     outScript.write('cd - \n');
-    if options.channel !="COMB" :
+    if fileNames.find("COMB") == -1 :
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
     else :
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
-        nametemp = fileNames.replace("COMB","");
-        outScript.write('cp '+currentDir+"/"+nametemp+'*UU* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*EE* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*DF* ./ \n');
+        nametemp = fileNames.replace("COMB","UU");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("UU","EE");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("EE","DF");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
 
     outScript.write(command+'\n');
 
-    outScript.write("mv higgsCombine*"+options.channel+"*  "+currentDir+"/"+options.outputDIR+'\n');
-    outScript.write("mv mlfit*"+options.channel+"*  "+currentDir+"/"+options.outputDIR+'\n');
+    outScript.write("cp higgsCombine*"+fileNames+"* "+currentDir+"/"+options.outputDIR+'\n');
+    outScript.write("cp mlfit*"+fileNames+"* "+currentDir+"/"+options.outputDIR+'\n');
     
     outScript.write("rm rootstats* "+'\n');
     outScript.close();
@@ -83,8 +88,6 @@ def submitBatchJobCombine(command, fn, fileNames):
     else:
         os.system("bsub -q 1nh -o "+currentDir+"/subJob"+fileNames+".log -e "+currentDir+"/subJob"+fileNames+".err "+fn+".sh");
         
-
-
 
 ##################################
 ########### Main Code ############
@@ -99,12 +102,15 @@ if __name__ == '__main__':
 
     os.chdir(options.datacardDIR);
 
-    for lumi in luminosity :
-        os.system("rm *_%d.txt"%(lumi))
-        os.system("rm *_%d.root"%(lumi))
+    if not options.noGenerateCards :
+        for lumi in luminosity :
+            os.system("rm *_%d.txt"%(lumi))
+            os.system("rm *_%d.root"%(lumi))
     
     ## make the card list
-    os.system("ls | grep txt | grep -v COMB | grep "+options.inputVariable+" > list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UU.txt | grep "+options.inputVariable+" > list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EE.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _DF.txt | grep "+options.inputVariable+" >> list.txt");
 
     datacardFile = open("list.txt","r");
     datacardList = [];
@@ -119,75 +125,81 @@ if __name__ == '__main__':
     createdCards = [];
 
     ## lumi on datacard list
-    for datacard in datacardList :
+    if not options.noGenerateCards :
+         for datacard in datacardList :
 
-        observed = 0;
+            observed = 0;
+            ## loop on lumi values        
+            for lumi in luminosity :
 
-        ## loop on lumi values        
-        for lumi in luminosity :
+                inputfile = open('%s'%(datacard),'r');
 
-            inputfile = open('%s'%(datacard),'r');
-
-            ## create a new root file
-            inputrootfile = ROOT.TFile(datacard.replace(".txt",".root"),"READ");
+                ## create a new root file
+                inputrootfile = ROOT.TFile(datacard.replace(".txt",".root"),"READ");
       
 
-            outname = datacard ;
-            outname = datacard.replace(".txt","_%d.txt"%(lumi));
-            print "create the new datacard ",outname;
+                outname = datacard ;
+                outname = datacard.replace(".txt","_%d.txt"%(lumi));
+                print "create the new datacard ",outname;
               
-            fileNew = open('%s'%(outname), 'w');
-            createdCards.append(outname);
+                fileNew = open('%s'%(outname), 'w');
+                createdCards.append(outname);
 
-            for ifile in inputfile :
+                for ifile in inputfile :
 
-                if ifile.find(datacard.replace(".txt",".root"))!=-1 :
-                    line = ifile.replace(datacard.replace(".txt",".root"),datacard.replace(".txt","_%d.root"%(lumi)));
-                    fileNew.write(line);
-                    continue ;
+                    if ifile.find(datacard.replace(".txt",".root"))!=-1 :
+                        line = ifile.replace(datacard.replace(".txt",".root"),datacard.replace(".txt","_%d.root"%(lumi)));
+                        fileNew.write(line);
+                        continue ;
 
-                if ifile.split(" ")[0] != "rate" and ifile.split(" ")[0] != "observation" :
-                    fileNew.write(ifile);
-                    continue;
+                    if ifile.split(" ")[0] != "rate" and ifile.split(" ")[0] != "observation" :
+                        fileNew.write(ifile);
+                        continue;
 
-                if ifile.split(" ")[0] == "observation" :
-                    lineToWrite = "observation ";
-                    for columns in ifile.split() :
-                        if columns == "observation" :
-                            continue ;
-                        lineToWrite += "  %f  "%(float(columns)*lumi/options.inputLumi);
-                        observed = int(float(columns)*lumi/options.inputLumi);
-                    fileNew.write(lineToWrite+"\n");
-                    continue ;
+                    if ifile.split(" ")[0] == "observation" :
+                        lineToWrite = "observation ";
+                        for columns in ifile.split() :
+                            if columns == "observation" :
+                                continue ;
+                            lineToWrite += "  %f  "%(float(columns)*lumi/options.inputLumi);
+                            observed = int(float(columns)*lumi/options.inputLumi);
+                        fileNew.write(lineToWrite+"\n");
+                        continue ;
 
 
-                if ifile.split(" ")[0] == "rate" :
-                    lineToWrite = "rate ";
-                    for columns in ifile.split() :
-                        if columns == "rate" : 
-                            continue ;
-                        lineToWrite += "  %f   "%(float(columns)*lumi/options.inputLumi)                        
-                    fileNew.write(lineToWrite+"\n");
-                    continue ;
+                    if ifile.split(" ")[0] == "rate" :
+                        lineToWrite = "rate ";
+                        for columns in ifile.split() :
+                            if columns == "rate" : 
+                                continue ;
+                            lineToWrite += "  %f   "%(float(columns)*lumi/options.inputLumi)                        
+                        fileNew.write(lineToWrite+"\n");
+                        continue ;
 
-            fileNew.close();
+                fileNew.close();
                 
-            ## copy root file
-            outrootname = outname.replace(".txt",".root");
-            outrootfile = ROOT.TFile("%s"%(outrootname),"RECREATE");
+                ## copy root file
+                outrootname = outname.replace(".txt",".root");
+                outrootfile = ROOT.TFile("%s"%(outrootname),"RECREATE");
               
-            for key in inputrootfile.GetListOfKeys() :
-                if key.GetClassName().find("TH1") == -1 and key.GetClassName().find("TH2") == -1 :
-                    continue ;
-                outrootfile.cd();                  
-                histo = inputrootfile.Get(key.GetName()).Clone("temp");
+                for key in inputrootfile.GetListOfKeys() :
+                    if key.GetClassName().find("TH1") == -1 and key.GetClassName().find("TH2") == -1 :
+                        continue ;
+                    outrootfile.cd();                  
+                    histo = inputrootfile.Get(key.GetName()).Clone("temp");
 
-                histo.Scale(1./(options.inputLumi/lumi));
-                    
-                histo.Write(key.GetName());
+                    histo.Scale(1./(float(options.inputLumi)/float(lumi)));
+                    histo.Write(key.GetName());
 
-            outrootfile.Write();              
-            outrootfile.Close();
+                outrootfile.Write();              
+                outrootfile.Close();    
+    else:
+        for datacard in datacardList :
+            for lumi in luminosity :
+                outname = datacard ;
+                outname = datacard.replace(".txt","_%d.txt"%(lumi));
+                createdCards.append(outname);
+
 
     ## merge the two datacard set                 
     if options.outputDIR == "" :
@@ -209,9 +221,10 @@ if __name__ == '__main__':
                     combinedCards.append(datacard.replace("_EE","_COMB"));
                 break ;
 
-    for card in combinedCards :
-      print "combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card;  
-      os.system("combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card);        
+    if not options.noGenerateCards :
+        for card in combinedCards :
+            print "combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card;  
+            os.system("combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card);        
 
     totalCards = createdCards + combinedCards
 
@@ -221,6 +234,7 @@ if __name__ == '__main__':
 
         if options.makeAsymptotic :
             runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s  -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);
+            print runCmmd ;
             if options.batchMode:
                 fn = "combineScript_Asymptotic_%s"%(outname);
                 submitBatchJobCombine(runCmmd,fn,outname);
@@ -234,7 +248,7 @@ if __name__ == '__main__':
             runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);     
             print "runCmmd ",runCmmd;
             if options.batchMode:
-                fn = "combineScript_ProfileLikelihood_exp_%s_iToy_%d"%(outname,iToy);
+                fn = "combineScript_ProfileLikelihood_exp_%s_iToy_%d"%(outname,options.nToys);
                 submitBatchJobCombine(runCmmd,fn,outname);
             else:
                 os.system(runCmmd);
@@ -242,8 +256,9 @@ if __name__ == '__main__':
                 os.system("rm roostat* ");
             continue ;
 
-        if options.makeMaxLielihoodFit :
-            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %d --rMax %d --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
+        if options.makeMaxLikelihoodFit :
+            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
+            print runCmmd ;
             if options.batchMode:
                 fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
                 submitBatchJobCombine(runCmmd,fn,outname);
@@ -253,3 +268,4 @@ if __name__ == '__main__':
                 os.system("mv mlfit* "+options.outputDIR);
                 os.system("rm roostat* ");
             continue ;
+
