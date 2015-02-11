@@ -112,9 +112,7 @@ int main (int argc, char ** argv) {
   ///// Start the analysis : inport chains                                                                                                                              
 
   TChain* chainH = new TChain (treeName.c_str()) ;  
-  chainH->Add ((InputBaseDirectoryH+"/*_1.root").c_str()) ;
-  chainH->Add ((InputBaseDirectoryH+"/*_2.root").c_str()) ;
-  chainH->Add ((InputBaseDirectoryH+"/*_3.root").c_str()) ;
+  chainH->Add ((InputBaseDirectoryH+"/*.root").c_str()) ;
   int totEventH = chainH->GetEntries();
 
   readTree* readerH  = new readTree((TTree*)(chainH));
@@ -125,9 +123,7 @@ int main (int argc, char ** argv) {
 
 
   TChain* chainNoH = new TChain (treeName.c_str()) ;  
-  chainNoH->Add ((InputBaseDirectoryNoH+"/*_1.root").c_str()) ;
-  chainNoH->Add ((InputBaseDirectoryNoH+"/*_2.root").c_str()) ;
-  chainNoH->Add ((InputBaseDirectoryNoH+"/*_3.root").c_str()) ;
+  chainNoH->Add ((InputBaseDirectoryNoH+"/*.root").c_str()) ;
   int totEventNoH = chainNoH->GetEntries();
 
   readTree* readerNoH  = new readTree((TTree*)(chainNoH));
@@ -138,9 +134,7 @@ int main (int argc, char ** argv) {
 
 
   TChain* chainCxH = new TChain (treeName.c_str()) ;  
-  chainCxH->Add ((InputBaseDirectoryCxH+"/*_1.root").c_str()) ;
-  chainCxH->Add ((InputBaseDirectoryCxH+"/*_2.root").c_str()) ;
-  chainCxH->Add ((InputBaseDirectoryCxH+"/*_3.root").c_str()) ;
+  chainCxH->Add ((InputBaseDirectoryCxH+"/*.root").c_str()) ;
   int totEventCxH = chainCxH->GetEntries();
 
   readTree* readerCxH  = new readTree((TTree*)(chainCxH));
@@ -158,7 +152,7 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotVectorH;
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
     histoCutEffH["H126_"+CutList.at(iCut).cutLayerName] = new TH1F(("H126_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
-    cout<<"H126_"+CutList.at(iCut).cutLayerName<<" "<<histoCutEffH["H126_"+CutList.at(iCut).cutLayerName]<<endl;
+    histoCutEffH["H126_"+CutList.at(iCut).cutLayerName]->Sumw2();
     for(size_t iVar = 0; iVar < variableList.size(); iVar++){
       plotVectorH.push_back(histoContainer("H126_"+CutList.at(iCut).cutLayerName,variableList.at(iVar)));
     }
@@ -167,6 +161,7 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotVectorNoH;
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
     histoCutEffNoH["NoH_"+CutList.at(iCut).cutLayerName] = new TH1F(("noH_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
+    histoCutEffNoH["NoH_"+CutList.at(iCut).cutLayerName]->Sumw2();
     for(size_t iVar = 0; iVar < variableList.size(); iVar++){
       plotVectorNoH.push_back(histoContainer("NoH_"+CutList.at(iCut).cutLayerName,variableList.at(iVar)));
     }
@@ -175,6 +170,7 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotVectorCxH;
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
     histoCutEffCxH["CxH_"+CutList.at(iCut).cutLayerName] = new TH1F(("CxH_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
+    histoCutEffCxH["CxH_"+CutList.at(iCut).cutLayerName]->Sumw2();
     for(size_t iVar = 0; iVar < variableList.size(); iVar++){
       plotVectorCxH.push_back(histoContainer("CxH_"+CutList.at(iCut).cutLayerName,variableList.at(iVar)));
     }
@@ -1070,17 +1066,30 @@ int main (int argc, char ** argv) {
       // difference absolute
       TH1F* diffnoHvsH = (TH1F*) itVecNoH->histogram->Clone((string(itVecNoH->histogram->GetName())+"_diff").c_str());
       diffnoHvsH->Add(itVecH->histogram,-1);
+
+      diffnoHvsH->Rebin(2);
+      diffnoHvsH->SetMarkerColor(kBlue);
+      diffnoHvsH->SetLineColor(kBlue);
+      diffnoHvsH->SetFillColor(kBlue);
+      diffnoHvsH->SetFillStyle(3001);
+
       legend2->AddEntry(diffnoHvsH,"noH-H","l");
 
       TH1F* diffCxHvsH = (TH1F*) itVecCxH->histogram->Clone((string(itVecCxH->histogram->GetName())+"_diff").c_str());
-      diffCxHvsH->SetLineColor(kRed);
       diffCxHvsH->Add(itVecH->histogram,-1);
+      diffCxHvsH->Rebin(2);
+      diffCxHvsH->SetLineColor(kRed);
+      diffCxHvsH->SetMarkerColor(kRed);
+      diffCxHvsH->SetFillColor(kRed);
+      diffCxHvsH->SetFillStyle(3001);
+
+
       legend2->AddEntry(diffCxHvsH,"H(c=0.9)-H","l");
 
       diffnoHvsH->GetYaxis()->SetRangeUser(min(diffnoHvsH->GetMinimum(),diffCxHvsH->GetMinimum()),max(diffnoHvsH->GetMaximum(),diffCxHvsH->GetMaximum())*1.2);
 
-      diffnoHvsH->Draw("hist");
-      diffCxHvsH->Draw("hist same");
+      diffnoHvsH->Draw("E2");
+      diffCxHvsH->Draw("E same");
 
       tex->Draw("same");
       tex2->Draw("same");
@@ -1143,9 +1152,20 @@ int main (int argc, char ** argv) {
       integral = diffCxHvsH->Integral();
       diffCxHvsH->Scale(1./integral);
 
+      diffnoHvsH->SetMarkerColor(kBlue);
+      diffnoHvsH->SetLineColor(kBlue);
+      diffnoHvsH->SetFillColor(kBlue);
+      diffnoHvsH->SetFillStyle(3001);
+
+      diffCxHvsH->SetMarkerColor(kRed);
+      diffCxHvsH->SetLineColor(kRed);
+      diffCxHvsH->SetFillColor(kRed);
+      diffCxHvsH->SetFillStyle(3001);
+
+
       diffnoHvsH->GetYaxis()->SetRangeUser(min(diffnoHvsH->GetMinimum(),diffCxHvsH->GetMinimum()),max(diffnoHvsH->GetMaximum(),diffCxHvsH->GetMaximum())*1.2);
-      diffnoHvsH->Draw("hist");
-      diffCxHvsH->Draw("hist same");
+      diffnoHvsH->Draw("E2");
+      diffCxHvsH->Draw("E same");
 
       tex->Draw("same");
       tex2->Draw("same");

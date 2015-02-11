@@ -2233,7 +2233,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   TString nameTemp;
   string Name;
   if(TString(sampleName).Contains("Madgraph_")){
-    nameTemp =sampleName ;
+    nameTemp = sampleName ;
     nameTemp.ReplaceAll("Madgraph_","");
     Name = string(nameTemp);
   }
