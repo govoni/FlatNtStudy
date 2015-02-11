@@ -35,8 +35,8 @@ int main (int argc, char ** argv)
   TFile f ("mlfitvbfcuts_R_mll_DF.root") ;
   RooPlot * SB_fit = (RooPlot *) f.Get ("vbfcuts_DF_fit_s") ;
   RooHist * events = (RooHist *) SB_fit->getObject (0) ;
-  RooCurve * RC_sig = (RooCurve *) SB_fit->getObject (1) ;
-  RooCurve * RC_bkg = (RooCurve *) SB_fit->getObject (2) ;
+  //RooCurve * RC_sig = (RooCurve *) SB_fit->getObject (1) ;
+  //RooCurve * RC_bkg = (RooCurve *) SB_fit->getObject (2) ;
   RooCurve * RC_tot = (RooCurve *) SB_fit->getObject (3) ;
 
   TH2F * roll_tot = roll<RooCurve> (RC_tot, nBinsX, Xmin, Xmax, nBinsY, Ymin, Ymax, events) ;

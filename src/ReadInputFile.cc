@@ -2,6 +2,183 @@
 
 using namespace std;
 
+fakeRateContainer::~fakeRateContainer(){
+
+  if(inputFile != 0)
+    inputFile->Delete() ;
+
+  if(eeDenominator != 0)
+    eeDenominator->Delete() ;
+  if(meDenominator != 0)
+    meDenominator->Delete() ;
+  if(eDenominator != 0)
+    eDenominator->Delete() ;
+
+  if(eeNumerator != 0)
+    eeNumerator->Delete() ;
+  if(meNumerator != 0)
+    meNumerator->Delete() ;
+  if(eNumerator != 0)
+    eNumerator->Delete() ;
+
+  if(mmDenominator != 0)
+    mmDenominator->Delete() ;
+  if(emDenominator != 0)
+    emDenominator->Delete() ;
+  if(mDenominator != 0)
+    mDenominator->Delete() ;
+
+  if(mmNumerator != 0)
+    mmNumerator->Delete() ;
+  if(emNumerator != 0)
+    emNumerator->Delete() ;
+  if(mNumerator != 0)
+    mNumerator->Delete() ;
+
+  if(mFakeRate!=0)
+    mFakeRate->Delete() ;
+  if(eFakeRate!=0)
+    eFakeRate->Delete() ;
+
+}
+
+fakeRateContainer::fakeRateContainer(const string & fileName){
+
+  inputFile = TFile::Open(fileName.c_str(),"READ");
+
+  eeDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_e");
+  meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_m_jet_to_e");
+  eDenominator  = (TH2F*) eeDenominator->Clone("eDenominator");
+  eDenominator->Add(meDenominator);
+
+  eeNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_e");
+  meNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_m_jet_to_e");
+  eNumerator  = (TH2F*) eeNumerator->Clone("eNumerator");
+  eNumerator->Add(meNumerator);
+
+  eFakeRate = (TH2F*) eNumerator->Clone("eFakeRate");
+  eFakeRate->Divide(eDenominator);
+
+  mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_m_jet_to_m");
+  emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_m");
+  mDenominator  = (TH2F*) mmDenominator->Clone("mDenominator");
+  mDenominator->Add(emDenominator);
+
+  mmNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_m_jet_to_m");
+  emNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_m");
+  mNumerator  = (TH2F*) mmNumerator->Clone("mNumerator");
+  mNumerator->Add(emNumerator);
+
+  mFakeRate = (TH2F*) emNumerator->Clone("mFakeRate");
+  mFakeRate->Divide(mDenominator);
+}
+
+float fakeRateContainer::getFakeRate (const int & PID, const float & pt, const float & eta){
+
+  if(fabs(PID) == 11){ // electron case                                                                                                                                        
+    return eFakeRate->GetBinContent(eFakeRate->FindBin(fabs(eta)),eFakeRate->FindBin(pt));
+  }
+  else if (fabs(PID) == 13){ // electron case                                                                                                                                  
+    return mFakeRate->GetBinContent(mFakeRate->FindBin(fabs(eta)),mFakeRate->FindBin(pt));
+  }
+  else return 1 ;
+
+
+
+}
+
+fakeMigration::~fakeMigration(){
+
+  if(inputFile !=0)
+    inputFile->Delete();
+
+  if(eeBarrel !=0)
+    eeBarrel->Delete();
+  if(meBarrel !=0)
+    meBarrel->Delete();
+  if(eBarrel !=0)
+    eBarrel->Delete();
+  if(eBarrelProfile !=0)
+    eBarrelProfile->Delete();
+
+  if(eeEndcap !=0)
+    eeEndcap->Delete();
+  if(meEndcap !=0)
+    meEndcap->Delete();
+  if(eEndcap !=0)
+    eEndcap->Delete();
+  if(eEndcapProfile !=0)
+    eEndcapProfile->Delete();
+
+  if(mmBarrel !=0)
+    mmBarrel->Delete();
+  if(emBarrel !=0)
+    emBarrel->Delete();
+  if(mBarrel !=0)
+    mBarrel->Delete();
+  if(mBarrelProfile !=0)
+    mBarrelProfile->Delete();
+
+  if(mmEndcap !=0)
+    mmEndcap->Delete();
+  if(emEndcap !=0)
+    emEndcap->Delete();
+  if(mEndcap !=0)
+    mEndcap->Delete();
+  if(mEndcapProfile !=0)
+    mEndcapProfile->Delete();
+
+}
+
+fakeMigration::fakeMigration(const string & fileName){
+
+  inputFile = TFile::Open(fileName.c_str(),"READ");
+
+  eeBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_e");
+  meBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_m_jet_to_e");
+  eBarrel  = (TH2F*) eeBarrel->Clone("eBarrel");
+  eBarrel->Add(meBarrel);
+  eBarrelProfile = eBarrel->ProfileX("_pfX");
+
+  eeEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_e");
+  meEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_m_jet_to_e");
+  eEndcap  = (TH2F*) eEndcap->Clone("eEndcap");
+  eEndcap->Add(meEndcap);
+  eEndcapProfile = eEndcap->ProfileX("_pfX");
+
+  mmBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_m_jet_to_m");
+  emBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_m");
+  mBarrel  = (TH2F*) mmBarrel->Clone("mBarrel");
+  mBarrel->Add(emBarrel);
+  mBarrelProfile = mBarrel->ProfileX("_pfX");
+
+  mmEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_m_jet_to_m");
+  emEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_m");
+  mEndcap  = (TH2F*) mmEndcap->Clone("mEndcap");
+  mEndcap->Add(emEndcap);
+  mEndcapProfile = mEndcap->ProfileX("_pfX");
+
+}
+
+float fakeMigration::getMigration (const int & PID, const float & pt, const float & eta){
+
+  if(fabs(PID) == 11 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
+    return eBarrelProfile->GetBinContent(eBarrelProfile->FindBin(pt));
+  }
+  if(fabs(PID) == 11 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
+    return eEndcapProfile->GetBinContent(eEndcapProfile->FindBin(pt));
+  }
+
+  if(fabs(PID) == 13 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
+    return mBarrelProfile->GetBinContent(mBarrelProfile->FindBin(pt));
+  }
+  if(fabs(PID) == 13 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
+    return mEndcapProfile->GetBinContent(mEndcapProfile->FindBin(pt));
+  }
+  else return 1;
+
+}
+
 int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sampleContainer> > & SampleContainer){
 
 

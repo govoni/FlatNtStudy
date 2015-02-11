@@ -12,6 +12,9 @@
 
 #include "TString.h"
 #include "TH1F.h"
+#include "TH2F.h"
+#include "TFile.h"
+#include "TProfile.h"
 
 using namespace std;
 
@@ -205,6 +208,82 @@ class histoContainer {
   string cutName;
   string varName;
   TH1F* histogram;
+
+};
+
+class fakeRateContainer {
+
+ public :
+
+  fakeRateContainer(){};
+
+  ~fakeRateContainer();
+
+  fakeRateContainer(const string & fileName);
+
+  float getFakeRate (const int & PID, const float & pt, const float & eta);
+
+  TFile *inputFile ;
+
+  TH2F* eeDenominator ;
+  TH2F* meDenominator ;
+  TH2F* eDenominator ;
+
+  TH2F* eeNumerator ;
+  TH2F* meNumerator ;
+  TH2F* eNumerator ;
+
+  TH2F* emDenominator ;
+  TH2F* mmDenominator ;
+  TH2F* mDenominator ;
+
+  TH2F* emNumerator ;
+  TH2F* mmNumerator ;
+  TH2F* mNumerator ;
+
+  TH2F* mFakeRate ;
+  TH2F* eFakeRate ;
+
+};
+
+class fakeMigration {
+
+ public :
+  
+  fakeMigration(){};
+  
+  ~fakeMigration();
+
+  fakeMigration(const string & fileName);
+
+  float getMigration (const int & PID, const float & pt, const float & eta);
+
+  TFile* inputFile;
+
+  TH2F* eeBarrel ;
+  TH2F* meBarrel ;
+  TH2F* eBarrel ;
+
+  TProfile *eBarrelProfile ;
+
+  TH2F* eeEndcap ;
+  TH2F* meEndcap ;
+  TH2F* eEndcap ;
+
+  TProfile *eEndcapProfile ;
+
+  TH2F* mmBarrel ;
+  TH2F* emBarrel ;
+  TH2F* mBarrel ;
+
+  TProfile *mBarrelProfile ;
+
+  TH2F* mmEndcap ;
+  TH2F* emEndcap ;
+  TH2F* mEndcap ;
+
+  TProfile *mEndcapProfile ;
+
 
 };
 
