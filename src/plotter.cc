@@ -213,7 +213,7 @@ plotter::plotter (float lumi,
 
 
 // add an empty structure to collect all the plots relative to a sample
-void plotter::addSample (string sampleName, float XS, int totInitialEvents, bool isSignal, int color){
+void plotter::addSample (string sampleName, float XS, int totInitialEvents, int isSignal, int color){
 
   m_samples[sampleName] = sample (sampleName, XS, m_lumi, totInitialEvents, isSignal, color) ;
   m_samplesSequence.push_back (sampleName) ;
@@ -474,7 +474,7 @@ void plotter::copyLayerInSample (string sampleName, string target, string origin
 
 
 // duplicate a sample structure
-void plotter::copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, bool isSignal, int newColor){
+void plotter::copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, int isSignal, int newColor){
 
   addSample (target, newXS, newTotInitialEvents, isSignal, newColor) ; // add a new sample
 
@@ -925,7 +925,7 @@ void plotter::plotSingleLayer (string layerName, string histoName,
 
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == true) continue ;
+    if (m_samples[sampleName].m_isSignal == 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     stack->Add (h_var) ;
     leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -935,7 +935,7 @@ void plotter::plotSingleLayer (string layerName, string histoName,
   for (int iSample = 0 ; iSample < nsamples ; ++iSample){
 
     string sampleName = m_samplesSequence.at (iSample) ;
-    if (m_samples[sampleName].m_isSignal == false) continue ;
+    if (m_samples[sampleName].m_isSignal != 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     stack->Add (h_var) ;
     leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -1001,7 +1001,7 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
     
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == true) continue ;
+    if (m_samples[sampleName].m_isSignal == 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     bkg_stack->Add (h_var) ;
     leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -1014,7 +1014,7 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
   for (int iSample = 0 ; iSample < nsamples ; ++iSample){
     
     string sampleName = m_samplesSequence.at (iSample) ;
-    if (m_samples[sampleName].m_isSignal == false) continue ;
+    if (m_samples[sampleName].m_isSignal != 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     sig_stack->Add (h_var) ;
     leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
@@ -1079,7 +1079,7 @@ void plotter::compareStoB2D (string layerName, string histoName,
     
     prepareSampleForPlotting (sampleName) ;
     TH2F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName] ;
-    if (m_samples[sampleName].m_isSignal == true){
+    if (m_samples[sampleName].m_isSignal == 1){
       if (sig_stack == 0)  sig_stack = (TH2F *) h_var->Clone (sigName.c_str ()) ;
       else                 sig_stack->Add (h_var) ;
     }
@@ -1159,7 +1159,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == true) {
+    if (m_samples[sampleName].m_isSignal == 1) {
       signalPos.at (sigSamplesNum) = iSample ;
       ++sigSamplesNum ;
       continue ;

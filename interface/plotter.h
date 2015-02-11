@@ -30,6 +30,7 @@ using namespace std ;
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+
 // add the overflow bin as real bin to the histo
 void   addOverFlow (TH1F * input) ;            
 
@@ -171,7 +172,7 @@ class sample {
       {}
 
   // inputs are : name, XS, lumi, initial events, if signal or not, color
-  sample (string name, float XS, float lumi, int totInitialEvents, bool isSignal, int color) :
+  sample (string name, float XS, float lumi, int totInitialEvents, int isSignal, int color) :
   m_sampleName (name),
     m_XS (XS),
     m_totInitialEvents (totInitialEvents),
@@ -194,7 +195,7 @@ class sample {
   string m_sampleName ;
   float m_XS ;
   int   m_totInitialEvents ;
-  bool  m_isSignal ;
+  int   m_isSignal ;
   int   m_color ;
   bool  m_readyForPlotting ;
   float m_weight ;
@@ -213,7 +214,7 @@ class plotter { // generic plotter class
   
   // adding methods
   void addSample        (string sampleName, float XS, int totInitialEvents, 
-                         bool isSignal, int color) ;
+                         int isSignal, int color) ;
 
   void addLayerToSample (string sampleName, string layerName) ;
 
@@ -230,7 +231,7 @@ class plotter { // generic plotter class
   void copyLayerInSample   (string sampleName, string target, string origin) ;
 
   void copySampleStructure (string target, string origin, float newXS, 
-                            int newTotInitialEvents, bool isSignal, int newColor) ;
+                            int newTotInitialEvents, int isSignal, int newColor) ;
   // print structure
   void printStructure () ;
   void printEventNumber (string layerName, string histoName) ;
