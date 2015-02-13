@@ -541,8 +541,6 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
 	  continue ;
-	if(finalStateString == "DF" and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 13))
-	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
 	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
@@ -962,8 +960,6 @@ void loopOnEvents (plotter & analysisPlots,
 	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13) 
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-	  continue ;
-	if(finalStateString == "DF" and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 13))
 	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
@@ -2531,11 +2527,14 @@ bool passCutContainerSelection (cutContainer & Cut,
   }
 
   if (leptonsIsoTight.at(0).lepton4V_.Pt() < Cut.ptL.first) return false;
-  
+  if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > Cut.etaMaxL) return false ;
+ 
   bool badTrailingLepton = false;
   for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second) 
-      badTrailingLepton = true;
+    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second){
+      if (fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL) 
+	badTrailingLepton = true;
+    }
   }                         
   if(badTrailingLepton) return false;
 
@@ -2818,11 +2817,15 @@ bool passCutContainerSelection (readTree* reader,
   }
 
   if (leptonsIsoTight.at(0).lepton4V_.Pt() < Cut.ptL.first) return false;
+  if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > Cut.etaMaxL) return false ;
   
   bool badTrailingLepton = false;
   for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second) 
-      badTrailingLepton = true;
+    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second){
+      if (fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL){	
+	badTrailingLepton = true;
+      }
+    }
   }                         
   if(badTrailingLepton) return false;
 

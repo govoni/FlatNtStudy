@@ -104,7 +104,7 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
   }				 
 
   for(int iBinY = 0; iBinY < eFakeRateTemp->GetNbinsY(); iBinY++){    
-    eFakeRateTemp->SetBinContent(eFakeRateTemp->GetNbinsX(),iBinY+1,eFakeRateTemp->GetBinContent(eFakeRateTemp->GetNbinsX()-1),iBinY+1);
+    eFakeRateTemp->SetBinContent(eFakeRateTemp->GetNbinsX(),iBinY+1,eFakeRateTemp->GetBinContent(eFakeRateTemp->GetNbinsX()-1,iBinY+1));
   }				 
 
   
@@ -148,7 +148,7 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
 
   mbinningY[mFakeRate->GetNbinsY()+1] = upperPtBound;
 
-  TH2F* mFakeRateTemp = new TH2F("mFakeRateTemp","",mFakeRate->GetNbinsX(),mbinningX,mFakeRate->GetNbinsY()+1,mbinningY);
+  TH2F* mFakeRateTemp = new TH2F("mFakeRateTemp","",mFakeRate->GetNbinsX()+1,mbinningX,mFakeRate->GetNbinsY()+1,mbinningY);
 
   for(int iBinX = 0; iBinX < mFakeRateTemp->GetNbinsX(); iBinX++){    
     for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){
@@ -161,7 +161,7 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
   }				 
 
   for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){    
-    mFakeRateTemp->SetBinContent(mFakeRateTemp->GetNbinsX(),iBinY+1,mFakeRateTemp->GetBinContent(mFakeRateTemp->GetNbinsX()-1),iBinY+1);
+    mFakeRateTemp->SetBinContent(mFakeRateTemp->GetNbinsX(),iBinY+1,mFakeRateTemp->GetBinContent(mFakeRateTemp->GetNbinsX()-1,iBinY+1));
   }				 
 
   muonFakeRate = new TGraph2D(mFakeRateTemp);
