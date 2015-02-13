@@ -15,6 +15,8 @@
 #include "TH2F.h"
 #include "TFile.h"
 #include "TProfile.h"
+#include "TGraph2D.h"
+#include "TGraph.h"
 
 using namespace std;
 
@@ -24,7 +26,7 @@ class sampleContainer {
   sampleContainer(){};
   ~sampleContainer(){};
 
- sampleContainer(string sampleName, int color, double xsec, int numBefore, int isSignal):
+ sampleContainer(string sampleName, int color, float xsec, int numBefore, int isSignal):
   sampleName(sampleName),
     color(color),
     xsec(xsec),
@@ -33,7 +35,7 @@ class sampleContainer {
 
   string sampleName ;
   int    color;
-  double xsec;
+  float xsec;
   int numBefore;
   int isSignal;
 
@@ -46,23 +48,26 @@ class cutContainer {
   ~cutContainer(){};
 
  cutContainer(string cutLayerName, 
-              pair<double,double> ptL, 
-              double  chargeSign, 
-              double  flavour,
-              int     nLep, 
-              int     nextra,             
-              double  MET, 
-              pair<double,double> ptJet, 
-              double DetaJJ, 
-              double Mjj, 
-              double DetaLL, 
-              pair<double,double> Mll, 
-              pair<double,double> MllZVeto, 
-              double bTagVeto, 
-	      double jetPUID,
-              int polarization = 99):
+              pair<float,float> ptL, 
+	      float etaMaxL,
+              float chargeSign, 
+              float flavour,
+              int   nLep, 
+              int   nextra,             
+              float MET, 
+              pair<float,float> ptJet, 
+              float DetaJJ, 
+              float Mjj, 
+              float DetaLL, 
+              pair<float,float> Mll, 
+              pair<float,float> MllZVeto, 
+              float bTagCut, 
+              int   nBVeto, 
+	      float jetPUID,
+              int   polarization = 99):
     cutLayerName(cutLayerName),
       ptL( ptL),
+      etaMaxL(etaMaxL),
       chargeSign(chargeSign),
       flavour(flavour),
       nLep(nLep),
@@ -74,26 +79,29 @@ class cutContainer {
       DetaLL(DetaLL),
       Mll(Mll),
       MllZVeto(MllZVeto),
-      bTagVeto(bTagVeto),
+      bTagCut(bTagCut),
+      nBVeto(nBVeto),
       jetPUID(jetPUID),
       polarization(polarization){};
 
   string cutLayerName ;
-  pair<double,double> ptL;
-  double  chargeSign;
-  double  flavour;
-  int     nLep;
-  int     nextra;
-  double  MET;
-  pair<double,double> ptJet;  
-  double  DetaJJ;
-  double  Mjj;
-  double  DetaLL;
-  pair<double,double>  Mll;
-  pair<double,double>  MllZVeto;
-  double  bTagVeto;
-  double  jetPUID;
-  int  polarization;
+  pair<float,float> ptL;
+  float  etaMaxL;
+  float  chargeSign;
+  float  flavour;
+  int    nLep;
+  int    nextra;
+  float  MET;
+  pair<float,float> ptJet;  
+  float  DetaJJ;
+  float  Mjj;
+  float  DetaLL;
+  pair<float,float>  Mll;
+  pair<float,float>  MllZVeto;
+  float  bTagCut;
+  int    nBVeto;
+  float  jetPUID;
+  int    polarization;
 
 };
 
@@ -104,7 +112,7 @@ class variableContainer {
   variableContainer(){};
   ~variableContainer(){};
 
- variableContainer(string variableName, int Nbin, double min, double max, string label):
+ variableContainer(string variableName, int Nbin, float min, float max, string label):
   variableName(variableName),
     Nbin(Nbin),
     min(min),
@@ -113,8 +121,8 @@ class variableContainer {
 
   string variableName ;
   int Nbin ;
-  double min;
-  double max;
+  float min;
+  float max;
   string label;
 
 };
@@ -126,8 +134,8 @@ class variableContainer2D {
   variableContainer2D(){};
   ~variableContainer2D(){};
 
- variableContainer2D(string variableNameX, int NbinX, double minX, double maxX, string labelX,
-                     string variableNameY, int NbinY, double minY, double maxY, string labelY):
+ variableContainer2D(string variableNameX, int NbinX, float minX, float maxX, string labelX,
+                     string variableNameY, int NbinY, float minY, float maxY, string labelY):
   variableNameX(variableNameX),
     NbinX(NbinX),
     minX(minX),
@@ -141,14 +149,14 @@ class variableContainer2D {
 
   string variableNameX ;
   int NbinX ;
-  double minX;
-  double maxX;
+  float minX;
+  float maxX;
   string labelX;
 
   string variableNameY ;
   int NbinY ;
-  double minY;
-  double maxY;
+  float minY;
+  float maxY;
   string labelY;
 
 };
@@ -222,6 +230,7 @@ class fakeRateContainer {
   fakeRateContainer(const string & fileName);
 
   float getFakeRate (const int & PID, const float & pt, const float & eta);
+  float getFakeRateUncertainty(const int&, const float&, const float&);
 
   TFile *inputFile ;
 
@@ -242,19 +251,23 @@ class fakeRateContainer {
   TH2F* mNumerator ;
 
   TH2F* mFakeRate ;
+  TGraph2D* muonFakeRate;
+ 
   TH2F* eFakeRate ;
+  TGraph2D* electronFakeRate;
+
 
 };
 
-class fakeMigration {
+class fakeMigrationContainer {
 
  public :
   
-  fakeMigration(){};
+  fakeMigrationContainer(){};
   
-  ~fakeMigration();
+  ~fakeMigrationContainer();
 
-  fakeMigration(const string & fileName);
+  fakeMigrationContainer(const string & fileName);
 
   float getMigration (const int & PID, const float & pt, const float & eta);
 
@@ -263,26 +276,26 @@ class fakeMigration {
   TH2F* eeBarrel ;
   TH2F* meBarrel ;
   TH2F* eBarrel ;
-
-  TProfile *eBarrelProfile ;
+  TProfile* eBarrelProfile ;
+  TGraph* electronBarrel ;
 
   TH2F* eeEndcap ;
   TH2F* meEndcap ;
   TH2F* eEndcap ;
-
-  TProfile *eEndcapProfile ;
+  TProfile* eEndcapProfile ;
+  TGraph* electronEndcap ;
 
   TH2F* mmBarrel ;
   TH2F* emBarrel ;
   TH2F* mBarrel ;
-
-  TProfile *mBarrelProfile ;
+  TProfile* mBarrelProfile ;
+  TGraph *muonBarrel ;
 
   TH2F* mmEndcap ;
   TH2F* emEndcap ;
   TH2F* mEndcap ;
-
-  TProfile *mEndcapProfile ;
+  TProfile* mEndcapProfile ;
+  TGraph *muonEndcap ;
 
 
 };

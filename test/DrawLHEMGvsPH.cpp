@@ -19,7 +19,7 @@
 using namespace std ;
 
 int    lheLevelFilter;
-double minLeptonCutPt;
+float minLeptonCutPt;
 
 
 // no cuts are possible, all the variable to be plotted are given from an external file.
@@ -72,8 +72,8 @@ int main (int argc, char ** argv) {
     cerr<<" Empty Variable List File or not Exisisting --> Exit "<<endl; return -1;}
 
   // select lepton flavour final state
-  lheLevelFilter      = gConfigParser -> readDoubleOption("Option::lheLevelFilter");
-  minLeptonCutPt      = gConfigParser -> readDoubleOption("Option::minLeptonCutPt");
+  lheLevelFilter      = gConfigParser -> readFloatOption("Option::lheLevelFilter");
+  minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
 
   // output directory
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");

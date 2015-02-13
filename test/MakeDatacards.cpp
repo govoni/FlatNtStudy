@@ -21,13 +21,13 @@
 using namespace std ;
 
 // some basic quantites to do the analysis selections
-double matchingCone ;
-double minLeptonCleaningPt;
-double minLeptonCutPt;
-double minJetCutPt;
-double leptonIsoCut_mu;
-double leptonIsoCut_el;
-double leptonIsoCutLoose;
+float matchingCone ;
+float minLeptonCleaningPt;
+float minLeptonCutPt;
+float minJetCutPt;
+float leptonIsoCut_mu;
+float leptonIsoCut_el;
+float leptonIsoCutLoose;
 
 bool   usePuppiAsDefault;
 bool   useObjectSystematics;
@@ -91,16 +91,16 @@ int main (int argc, char ** argv) {
     cerr<<" Empty Variable List File or not Exisisting --> Exit "<<endl; return -1;}
 
   // lumi and cut values
-  double lumi  =  gConfigParser -> readDoubleOption("Option::Lumi"); // fb^(-1)
+  float lumi  =  gConfigParser -> readFloatOption("Option::Lumi"); // fb^(-1)
   lumi *= 1000. ;   // transform into pb^(-1)
 
-  matchingCone        = gConfigParser -> readDoubleOption("Option::matchingCone"); 
-  minLeptonCleaningPt = gConfigParser -> readDoubleOption("Option::minLeptonCleaningPt"); 
-  minLeptonCutPt      = gConfigParser -> readDoubleOption("Option::minLeptonCutPt");
-  minJetCutPt         = gConfigParser -> readDoubleOption("Option::minJetCutPt");
-  leptonIsoCut_mu     = gConfigParser -> readDoubleOption("Option::leptonIsoCutMu");
-  leptonIsoCut_el     = gConfigParser -> readDoubleOption("Option::leptonIsoCutEl");
-  leptonIsoCutLoose   = gConfigParser -> readDoubleOption("Option::leptonIsoCutLoose");
+  matchingCone        = gConfigParser -> readFloatOption("Option::matchingCone"); 
+  minLeptonCleaningPt = gConfigParser -> readFloatOption("Option::minLeptonCleaningPt"); 
+  minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
+  minJetCutPt         = gConfigParser -> readFloatOption("Option::minJetCutPt");
+  leptonIsoCut_mu     = gConfigParser -> readFloatOption("Option::leptonIsoCutMu");
+  leptonIsoCut_el     = gConfigParser -> readFloatOption("Option::leptonIsoCutEl");
+  leptonIsoCutLoose   = gConfigParser -> readFloatOption("Option::leptonIsoCutLoose");
 
   usePuppiAsDefault    = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
   useObjectSystematics = gConfigParser -> readBoolOption("Option::useObjectSystematics");

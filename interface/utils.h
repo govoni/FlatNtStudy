@@ -94,8 +94,8 @@ class jetContainer {
 };
 
 // delta phi function
-double deltaPhi (double phi1, 
-		 double phi2) ;
+float deltaPhi (float phi1, 
+		 float phi2) ;
 
 // check if an object is within a dR with another one
 bool closeToLeptons (float eta, 
@@ -141,13 +141,27 @@ vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets,
 			       float btagcut, 
 			       float jetPUIDcut, 
 			       float lepminptcut, 
-			       float deltaR) ;
+			       float deltaR,
+			       float etaMax = 10) ;
 
 vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets, 
 				    vector<leptonContainer> & TL_leptons, 
                                     float minptcut, 
 				    float lepminptcut, 
 				    float deltaR) ;
+
+/// method to get the fake weight and the new lepton kinematic
+float getFakeWeight( jetContainer inputJet,
+		     fakeRateContainer & fakeRate,
+		     string leptonFlavour,
+		     size_t jetSize);
+
+
+leptonContainer createFakeLepton( jetContainer inputJet,
+				  leptonContainer inputLepton,
+				  fakeMigrationContainer & fakeMigration,
+				  string finalStateString);
+
 
 // method to loop on events
                                                                                                                                             
@@ -157,16 +171,17 @@ void loopOnEvents (plotter & analysisPlots,
 		   vector<variableContainer> & VariableList,
 		   const string & sampleName,     
 		   const bool & usePuppiAsDefault,
-		   const double & minPtLeptonCut, 
-		   const double & minPtLeptonCutCleaning,
-		   const double & leptonIsoCut_mu,   
-		   const double & leptonIsoCut_el,   
-		   const double & leptonIsoLooseCut,
-		   const double & matchingCone,   
-		   const double & minJetCutPt,
+		   const float & minPtLeptonCut, 
+		   const float & minPtLeptonCutCleaning,
+		   const float & leptonIsoCut_mu,   
+		   const float & leptonIsoCut_el,   
+		   const float & leptonIsoLooseCut,
+		   const float & matchingCone,   
+		   const float & minJetCutPt,
 		   map<string,TH1F*> & vect,
 		   const string & finalStateString = "",
-		   const string & scenarioString = "");
+		   const string & scenarioString = "",
+		   const string & fakeRateFile = "");
 
 void loopOnEvents (plotter & analysisPlots,
 		   readTree* reader,
@@ -175,16 +190,17 @@ void loopOnEvents (plotter & analysisPlots,
 		   vector<variableContainer2D> & VariableList2D,
 		   const string & sampleName,     
 		   const bool & usePuppiAsDefault,
-		   const double & minPtLeptonCut, 
-		   const double & minPtLeptonCutCleaning,
-		   const double & leptonIsoCut_mu,   
-		   const double & leptonIsoCut_el,   
-		   const double & leptonIsoLooseCut,
-		   const double & matchingCone,   
-		   const double & minJetCutPt,
+		   const float & minPtLeptonCut, 
+		   const float & minPtLeptonCutCleaning,
+		   const float & leptonIsoCut_mu,   
+		   const float & leptonIsoCut_el,   
+		   const float & leptonIsoLooseCut,
+		   const float & matchingCone,   
+		   const float & minJetCutPt,
 		   map<string,TH1F*> & vect,
 		   const string & finalStateString = "",
-		   const string & scenarioString = "");
+		   const string & scenarioString = "",
+		   const string & fakeRateFile = "");
 
 //method to fill histograms
 
@@ -198,7 +214,8 @@ void fillHisto( plotter & analysisPlot,
 		vector<jetContainer> & trackJets,
                 TLorentzVector & L_met,
                 TLorentzVector & L_gen_met,
-                const string & systematicName = ""
+                const string & systematicName = "",
+		const float & eventFakeWeight = 1.
                 );
 
 
@@ -212,7 +229,8 @@ void fillHisto2D( plotter & analysisPlot,
 		  vector<jetContainer> & trackJets,
 		  TLorentzVector & L_met,
 		  TLorentzVector & L_gen_met,
-		  const string & systematicName = ""
+		  const string & systematicName = "",
+		  const float & eventFakeWeight = 1.
 		  );
 
 // method to apply cuts
@@ -224,8 +242,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				vector<leptonContainer> & leptonsIsoTight,
 				vector<jetContainer> & RecoJets,
 				const TLorentzVector & L_met,
-				const double & minPtLeptonCut,                    
-                                const double & leptonIsoLooseCut,
+				const float & minPtLeptonCut,                    
+                                const float & leptonIsoLooseCut,
 				map<string,TH1F*> & vect);
 
 
@@ -233,13 +251,13 @@ bool passCutContainerSelection (readTree* readTree,
                                 cutContainer & Cut,
                                 const string & sampleName,     
                                 const bool & usePuppiAsDefault,
-				const double & minPtLeptonCut, 
-                                const double & minPtLeptonCutCleaning,
-				const double & leptonIsoCut_mu,   
- 				const double & leptonIsoCut_el,   
-                                const double & leptonIsoLooseCut,
-				const double & matchingCone,   
-				const double & minJetCutPt,
+				const float & minPtLeptonCut, 
+                                const float & minPtLeptonCutCleaning,
+				const float & leptonIsoCut_mu,   
+ 				const float & leptonIsoCut_el,   
+                                const float & leptonIsoLooseCut,
+				const float & matchingCone,   
+				const float & minJetCutPt,
 				map<string,TH1F*> & vect);
 
 #endif

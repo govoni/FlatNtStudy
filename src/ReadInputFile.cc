@@ -2,10 +2,10 @@
 
 using namespace std;
 
-fakeRateContainer::~fakeRateContainer(){
+#define upperPtBound 3000
+#define upperEtaBound 5.5
 
-  if(inputFile != 0)
-    inputFile->Delete() ;
+fakeRateContainer::~fakeRateContainer(){
 
   if(eeDenominator != 0)
     eeDenominator->Delete() ;
@@ -40,57 +40,159 @@ fakeRateContainer::~fakeRateContainer(){
   if(eFakeRate!=0)
     eFakeRate->Delete() ;
 
+  if(muonFakeRate!=0)
+    muonFakeRate->Delete() ;
+  if(electronFakeRate!=0)
+    electronFakeRate->Delete() ;
+
 }
 
 fakeRateContainer::fakeRateContainer(const string & fileName){
 
-  inputFile = TFile::Open(fileName.c_str(),"READ");
+  if (fileName == "")
+    inputFile = TFile::Open("input/FakeRate_rebin.root","READ");
+  else
+    inputFile = TFile::Open(fileName.c_str(),"READ");
 
   eeDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_e");
-  meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_m_jet_to_e");
+  meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_e");
   eDenominator  = (TH2F*) eeDenominator->Clone("eDenominator");
   eDenominator->Add(meDenominator);
 
   eeNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_e");
-  meNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_m_jet_to_e");
+  meNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_mu_jet_to_e");
   eNumerator  = (TH2F*) eeNumerator->Clone("eNumerator");
   eNumerator->Add(meNumerator);
 
   eFakeRate = (TH2F*) eNumerator->Clone("eFakeRate");
   eFakeRate->Divide(eDenominator);
 
-  mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_m_jet_to_m");
-  emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_m");
+  // trick for a correct TGraph2D interpolation
+  float* ebinningX = new float[eFakeRate->GetNbinsX()+2];
+  for(int iBinX = 1; iBinX <= eFakeRate->GetNbinsX()+1; iBinX++){
+    if(iBinX == 1)
+      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX)-eFakeRate->GetXaxis()->GetBinWidth(iBinX);
+    else if(iBinX == eFakeRate->GetNbinsX())
+      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX)+eFakeRate->GetXaxis()->GetBinWidth(iBinX);
+    else 
+      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX);
+  }
+  ebinningX[eFakeRate->GetNbinsX()+1] = upperEtaBound;
+
+  float* ebinningY = new float[eFakeRate->GetNbinsY()+2];
+  for(int iBinY = 1; iBinY <= eFakeRate->GetNbinsY()+1; iBinY++){
+    if(iBinY == 1)
+      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY)-eFakeRate->GetYaxis()->GetBinWidth(iBinY);
+    else if(iBinY == eFakeRate->GetNbinsY())
+      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY)+eFakeRate->GetYaxis()->GetBinWidth(iBinY);
+    else 
+      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY);
+  }
+
+  ebinningY[eFakeRate->GetNbinsY()+1] = upperPtBound;
+
+  TH2F* eFakeRateTemp = new TH2F("eFakeRateTemp","",eFakeRate->GetNbinsX()+1,ebinningX,eFakeRate->GetNbinsY()+1,ebinningY);
+
+  for(int iBinX = 0; iBinX < eFakeRateTemp->GetNbinsX(); iBinX++){    
+    for(int iBinY = 0; iBinY < eFakeRateTemp->GetNbinsY(); iBinY++){
+      eFakeRateTemp->SetBinContent(iBinX+1,iBinY+1,eFakeRate->GetBinContent(iBinX+1,iBinY+1));
+    }
+  }
+
+  for(int iBinX = 0; iBinX < eFakeRateTemp->GetNbinsX(); iBinX++){    
+    eFakeRateTemp->SetBinContent(iBinX+1,eFakeRateTemp->GetNbinsY(),eFakeRateTemp->GetBinContent(iBinX+1,eFakeRateTemp->GetNbinsY()-1));
+  }				 
+
+  for(int iBinY = 0; iBinY < eFakeRateTemp->GetNbinsY(); iBinY++){    
+    eFakeRateTemp->SetBinContent(eFakeRateTemp->GetNbinsX(),iBinY+1,eFakeRateTemp->GetBinContent(eFakeRateTemp->GetNbinsX()-1),iBinY+1);
+  }				 
+
+  
+  electronFakeRate = new TGraph2D(eFakeRateTemp);
+  
+  mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_mu");
+  emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_mu");
   mDenominator  = (TH2F*) mmDenominator->Clone("mDenominator");
   mDenominator->Add(emDenominator);
 
-  mmNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_m_jet_to_m");
-  emNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_m");
+  mmNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_mu_jet_to_mu");
+  emNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_mu");
   mNumerator  = (TH2F*) mmNumerator->Clone("mNumerator");
   mNumerator->Add(emNumerator);
-
-  mFakeRate = (TH2F*) emNumerator->Clone("mFakeRate");
+  
+  mFakeRate = (TH2F*) mNumerator->Clone("mFakeRate");
   mFakeRate->Divide(mDenominator);
+
+  // trick for a correct TGraph2D interpolation
+  float* mbinningX = new float[mFakeRate->GetNbinsX()+2];
+  for(int iBinX = 1; iBinX <= mFakeRate->GetNbinsX()+1; iBinX++){
+    if(iBinX == 1)
+      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX)-mFakeRate->GetXaxis()->GetBinWidth(iBinX);
+    else if(iBinX == mFakeRate->GetNbinsX())
+      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX)+mFakeRate->GetXaxis()->GetBinWidth(iBinX);
+    else 
+      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX);
+  }
+
+  mbinningX[mFakeRate->GetNbinsX()+1] = upperEtaBound;
+
+  float* mbinningY = new float[mFakeRate->GetNbinsY()+2];
+  for(int iBinY = 1; iBinY <= mFakeRate->GetNbinsY()+1; iBinY++){
+    if(iBinY == 1)
+      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY)-mFakeRate->GetYaxis()->GetBinWidth(iBinY);
+    else if(iBinY == mFakeRate->GetNbinsY())
+      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY)+mFakeRate->GetYaxis()->GetBinWidth(iBinY);
+    else 
+      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY);
+  }
+
+  mbinningY[mFakeRate->GetNbinsY()+1] = upperPtBound;
+
+  TH2F* mFakeRateTemp = new TH2F("mFakeRateTemp","",mFakeRate->GetNbinsX(),mbinningX,mFakeRate->GetNbinsY()+1,mbinningY);
+
+  for(int iBinX = 0; iBinX < mFakeRateTemp->GetNbinsX(); iBinX++){    
+    for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){
+      mFakeRateTemp->SetBinContent(iBinX+1,iBinY+1,mFakeRate->GetBinContent(iBinX+1,iBinY+1));
+    }
+  }
+
+  for(int iBinX = 0; iBinX < mFakeRateTemp->GetNbinsX(); iBinX++){    
+    mFakeRateTemp->SetBinContent(iBinX+1,mFakeRateTemp->GetNbinsY(),mFakeRateTemp->GetBinContent(iBinX+1,mFakeRateTemp->GetNbinsY()-1));
+  }				 
+
+  for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){    
+    mFakeRateTemp->SetBinContent(mFakeRateTemp->GetNbinsX(),iBinY+1,mFakeRateTemp->GetBinContent(mFakeRateTemp->GetNbinsX()-1),iBinY+1);
+  }				 
+
+  muonFakeRate = new TGraph2D(mFakeRateTemp);
+
 }
 
 float fakeRateContainer::getFakeRate (const int & PID, const float & pt, const float & eta){
 
   if(fabs(PID) == 11){ // electron case                                                                                                                                        
-    return eFakeRate->GetBinContent(eFakeRate->FindBin(fabs(eta)),eFakeRate->FindBin(pt));
+    return electronFakeRate->Interpolate(fabs(eta),pt);
   }
   else if (fabs(PID) == 13){ // electron case                                                                                                                                  
-    return mFakeRate->GetBinContent(mFakeRate->FindBin(fabs(eta)),mFakeRate->FindBin(pt));
+    return muonFakeRate->Interpolate(fabs(eta),pt);
   }
   else return 1 ;
 
+}
 
+float fakeRateContainer::getFakeRateUncertainty (const int & PID, const float & pt, const float & eta){
+
+  if(fabs(PID) == 11){ // electron case                                                                                                                                        
+    return mFakeRate->GetBinError(eFakeRate->GetXaxis()->FindBin(fabs(eta)),eFakeRate->GetYaxis()->FindBin(pt));
+  }
+  else if (fabs(PID) == 13){ // electron case                                                                                                                                  
+    return mFakeRate->GetBinError(mFakeRate->GetXaxis()->FindBin(fabs(eta)),mFakeRate->GetYaxis()->FindBin(pt));
+  }
+  else return 1 ;
 
 }
 
-fakeMigration::~fakeMigration(){
-
-  if(inputFile !=0)
-    inputFile->Delete();
+fakeMigrationContainer::~fakeMigrationContainer(){
 
   if(eeBarrel !=0)
     eeBarrel->Delete();
@@ -130,50 +232,58 @@ fakeMigration::~fakeMigration(){
 
 }
 
-fakeMigration::fakeMigration(const string & fileName){
+fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
 
-  inputFile = TFile::Open(fileName.c_str(),"READ");
+  if (fileName == "")
+    inputFile = TFile::Open("input/FakeRate_migration.root","READ");
+  else
+    inputFile = TFile::Open(fileName.c_str(),"READ");
 
   eeBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_e");
-  meBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_m_jet_to_e");
+  meBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_e");
   eBarrel  = (TH2F*) eeBarrel->Clone("eBarrel");
   eBarrel->Add(meBarrel);
-  eBarrelProfile = eBarrel->ProfileX("_pfX");
+  eBarrelProfile = eBarrel->ProfileX("_fX");
+  electronBarrel = new TGraph(eBarrelProfile);
 
   eeEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_e");
-  meEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_m_jet_to_e");
-  eEndcap  = (TH2F*) eEndcap->Clone("eEndcap");
+  meEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_e");
+  eEndcap  = (TH2F*) eeEndcap->Clone("eEndcap");
   eEndcap->Add(meEndcap);
-  eEndcapProfile = eEndcap->ProfileX("_pfX");
+  eEndcapProfile = eEndcap->ProfileX("_fX");
+  electronEndcap = new TGraph(eEndcapProfile);
 
-  mmBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_m_jet_to_m");
-  emBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_m");
+  mmBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_mu");
+  emBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_mu");
   mBarrel  = (TH2F*) mmBarrel->Clone("mBarrel");
   mBarrel->Add(emBarrel);
-  mBarrelProfile = mBarrel->ProfileX("_pfX");
+  mBarrelProfile = mBarrel->ProfileX("_fX");
+  muonBarrel = new TGraph(mBarrelProfile);
 
-  mmEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_m_jet_to_m");
-  emEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_m");
+  mmEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_mu");
+  emEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_mu");
   mEndcap  = (TH2F*) mmEndcap->Clone("mEndcap");
   mEndcap->Add(emEndcap);
-  mEndcapProfile = mEndcap->ProfileX("_pfX");
+  mEndcapProfile = mEndcap->ProfileX("_fX");
+  muonEndcap = new TGraph(mEndcapProfile);
+
 
 }
 
-float fakeMigration::getMigration (const int & PID, const float & pt, const float & eta){
+float fakeMigrationContainer::getMigration (const int & PID, const float & pt, const float & eta){
 
   if(fabs(PID) == 11 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
-    return eBarrelProfile->GetBinContent(eBarrelProfile->FindBin(pt));
+    return electronBarrel->Eval(pt);
   }
   if(fabs(PID) == 11 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
-    return eEndcapProfile->GetBinContent(eEndcapProfile->FindBin(pt));
+    return electronBarrel->Eval(pt);
   }
 
   if(fabs(PID) == 13 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
-    return mBarrelProfile->GetBinContent(mBarrelProfile->FindBin(pt));
+    return muonBarrel->Eval(pt);
   }
   if(fabs(PID) == 13 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
-    return mEndcapProfile->GetBinContent(mEndcapProfile->FindBin(pt));
+    return muonEndcap->Eval(pt);
   }
   else return 1;
 
@@ -190,7 +300,7 @@ int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sample
   vector<string> NameSample;
   vector<string> NameReducedSample;
   vector<int>         ColorSample;
-  vector<double>      SampleCrossSection;
+  vector<float>       SampleCrossSection;
   vector<int>         NumEntriesBefore;
   vector<int>         isSignal;
 
@@ -264,8 +374,8 @@ int ReadInputVariableFile( const string & InputVariableList , vector<variableCon
     
     variableContainer dummy (VariablesTemp,
                              stoi(VariablesNbinTemp),
-                             stod(VariablesMinValueTemp),
-                             stod(VariablesMaxValueTemp),
+                             stof(VariablesMinValueTemp),
+                             stof(VariablesMaxValueTemp),
                              VariablesTitleTemp);
 
     varContainer.push_back(dummy);                                  
@@ -313,13 +423,13 @@ int ReadInputVariableFile( const string & InputVariableList , vector<variableCon
     
     variableContainer2D dummy (VariablesTempX,
 			       stoi(VariablesNbinTempX),
-			       stod(VariablesMinValueTempX),
-			       stod(VariablesMaxValueTempX),
+			       stof(VariablesMinValueTempX),
+			       stof(VariablesMaxValueTempX),
 			       VariablesTitleTempX,
 			       VariablesTempY,
 			       stoi(VariablesNbinTempY),
-			       stod(VariablesMinValueTempY),
-			       stod(VariablesMaxValueTempY),
+			       stof(VariablesMinValueTempY),
+			       stof(VariablesMaxValueTempY),
 			       VariablesTitleTempY);
 
     varContainer2D.push_back(dummy);                                  
@@ -371,25 +481,27 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
 
     stringstream line(buffer);      
 
-    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, DetaLL, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagVeto, jetPUID, polarization;    
+    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, DetaLL, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagCut, nBVeto, jetPUID, polarization, etaMaxL;    
 
-    line >> layerName >> ptL1 >> ptL2 >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagVeto >> jetPUID >> polarization;     
+    line >> layerName >> ptL1 >> ptL2 >> etaMaxL >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagCut >> nBVeto >> jetPUID >> polarization;     
 
     cutContainer dummy(layerName,
-                       make_pair(stod(ptL1),stod(ptL2)),
-                       stod(chargeSign),
-                       stod(flavour),
+                       make_pair(stof(ptL1),stof(ptL2)),
+		       stof(etaMaxL),
+                       stof(chargeSign),
+                       stof(flavour),
                        stoi(nLep),
                        stoi(nextra),
-                       stod(MET),
-                       make_pair(stod(ptJet1),stod(ptJet2)),
-                       stod(DetaJJ),
-                       stod(Mjj),
-                       stod(DetaLL),
-                       make_pair(stod(MllMin),stod(MllMax)),
-                       make_pair(stod(MllZVetoMin),stod(MllZVetoMax)),
-                       stod(bTagVeto), 
-                       stod(jetPUID),
+                       stof(MET),
+                       make_pair(stof(ptJet1),stof(ptJet2)),
+                       stof(DetaJJ),
+                       stof(Mjj),
+                       stof(DetaLL),
+                       make_pair(stof(MllMin),stof(MllMax)),
+                       make_pair(stof(MllZVetoMin),stof(MllZVetoMax)),
+                       stof(bTagCut), 
+                       stoi(nBVeto), 
+                       stof(jetPUID),
                        stoi(polarization));
 
     

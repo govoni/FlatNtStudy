@@ -7,10 +7,15 @@ numTkjets_Out               20      0      20          N_{tkJet}^{out}
 HTtkjets                    30      0      300         HT_{tkJets}
 HTtkjets_In                 30      0      300         HT_{tkJets}^{in}  
 HTtkjets_Out                30      0      300         HT_{tkJets}^{out}
+nbjetsL                     6       0      6           N_{bjet}^{L}
+nbjetsM                     6       0      6           N_{bjet}^{M}
+nbjetsT                     6       0      6           N_{bjet}^{T}
 ptj1                        40      0      600         p_{T}^{j1}
 ptj2                        40      0      600         p_{T}^{j2}
 etaj1                       30      -5     5           #eta_{j1}
 etaj2                       30      -5     5           #eta_{j2}
+btagj1                      4       0      4           btag_{j1}
+btagj2                      4       0      4           btag_{j3}
 detajj                      35      0      9           #Delta#eta_{jj}
 ptjj                        35      0      600         p_{T}^{jj} 
 mjj                         35      200    5000        m_{jj}  

@@ -41,5 +41,7 @@ using namespace std;
 
 #pragma link C++ class vector<TLorentzVector>+;
 
+#pragma link C++ class fakeMigrationContainer ;
+#pragma link C++ class fakeRateContainer ;
 
 #endif

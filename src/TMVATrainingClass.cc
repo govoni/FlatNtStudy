@@ -1275,7 +1275,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, const
 
   // take jets                                                                                                                                                             
   vector<jetContainer> RecoJets;
-  RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt_, cutEvent_.bTagVeto, cutEvent_.jetPUID, minPtLeptonCutCleaning_, matchingCone_);
+  RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt_, -99., cutEvent_.jetPUID, minPtLeptonCutCleaning_, matchingCone_);
 
   asimL = (leptonsIsoTight.at(0).lepton4V_.Pt()-leptonsIsoTight.at(1).lepton4V_.Pt())/(leptonsIsoTight.at(0).lepton4V_.Pt()+leptonsIsoTight.at(1).lepton4V_.Pt());
 

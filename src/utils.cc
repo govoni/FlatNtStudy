@@ -4,8 +4,8 @@ using namespace std ;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
-double deltaPhi (double phi1, double phi2){
-  double deltaphi=fabs(phi1-phi2);
+float deltaPhi (float phi1, float phi2){
+  float deltaphi=fabs(phi1-phi2);
   if (deltaphi > 6.283185308) deltaphi -= 6.283185308;
   if (deltaphi > 3.141592654) deltaphi = 6.283185308-deltaphi;
   return deltaphi;
@@ -102,6 +102,8 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     
   return ;
 }
+
+
 
 // 
 void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
@@ -292,13 +294,14 @@ vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons,
 
 
 vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, vector<leptonContainer> & TL_leptons, 
-                               float minptcut, float btagcut, float jetPUIDCut, float lepminptcut, float deltaR){
+                               float minptcut, float btagcut, float jetPUIDCut, float lepminptcut, float deltaR, float etaMax){
 
   vector<jetContainer> goodJets ;
   for (size_t iJet = 0 ; iJet < TL_jets.size() ; ++iJet){
     if (TL_jets.at(iJet).jet4V_.Pt() < minptcut)   continue ;
     if (TL_jets.at(iJet).btag_       > btagcut)    continue ;
     if (TL_jets.at(iJet).jetPUID_    < jetPUIDCut) continue ;
+    if (fabs(TL_jets.at(iJet).jet4V_.Eta()) > etaMax)     continue ;
     
     bool discard = false ;
     for (unsigned int iLep = 0 ; iLep < TL_leptons.size () ; ++iLep){
@@ -339,6 +342,62 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets, vector<lepto
   return goodJets;
 }
 
+// ---------------------
+float getFakeWeight(  jetContainer inputJet,
+                      fakeRateContainer & fakeRate,
+                      string leptonFlavour,
+                      size_t jetSize){
+
+  if(leptonFlavour == "U"){
+    return (fakeRate.getFakeRate(int(13),inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())/float(jetSize)) ;
+  }
+  else {
+    return (fakeRate.getFakeRate(int(11),inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())/float(jetSize)) ;
+  }
+
+}
+
+
+
+leptonContainer createFakeLepton(  jetContainer inputJet,
+                                   leptonContainer inputLepton,
+                                   fakeMigrationContainer & fakeMigration,
+				   string scenarioString){
+
+  TLorentzVector lepton4V ;
+
+  if(scenarioString == "UU" and fabs(inputLepton.flavour_) == 13){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
+  }
+  else if(scenarioString == "UU" and fabs(inputLepton.flavour_) == 11){
+    return leptonContainer();
+  }
+  else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 11){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
+  }
+  else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 13){
+    return leptonContainer();
+  }
+  else if(scenarioString == "DF" and fabs(inputLepton.flavour_) == 11){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if(inputLepton.flavour_ > 0)
+      return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
+    else 
+      return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
+  }
+  else if(scenarioString == "DF" and fabs(inputLepton.flavour_) == 13){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if(inputLepton.flavour_ > 0)
+      return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
+    else 
+      return leptonContainer(lepton4V,inputLepton.charge_,-11,0.);
+  }
+  else leptonContainer();
+  
+  return leptonContainer();
+}
 
 //----------------------
 void loopOnEvents (plotter & analysisPlots, 
@@ -347,25 +406,44 @@ void loopOnEvents (plotter & analysisPlots,
 		   vector<variableContainer> & VariableList,
 		   const string & sampleName,     
 		   const bool & usePuppiAsDefault, 
-		   const double & minPtLeptonCut, 
-		   const double & minPtLeptonCutCleaning,
-		   const double & leptonIsoCut_mu,
-		   const double & leptonIsoCut_el, 
-		   const double & leptonIsoLooseCut,
-		   const double & matchingCone,   
-		   const double & minJetCutPt,   
+		   const float & minPtLeptonCut, 
+		   const float & minPtLeptonCutCleaning,
+		   const float & leptonIsoCut_mu,
+		   const float & leptonIsoCut_el, 
+		   const float & leptonIsoLooseCut,
+		   const float & matchingCone,   
+		   const float & minJetCutPt,   
 		   map <string,TH1F*> & vect,
 		   const string & finalStateString,
-		   const string & scenarioString) {
+		   const string & scenarioString,
+		   const string & fakeRateFile) {
 
   cout << "reading sample " << sampleName << "\n" ;
+  cout << "analysis object sys set to "<<analysisPlots.getSystematics()<<endl;
+
   int maxevents = reader->fChain->GetEntries() ;
 
-  objectFormula scenarioFormula (scenarioString); // define a formula for systematics test 
-  
-  cout<<"analysis object sys set to "<<analysisPlots.getSystematics()<<endl;
-  // loop over events ////////                                                                                                                                               
+  // define the formulat for systematics study  
+  objectFormula scenarioFormula (scenarioString); 
 
+  // define fake rate and migration matrix  
+  fakeRateContainer fakeRate(fakeRateFile); 
+  TString nameMigration = Form("%s",fakeRateFile.c_str()); 
+  nameMigration.ReplaceAll(".root","_migration.root");
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(string(nameMigration));
+
+  // fake rate application --> check if the fake method has to be applied
+  vector<sample> vecSample = analysisPlots.getSamples();
+  bool applyFake = false;
+  for( size_t iSample = 0; iSample < vecSample.size(); iSample++){
+    if(vecSample.at(iSample).m_sampleName != sampleName) 
+      continue ;
+    if(vecSample.at(iSample).m_isSignal == -1)
+      applyFake = true;
+  }
+
+    
+  // loop over events ////////                                                                                                                                               
   for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent){                                                                                                                      
 
     reader->fChain->GetEntry(iEvent) ;                                                                                                                                      
@@ -373,7 +451,6 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-
     if(TString(sampleName).Contains("Madgraph")){
       if(finalStateString == "UU"){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
@@ -398,7 +475,7 @@ void loopOnEvents (plotter & analysisPlots,
       if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) continue;
     }
 
-
+    // loop on the cut list
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
       TLorentzVector L_met, L_gen_met;
@@ -422,55 +499,6 @@ void loopOnEvents (plotter & analysisPlots,
       vector<leptonContainer> leptonsIsoTight, leptonsIsoTightScaleUp, leptonsIsoTightScaleDown, leptonsIsoTightRes;
       leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
 
-      if(analysisPlots.getSystematics()){
-
-	// lepton scale and resolution
-	for(size_t iLep = 0; iLep < LeptonsAll.size(); iLep++){
-	  float scaleValueUnc = 0;
-	  float resValueUnc = 0;
-
-	  LeptonsAllScaleUp.push_back(LeptonsAll.at(iLep));
-	  LeptonsAllScaleDown.push_back(LeptonsAll.at(iLep));
-	  LeptonsAllRes.push_back(LeptonsAll.at(iLep));
-
-	  if(abs(LeptonsAll.at(iLep).flavour_) == 13){
-	    scaleValueUnc = scenarioFormula.evaluateMuonScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
-            resValueUnc   = scenarioFormula.evaluateMuonResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
-	  }
-	  else if (abs(LeptonsAll.at(iLep).flavour_) == 11){
-	    scaleValueUnc = scenarioFormula.evaluateElectronScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
-            resValueUnc   = scenarioFormula.evaluateElectronResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
-	  }
-	  
-	  LeptonsAllScaleUp.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1+scaleValueUnc),							  
-							LeptonsAll.at(iLep).lepton4V_.Py()*(1+scaleValueUnc),
-							LeptonsAll.at(iLep).lepton4V_.Pz()*(1+scaleValueUnc),
-							LeptonsAll.at(iLep).lepton4V_.E()*(1+scaleValueUnc));
-
-	  LeptonsAllScaleDown.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1-scaleValueUnc),							  
-							  LeptonsAll.at(iLep).lepton4V_.Py()*(1-scaleValueUnc),
-							  LeptonsAll.at(iLep).lepton4V_.Pz()*(1-scaleValueUnc),
-							  LeptonsAll.at(iLep).lepton4V_.E()*(1-scaleValueUnc));
-
-          float resUnc   = 1 + gRandom->Gaus(0,resValueUnc);
-
-	  LeptonsAllRes.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(resUnc),							  
-						    LeptonsAll.at(iLep).lepton4V_.Py()*(resUnc),
-						    LeptonsAll.at(iLep).lepton4V_.Pz()*(resUnc),
-						    LeptonsAll.at(iLep).lepton4V_.E()*(resUnc));
-
-	  L_met_lepScaleUp   = L_met - LeptonsAllScaleUp.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-	  L_met_lepScaleDown = L_met - LeptonsAllScaleDown.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-	  L_met_lepRes       = L_met - LeptonsAllRes.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-
-	}
-
-	leptonsIsoTightScaleUp   = dumpLeptons (LeptonsAllScaleUp, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-	leptonsIsoTightScaleDown = dumpLeptons (LeptonsAllScaleDown, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-	leptonsIsoTightRes       = dumpLeptons (LeptonsAllRes, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-      
-      }
-	
       // take reco jets                                                                                                                                                   
       vector<jetContainer> RecoJetsAll, RecoJetsAllScaleUp, RecoJetsAllScaleDown, RecoJetsAllRes;
       if(not usePuppiAsDefault){
@@ -482,46 +510,7 @@ void loopOnEvents (plotter & analysisPlots,
 
       // take jets                                                                                                                                                          
       vector<jetContainer> RecoJets, RecoJetsScaleUp, RecoJetsScaleDown, RecoJetsRes;
-      RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-
-      if(analysisPlots.getSystematics()){      
-
-	for(size_t iJet = 0; iJet < RecoJetsAll.size(); iJet++){
-
-	  RecoJetsAllScaleUp.push_back(RecoJetsAll.at(iJet));
-	  RecoJetsAllScaleDown.push_back(RecoJetsAll.at(iJet));
-	  RecoJetsAllRes.push_back(RecoJetsAll.at(iJet));
-
-	  float jetScaleUnc = scenarioFormula.evaluateJetScaleUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta());
-	  float jetResUnc   = scenarioFormula.evaluateJetResolutionUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta(),RecoJetsAll.at(iJet).jet4V_.E());
-
-	  RecoJetsAllScaleUp.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(1+jetScaleUnc), 
-						      RecoJetsAll.at(iJet).jet4V_.Py()*(1+jetScaleUnc),
-						      RecoJetsAll.at(iJet).jet4V_.Pz()*(1+jetScaleUnc),
-						      RecoJetsAll.at(iJet).jet4V_.E()*(1+jetScaleUnc));
-
-	  RecoJetsAllScaleDown.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(1-jetScaleUnc), 
-							RecoJetsAll.at(iJet).jet4V_.Py()*(1-jetScaleUnc),
-							RecoJetsAll.at(iJet).jet4V_.Pz()*(1-jetScaleUnc),
-							RecoJetsAll.at(iJet).jet4V_.E()*(1-jetScaleUnc));
-
-          float resUnc = 1 + gRandom->Gaus(0,jetResUnc);
-
-	  RecoJetsAllRes.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(resUnc), 
-						  RecoJetsAll.at(iJet).jet4V_.Py()*(resUnc),
-						  RecoJetsAll.at(iJet).jet4V_.Pz()*(resUnc),
-						  RecoJetsAll.at(iJet).jet4V_.E()*(resUnc));
-
-	  L_met_jetScaleUp   = L_met - RecoJetsAllScaleUp.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-	  L_met_jetScaleDown = L_met - RecoJetsAllScaleDown.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-	  L_met_jetRes       = L_met - RecoJetsAllRes.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-
-	}
-
-	RecoJetsScaleUp   = dumpJets (RecoJetsAllScaleUp,leptonsIsoTight,minJetCutPt,CutList.at(iCut).bTagVeto,CutList.at(iCut).jetPUID,minPtLeptonCutCleaning,matchingCone);
-	RecoJetsScaleDown = dumpJets (RecoJetsAllScaleDown, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning,matchingCone);
-	RecoJetsRes       = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-      }     
+      RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
 
       // take gen jets                                                                                                                                                
       vector<jetContainer> GenJetsAll ;
@@ -529,151 +518,312 @@ void loopOnEvents (plotter & analysisPlots,
 
       // take gen jets                                                                                                                                                     
       vector<jetContainer> GenJets;
-      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, -999, -999, minPtLeptonCutCleaning, matchingCone);
+      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, 999, 999, minPtLeptonCutCleaning, matchingCone);
       
       // take track jets
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,*reader) ;
       vector<jetContainer> trackJets ;
             
-      float dRThreshold = 0.5 ;
-      
+      float dRThreshold = 0.5 ;      
       trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
 
 
-      // analysis with nominal objects
-      if( passCutContainerSelection (CutList.at(iCut),
-				     sampleName,
-				     reader,
-				     LeptonsAll,
-				     leptonsIsoTight,
-				     RecoJets,
-				     L_met,
-				     minPtLeptonCut,
-				     leptonIsoLooseCut,
-				     vect)){
+      float eventFakeWeight = 1.;
 
-	fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		  leptonsIsoTight, RecoJets, GenJets, trackJets, L_met, L_gen_met);
-      }
+      if(applyFake){ // the sample require the fake rate application
 
-      /// if perform sys analysis      
-      if(analysisPlots.getSystematics()){
 
-	// analysis scaling leptons Up
-	map<string,TH1F*> tempVect;
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllScaleUp,
-				       leptonsIsoTightScaleUp,
-				       RecoJets,
-				       L_met_lepScaleUp,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	if(leptonsIsoTight.size() < 1 ) continue ; // if less than one isolated lepton over the minimum pt
+
+	// take the fake weigh from the cleaned jet collection over threshold
+	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13) 
+	  continue ;
+	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+	  continue ;
+	if(finalStateString == "DF" and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 13))
+	  continue ;
+
+	vector<jetContainer> RecoJetsForFake;
+	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
+
+	for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
+	  if(finalStateString == "UU"){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }	 
+	  else if(finalStateString == "EE"){
+ 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
+	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }
+	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
 	  
-	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		    leptonsIsoTightScaleUp, RecoJets, GenJets, trackJets, L_met_lepScaleUp, L_gen_met, "lepScaleUp");
-	}
-
-	// analysis scaling leptons down
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllScaleDown,
-				       leptonsIsoTightScaleDown,
-				       RecoJets,
-				       L_met_lepScaleDown,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check
+	  vector<leptonContainer> fakeLeptonsAll;
+	  vector<leptonContainer> fakeLeptonsIsoTight;
+	  fakeLeptonsIsoTight = leptonsIsoTight ;
+	  fakeLeptonsAll = LeptonsAll;
+	  leptonContainer fakeLepton ;
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration,finalStateString);
 	  
-	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		    leptonsIsoTightScaleDown, RecoJets, GenJets, trackJets, L_met_lepScaleDown, L_gen_met,"lepScaleDown");
+	  fakeLeptonsIsoTight.push_back(fakeLepton);
+	  fakeLeptonsAll.push_back(fakeLepton);
 
+	  //re-clean jets for this new lepton
+	  vector<jetContainer> fakeRecoJets;
+	  fakeRecoJets  = dumpJets (RecoJetsForFake, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
+
+	  // take into account the charge assignment
+	  eventFakeWeight = eventFakeWeight*0.5;
+
+	  TLorentzVector fakeL_met ;
+	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
+
+	  // analysis with nominal objects
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 fakeLeptonsAll,
+					 fakeLeptonsIsoTight,
+					 fakeRecoJets,
+					 fakeL_met,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 vect)){
+
+	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		      fakeLeptonsIsoTight, fakeRecoJets, GenJets, trackJets, fakeL_met, L_gen_met,"",eventFakeWeight);
+	  }	  
 	}
+      }      
 
-	// analysis smearing leptons (extra smearing)
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllRes,
-				       leptonsIsoTightRes,
-				       RecoJets,
-				       L_met_lepRes,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+      else { // if not fake rate sample
+      
+
+	/// insert the systematics in the analysis
+	if(analysisPlots.getSystematics() and not applyFake){
+
+	  // lepton scale and resolution sector
+	  for(size_t iLep = 0; iLep < LeptonsAll.size(); iLep++){
+	    float scaleValueUnc = 0;
+	    float resValueUnc = 0;
+
+	    LeptonsAllScaleUp.push_back(LeptonsAll.at(iLep));
+	    LeptonsAllScaleDown.push_back(LeptonsAll.at(iLep));
+	    LeptonsAllRes.push_back(LeptonsAll.at(iLep));
+
+	    if(abs(LeptonsAll.at(iLep).flavour_) == 13){
+	      scaleValueUnc = scenarioFormula.evaluateMuonScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
+	      resValueUnc   = scenarioFormula.evaluateMuonResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
+	    }
+	    else if (abs(LeptonsAll.at(iLep).flavour_) == 11){
+	      scaleValueUnc = scenarioFormula.evaluateElectronScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
+	      resValueUnc   = scenarioFormula.evaluateElectronResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
+	    }
 	  
-	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		    leptonsIsoTightRes, RecoJets, GenJets, trackJets, L_met_lepRes, L_gen_met, "lepRes");
-	}
+	    LeptonsAllScaleUp.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1+scaleValueUnc),							  
+							  LeptonsAll.at(iLep).lepton4V_.Py()*(1+scaleValueUnc),
+							  LeptonsAll.at(iLep).lepton4V_.Pz()*(1+scaleValueUnc),
+							  LeptonsAll.at(iLep).lepton4V_.E()*(1+scaleValueUnc));
 
-        //// jets scale up
+	    LeptonsAllScaleDown.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1-scaleValueUnc),							  
+							    LeptonsAll.at(iLep).lepton4V_.Py()*(1-scaleValueUnc),
+							    LeptonsAll.at(iLep).lepton4V_.Pz()*(1-scaleValueUnc),
+							    LeptonsAll.at(iLep).lepton4V_.E()*(1-scaleValueUnc));
+
+	    float resUnc   = 1 + gRandom->Gaus(0,resValueUnc);
+
+	    LeptonsAllRes.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(resUnc),							  
+						      LeptonsAll.at(iLep).lepton4V_.Py()*(resUnc),
+						      LeptonsAll.at(iLep).lepton4V_.Pz()*(resUnc),
+						      LeptonsAll.at(iLep).lepton4V_.E()*(resUnc));
+
+	    L_met_lepScaleUp   = L_met - LeptonsAllScaleUp.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+	    L_met_lepScaleDown = L_met - LeptonsAllScaleDown.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+	    L_met_lepRes       = L_met - LeptonsAllRes.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+
+	  }
+
+	  leptonsIsoTightScaleUp   = dumpLeptons (LeptonsAllScaleUp, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+	  leptonsIsoTightScaleDown = dumpLeptons (LeptonsAllScaleDown, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+	  leptonsIsoTightRes       = dumpLeptons (LeptonsAllRes, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+      
+
+	  // jet scale and resolution sector
+	  for(size_t iJet = 0; iJet < RecoJetsAll.size(); iJet++){
+
+	    RecoJetsAllScaleUp.push_back(RecoJetsAll.at(iJet));
+	    RecoJetsAllScaleDown.push_back(RecoJetsAll.at(iJet));
+	    RecoJetsAllRes.push_back(RecoJetsAll.at(iJet));
+	  
+	    float jetScaleUnc = scenarioFormula.evaluateJetScaleUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta());
+	    float jetResUnc   = scenarioFormula.evaluateJetResolutionUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta(),RecoJetsAll.at(iJet).jet4V_.E());
+
+	    RecoJetsAllScaleUp.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(1+jetScaleUnc), 
+							RecoJetsAll.at(iJet).jet4V_.Py()*(1+jetScaleUnc),
+							RecoJetsAll.at(iJet).jet4V_.Pz()*(1+jetScaleUnc),
+							RecoJetsAll.at(iJet).jet4V_.E()*(1+jetScaleUnc));
+
+	    RecoJetsAllScaleDown.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(1-jetScaleUnc), 
+							  RecoJetsAll.at(iJet).jet4V_.Py()*(1-jetScaleUnc),
+							  RecoJetsAll.at(iJet).jet4V_.Pz()*(1-jetScaleUnc),
+							  RecoJetsAll.at(iJet).jet4V_.E()*(1-jetScaleUnc));
+
+	    float resUnc = 1 + gRandom->Gaus(0,jetResUnc);
+
+	    RecoJetsAllRes.back().jet4V_.SetPxPyPzE(RecoJetsAll.at(iJet).jet4V_.Px()*(resUnc), 
+						    RecoJetsAll.at(iJet).jet4V_.Py()*(resUnc),
+						    RecoJetsAll.at(iJet).jet4V_.Pz()*(resUnc),
+						    RecoJetsAll.at(iJet).jet4V_.E()*(resUnc));
+
+	    L_met_jetScaleUp   = L_met - RecoJetsAllScaleUp.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+	    L_met_jetScaleDown = L_met - RecoJetsAllScaleDown.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+	    L_met_jetRes       = L_met - RecoJetsAllRes.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+
+	  }
+
+	  RecoJetsScaleUp   = dumpJets (RecoJetsAllScaleUp,leptonsIsoTight,minJetCutPt,999,CutList.at(iCut).jetPUID,minPtLeptonCutCleaning,matchingCone);
+	  RecoJetsScaleDown = dumpJets (RecoJetsAllScaleDown, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning,matchingCone);
+	  RecoJetsRes       = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
+	}     
+
+
+	// analysis with nominal objects
 	if( passCutContainerSelection (CutList.at(iCut),
 				       sampleName,
 				       reader,
 				       LeptonsAll,
 				       leptonsIsoTight,
-				       RecoJetsScaleUp,
-				       L_met_jetScaleUp,
+				       RecoJets,
+				       L_met,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
-				       tempVect)){
+				       vect)){
 	  
-	  fillHisto(analysisPlots, sampleName, 
-		    CutList.at(iCut).cutLayerName, VariableList, 
-		    leptonsIsoTight, RecoJetsScaleUp, 
-		    GenJets,trackJets,
-		    L_met_jetScaleUp, L_gen_met,"jetScaleUp");
+	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		    leptonsIsoTight, RecoJets, GenJets, trackJets, L_met, L_gen_met,"",eventFakeWeight);
 	}
 
-	// analysis scaling jets down
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAll,
-				       leptonsIsoTight,
-				       RecoJetsScaleDown,
-				       L_met_jetScaleDown,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	/// if perform sys analysis      
+	if(analysisPlots.getSystematics()){
+
+	  // analysis scaling leptons Up
+	  map<string,TH1F*> tempVect;
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllScaleUp,
+					 leptonsIsoTightScaleUp,
+					 RecoJets,
+					 L_met_lepScaleUp,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, sampleName, 
-		    CutList.at(iCut).cutLayerName,VariableList, 
-		    leptonsIsoTight,RecoJetsScaleDown, 
-		    GenJets,trackJets,
-		    L_met_jetScaleDown, 
-		    L_gen_met,"jetScaleDown");
+	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		      leptonsIsoTightScaleUp, RecoJets, GenJets, trackJets, L_met_lepScaleUp, L_gen_met, "lepScaleUp",eventFakeWeight);
+	  }
+
+	  // analysis scaling leptons down
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllScaleDown,
+					 leptonsIsoTightScaleDown,
+					 RecoJets,
+					 L_met_lepScaleDown,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
+	  
+	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		      leptonsIsoTightScaleDown, RecoJets, GenJets, trackJets, L_met_lepScaleDown, L_gen_met,"lepScaleDown",eventFakeWeight);
+	    
+	  }
+
+	  // analysis smearing leptons (extra smearing)
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllRes,
+					 leptonsIsoTightRes,
+					 RecoJets,
+					 L_met_lepRes,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
+	  
+	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		      leptonsIsoTightRes, RecoJets, GenJets, trackJets, L_met_lepRes, L_gen_met, "lepRes",eventFakeWeight);
+	  }
+
+	  //// jets scale up
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsScaleUp,
+					 L_met_jetScaleUp,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
+	  
+	    fillHisto(analysisPlots, sampleName, 
+		      CutList.at(iCut).cutLayerName, VariableList, 
+		      leptonsIsoTight, RecoJetsScaleUp, 
+		      GenJets,trackJets,
+		      L_met_jetScaleUp, L_gen_met,"jetScaleUp",eventFakeWeight);
+	  }
+
+	  // analysis scaling jets down
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsScaleDown,
+					 L_met_jetScaleDown,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
+	  
+	    fillHisto(analysisPlots, sampleName, 
+		      CutList.at(iCut).cutLayerName,VariableList, 
+		      leptonsIsoTight,RecoJetsScaleDown, 
+		      GenJets,trackJets,
+		      L_met_jetScaleDown, 
+		      L_gen_met,"jetScaleDown",eventFakeWeight);
+	  }
+
+
+	  // analysis smearing jets
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsRes,
+					 L_met_jetRes,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
+	  
+	    fillHisto(analysisPlots,sampleName, 
+		      CutList.at(iCut).cutLayerName,VariableList, 
+		      leptonsIsoTight,RecoJetsRes, 
+		      GenJets, trackJets,
+		      L_met_jetRes,
+		      L_gen_met,"jetRes",eventFakeWeight);
+	  }	
 	}
-
-
-	// analysis smearing jets
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAll,
-				       leptonsIsoTight,
-				       RecoJetsRes,
-				       L_met_jetRes,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
-	  
-	  fillHisto(analysisPlots,sampleName, 
-		    CutList.at(iCut).cutLayerName,VariableList, 
-		    leptonsIsoTight,RecoJetsRes, 
-		    GenJets, trackJets,
-		    L_met_jetRes,
-		    L_gen_met,"jetRes");
-	}	
       }
     }
   }
 }
-
 
 void loopOnEvents (plotter & analysisPlots, 
 		   readTree* reader, 
@@ -682,23 +832,41 @@ void loopOnEvents (plotter & analysisPlots,
 		   vector<variableContainer2D> & VariableList2D,
 		   const string & sampleName,     
 		   const bool & usePuppiAsDefault, 
-		   const double & minPtLeptonCut, 
-		   const double & minPtLeptonCutCleaning,
-		   const double & leptonIsoCut_mu,
-		   const double & leptonIsoCut_el, 
-		   const double & leptonIsoLooseCut,
-		   const double & matchingCone,   
-		   const double & minJetCutPt,   
+		   const float & minPtLeptonCut, 
+		   const float & minPtLeptonCutCleaning,
+		   const float & leptonIsoCut_mu,
+		   const float & leptonIsoCut_el, 
+		   const float & leptonIsoLooseCut,
+		   const float & matchingCone,   
+		   const float & minJetCutPt,   
 		   map <string,TH1F*> & vect,
 		   const string & finalStateString,
-		   const string & scenarioString) {
+		   const string & scenarioString,
+		   const string & fakeRateFile) {
 
   cout << "reading sample " << sampleName << "\n" ;
+  cout<<"analysis object sys set to "<<analysisPlots.getSystematics()<<endl;
+
   int maxevents = reader->fChain->GetEntries() ;
 
-  objectFormula scenarioFormula (scenarioString); // define a formula for systematics test 
+  // define the formulat for systematics study  
+  objectFormula scenarioFormula (scenarioString); 
 
-  cout<<"analysis object sys set to "<<analysisPlots.getSystematics()<<endl;
+  // define fake rate and migration matrix
+  fakeRateContainer fakeRate(fakeRateFile); 
+  TString nameMigration = Form("%s",fakeRateFile.c_str()); 
+  nameMigration.ReplaceAll(".root","_migration.root");
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(string(nameMigration));
+
+  // fake rate application --> check if the fake method has to be applied
+  vector<sample> vecSample = analysisPlots.getSamples();
+  bool applyFake = false;
+  for( size_t iSample = 0; iSample < vecSample.size(); iSample++){
+    if(vecSample.at(iSample).m_sampleName != sampleName) 
+      continue ;
+    if(vecSample.at(iSample).m_isSignal == 1)
+      applyFake = true;
+  }
 
   // loop over events ////////                                                                                                                                               
   for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent){                                                                                                                      
@@ -708,7 +876,6 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-
     if(TString(sampleName).Contains("Madgraph")){
       if(finalStateString == "UU"){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
@@ -748,7 +915,6 @@ void loopOnEvents (plotter & analysisPlots,
 
       L_gen_met.SetPtEtaPhiM   (reader->metGenpt,0.,reader->metGenphi, 0.) ;                                                                                             
 
-
       //Lepton Sector ///////      
       vector<leptonContainer> LeptonsAll, LeptonsAllScaleUp, LeptonsAllScaleDown, LeptonsAllRes;
       fillRecoLeptonsArray (LeptonsAll, *reader);
@@ -756,55 +922,6 @@ void loopOnEvents (plotter & analysisPlots,
       // dump tight leptons                                                                                                                                        
       vector<leptonContainer> leptonsIsoTight, leptonsIsoTightScaleUp, leptonsIsoTightScaleDown, leptonsIsoTightRes;
       leptonsIsoTight = dumpLeptons (LeptonsAll, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-
-      if(analysisPlots.getSystematics()){
-
-	// lepton scale and resolution
-	for(size_t iLep = 0; iLep < LeptonsAll.size(); iLep++){
-	  float scaleValueUnc = 0;
-	  float resValueUnc = 0;
-
-	  LeptonsAllScaleUp.push_back(LeptonsAll.at(iLep));
-	  LeptonsAllScaleDown.push_back(LeptonsAll.at(iLep));
-	  LeptonsAllRes.push_back(LeptonsAll.at(iLep));
-
-	  if(abs(LeptonsAll.at(iLep).flavour_) == 13){
-	    scaleValueUnc = scenarioFormula.evaluateMuonScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
-            resValueUnc = scenarioFormula.evaluateMuonResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
-	  }
-	  else if (abs(LeptonsAll.at(iLep).flavour_) == 11){
-	    scaleValueUnc = scenarioFormula.evaluateElectronScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
-            resValueUnc = scenarioFormula.evaluateElectronResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
-	  }
-
-	  LeptonsAllScaleUp.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1+scaleValueUnc),							  
-							LeptonsAll.at(iLep).lepton4V_.Py()*(1+scaleValueUnc),
-							LeptonsAll.at(iLep).lepton4V_.Pz()*(1+scaleValueUnc),
-							LeptonsAll.at(iLep).lepton4V_.E()*(1+scaleValueUnc));
-
-	  LeptonsAllScaleDown.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1-scaleValueUnc),							  
-							  LeptonsAll.at(iLep).lepton4V_.Py()*(1-scaleValueUnc),
-							  LeptonsAll.at(iLep).lepton4V_.Pz()*(1-scaleValueUnc),
-							  LeptonsAll.at(iLep).lepton4V_.E()*(1-scaleValueUnc));
-
-          float resUnc   = 1 + gRandom->Gaus(0,resValueUnc);
-
-	  LeptonsAllRes.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(resUnc),							  
-						    LeptonsAll.at(iLep).lepton4V_.Py()*(resUnc),
-						    LeptonsAll.at(iLep).lepton4V_.Pz()*(resUnc),
-						    LeptonsAll.at(iLep).lepton4V_.E()*(resUnc));
-
-
-	  L_met_lepScaleUp   = L_met - LeptonsAllScaleUp.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-	  L_met_lepScaleDown = L_met - LeptonsAllScaleDown.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-	  L_met_lepRes       = L_met - LeptonsAllRes.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
-
-	}
-
-	leptonsIsoTightScaleUp   = dumpLeptons (LeptonsAllScaleUp, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-	leptonsIsoTightScaleDown = dumpLeptons (LeptonsAllScaleDown, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-	leptonsIsoTightRes       = dumpLeptons (LeptonsAllRes, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
-      }
 
       // take reco jets                                                                                                                                                   
       vector<jetContainer> RecoJetsAll, RecoJetsAllScaleUp, RecoJetsAllScaleDown, RecoJetsAllRes;
@@ -817,277 +934,398 @@ void loopOnEvents (plotter & analysisPlots,
 
       // take jets                                                                                                                                                          
       vector<jetContainer> RecoJets, RecoJetsScaleUp, RecoJetsScaleDown, RecoJetsRes;
-      RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
+      RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
 
-      if(analysisPlots.getSystematics()){      
-
-	for(size_t iJet = 0; iJet < RecoJetsAll.size(); iJet++){
-
-	  RecoJetsAllScaleUp.push_back(RecoJetsAll.at(iJet));
-	  RecoJetsAllScaleDown.push_back(RecoJetsAll.at(iJet));
-	  RecoJetsAllRes.push_back(RecoJetsAll.at(iJet));
-
-	  float jetScaleUnc   = scenarioFormula.evaluateJetScaleUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta());
-	  float jetResUnc  = scenarioFormula.evaluateJetResolutionUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta(),RecoJetsAll.at(iJet).jet4V_.E());
-
-	  RecoJetsAllScaleUp.back().jet4V_.SetPxPyPzE(RecoJetsAllScaleUp.back().jet4V_.Px()*(1+jetScaleUnc), 
-						      RecoJetsAllScaleUp.back().jet4V_.Py()*(1+jetScaleUnc),
-						      RecoJetsAllScaleUp.back().jet4V_.Pz()*(1+jetScaleUnc),
-						      RecoJetsAllScaleUp.back().jet4V_.E()*(1+jetScaleUnc));
-
-	  RecoJetsAllScaleDown.back().jet4V_.SetPxPyPzE(RecoJetsAllScaleDown.back().jet4V_.Px()*(1-jetScaleUnc), 
-							RecoJetsAllScaleDown.back().jet4V_.Py()*(1-jetScaleUnc),
-							RecoJetsAllScaleDown.back().jet4V_.Pz()*(1-jetScaleUnc),
-							RecoJetsAllScaleDown.back().jet4V_.E()*(1-jetScaleUnc));
-
-          float resUnc = 1 + gRandom->Gaus(0,jetResUnc);
-
-	  RecoJetsAllRes.back().jet4V_.SetPxPyPzE(RecoJetsAllRes.back().jet4V_.Px()*(resUnc), 
-						  RecoJetsAllRes.back().jet4V_.Py()*(resUnc),
-						  RecoJetsAllRes.back().jet4V_.Pz()*(resUnc),
-						  RecoJetsAllRes.back().jet4V_.E()*(resUnc));
-
-	  L_met_jetScaleUp   = L_met - RecoJetsAllScaleUp.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-	  L_met_jetScaleDown = L_met - RecoJetsAllScaleDown.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-	  L_met_jetRes       = L_met - RecoJetsAllRes.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
-	}
-
-	RecoJetsScaleUp  = dumpJets (RecoJetsAllScaleUp, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-	RecoJetsScaleDown  = dumpJets (RecoJetsAllScaleDown, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-	RecoJetsRes  = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, CutList.at(iCut).bTagVeto, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-	
-      }     
-      
       // take gen jets                                                                                                                                                
       vector<jetContainer> GenJetsAll ;
       fillGenJetArray (GenJetsAll, *reader) ;
 
       // take gen jets                                                                                                                                                     
       vector<jetContainer> GenJets;
-      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, -999, -999, minPtLeptonCutCleaning, matchingCone);
+      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, 999, 999, minPtLeptonCutCleaning, matchingCone);
       
       // take track jets
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,*reader) ;
       vector<jetContainer> trackJets ;
             
-      float dRThreshold = 0.5 ;
-      
+      float dRThreshold = 0.5 ;      
       trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
 
 
-      // analysis with nominal objects
-      if( passCutContainerSelection (CutList.at(iCut),
-				     sampleName,
-				     reader,
-				     LeptonsAll,
-				     leptonsIsoTight,
-				     RecoJets,
-				     L_met,
-				     minPtLeptonCut,
-				     leptonIsoLooseCut,
-				     vect)){
+      float eventFakeWeight = 1.;
 
-	fillHisto(analysisPlots, sampleName, 
-		  CutList.at(iCut).cutLayerName,VariableList, 
-		  leptonsIsoTight,RecoJets, 
-		  GenJets,trackJets,
-		  L_met,L_gen_met);
+      if(applyFake){ // the sample require the fake rate application
+	if(leptonsIsoTight.size() < 1 ) continue ; // if less than one isolated lepton over the minimum pt
+	
+	// take the fake weigh from the cleaned jet collection over threshold
+	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13) 
+	  continue ;
+	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+	  continue ;
+	if(finalStateString == "DF" and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 13))
+	  continue ;
 
-	fillHisto2D(analysisPlots, sampleName, 
-		    CutList.at(iCut).cutLayerName,VariableList2D, 
+	vector<jetContainer> RecoJetsForFake;
+	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
+
+	for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
+
+	  if(finalStateString == "UU"){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }
+	  else if(finalStateString == "EE"){
+ 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
+	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }
+	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
+
+	  // promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check
+	  vector<leptonContainer> fakeLeptonsAll;
+	  vector<leptonContainer> fakeLeptonsIsoTight;
+	  fakeLeptonsIsoTight = leptonsIsoTight ;
+	  fakeLeptonsAll = LeptonsAll;
+	  fakeLeptonsIsoTight.push_back(createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration,finalStateString));
+	  fakeLeptonsAll.push_back(fakeLeptonsIsoTight.back());
+
+	  //re-clean jets for this new lepton
+	  vector<jetContainer> fakeRecoJets;
+	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
+
+	  // take into account the charge assignment
+	  eventFakeWeight = eventFakeWeight*0.5;
+
+	  TLorentzVector fakeL_met ;
+	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
+
+	  // analysis with nominal objects
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 fakeLeptonsAll,
+					 fakeLeptonsIsoTight,
+					 fakeRecoJets,
+					 fakeL_met,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,vect)){
+	  
+	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
+		      fakeLeptonsIsoTight, fakeRecoJets, GenJets, trackJets, fakeL_met, L_gen_met,"",eventFakeWeight);
+
+	    fillHisto2D(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList2D, 
+			fakeLeptonsIsoTight, fakeRecoJets, GenJets, trackJets, fakeL_met, L_gen_met,"",eventFakeWeight);
+	  }
+	}
+      }
+
+      else { // if not fake rate sample
+      
+	if(analysisPlots.getSystematics()){
+
+	  // lepton scale and resolution
+	  for(size_t iLep = 0; iLep < LeptonsAll.size(); iLep++){
+	    float scaleValueUnc = 0;
+	    float resValueUnc = 0;
+
+	    LeptonsAllScaleUp.push_back(LeptonsAll.at(iLep));
+	    LeptonsAllScaleDown.push_back(LeptonsAll.at(iLep));
+	    LeptonsAllRes.push_back(LeptonsAll.at(iLep));
+
+	    if(abs(LeptonsAll.at(iLep).flavour_) == 13){
+	      scaleValueUnc = scenarioFormula.evaluateMuonScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
+	      resValueUnc = scenarioFormula.evaluateMuonResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
+	    }
+	    else if (abs(LeptonsAll.at(iLep).flavour_) == 11){
+	      scaleValueUnc = scenarioFormula.evaluateElectronScaleUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta());
+            resValueUnc = scenarioFormula.evaluateElectronResolutionUnc(LeptonsAll.at(iLep).lepton4V_.Pt(),LeptonsAll.at(iLep).lepton4V_.Eta(),LeptonsAll.at(iLep).lepton4V_.E());
+	    }
+
+	    LeptonsAllScaleUp.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1+scaleValueUnc),							  
+							  LeptonsAll.at(iLep).lepton4V_.Py()*(1+scaleValueUnc),
+							  LeptonsAll.at(iLep).lepton4V_.Pz()*(1+scaleValueUnc),
+							  LeptonsAll.at(iLep).lepton4V_.E()*(1+scaleValueUnc));
+	    
+	    LeptonsAllScaleDown.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(1-scaleValueUnc),							  
+							    LeptonsAll.at(iLep).lepton4V_.Py()*(1-scaleValueUnc),
+							    LeptonsAll.at(iLep).lepton4V_.Pz()*(1-scaleValueUnc),
+							    LeptonsAll.at(iLep).lepton4V_.E()*(1-scaleValueUnc));
+
+	    float resUnc   = 1 + gRandom->Gaus(0,resValueUnc);
+
+	    LeptonsAllRes.back().lepton4V_.SetPxPyPzE(LeptonsAll.at(iLep).lepton4V_.Px()*(resUnc),							  
+						      LeptonsAll.at(iLep).lepton4V_.Py()*(resUnc),
+						      LeptonsAll.at(iLep).lepton4V_.Pz()*(resUnc),
+						      LeptonsAll.at(iLep).lepton4V_.E()*(resUnc));
+
+	    
+	    L_met_lepScaleUp   = L_met - LeptonsAllScaleUp.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+	    L_met_lepScaleDown = L_met - LeptonsAllScaleDown.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+	    L_met_lepRes       = L_met - LeptonsAllRes.back().lepton4V_ + LeptonsAll.at(iLep).lepton4V_;
+
+	  }
+
+	  leptonsIsoTightScaleUp   = dumpLeptons (LeptonsAllScaleUp, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+	  leptonsIsoTightScaleDown = dumpLeptons (LeptonsAllScaleDown, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+	  leptonsIsoTightRes       = dumpLeptons (LeptonsAllRes, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
+	}
+	
+	if(analysisPlots.getSystematics()){      
+
+	  for(size_t iJet = 0; iJet < RecoJetsAll.size(); iJet++){
+
+	    RecoJetsAllScaleUp.push_back(RecoJetsAll.at(iJet));
+	    RecoJetsAllScaleDown.push_back(RecoJetsAll.at(iJet));
+	    RecoJetsAllRes.push_back(RecoJetsAll.at(iJet));
+
+	    float jetScaleUnc   = scenarioFormula.evaluateJetScaleUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta());
+	    float jetResUnc  = scenarioFormula.evaluateJetResolutionUnc(RecoJetsAll.at(iJet).jet4V_.Pt(),RecoJetsAll.at(iJet).jet4V_.Eta(),RecoJetsAll.at(iJet).jet4V_.E());
+
+	    RecoJetsAllScaleUp.back().jet4V_.SetPxPyPzE(RecoJetsAllScaleUp.back().jet4V_.Px()*(1+jetScaleUnc), 
+							RecoJetsAllScaleUp.back().jet4V_.Py()*(1+jetScaleUnc),
+							RecoJetsAllScaleUp.back().jet4V_.Pz()*(1+jetScaleUnc),
+							RecoJetsAllScaleUp.back().jet4V_.E()*(1+jetScaleUnc));
+
+	    RecoJetsAllScaleDown.back().jet4V_.SetPxPyPzE(RecoJetsAllScaleDown.back().jet4V_.Px()*(1-jetScaleUnc), 
+							  RecoJetsAllScaleDown.back().jet4V_.Py()*(1-jetScaleUnc),
+							  RecoJetsAllScaleDown.back().jet4V_.Pz()*(1-jetScaleUnc),
+							  RecoJetsAllScaleDown.back().jet4V_.E()*(1-jetScaleUnc));
+
+	    float resUnc = 1 + gRandom->Gaus(0,jetResUnc);
+
+	    RecoJetsAllRes.back().jet4V_.SetPxPyPzE(RecoJetsAllRes.back().jet4V_.Px()*(resUnc), 
+						    RecoJetsAllRes.back().jet4V_.Py()*(resUnc),
+						    RecoJetsAllRes.back().jet4V_.Pz()*(resUnc),
+						    RecoJetsAllRes.back().jet4V_.E()*(resUnc));
+
+	    L_met_jetScaleUp   = L_met - RecoJetsAllScaleUp.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+	    L_met_jetScaleDown = L_met - RecoJetsAllScaleDown.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+	    L_met_jetRes       = L_met - RecoJetsAllRes.back().jet4V_ + RecoJetsAll.at(iJet).jet4V_;
+	  }
+
+	  RecoJetsScaleUp  = dumpJets (RecoJetsAllScaleUp, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
+	  RecoJetsScaleDown  = dumpJets (RecoJetsAllScaleDown, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
+	  RecoJetsRes  = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
+	
+	}     
+      
+
+	// analysis with nominal objects
+	if( passCutContainerSelection (CutList.at(iCut),
+				       sampleName,
+				       reader,
+				       LeptonsAll,
+				       leptonsIsoTight,
+				       RecoJets,
+				       L_met,
+				       minPtLeptonCut,
+				       leptonIsoLooseCut,
+				       vect)){
+
+	  fillHisto(analysisPlots, sampleName, 
+		    CutList.at(iCut).cutLayerName,VariableList, 
 		    leptonsIsoTight,RecoJets, 
 		    GenJets,trackJets,
-		    L_met,L_gen_met);
-      }
+		    L_met,L_gen_met,"",eventFakeWeight);
+
+	  fillHisto2D(analysisPlots, sampleName, 
+		      CutList.at(iCut).cutLayerName,VariableList2D, 
+		      leptonsIsoTight,RecoJets, 
+		      GenJets,trackJets,
+		      L_met,L_gen_met,"",eventFakeWeight);
+	}
       
-      /// if perform sys analysis
-      if(analysisPlots.getSystematics()){
+	/// if perform sys analysis
+	if(analysisPlots.getSystematics()){
 
-	// analysis scaling leptons Up
-	map<string,TH1F*> tempVect;
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllScaleUp,
-				       leptonsIsoTightScaleUp,
-				       RecoJets,
-				       L_met_lepScaleUp,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // analysis scaling leptons Up
+	  map<string,TH1F*> tempVect;
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllScaleUp,
+					 leptonsIsoTightScaleUp,
+					 RecoJets,
+					 L_met_lepScaleUp,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTightScaleUp, 
-		    RecoJets, 
-		    GenJets,
-		    trackJets,
-		    L_met_lepScaleUp, 
-		    L_gen_met,"lepScaleUp");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTightScaleUp, 
+		      RecoJets, 
+		      GenJets,
+		      trackJets,
+		      L_met_lepScaleUp, 
+		      L_gen_met,"lepScaleUp",eventFakeWeight);
 
-	fillHisto2D(analysisPlots, sampleName, 
-		    CutList.at(iCut).cutLayerName,VariableList2D, 
-		    leptonsIsoTightScaleUp,RecoJets, 
-		    GenJets,trackJets,
-		    L_met_lepScaleUp,L_gen_met,"lepScaleUp");
-	}
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTightScaleUp,RecoJets, 
+			GenJets,trackJets,
+			L_met_lepScaleUp,L_gen_met,"lepScaleUp",eventFakeWeight);
+	  }
 
-	// analysis scaling leptons down
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllScaleDown,
-				       leptonsIsoTightScaleDown,
-				       RecoJets,
-				       L_met_lepScaleDown,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // analysis scaling leptons down
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllScaleDown,
+					 leptonsIsoTightScaleDown,
+					 RecoJets,
+					 L_met_lepScaleDown,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTightScaleDown, 
-		    RecoJets, 
-		    GenJets,
-		    trackJets,
-		    L_met_lepScaleDown, 
-		    L_gen_met,"lepScaleDown");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTightScaleDown, 
+		      RecoJets, 
+		      GenJets,
+		      trackJets,
+		      L_met_lepScaleDown, 
+		      L_gen_met,"lepScaleDown",eventFakeWeight);
 
-	  fillHisto2D(analysisPlots, sampleName, 
-		      CutList.at(iCut).cutLayerName,VariableList2D, 
-		      leptonsIsoTightScaleDown,RecoJets, 
-		      GenJets,trackJets,
-		      L_met_lepScaleDown,L_gen_met,"lepScaleDown");
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTightScaleDown,RecoJets, 
+			GenJets,trackJets,
+			L_met_lepScaleDown,L_gen_met,"lepScaleDown",eventFakeWeight);
 
-	}
+	  }
 
 
-	// analysis smearing leptons 
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAllRes,
-				       leptonsIsoTightRes,
-				       RecoJets,
-				       L_met_lepRes,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // analysis smearing leptons 
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAllRes,
+					 leptonsIsoTightRes,
+					 RecoJets,
+					 L_met_lepRes,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTightRes, 
-		    RecoJets, 
-		    GenJets,
-		    trackJets,
-		    L_met_lepRes, 
-		    L_gen_met,"lepRes");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTightRes, 
+		      RecoJets, 
+		      GenJets,
+		      trackJets,
+		      L_met_lepRes, 
+		      L_gen_met,"lepRes",eventFakeWeight);
 
-	  fillHisto2D(analysisPlots, sampleName, 
-		      CutList.at(iCut).cutLayerName,VariableList2D, 
-		      leptonsIsoTightRes,RecoJets, 
-		      GenJets,trackJets,
-		      L_met_lepRes,L_gen_met,"lepRes");
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTightRes,RecoJets, 
+			GenJets,trackJets,
+			L_met_lepRes,L_gen_met,"lepRes",eventFakeWeight);
 
-	}
+	  }
 
-        //// jets
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAll,
-				       leptonsIsoTight,
-				       RecoJetsScaleUp,
-				       L_met_jetScaleUp,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  //// jets
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsScaleUp,
+					 L_met_jetScaleUp,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTight, 
-		    RecoJetsScaleUp, 
-		    GenJets,
-		    trackJets,
-		    L_met_jetScaleUp, 
-		    L_gen_met,"jetScaleUp");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTight, 
+		      RecoJetsScaleUp, 
+		      GenJets,
+		      trackJets,
+		      L_met_jetScaleUp, 
+		      L_gen_met,"jetScaleUp",eventFakeWeight);
 
-	  fillHisto2D(analysisPlots, sampleName, 
-		      CutList.at(iCut).cutLayerName,VariableList2D, 
-		      leptonsIsoTight,RecoJetsScaleUp, 
-		      GenJets,trackJets,
-		      L_met_jetScaleUp,L_gen_met,"jetScaleUp");
-	}
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTight,RecoJetsScaleUp, 
+			GenJets,trackJets,
+			L_met_jetScaleUp,L_gen_met,"jetScaleUp",eventFakeWeight);
+	  }
 
-	// analysis scaling jets down
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAll,
-				       leptonsIsoTight,
-				       RecoJetsScaleDown,
-				       L_met_jetScaleDown,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // analysis scaling jets down
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsScaleDown,
+					 L_met_jetScaleDown,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTight, 
-		    RecoJetsScaleDown, 
-		    GenJets,
-		    trackJets,
-		    L_met_jetScaleDown, 
-		    L_gen_met,"jetScaleDown");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTight, 
+		      RecoJetsScaleDown, 
+		      GenJets,
+		      trackJets,
+		      L_met_jetScaleDown, 
+		      L_gen_met,"jetScaleDown",eventFakeWeight);
 
-	  fillHisto2D(analysisPlots, sampleName, 
-		      CutList.at(iCut).cutLayerName,VariableList2D, 
-		      leptonsIsoTight,RecoJetsScaleDown, 
-		      GenJets,trackJets,
-		      L_met_jetScaleDown,L_gen_met,"jetScaleDown");
-	}
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTight,RecoJetsScaleDown, 
+			GenJets,trackJets,
+			L_met_jetScaleDown,L_gen_met,"jetScaleDown",eventFakeWeight);
+	  }
 
 
-	// analysis smearing jets
-	if( passCutContainerSelection (CutList.at(iCut),
-				       sampleName,
-				       reader,
-				       LeptonsAll,
-				       leptonsIsoTight,
-				       RecoJetsRes,
-				       L_met_jetRes,
-				       minPtLeptonCut,
-				       leptonIsoLooseCut,
-				       tempVect)){
+	  // analysis smearing jets
+	  if( passCutContainerSelection (CutList.at(iCut),
+					 sampleName,
+					 reader,
+					 LeptonsAll,
+					 leptonsIsoTight,
+					 RecoJetsRes,
+					 L_met_jetRes,
+					 minPtLeptonCut,
+					 leptonIsoLooseCut,
+					 tempVect)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    CutList.at(iCut).cutLayerName, 
-		    VariableList, 
-		    leptonsIsoTight, 
-		    RecoJetsRes, 
-		    GenJets,
-		    trackJets,
-		    L_met_jetRes,
-		    L_gen_met,"jetRes");
+	    fillHisto(analysisPlots, 
+		      sampleName, 
+		      CutList.at(iCut).cutLayerName, 
+		      VariableList, 
+		      leptonsIsoTight, 
+		      RecoJetsRes, 
+		      GenJets,
+		      trackJets,
+		      L_met_jetRes,
+		      L_gen_met,"jetRes",eventFakeWeight);
 
-	  fillHisto2D(analysisPlots, sampleName, 
-		      CutList.at(iCut).cutLayerName,VariableList2D, 
-		      leptonsIsoTight,RecoJetsRes, 
-		      GenJets,trackJets,
-		      L_met_jetRes,L_gen_met,"jetRes");
+	    fillHisto2D(analysisPlots, sampleName, 
+			CutList.at(iCut).cutLayerName,VariableList2D, 
+			leptonsIsoTight,RecoJetsRes, 
+			GenJets,trackJets,
+			L_met_jetRes,L_gen_met,"jetRes",eventFakeWeight);
 
+	  }
 	}
       }
     }
@@ -1105,7 +1343,8 @@ void fillHisto( plotter & analysisPlots,
 		vector<jetContainer> & trackJets,
                 TLorentzVector & L_met,
                 TLorentzVector & L_gen_met,
-		const string & systematicName
+		const string & systematicName,
+		const float & eventFakeWeight
 		){
 
   // some basic lorentz vectors
@@ -1199,390 +1438,419 @@ void fillHisto( plotter & analysisPlots,
   else 
     NameSample = sampleName ;
 
+  int nBjetsL = 0, nBjetsM = 0, nBjetsT = 0;
+  for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(RecoJets.at(iJet).btag_ >= 1)
+      nBjetsL ++;
+    if(RecoJets.at(iJet).btag_ >= 2)
+      nBjetsM++;
+    if(RecoJets.at(iJet).btag_ >= 3)
+      nBjetsT++;
+  }
+
       
   for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
 
     // track jets
     if(VariableList.at(iVar).variableName == "numTkjets" and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num,                1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num,                eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "numTkjets_In"  and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_IN,             1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_IN,             eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "numTkjets_Out" and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_OUT,            1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_OUT,            eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets"      and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT,              1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT,              eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets_In"   and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_IN,           1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_IN,           eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets_Out"  and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_OUT,          1.,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_OUT,          eventFakeWeight,systematicName) ;
     }
+
+    // njets
+    else if(VariableList.at(iVar).variableName == "nbjetsL"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  nBjetsL,          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "nbjetsM"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  nBjetsM,          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "nbjetsT"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  nBjetsT,          eventFakeWeight,systematicName) ;
+    }
+    
 
     // jet based variables
     if(VariableList.at(iVar).variableName == "ptj1" and RecoJets.size() >= 1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "ptj1_gen" and GenJets.size() >= 1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
 
     else if(VariableList.at(iVar).variableName == "ptj2" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "ptj2_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
 
 
     else if(VariableList.at(iVar).variableName == "etaj1" and RecoJets.size() >= 1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Eta(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "etaj1_gen" and GenJets.size() >= 1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Eta(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "etaj2" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.Eta(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "etaj2_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(1).jet4V_.Eta(),eventFakeWeight,systematicName);   
     }
 
+    // btagging section
+    else if(VariableList.at(iVar).variableName == "btagj1" and RecoJets.size() >= 1){
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).btag_,eventFakeWeight,systematicName);   
+    }
+    else if(VariableList.at(iVar).variableName == "btagj2" and RecoJets.size() >= 2){
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).btag_,eventFakeWeight,systematicName);   
+    }
 
     else if(VariableList.at(iVar).variableName == "detajj" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "detajj_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta()),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }       
 
     else if(VariableList.at(iVar).variableName == "dRjj" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(RecoJets.at(1).jet4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(RecoJets.at(1).jet4V_),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "dRjj_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaR(GenJets.at(1).jet4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.DeltaR(GenJets.at(1).jet4V_),eventFakeWeight,systematicName);   
     }       
 
     else if(VariableList.at(iVar).variableName == "mjj" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.M(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "mjj_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.M(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.M(),eventFakeWeight,systematicName);   
     }
 
     else if(VariableList.at(iVar).variableName == "ptjj" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "ptjj_gen" and GenJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet_gen.Pt(),eventFakeWeight,systematicName);   
     }
 
     else if(VariableList.at(iVar).variableName == "Asim_j" and RecoJets.size() >=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimJ,1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimJ,eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "Asim_j_gen" and GenJets.size() >=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimGenJ,1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimGenJ,eventFakeWeight,systematicName);   
     }
 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ"       and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen"   and GenJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(GenJets.at(1).jet4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(GenJets.at(1).jet4V_)),eventFakeWeight,systematicName);   
     }        
 
     else if(VariableList.at(iVar).variableName == "etaj1etaj2"       and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta(),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "etaj1etaj2_gen"       and GenJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Eta()*GenJets.at(1).jet4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,GenJets.at(0).jet4V_.Eta()*GenJets.at(1).jet4V_.Eta(),eventFakeWeight,systematicName);   
     } 
     
     // lepton based quantities
     
     else if(VariableList.at(iVar).variableName == "ptl1"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "ptl2"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     else if(VariableList.at(iVar).variableName == "etal1"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Eta(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "etal2"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(1).lepton4V_.Eta(),eventFakeWeight,systematicName);   
     }
     
     else if(VariableList.at(iVar).variableName == "ptll"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "phill"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Phi(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Phi(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "dRll"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "etall"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Eta(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "mll"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     
     else if(VariableList.at(iVar).variableName == "etal1etal2"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Eta()*leptonsIsoTight.at(1).lepton4V_.Eta(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,leptonsIsoTight.at(0).lepton4V_.Eta()*leptonsIsoTight.at(1).lepton4V_.Eta(),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LL"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "DeltaEta_LL"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()),1,systematicName); 
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()),eventFakeWeight,systematicName); 
     } 
 
     else if(VariableList.at(iVar).variableName == "Asim_l"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimL,1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,asimL,eventFakeWeight,systematicName);   
     }
     
     // met
     else if(VariableList.at(iVar).variableName == "met"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_met.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_met.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "met_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_gen_met.Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_gen_met.Pt(),eventFakeWeight,systematicName);   
     }
 
 
     /// mixed variables using all event objects
     else if(VariableList.at(iVar).variableName == "leadLepZep" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "leadLepZep_gen" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "trailLepZep" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "trailLepZep_gen" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
     }
            
     else if(VariableList.at(iVar).variableName == "R"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,Rvar,1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,Rvar,eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "R_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RvarGen,1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RvarGen,eventFakeWeight,systematicName);   
     }
       
     // lepton and met
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LMet_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 	
 
     else if(VariableList.at(iVar).variableName == "ptLMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_+L_met).Pt(),eventFakeWeight,systematicName);   
     }         
 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TLMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TLMet_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "ptTLMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_+L_met).Pt(),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LLMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LLMet_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dilepton.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dilepton.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "ptLLMet"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_met).Pt(),eventFakeWeight,systematicName);   
     } 
 
 	
     // lepton and jets
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJLL" and RecoJets.size()>=2){
-	  analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_dilepton)),1,systematicName);   
+	  analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     } 
     
     
     else if(VariableList.at(iVar).variableName == "dR_LJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(0).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(0).lepton4V_),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "dR_LJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),eventFakeWeight,systematicName);   
 	} 
     else if(VariableList.at(iVar).variableName == "dR_LJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(L_dilepton),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(0).jet4V_.DeltaR(L_dilepton),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "ptLJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+leptonsIsoTight.at(0).lepton4V_).Pt(),1,systematicName); 
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+leptonsIsoTight.at(0).lepton4V_).Pt(),eventFakeWeight,systematicName); 
     } 
     else if(VariableList.at(iVar).variableName == "ptLJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+leptonsIsoTight.at(1).lepton4V_).Pt(),1,systematicName);
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+leptonsIsoTight.at(1).lepton4V_).Pt(),eventFakeWeight,systematicName);
     } 
     else if(VariableList.at(iVar).variableName == "ptLJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+L_dilepton).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+L_dilepton).Pt(),eventFakeWeight,systematicName);   
     } 
     
     
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_dilepton)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     } 
     
 
     else if(VariableList.at(iVar).variableName == "dR_TJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(leptonsIsoTight.at(0).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(leptonsIsoTight.at(0).lepton4V_),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "dR_TJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "dR_TJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(L_dilepton),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,RecoJets.at(1).jet4V_.DeltaR(L_dilepton),eventFakeWeight,systematicName);   
     } 
     
 
     else if(VariableList.at(iVar).variableName == "ptTJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+leptonsIsoTight.at(0).lepton4V_).Pt(),1,systematicName); 
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+leptonsIsoTight.at(0).lepton4V_).Pt(),eventFakeWeight,systematicName); 
     } 
     else if(VariableList.at(iVar).variableName == "ptTJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+leptonsIsoTight.at(1).lepton4V_).Pt(),1,systematicName);
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+leptonsIsoTight.at(1).lepton4V_).Pt(),eventFakeWeight,systematicName);
     } 
     else if(VariableList.at(iVar).variableName == "ptTJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+L_dilepton).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+L_dilepton).Pt(),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(leptonsIsoTight.at(0).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_dilepton)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "dR_JJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(leptonsIsoTight.at(0).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(leptonsIsoTight.at(0).lepton4V_),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "dR_JJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(leptonsIsoTight.at(1).lepton4V_),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(leptonsIsoTight.at(1).lepton4V_),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "dR_JJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(L_dilepton),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(L_dilepton),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "ptJJL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+leptonsIsoTight.at(0).lepton4V_).Pt(),1,systematicName); 
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+leptonsIsoTight.at(0).lepton4V_).Pt(),eventFakeWeight,systematicName); 
     } 
     else if(VariableList.at(iVar).variableName == "ptJJTL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+leptonsIsoTight.at(1).lepton4V_).Pt(),1,systematicName);
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+leptonsIsoTight.at(1).lepton4V_).Pt(),eventFakeWeight,systematicName);
     } 
     else if(VariableList.at(iVar).variableName == "ptJJLL" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_dilepton).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_dilepton).Pt(),eventFakeWeight,systematicName);   
     } 
 
     
     // jet and met
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJMet_gen" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "ptJJMet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_met).Pt(),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met" and GenJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet_gen.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet_gen.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_gen_Met_gen" and GenJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet_gen.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet_gen.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet" and RecoJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJMet_gen" and RecoJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "ptLJMet" and RecoJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(0).jet4V_+L_met).Pt(),eventFakeWeight,systematicName);   
     } 
 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met" and GenJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_LJ_gen_Met_gen" and GenJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(GenJets.at(0).jet4V_.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
 	} 
     
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet" and RecoJets.size() >=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     } 
     else if(VariableList.at(iVar).variableName == "DeltaPhi_TJMet_gen" and RecoJets.size() >=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_gen_met)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_gen_met)),eventFakeWeight,systematicName);   
     } 
     
     else if(VariableList.at(iVar).variableName == "ptTJMet" and RecoJets.size()>=1){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+L_met).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(RecoJets.at(1).jet4V_+L_met).Pt(),eventFakeWeight,systematicName);   
     } 
 
     // Lepton JJ_LLMET
     else if(VariableList.at(iVar).variableName == "ptJJ_LLMet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_LLmet).Pt(),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dijet+L_LLmet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "DeltaPhi_JJ_LLMet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_LLmet)),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs(L_dijet.DeltaPhi(L_LLmet)),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "dR_JJ_LLMet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(L_LLmet),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,L_dijet.DeltaR(L_LLmet),eventFakeWeight,systematicName);   
     }
 
     // some invariant mass
     else if(VariableList.at(iVar).variableName == "mlljj" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet).M(),1,systematicName);
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet).M(),eventFakeWeight,systematicName);
     }
     
     else if(VariableList.at(iVar).variableName == "mlljjmet" and RecoJets.size()>=2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet+L_met).M(),1,systematicName);
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(L_dilepton+L_dijet+L_met).M(),eventFakeWeight,systematicName);
     }
 
     // tranvserse mass
     else if(VariableList.at(iVar).variableName == "mTH"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "mTH_gen"){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_gen_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_gen_met)))),1,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,sqrt(2*L_dilepton.Pt()*L_gen_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_gen_met)))),eventFakeWeight,systematicName);   
     } 
   }
 }
@@ -1599,7 +1867,8 @@ void fillHisto2D ( plotter & analysisPlots,
 		   vector<jetContainer> & trackJets,
 		   TLorentzVector & L_met,
 		   TLorentzVector & L_gen_met,
-		   const string & systematicName){
+		   const string & systematicName,
+		   const float & eventFakeWeight){
 
 
   // some basic lorentz vectors
@@ -1623,12 +1892,6 @@ void fillHisto2D ( plotter & analysisPlots,
     aveEta   = 0.5*(RecoJets.at(0).jet4V_.Eta()+RecoJets.at(1).jet4V_.Eta());
   }
     
-  //      if(GenJets.size() >= 2){
-  //	L_dijet_gen   = GenJets.at(0).jet4V_ + GenJets.at(1).jet4V_;                                                                                              
-  //	asimGenJ      = (GenJets.at(0).jet4V_.Pt()-GenJets.at(1).jet4V_.Pt())/(GenJets.at(0).jet4V_.Pt()+GenJets.at(1).jet4V_.Pt()) ;                             
-  //	RvarGen       = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(GenJets.at(0).jet4V_.Pt()*GenJets.at(1).jet4V_.Pt()) ;            
-  //        aveEtaGen     = 0.5*(GenJets.at(0).jet4V_.Eta()+GenJets.at(1).jet4V_.Eta());
-  //      }
       
   // track jet info
   float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
@@ -1699,314 +1962,315 @@ void fillHisto2D ( plotter & analysisPlots,
     // tranvserse mass
     if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "Asim_l" ){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,asimL,1,systematicName);   
+				 asimJ,asimL,eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "R"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,Rvar,1,systematicName);   
+				 asimJ,Rvar,eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),1,systematicName);   
+				 asimJ,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,fabs(L_dijet.DeltaPhi(L_dilepton)),1,systematicName);   
+				 asimJ,fabs(L_dijet.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+				 asimJ,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 asimJ,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
+
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,L_dijet.M(),1,systematicName);   
+				 asimJ,L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 asimJ,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 asimJ,fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,L_dilepton.M(),1,systematicName);   
+				 asimJ,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 asimJ,(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,L_dijet.Pt(),1,systematicName);   
+				 asimJ,L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "ptll"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     asimJ,L_dilepton.Pt(),1,systematicName);   
+				     asimJ,L_dilepton.Pt(),eventFakeWeight,systematicName);   
 	}
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 asimJ,leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_j" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimJ,RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 asimJ,RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "R"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,Rvar,1,systematicName);   
+				 asimL,Rvar,eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),1,systematicName);   
+				 asimL,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,fabs(L_dijet.DeltaPhi(L_dilepton)),1,systematicName);   
+				 asimL,fabs(L_dijet.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+				 asimL,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 asimL,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,L_dijet.M(),1,systematicName);   
+				 asimL,L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 asimL,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 asimL,fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,L_dilepton.M(),1,systematicName);   
+				 asimL,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     asimL,(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				     asimL,(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,L_dijet.Pt(),1,systematicName);   
+				 asimL,L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,L_dilepton.Pt(),1,systematicName);   
+				 asimL,L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 asimL,leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "Asim_l" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 asimL,RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 asimL,RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
 
     ////
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),1,systematicName);   
+				 Rvar,fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,fabs(L_dijet.DeltaPhi(L_dilepton)),1,systematicName);   
+				 Rvar,fabs(L_dijet.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+				 Rvar,fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 Rvar,fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,L_dijet.M(),1,systematicName);   
+				 Rvar,L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 Rvar,sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 Rvar,fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,L_dilepton.M(),1,systematicName);   
+				 Rvar,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 Rvar,(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,L_dijet.Pt(),1,systematicName);   
+				 Rvar,L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,L_dilepton.Pt(),1,systematicName);   
+				 Rvar,L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 Rvar,leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "R" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 Rvar,RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 Rvar,RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
 
     ////
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_JJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(L_dijet.DeltaPhi(L_dilepton)),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(L_dijet.DeltaPhi(L_dilepton)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dijet.M(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName); 
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName); 
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dilepton.M(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dijet.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dilepton.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJ" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				     fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ////
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
 	}
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "mjj"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(L_dijet.DeltaPhi(L_dilepton)),L_dijet.M(),1,systematicName);   
+				     fabs(L_dijet.DeltaPhi(L_dilepton)),L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				     fabs(L_dijet.DeltaPhi(L_dilepton)),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dilepton.M(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dijet.Pt(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dilepton.Pt(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_JJLL" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dijet.DeltaPhi(L_dilepton)),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 fabs(L_dijet.DeltaPhi(L_dilepton)),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     
     ////
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "detajj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dijet.M(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "mTH"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				     fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dilepton.M(),1,systematicName);   
+				     fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dijet.Pt(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dilepton.Pt(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LL" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     
@@ -2014,200 +2278,200 @@ void fillHisto2D ( plotter & analysisPlots,
     
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "mjj"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dijet.M(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dijet.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dilepton.M(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dijet.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dilepton.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "detajj" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				     fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "mTH"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.M(),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),1,systematicName);   
+				 L_dijet.M(),sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.M(),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 L_dijet.M(),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dijet.M(),L_dilepton.M(),1,systematicName);   
+				     L_dijet.M(),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dijet.M(),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				     L_dijet.M(),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.M(),L_dijet.Pt(),1,systematicName);   
+				 L_dijet.M(),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.M(),L_dilepton.Pt(),1,systematicName);   
+				 L_dijet.M(),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "ptl2"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dijet.M(),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				     L_dijet.M(),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mjj" and VariableList2D.at(iVar).variableNameY == "ptj2"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dijet.M(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				     L_dijet.M(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "DeltaPhi_LLMet"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),fabs(L_dilepton.DeltaPhi(L_met)),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),fabs(L_dilepton.DeltaPhi(L_met)),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dilepton.M(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dijet.Pt(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dilepton.Pt(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mTH" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
 
 
     ///
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "mll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dilepton.DeltaPhi(L_met)),L_dilepton.M(),1,systematicName);   
+				 fabs(L_dilepton.DeltaPhi(L_met)),L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dilepton.DeltaPhi(L_met)),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 fabs(L_dilepton.DeltaPhi(L_met)),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dilepton.DeltaPhi(L_met)),L_dijet.Pt(),1,systematicName);   
+				 fabs(L_dilepton.DeltaPhi(L_met)),L_dijet.Pt(),eventFakeWeight,systematicName);   
 	}
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dilepton.DeltaPhi(L_met)),L_dilepton.Pt(),1,systematicName);   
+				 fabs(L_dilepton.DeltaPhi(L_met)),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 fabs(L_dilepton.DeltaPhi(L_met)),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 fabs(L_dilepton.DeltaPhi(L_met)),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "DeltaPhi_LLMet" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     fabs(L_dilepton.DeltaPhi(L_met)),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				     fabs(L_dilepton.DeltaPhi(L_met)),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "mll" and VariableList2D.at(iVar).variableNameY == "ptJJLL"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dilepton.M(),(L_dilepton+L_dijet).Pt(),1,systematicName);   
+				 L_dilepton.M(),(L_dilepton+L_dijet).Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mll" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dilepton.M(),L_dijet.Pt(),1,systematicName);   
+				     L_dilepton.M(),L_dijet.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mll" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dilepton.M(),L_dilepton.Pt(),1,systematicName);   
+				 L_dilepton.M(),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mll" and VariableList2D.at(iVar).variableNameY == "ptl2"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dilepton.M(),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				     L_dilepton.M(),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "mll" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dilepton.M(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 L_dilepton.M(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
         ///
     else if(VariableList2D.at(iVar).variableNameX == "ptJJLL" and VariableList2D.at(iVar).variableNameY == "ptJJ"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     (L_dilepton+L_dijet).Pt(),L_dijet.Pt(),1,systematicName);   
+				     (L_dilepton+L_dijet).Pt(),L_dijet.Pt(),eventFakeWeight,systematicName);   
 	}
     else if(VariableList2D.at(iVar).variableNameX == "ptJJLL" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 (L_dilepton+L_dijet).Pt(),L_dilepton.Pt(),1,systematicName);   
+				 (L_dilepton+L_dijet).Pt(),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "ptJJLL" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 (L_dilepton+L_dijet).Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 (L_dilepton+L_dijet).Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "ptJJLL" and VariableList2D.at(iVar).variableNameY == "ptj2"){
 	  analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     (L_dilepton+L_dijet).Pt(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				     (L_dilepton+L_dijet).Pt(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "ptJJ" and VariableList2D.at(iVar).variableNameY == "ptll"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.Pt(),L_dilepton.Pt(),1,systematicName);   
+				 L_dijet.Pt(),L_dilepton.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "ptJJ" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				     L_dijet.Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				     L_dijet.Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "ptJJ" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dijet.Pt(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 L_dijet.Pt(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "ptll" and VariableList2D.at(iVar).variableNameY == "ptl2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dilepton.Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),1,systematicName);   
+				 L_dilepton.Pt(),leptonsIsoTight.at(1).lepton4V_.Pt(),eventFakeWeight,systematicName);   
     }
     else if(VariableList2D.at(iVar).variableNameX == "ptll" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 L_dilepton.Pt(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 L_dilepton.Pt(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
     
     ///
     else if(VariableList2D.at(iVar).variableNameX == "ptl2" and VariableList2D.at(iVar).variableNameY == "ptj2"){
       analysisPlots.fill2DHisto (NameSample,cutLayerName,VariableList2D.at(iVar).variableNameX+"_"+VariableList2D.at(iVar).variableNameY,
-				 leptonsIsoTight.at(1).lepton4V_.Pt(),RecoJets.at(1).jet4V_.Pt(),1,systematicName);   
+				 leptonsIsoTight.at(1).lepton4V_.Pt(),RecoJets.at(1).jet4V_.Pt(),eventFakeWeight,systematicName);   
     }
   }                
 }
@@ -2221,8 +2485,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				vector<leptonContainer> & leptonsIsoTight,
 				vector<jetContainer> & RecoJets,
 				const TLorentzVector & L_met,
-				const double & minPtLeptonCut,
-				const double & leptonIsoLooseCut,
+				const float & minPtLeptonCut,
+				const float & leptonIsoLooseCut,
 				map<string,TH1F*> & vect){
 
   // identify loose leptons                                                                                                                                             
@@ -2368,6 +2632,21 @@ bool passCutContainerSelection (cutContainer & Cut,
     iBin++;   
   }
 
+  // bveto
+  int nBjets = 0 ;
+  for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(RecoJets.at(iJet).btag_ >= Cut.bTagCut)
+      nBjets ++ ;
+  }
+
+  if(nBjets > Cut.nBVeto) return false ;
+
+  if(vect.size()!=0){
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"bveto");
+    iBin++;   
+  }
+
   ///////// Lorentz Vector
   TLorentzVector L_dilepton;
   L_dilepton = leptonsIsoTight.at(0).lepton4V_ + leptonsIsoTight.at(1).lepton4V_ ;               
@@ -2471,13 +2750,13 @@ bool passCutContainerSelection (readTree* reader,
 				cutContainer & Cut,
 				const string & sampleName,
 				const bool   & usePuppiAsDefault,
-				const double & minPtLeptonCut,
-                                const double & minPtLeptonCutCleaning,
-                                const double & leptonIsoCut_mu,
-                                const double & leptonIsoCut_el,
-                                const double & leptonIsoLooseCut,
-                                const double & matchingCone,
-                                const double & minJetCutPt,
+				const float & minPtLeptonCut,
+                                const float & minPtLeptonCutCleaning,
+                                const float & leptonIsoCut_mu,
+                                const float & leptonIsoCut_el,
+                                const float & leptonIsoLooseCut,
+                                const float & matchingCone,
+                                const float & minJetCutPt,
                                 map<string,TH1F*> & vect){
 
 
@@ -2634,12 +2913,27 @@ bool passCutContainerSelection (readTree* reader,
 
   // take jets
   vector<jetContainer> RecoJets;
-  RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, Cut.bTagVeto, Cut.jetPUID, minPtLeptonCutCleaning, matchingCone);   
+  RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 99., Cut.jetPUID, minPtLeptonCutCleaning, matchingCone);   
   if(RecoJets.size() < 2 ) return false;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
+    iBin++;   
+  }
+
+  // bveto
+  int nBjets = 0 ;
+  for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(RecoJets.at(iJet).btag_ >= Cut.bTagCut)
+      nBjets ++ ;
+  }
+
+  if(nBjets > Cut.nBVeto) return false ;
+
+  if(vect.size()!=0){
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"bveto");
     iBin++;   
   }
 

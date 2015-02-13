@@ -47,13 +47,13 @@
 using namespace RooFit ;
 using namespace std ;
 
-double matchingCone ;
-double minLeptonCleaningPt ;
-double minLeptonCutPt ;
-double minJetCutPt ;
-double leptonIsoCut_mu ;
-double leptonIsoCut_el ;
-double leptonIsoCutLoose ;
+float matchingCone ;
+float minLeptonCleaningPt ;
+float minLeptonCutPt ;
+float minJetCutPt ;
+float leptonIsoCut_mu ;
+float leptonIsoCut_el ;
+float leptonIsoCutLoose ;
 bool   usePuppiAsDefault ;
 int    lheLevelFilter ;
 
@@ -127,18 +127,18 @@ int main (int argc, char ** argv)
     }
 
   // take lumi and other parameters
-  double lumi  =  gConfigParser->readDoubleOption ("Option::Lumi") ; // fb^ (-1)
+  float lumi  =  gConfigParser->readFloatOption ("Option::Lumi") ; // fb^ (-1)
   lumi *= 1000. ;   // transform into pb^ (-1)
 
-  lheLevelFilter      = gConfigParser->readDoubleOption ("Option::lheLevelFilter") ;
-  matchingCone        = gConfigParser->readDoubleOption ("Option::matchingCone") ; 
-  minLeptonCleaningPt = gConfigParser->readDoubleOption ("Option::minLeptonCleaningPt") ; 
-  minLeptonCutPt      = gConfigParser->readDoubleOption ("Option::minLeptonCutPt") ;
-  minJetCutPt         = gConfigParser->readDoubleOption ("Option::minJetCutPt") ;
+  lheLevelFilter      = gConfigParser->readFloatOption ("Option::lheLevelFilter") ;
+  matchingCone        = gConfigParser->readFloatOption ("Option::matchingCone") ; 
+  minLeptonCleaningPt = gConfigParser->readFloatOption ("Option::minLeptonCleaningPt") ; 
+  minLeptonCutPt      = gConfigParser->readFloatOption ("Option::minLeptonCutPt") ;
+  minJetCutPt         = gConfigParser->readFloatOption ("Option::minJetCutPt") ;
   usePuppiAsDefault   = gConfigParser->readBoolOption   ("Option::usePuppiAsDefault") ;
-  leptonIsoCut_mu     = gConfigParser->readDoubleOption ("Option::leptonIsoCutMu") ;
-  leptonIsoCut_el     = gConfigParser->readDoubleOption ("Option::leptonIsoCutEl") ;
-  leptonIsoCutLoose   = gConfigParser->readDoubleOption ("Option::leptonIsoCutLoose") ;
+  leptonIsoCut_mu     = gConfigParser->readFloatOption ("Option::leptonIsoCutMu") ;
+  leptonIsoCut_el     = gConfigParser->readFloatOption ("Option::leptonIsoCutEl") ;
+  leptonIsoCutLoose   = gConfigParser->readFloatOption ("Option::leptonIsoCutLoose") ;
 
   // output directory
   string outputPlotDirectory = gConfigParser->readStringOption ("Output::outputPlotDirectory") ;
@@ -267,7 +267,7 @@ int main (int argc, char ** argv)
     
           // take jets                                                                                                                                                         
           vector<jetContainer> RecoJets ;
-          RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, CutList.at (iCut).bTagVeto, CutList.at (iCut).jetPUID, minLeptonCleaningPt, matchingCone) ;
+          RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 99., CutList.at (iCut).jetPUID, minLeptonCleaningPt, matchingCone) ;
     
           asimL = (leptonsIsoTight.at (0).lepton4V_.Pt ()-leptonsIsoTight.at (1).lepton4V_.Pt ())/ (leptonsIsoTight.at (0).lepton4V_.Pt ()+leptonsIsoTight.at (1).lepton4V_.Pt ()) ;
     

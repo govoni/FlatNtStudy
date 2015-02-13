@@ -782,7 +782,7 @@ void plotter::prepareSampleForPlotting (string sampleName){
            ++iHisto){
 
 	addOverFlow (iHisto->second) ; 
-	if (m_samples[sampleName].m_isSignal){
+	if (m_samples[sampleName].m_isSignal == 1){
 	  iHisto->second->SetFillColor (0) ;
 	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
 	  iHisto->second->SetLineWidth (2) ;
@@ -798,7 +798,7 @@ void plotter::prepareSampleForPlotting (string sampleName){
            iHisto != m_samples[sampleName].m_sampleContent[name].m_2Dhistos.end () ;
            ++iHisto){
 
-	if (m_samples[sampleName].m_isSignal){
+	if (m_samples[sampleName].m_isSignal == 1 ){
 	  //              iHisto->second->SetFillColor (0) ;
 	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
 	  //              iHisto->second->SetLineWidth (2) ;
@@ -883,7 +883,9 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
     m_canvas.cd () ;
 
     TLegend leg = initLegend (1) ; // crate the legend
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var,name.Data(), "fl") ;
 
     DrawPlots (vector<TH1F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ; // draw the histo
   }
@@ -898,7 +900,9 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
     m_canvas.cd () ;
 
     TLegend leg = initLegend (1) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
 
     Draw2DPlots (vector<TH2F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
   }
@@ -928,7 +932,9 @@ void plotter::plotSingleLayer (string layerName, string histoName,
     if (m_samples[sampleName].m_isSignal == 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     stack->Add (h_var) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
   }
   
   // add signal to the stack
@@ -938,7 +944,9 @@ void plotter::plotSingleLayer (string layerName, string histoName,
     if (m_samples[sampleName].m_isSignal != 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     stack->Add (h_var) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
   }
 
   DrawPlots (vector<THStack *> (1, stack), leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
@@ -1004,7 +1012,10 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
     if (m_samples[sampleName].m_isSignal == 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     bkg_stack->Add (h_var) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
+    
   }
   
   name = string ("comp_sig_") + layerName + "_" + histoName ;
@@ -1017,7 +1028,9 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
     if (m_samples[sampleName].m_isSignal != 1) continue ;
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     sig_stack->Add (h_var) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
   }
 
   vector<THStack *> histos ;
@@ -1169,7 +1182,9 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
       xaxisTitle = h_var->GetXaxis()->GetTitle();
     SM_stack->Add (h_var) ;
     nH_stack->Add (h_var) ;
-    leg.AddEntry (h_var, sampleName.c_str (), "fl") ;
+    TString name = Form("%s",sampleName.c_str ());
+    name.ReplaceAll("_"," ");
+    leg.AddEntry (h_var, name.Data(), "fl") ;
   }
   if (2 != sigSamplesNum){
     cout << "ERROR: found " << sigSamplesNum << " signal samples, exiting" << endl ;
