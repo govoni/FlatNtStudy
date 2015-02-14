@@ -371,36 +371,54 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   TLorentzVector lepton4V ;
 
   if(scenarioString == "UU" and fabs(inputLepton.flavour_) == 13){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.); 
+    else
+     lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
   else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 11){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    else
+     lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
   else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 13){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
     else 
       return leptonContainer(lepton4V,inputLepton.charge_,-11,0.);
   }
   else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 11){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
     else 
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
   else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 11){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
     else 
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
   else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 13){
-    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
     else 
@@ -2741,8 +2759,8 @@ bool passCutContainerSelection (cutContainer & Cut,
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
   else if(finalStateString == "EE"){
-    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
-    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
   else if(finalStateString == "EU"){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
@@ -3048,8 +3066,8 @@ bool passCutContainerSelection (readTree* reader,
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
   else if(finalStateString == "EE"){
-    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
-    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
   else if(finalStateString == "EU"){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
