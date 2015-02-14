@@ -38,12 +38,12 @@ class leptonContainer {
    flavour_(-999),
    iso_(iso){};  
 
-   bool operator < ( const leptonContainer & lepton2){
+   bool operator < ( const leptonContainer & lepton2) const {
      if(lepton4V_.Pt() < lepton2.lepton4V_.Pt()) return true;
      else return false;
    };
 
-   bool operator == ( const leptonContainer & lepton2){
+   bool operator == ( const leptonContainer & lepton2) const {
      if(lepton4V_ == lepton2.lepton4V_ and charge_ == lepton2.charge_ ) return true;
      else return false;
    };

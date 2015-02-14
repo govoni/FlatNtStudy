@@ -1,15 +1,15 @@
 ####################################################################
 # Variable                  Nbin    Min     Max        Label
 ####################################################################
-numTkjets                   20      0      20          N_{tkJet}
-numTkjets_In                20      0      20          N_{tkJet}^{in}
-numTkjets_Out               20      0      20          N_{tkJet}^{out}
-HTtkjets                    30      0      300         HT_{tkJets}
-HTtkjets_In                 30      0      300         HT_{tkJets}^{in}  
-HTtkjets_Out                30      0      300         HT_{tkJets}^{out}
-nbjetsL                     6       0      6           N_{bjet}^{L}
-nbjetsM                     6       0      6           N_{bjet}^{M}
-nbjetsT                     6       0      6           N_{bjet}^{T}
+numTkjets                   40      0      40          N_{tkJet}
+numTkjets_In                40      0      40          N_{tkJet}^{in}
+numTkjets_Out               30      0      30          N_{tkJet}^{out}
+HTtkjets                    40      0      400         HT_{tkJets}
+HTtkjets_In                 40      0      400         HT_{tkJets}^{in}  
+HTtkjets_Out                40      0      400         HT_{tkJets}^{out}
+nbjetsL                     4       0      4           N_{bjet}^{L}
+nbjetsM                     4       0      4           N_{bjet}^{M}
+nbjetsT                     4       0      4           N_{bjet}^{T}
 ptj1                        40      0      600         p_{T}^{j1}
 ptj2                        40      0      600         p_{T}^{j2}
 etaj1                       30      -5     5           #eta_{j1}
@@ -84,6 +84,12 @@ dR_JJ_LLMet                 35      0      10          #deltaR_{llmet,jj}
 mTH                         40      100     500        m_{T}^{ll,met}
 mlljj                       40      100     5000       m_{lljj}
 mlljjmet                    40      100     5000       m_{lljjmet}
+ml1jW                       80      20       400        m_{l1j}^{W}
+ml2jW                       80      20       400        m_{l2j}^{W}
+mljW                        80      20       400        m_{lj}^{W}
+ml1jjT                       80      80      800        m_{l1jj}^{T}
+ml2jjT                       80      80      800        m_{l2jj}^{T}
+mljjT                        80      80      800        m_{ljj}^{T}
 #detajj_gen                  30      0       7          #Delta#eta_{jj}^{gen}
 #detajj_puppi                30      0       7          #Delta#eta_{jj}^{puppi}
 #mjj_gen                     45      200     5000       M_{jj}^{gen}   

@@ -50,7 +50,7 @@ fakeRateContainer::~fakeRateContainer(){
 fakeRateContainer::fakeRateContainer(const string & fileName){
 
   if (fileName == "")
-    inputFile = TFile::Open("input/FakeRate_rebin.root","READ");
+    inputFile = TFile::Open("input/FakeRate.root","READ");
   else
     inputFile = TFile::Open(fileName.c_str(),"READ");
 
@@ -235,7 +235,7 @@ fakeMigrationContainer::~fakeMigrationContainer(){
 fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
 
   if (fileName == "")
-    inputFile = TFile::Open("input/FakeRate_migration.root","READ");
+    inputFile = TFile::Open("input/FakeRate.root","READ");
   else
     inputFile = TFile::Open(fileName.c_str(),"READ");
 

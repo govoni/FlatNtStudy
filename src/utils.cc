@@ -1,5 +1,9 @@
 #include "utils.h"
 
+#define pdgWMass 80.385
+#define pdgTopMass 173.21
+
+
 using namespace std ;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
@@ -377,11 +381,25 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 13){
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
+      return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
+    else 
+      return leptonContainer(lepton4V,inputLepton.charge_,-11,0.);
+  }
+  else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 11){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
     else 
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
   else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 11){
+    lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+    if(inputLepton.flavour_ > 0)
+      return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
+    else 
+      return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
+  }
+  else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 13){
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
@@ -422,9 +440,7 @@ void loopOnEvents (plotter & analysisPlots,
 
   // define fake rate and migration matrix  
   fakeRateContainer fakeRate(fakeRateFile); 
-  TString nameMigration = Form("%s",fakeRateFile.c_str()); 
-  nameMigration.ReplaceAll(".root","_migration.root");
-  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(string(nameMigration));
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(fakeRateFile);
 
   // fake rate application --> check if the fake method has to be applied
   vector<sample> vecSample = analysisPlots.getSamples();
@@ -538,13 +554,9 @@ void loopOnEvents (plotter & analysisPlots,
 	if(leptonsIsoTight.size() < 1 ) continue ; // if less than one isolated lepton over the minimum pt
 
 	// take the fake weigh from the cleaned jet collection over threshold
-	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13) 
+	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-	  continue ;
-	if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
-	  continue ;
-	if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
 	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
@@ -557,14 +569,20 @@ void loopOnEvents (plotter & analysisPlots,
 	  else if(finalStateString == "EE"){
  	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){	    
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
 	  }
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }	   
 	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
+	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }
 	  else { 
-	    cerr<<" problem with fake rate evaluation --> fix it "<<endl;
+	    cerr<<" problem with fake rate evaluation --> catogry problem --> fix it "<<endl;
 	    continue ;
 	  }
 	  
@@ -578,6 +596,9 @@ void loopOnEvents (plotter & analysisPlots,
 	  
 	  fakeLeptonsIsoTight.push_back(fakeLepton);
 	  fakeLeptonsAll.push_back(fakeLepton);
+
+	  sort(fakeLeptonsAll.rbegin(),fakeLeptonsAll.rend());
+	  sort(fakeLeptonsIsoTight.rbegin(),fakeLeptonsIsoTight.rend());
 
 	  //re-clean jets for this new lepton
 	  vector<jetContainer> fakeRecoJets;
@@ -869,9 +890,7 @@ void loopOnEvents (plotter & analysisPlots,
 
   // define fake rate and migration matrix
   fakeRateContainer fakeRate(fakeRateFile); 
-  TString nameMigration = Form("%s",fakeRateFile.c_str()); 
-  nameMigration.ReplaceAll(".root","_migration.root");
-  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(string(nameMigration));
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(fakeRateFile);
 
   // fake rate application --> check if the fake method has to be applied
   vector<sample> vecSample = analysisPlots.getSamples();
@@ -985,10 +1004,6 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
 	  continue ;
-	if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
-	  continue ;
-	if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
 	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
@@ -1001,16 +1016,23 @@ void loopOnEvents (plotter & analysisPlots,
 	  else if(finalStateString == "EE"){
  	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){	    
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
 	  }
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }	   
 	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
+	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
+	  }
 	  else { 
-	    cerr<<" problem with fake rate evaluation --> fix it "<<endl;
+	    cerr<<" problem with fake rate evaluation --> catogry problem --> fix it "<<endl;
 	    continue ;
 	  }
+	  
 
 	  // promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check
 	  vector<leptonContainer> fakeLeptonsAll;
@@ -1019,6 +1041,10 @@ void loopOnEvents (plotter & analysisPlots,
 	  fakeLeptonsAll = LeptonsAll;
 	  fakeLeptonsIsoTight.push_back(createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration,finalStateString));
 	  fakeLeptonsAll.push_back(fakeLeptonsIsoTight.back());
+
+	  sort(fakeLeptonsAll.rbegin(),fakeLeptonsAll.rend());
+	  sort(fakeLeptonsIsoTight.rbegin(),fakeLeptonsIsoTight.rend());
+
 
 	  //re-clean jets for this new lepton
 	  vector<jetContainer> fakeRecoJets;
@@ -1474,7 +1500,15 @@ void fillHisto( plotter & analysisPlots,
   else 
     NameSample = sampleName ;
 
+  // cunt b-jet
   int nBjetsL = 0, nBjetsM = 0, nBjetsT = 0;
+  // make mass between l1 and l2 and jet closer to W
+  // make mass between l1 and l2 and pair of jet closer to T
+  TLorentzVector L_l1j, L_l2j, L_l1jj, L_l2jj;
+
+  float dMassW_l1 = 9999, dMassTop_l1 = 9999; 
+  float dMassW_l2 = 9999, dMassTop_l2 = 9999; 
+
   for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
     if(RecoJets.at(iJet).btag_ >= 1)
       nBjetsL ++;
@@ -1482,9 +1516,41 @@ void fillHisto( plotter & analysisPlots,
       nBjetsM++;
     if(RecoJets.at(iJet).btag_ >= 3)
       nBjetsT++;
+    
+    if(fabs((RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(0).lepton4V_).M()-pdgWMass) < dMassW_l1){
+      dMassW_l1 = fabs((RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(0).lepton4V_).M()-pdgWMass);
+      L_l1j = RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(0).lepton4V_;
+    }
+
+    if(fabs((RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(1).lepton4V_).M()-pdgWMass) < dMassW_l2){
+      dMassW_l2 = fabs((RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(1).lepton4V_).M()-pdgWMass);
+      L_l2j = RecoJets.at(iJet).jet4V_+leptonsIsoTight.at(1).lepton4V_;
+    }
+
+    for(size_t kJet = iJet+1; kJet < RecoJets.size(); kJet++){
+      
+      if(fabs((RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(0).lepton4V_).M()-pdgTopMass) < dMassTop_l1){
+	dMassTop_l1 = fabs((RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(0).lepton4V_).M()-pdgTopMass);
+	L_l1jj = RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(0).lepton4V_;
+      }
+
+      if(fabs((RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(1).lepton4V_).M()-pdgTopMass) < dMassTop_l2){
+	dMassTop_l2 = fabs((RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(1).lepton4V_).M()-pdgTopMass);
+	L_l2jj = RecoJets.at(iJet).jet4V_+RecoJets.at(kJet).jet4V_+leptonsIsoTight.at(1).lepton4V_;
+      }
+    }
   }
 
-      
+  TLorentzVector L_lj, L_ljj;
+  if(fabs(dMassW_l1) < dMassW_l2)
+    L_lj = L_l1j ;
+  else
+    L_lj = L_l2j ;
+  if(fabs(dMassTop_l1) < dMassTop_l2)
+    L_ljj = L_l1jj ;
+  else
+    L_ljj = L_l2jj ;
+
   for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
 
     // track jets
@@ -1516,6 +1582,29 @@ void fillHisto( plotter & analysisPlots,
     }
     else if(VariableList.at(iVar).variableName == "nbjetsT"){ 
       analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  nBjetsT,          eventFakeWeight,systematicName) ;
+    }
+
+
+    else if(VariableList.at(iVar).variableName == "ml1jW"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_l1j.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "ml2jW"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_l2j.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "mljW"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_lj.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "mljW"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_l2j.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "ml1jjT"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_l1jj.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "ml2jjT"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_l2jj.M(),          eventFakeWeight,systematicName) ;
+    }
+    else if(VariableList.at(iVar).variableName == "mljjT"){ 
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  L_ljj.M(),          eventFakeWeight,systematicName) ;
     }
     
 
@@ -2647,7 +2736,15 @@ bool passCutContainerSelection (cutContainer & Cut,
     if(sameflavour != Cut.flavour) return false;
   }
 
-  if(finalStateString == "EU"){
+  if(finalStateString == "UU"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "EE"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "EU"){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
@@ -2946,7 +3043,15 @@ bool passCutContainerSelection (readTree* reader,
     if(sameflavour != Cut.flavour) return false;
   }
 
-  if(finalStateString == "EU"){
+  if(finalStateString == "UU"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "EE"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "EU"){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
