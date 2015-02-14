@@ -18,7 +18,7 @@
 
 using namespace std ;
 
-int    lheLevelFilter;
+string finalStateString;
 float minLeptonCutPt;
 
 
@@ -72,7 +72,7 @@ int main (int argc, char ** argv) {
     cerr<<" Empty Variable List File or not Exisisting --> Exit "<<endl; return -1;}
 
   // select lepton flavour final state
-  lheLevelFilter      = gConfigParser -> readFloatOption("Option::lheLevelFilter");
+  finalStateString    = gConfigParser -> readStringOption("Option::finalStateString");
   minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
 
   // output directory
@@ -124,16 +124,24 @@ int main (int argc, char ** argv) {
     if (iEventMG % 100000 == 0) cout << "reading event MG: " << iEventMG << "\n" ;
 
     // filter LHE level leptons
-    if(lheLevelFilter == 0){
+    if(finalStateString == "UU"){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(lheLevelFilter == 1){      
+    else if(finalStateString == "EE"){      
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 11) continue;
     }
-    else if(lheLevelFilter == 2){
-      if(fabs(readerMG->leptonLHEpid1) == fabs(readerMG->leptonLHEpid2)) continue ;
+    else if(finalStateString == "UE"){
+      if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) !=11) continue ;
     }
+    else if(finalStateString == "EU"){
+      if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) !=13) continue ;
+    }
+    else{
+      cerr<<"problem in LHE filter in the final state --> no of the exsisting category --> skip "<<endl;
+      continue;
+    }
+
 
     passingLHEFilterMG++;
 
@@ -348,21 +356,24 @@ int main (int argc, char ** argv) {
     if (iEventPH % 100000 == 0) cout << "reading event PH: " << iEventPH << "\n" ;
 
     // filter LHE level leptons
-
-    if(lheLevelFilter == 0){
+    if(finalStateString == "UU"){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 13)
-	continue;
+        continue;
     }
-    else if(lheLevelFilter == 1){      
+    else if(finalStateString == "EE"){
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 11) continue;
     }
-    else if(lheLevelFilter == 2){
-      if(fabs(readerPH->leptonLHEpid1) == fabs(readerPH->leptonLHEpid2)) continue ;
+    else if(finalStateString == "UE"){
+      if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) !=11) continue ;
     }
-    else { 
-      cerr<<"Bad event "<<endl;
+    else if(finalStateString == "EU"){
+      if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) !=13) continue ;
+    }
+    else{
+      cerr<<"problem in LHE filter in the final state --> no of the exsisting category --> skip "<<endl;
       continue;
     }
+
 
     passingLHEFilterPH++;
 

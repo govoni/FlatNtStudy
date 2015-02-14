@@ -370,24 +370,18 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
-  else if(scenarioString == "UU" and fabs(inputLepton.flavour_) == 11){
-    return leptonContainer();
-  }
   else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 11){
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
-  else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 13){
-    return leptonContainer();
-  }
-  else if(scenarioString == "DF" and fabs(inputLepton.flavour_) == 11){
+  else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 13){
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
     else 
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
-  else if(scenarioString == "DF" and fabs(inputLepton.flavour_) == 13){
+  else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 11){
     lepton4V.SetPtEtaPhiM(fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
       return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
@@ -451,7 +445,7 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-    if(TString(sampleName).Contains("Madgraph")){
+    if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
       if(finalStateString == "UU"){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
 	  continue;
@@ -459,10 +453,17 @@ void loopOnEvents (plotter & analysisPlots,
       else if(finalStateString == "EE"){
 	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
       }
-      else if(finalStateString == "DF"){
+      else if(finalStateString == "EU"){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
+	if(fabs(reader->leptonLHEpid1) != 11) continue;
+	if(fabs(reader->leptonLHEpid2) != 13) continue ;
       }
-
+      else if(finalStateString == "UE"){
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
+	if(fabs(reader->leptonLHEpid1) != 13) continue;
+	if(fabs(reader->leptonLHEpid2) != 11) continue ;
+      }
+    
       // if an event pass the cut, fill the associated map                                                                                                                 
       TLorentzVector L_lepton1, L_lepton2, L_parton1, L_parton2 ;
 
@@ -473,7 +474,7 @@ void loopOnEvents (plotter & analysisPlots,
       L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
 
       if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) continue;
-    }
+    }    
 
     // loop on the cut list
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
@@ -541,6 +542,10 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
 	  continue ;
+	if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+	  continue ;
+	if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
 	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
@@ -552,11 +557,15 @@ void loopOnEvents (plotter & analysisPlots,
 	  else if(finalStateString == "EE"){
  	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
+	  else { 
+	    cerr<<" problem with fake rate evaluation --> fix it "<<endl;
+	    continue ;
 	  }
 	  
 	  // promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check
@@ -590,7 +599,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 fakeL_met,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 vect)){
+					 vect,
+					 finalStateString)){
 
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		      fakeLeptonsIsoTight, fakeRecoJets, GenJets, trackJets, fakeL_met, L_gen_met,"",eventFakeWeight);
@@ -699,7 +709,8 @@ void loopOnEvents (plotter & analysisPlots,
 				       L_met,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
-				       vect)){
+				       vect,
+				       finalStateString)){
 	  
 	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		    leptonsIsoTight, RecoJets, GenJets, trackJets, L_met, L_gen_met,"",eventFakeWeight);
@@ -719,7 +730,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonsIsoTightScaleUp, RecoJets, GenJets, trackJets, L_met_lepScaleUp, L_gen_met, "lepScaleUp",eventFakeWeight);
@@ -735,7 +747,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonsIsoTightScaleDown, RecoJets, GenJets, trackJets, L_met_lepScaleDown, L_gen_met,"lepScaleDown",eventFakeWeight);
@@ -752,7 +765,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonsIsoTightRes, RecoJets, GenJets, trackJets, L_met_lepRes, L_gen_met, "lepRes",eventFakeWeight);
@@ -768,7 +782,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, 
 		      CutList.at(iCut).cutLayerName, VariableList, 
@@ -787,7 +802,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, 
 		      CutList.at(iCut).cutLayerName,VariableList, 
@@ -808,7 +824,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots,sampleName, 
 		      CutList.at(iCut).cutLayerName,VariableList, 
@@ -874,7 +891,7 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-    if(TString(sampleName).Contains("Madgraph")){
+    if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
       if(finalStateString == "UU"){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
 	  continue;
@@ -882,8 +899,15 @@ void loopOnEvents (plotter & analysisPlots,
       else if(finalStateString == "EE"){
 	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
       }
-      else if(finalStateString == "DF"){
+      else if(finalStateString == "EU"){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
+	if(fabs(reader->leptonLHEpid1) != 11) continue;
+	if(fabs(reader->leptonLHEpid2) != 13) continue ;
+      }
+      else if(finalStateString == "UE"){
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
+	if(fabs(reader->leptonLHEpid1) != 13) continue;
+	if(fabs(reader->leptonLHEpid2) != 11) continue ;
       }
 
       // if an event pass the cut, fill the associated map                                                                                                                 
@@ -961,6 +985,10 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue ;
 	if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
 	  continue ;
+	if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+	  continue ;
+	if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+	  continue ;
 
 	vector<jetContainer> RecoJetsForFake;
 	RecoJetsForFake  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone,CutList.at(iCut).etaMaxL);
@@ -969,15 +997,19 @@ void loopOnEvents (plotter & analysisPlots,
 
 	  if(finalStateString == "UU"){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
-	  }
+	  }	 
 	  else if(finalStateString == "EE"){
  	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	  else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake.size());
 	  }
-	  else if(finalStateString == "DF" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	  else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
 	    eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake.size());
+	  }
+	  else { 
+	    cerr<<" problem with fake rate evaluation --> fix it "<<endl;
+	    continue ;
 	  }
 
 	  // promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check
@@ -1007,7 +1039,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 fakeRecoJets,
 					 fakeL_met,
 					 minPtLeptonCut,
-					 leptonIsoLooseCut,vect)){
+					 leptonIsoLooseCut,vect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
 		      fakeLeptonsIsoTight, fakeRecoJets, GenJets, trackJets, fakeL_met, L_gen_met,"",eventFakeWeight);
@@ -1119,7 +1152,8 @@ void loopOnEvents (plotter & analysisPlots,
 				       L_met,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
-				       vect)){
+				       vect,
+				       finalStateString)){
 
 	  fillHisto(analysisPlots, sampleName, 
 		    CutList.at(iCut).cutLayerName,VariableList, 
@@ -1148,7 +1182,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1178,7 +1213,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1210,7 +1246,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_lepRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1241,7 +1278,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1271,7 +1309,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1302,7 +1341,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 L_met_jetRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
-					 tempVect)){
+					 tempVect,
+					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -2483,7 +2523,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				const TLorentzVector & L_met,
 				const float & minPtLeptonCut,
 				const float & leptonIsoLooseCut,
-				map<string,TH1F*> & vect){
+				map<string,TH1F*> & vect,
+				const string & finalStateString){
 
   // identify loose leptons                                                                                                                                             
   vector<leptonContainer> leptonsIsoLoose ;                                                                                                                              
@@ -2531,8 +2572,7 @@ bool passCutContainerSelection (cutContainer & Cut,
  
   bool badTrailingLepton = false;
   for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second){
-      if (fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL) 
+    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second or fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL){
 	badTrailingLepton = true;
     }
   }                         
@@ -2605,6 +2645,15 @@ bool passCutContainerSelection (cutContainer & Cut,
     if(flavour/leptonsIsoTight.size() == 11 or flavour/leptonsIsoTight.size() == 13 ) sameflavour = 1;
     else sameflavour = -1;
     if(sameflavour != Cut.flavour) return false;
+  }
+
+  if(finalStateString == "EU"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "UE"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
 
   if(vect.size()!=0){
@@ -2756,7 +2805,8 @@ bool passCutContainerSelection (readTree* reader,
                                 const float & leptonIsoLooseCut,
                                 const float & matchingCone,
                                 const float & minJetCutPt,
-                                map<string,TH1F*> & vect){
+                                map<string,TH1F*> & vect,
+				const string & finalStateString){
 
 
   // dump all the lepton in the event
@@ -2821,10 +2871,8 @@ bool passCutContainerSelection (readTree* reader,
   
   bool badTrailingLepton = false;
   for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second){
-      if (fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL){	
-	badTrailingLepton = true;
-      }
+    if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second or fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL){
+	badTrailingLepton = true;      
     }
   }                         
   if(badTrailingLepton) return false;
@@ -2896,6 +2944,15 @@ bool passCutContainerSelection (readTree* reader,
     if(flavour/leptonsIsoTight.size() == 11 or flavour/leptonsIsoTight.size() == 13 ) sameflavour = 1;
     else sameflavour = -1;
     if(sameflavour != Cut.flavour) return false;
+  }
+
+  if(finalStateString == "EU"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
+  }
+  else if(finalStateString == "UE"){
+    if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
+    if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
 
   if(vect.size()!=0){

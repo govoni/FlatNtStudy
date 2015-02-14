@@ -25,8 +25,10 @@ float minJetCutPt;
 float leptonIsoCut_mu;
 float leptonIsoCut_el;
 float leptonIsoCutLoose;
+
 bool   usePuppiAsDefault;
-int    lheLevelFilter;
+
+string  finalStateString;
 
 // no cuts are possible, all the variable to be plotted are given from an external file.
 
@@ -95,7 +97,7 @@ int main (int argc, char ** argv) {
   lumi *= 1000. ;   // transform into pb^(-1) 
 
   // select lepton flavour final state
-  lheLevelFilter      = gConfigParser -> readFloatOption("Option::lheLevelFilter");
+  finalStateString    = gConfigParser -> readStringOption("Option::finalStateString");
   matchingCone        = gConfigParser -> readFloatOption("Option::matchingCone");
   minLeptonCleaningPt = gConfigParser -> readFloatOption("Option::minLeptonCleaningPt");
   minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
@@ -167,15 +169,22 @@ int main (int argc, char ** argv) {
     if (iEventMG % 100000 == 0) cout << "reading event MG: " << iEventMG << "\n" ;
 
     // filter LHE level leptons
-    if(lheLevelFilter == 0){
+    if(finalStateString == "UU"){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(lheLevelFilter == 1){      
+    else if(finalStateString == "EE"){      
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 11) continue;
     }
-    else if(lheLevelFilter == 2){
-      if(fabs(readerMG->leptonLHEpid1) == fabs(readerMG->leptonLHEpid2)) continue ;
+    else if(finalStateString == "EU"){
+      if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 13) continue ;
+    }
+    else if(finalStateString == "UE"){
+      if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 11) continue ;
+    }
+    else {
+      cerr<<"problem with LHE level final state definition --> skip event"<<endl;
+      continue;
     }
 
     passingLHEFilterMG++;
@@ -214,7 +223,8 @@ int main (int argc, char ** argv) {
                                     leptonIsoCutLoose,
                                     matchingCone,
                                     minJetCutPt,
-                                    histoCutEffMG)) continue;
+                                    histoCutEffMG,
+				    finalStateString)) continue;
 
 
       // if an event pass the cut, fill the associated map                                                                                                                      
@@ -511,16 +521,25 @@ int main (int argc, char ** argv) {
     if (iEventPH % 100000 == 0) cout << "reading event PH: " << iEventPH << "\n" ;
 
     // filter LHE level leptons
-    if(lheLevelFilter == 0){
+    if(finalStateString == "UU"){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(lheLevelFilter == 1){      
+    else if(finalStateString == "EE"){      
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 11) continue;
     }
-    else if(lheLevelFilter == 2){
-      if(fabs(readerPH->leptonLHEpid1) == fabs(readerPH->leptonLHEpid2)) continue ;
+    else if(finalStateString == "EU"){
+      if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 13) continue ;
     }
+    else if(finalStateString == "UE"){
+      if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 11) continue ;
+    }
+    else {
+      cerr<<"problem with LHE level final state definition --> skip event"<<endl;
+      continue;
+    }
+
+
 
     passingLHEFilterPH++;
 
@@ -556,7 +575,8 @@ int main (int argc, char ** argv) {
                                     leptonIsoCutLoose,
                                     matchingCone,
                                     minJetCutPt,
-                                    histoCutEffPH)) continue;
+                                    histoCutEffPH,
+				    finalStateString)) continue;
 
 
       // if an event pass the cut, fill the associated map                                                                                                                      

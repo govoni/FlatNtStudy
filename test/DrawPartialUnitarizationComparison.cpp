@@ -27,6 +27,8 @@ float leptonIsoCutLoose;
 bool   usePuppiAsDefault;
 int    lheLevelFilter;
 
+string finalStateString ;
+
 // no cuts are possible, all the variable to be plotted are given from an external file.
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -103,6 +105,7 @@ int main (int argc, char ** argv) {
   leptonIsoCut_mu     = gConfigParser -> readFloatOption("Option::leptonIsoCutMu");
   leptonIsoCut_el     = gConfigParser -> readFloatOption("Option::leptonIsoCutEl");
   leptonIsoCutLoose   = gConfigParser -> readFloatOption("Option::leptonIsoCutLoose");
+  finalStateString    = gConfigParser -> readStringOption("Option::finalStateString");
 
   // output directory
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
@@ -207,7 +210,8 @@ int main (int argc, char ** argv) {
                                     leptonIsoCutLoose,
                                     matchingCone,
                                     minJetCutPt,
-                                    histoCutEffH)) continue;
+                                    histoCutEffH,
+				    finalStateString)) continue;
 
 
       // if an event pass the cut, fill the associated map                                                                                                                      
@@ -555,7 +559,8 @@ int main (int argc, char ** argv) {
                                     leptonIsoCutLoose,
                                     matchingCone,
                                     minJetCutPt,
-                                    histoCutEffNoH)) continue;
+                                    histoCutEffNoH,
+				    finalStateString)) continue;
 
       
       // if an event pass the cut, fill the associated map                                                                                                                      
@@ -901,7 +906,8 @@ int main (int argc, char ** argv) {
                                     leptonIsoCutLoose,
                                     matchingCone,
                                     minJetCutPt,
-                                    histoCutEffCxH)) continue;
+                                    histoCutEffCxH,
+				    finalStateString)) continue;
 
 
       // if an event pass the cut, fill the associated map                                                                                                                      

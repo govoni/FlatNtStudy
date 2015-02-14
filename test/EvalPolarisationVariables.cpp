@@ -55,7 +55,7 @@ float leptonIsoCut_mu ;
 float leptonIsoCut_el ;
 float leptonIsoCutLoose ;
 bool   usePuppiAsDefault ;
-int    lheLevelFilter ;
+string finalStateString ;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 int main (int argc, char ** argv) 
@@ -130,7 +130,7 @@ int main (int argc, char ** argv)
   float lumi  =  gConfigParser->readFloatOption ("Option::Lumi") ; // fb^ (-1)
   lumi *= 1000. ;   // transform into pb^ (-1)
 
-  lheLevelFilter      = gConfigParser->readFloatOption ("Option::lheLevelFilter") ;
+  finalStateString    = gConfigParser->readStringOption ("Option::finalStateString") ;
   matchingCone        = gConfigParser->readFloatOption ("Option::matchingCone") ; 
   minLeptonCleaningPt = gConfigParser->readFloatOption ("Option::minLeptonCleaningPt") ; 
   minLeptonCutPt      = gConfigParser->readFloatOption ("Option::minLeptonCutPt") ;
@@ -188,20 +188,28 @@ int main (int argc, char ** argv)
       if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
   
       // filter LHE level leptons
-      if (lheLevelFilter == 0)
+      if (finalStateString == "UU")
         {
           if (fabs (reader->leptonLHEpid1) != 13 or 
               fabs (reader->leptonLHEpid2) != 13) continue ;
         }
-      else if (lheLevelFilter == 1)
+      else if (finalStateString == "EE")
         {
           if (fabs (reader->leptonLHEpid1) != 11 or 
               fabs (reader->leptonLHEpid2) != 11) continue ;
         }
-      else if (lheLevelFilter == 2)
+      else if (finalStateString == "EU")
         {
-          if (fabs (reader->leptonLHEpid1) == fabs (reader->leptonLHEpid2)) continue ;
+          if (fabs (reader->leptonLHEpid1) != 11 or fabs (reader->leptonLHEpid2) != 13) continue ;
         }
+      else if (finalStateString == "UE")
+        {
+          if (fabs (reader->leptonLHEpid1) != 13 or fabs (reader->leptonLHEpid2) != 11) continue ;
+        }
+      else{
+	cerr<<"problem in the lhe level filter --> category not found --> skip event"<<endl;
+	continue;
+      }
   
       passingLHEFilter++ ;
   
@@ -236,7 +244,8 @@ int main (int argc, char ** argv)
                                         leptonIsoCutLoose,
                                         matchingCone,
                                         minJetCutPt,
-                                        histoCutEff)) continue ;
+					histoCutEff,
+					finalStateString  )) continue ;
     
           
           // if an event passes the cut, fill the associated map

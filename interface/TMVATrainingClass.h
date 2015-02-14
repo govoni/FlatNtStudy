@@ -89,6 +89,7 @@ class TMVATrainingClass {
                            string weightStringSignal,     // re-weighting expression or branch for signal events 
                            string weightStringBackground, // re-weighting expression or branch for background events
                            const pair<int,int>  & PileUpBinOfTraining = make_pair(0,500), // pile-up bin of training
+			   const string & finalStateString = "UU",
                            const int & nTraining    = 0, // number of events used for training
                            const int & nTesting     = 0, // number of events used for testing
                            const string & splitMode = "Random",  // split mode

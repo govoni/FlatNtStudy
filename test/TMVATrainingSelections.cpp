@@ -155,6 +155,7 @@ int main (int argc, char** argv){
   float leptonIsoCut_mu     = gConfigParser -> readFloatOption("Option::leptonIsoCutMu");
   float leptonIsoCut_el     = gConfigParser -> readFloatOption("Option::leptonIsoCutEl");
   float leptonIsoCutLoose   = gConfigParser -> readFloatOption("Option::leptonIsoCutLoose");
+  string finalStateString   = gConfigParser -> readStringOption("Option::finalStateString");
 
   // option in order to train each variable independently
   bool isTrainEachVariable = false ;
@@ -389,7 +390,8 @@ int main (int argc, char** argv){
       trainingVector.back()->AddPrepareTraining(CutList.at(iCut),
 						eventWeight,
 						eventWeight,
-						make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1))
+						make_pair(pileUpBin.at(puBin),pileUpBin.at(puBin+1)),
+						finalStateString
 						);
 
       // Add the ntuple to the MVA factory with the right cross section weight

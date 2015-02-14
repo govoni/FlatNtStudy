@@ -215,7 +215,7 @@ void fillHisto( plotter & analysisPlot,
                 TLorentzVector & L_met,
                 TLorentzVector & L_gen_met,
                 const string & systematicName = "",
-		const float & eventFakeWeight = 1.
+		const float  & eventFakeWeight = 1.
                 );
 
 
@@ -244,7 +244,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				const TLorentzVector & L_met,
 				const float & minPtLeptonCut,                    
                                 const float & leptonIsoLooseCut,
-				map<string,TH1F*> & vect);
+				map<string,TH1F*> & vect,
+				const string & finalStateString);
 
 
 bool passCutContainerSelection (readTree* readTree,
@@ -258,6 +259,8 @@ bool passCutContainerSelection (readTree* readTree,
                                 const float & leptonIsoLooseCut,
 				const float & matchingCone,   
 				const float & minJetCutPt,
-				map<string,TH1F*> & vect);
+				map<string,TH1F*> & vect,
+				const string & finalStateString
+				);
 
 #endif

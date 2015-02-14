@@ -325,6 +325,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 					    string  weightStringSignal,
 					    string  weightStringBackground,
 					    const pair<int,int> & PileUpBinOfTraining,
+					    const string & finalStateString,
 					    const int & nTraining,
 					    const int & nTesting, 
 					    const string & splitMode,
@@ -444,11 +445,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
       totalSignalVariableList.clear();
 
       if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading signal event " << iEvent << "\n" ;
-      // skip event with less than two leptons by default                    
-      if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
-      if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
-      if(reader_->jetpt_puppi1 < 0 or reader_->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet                                                      
-
+      
+      // select the PU range
       if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
       vect.clear();
  
@@ -465,7 +463,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
-				    vect)) continue;
+				    vect,
+				    finalStateString)) continue;
 
       for(size_t iVar = 0; iVar < varListSignal.size(); iVar++){
 	totalSignalVariableList.clear();
@@ -494,10 +493,6 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
       if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading bkg event " << iEvent << "\n" ;
       // skip event with less than two leptons by default                    
-      if(reader_->pt1 < 0          or reader_->pt2 < 0)          continue ; // skip the event --> only two reco leptons are good                                               
-      if(reader_->jetpt1 < 0       or reader_->jetpt2 < 0)       continue ; // skip the event with less than two reco jet                                                      
-      if(reader_->jetpt_puppi1 < 0 or reader_->jetpt_puppi2 < 0) continue ; // skip the event with less than two reco jet                                                      
-
       if(reader_->npu < npuRange_.first or reader_->npu > npuRange_.second) continue;
         
       vect.clear();
@@ -513,7 +508,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 				    leptonIsoLooseCut_,
 				    matchingCone_,
 				    minJetCutPt_,
-				    vect)) continue;
+				    vect,
+				    finalStateString)) continue;
 
 
       for(size_t iVar = 0; iVar < varListBackground.size(); iVar++){
