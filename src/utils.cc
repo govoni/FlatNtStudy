@@ -620,7 +620,7 @@ void loopOnEvents (plotter & analysisPlots,
 
 	  //re-clean jets for this new lepton
 	  vector<jetContainer> fakeRecoJets;
-	  fakeRecoJets  = dumpJets (RecoJetsForFake, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
+	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
 
 	  // take into account the charge assignment
 	  eventFakeWeight = eventFakeWeight*0.5;
