@@ -150,11 +150,18 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets,
 				    float lepminptcut, 
 				    float deltaR) ;
 
+vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll,
+                                       vector<jetContainer> & jetAll,
+                                       float isolationCut,
+                                       float minLeptonCut,
+                                       float minptcut,
+                                       float deltaR);
+
 /// method to get the fake weight and the new lepton kinematic
 float getFakeWeight( jetContainer inputJet,
 		     fakeRateContainer & fakeRate,
 		     string leptonFlavour,
-		     size_t jetSize);
+		     vector<jetContainer> & jetCollection);
 
 
 leptonContainer createFakeLepton( jetContainer inputJet,
@@ -209,11 +216,11 @@ void fillHisto( plotter & analysisPlot,
                 const string & cutLayerName,
                 vector<variableContainer> & VariableList,
                 vector<leptonContainer> & leptonsIsoTight,
+                vector<leptonContainer> & softMuons,
                 vector<jetContainer> & RecoJets,
 		vector<jetContainer> & GenJets,
 		vector<jetContainer> & trackJets,
                 TLorentzVector & L_met,
-                TLorentzVector & L_gen_met,
                 const string & systematicName = "",
 		const float  & eventFakeWeight = 1.
                 );
@@ -224,11 +231,11 @@ void fillHisto2D( plotter & analysisPlot,
 		  const string & cutLayerName,
 		  vector<variableContainer2D> & VariableList2D,
 		  vector<leptonContainer> & leptonsIsoTight,
+		  vector<leptonContainer> & softMuons,
 		  vector<jetContainer> & RecoJets,
 		  vector<jetContainer> & GenJets,
 		  vector<jetContainer> & trackJets,
 		  TLorentzVector & L_met,
-		  TLorentzVector & L_gen_met,
 		  const string & systematicName = "",
 		  const float & eventFakeWeight = 1.
 		  );
@@ -240,6 +247,7 @@ bool passCutContainerSelection (cutContainer & Cut,
                                 readTree* reader,     
 				vector<leptonContainer> & LeptonsAll,
 				vector<leptonContainer> & leptonsIsoTight,
+				vector<leptonContainer> & softMuons,
 				vector<jetContainer> & RecoJets,
 				const TLorentzVector & L_met,
 				const float & minPtLeptonCut,                    

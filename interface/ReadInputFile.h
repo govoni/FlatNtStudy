@@ -33,6 +33,17 @@ class sampleContainer {
     numBefore(numBefore),
     isSignal(isSignal){};
 
+
+  bool operator < (const sampleContainer & container2) const {
+    if(sampleName < container2.sampleName) return true;
+    else return false;    
+  }
+
+  bool operator == (const sampleContainer & container2) const {
+    if(sampleName == container2.sampleName and xsec == container2.xsec and isSignal == container2.isSignal) return true;
+    else return false;    
+  }
+  
   string sampleName ;
   int    color;
   float xsec;
@@ -63,6 +74,7 @@ class cutContainer {
               pair<float,float> MllZVeto, 
               float bTagCut, 
               int   nBVeto, 
+	      int   nSoftMu,
 	      float jetPUID,
               int   polarization = 99):
     cutLayerName(cutLayerName),
@@ -81,6 +93,7 @@ class cutContainer {
       MllZVeto(MllZVeto),
       bTagCut(bTagCut),
       nBVeto(nBVeto),
+      nSoftMu(nSoftMu),
       jetPUID(jetPUID),
       polarization(polarization){};
 
@@ -100,6 +113,7 @@ class cutContainer {
   pair<float,float>  MllZVeto;
   float  bTagCut;
   int    nBVeto;
+  int    nSoftMu;
   float  jetPUID;
   int    polarization;
 
