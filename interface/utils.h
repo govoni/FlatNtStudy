@@ -93,6 +93,40 @@ class jetContainer {
 
 };
 
+
+// class to contain jet information
+class trackJetEvent {
+
+ public:
+
+  trackJetEvent(){};
+  ~trackJetEvent(){};
+
+  
+   trackJetEvent(
+		 int   numTrack,
+		 int   numTrackIn, 
+		 int   numTrackOut, 
+		 int   HTTrack,
+		 int   HTTrackIn,
+		 int   HTTrackOut):
+  numTrack_(numTrack),
+    numTrackIn_(numTrackIn),
+    numTrackOut_(numTrackOut),
+    HTTrack_(HTTrack),
+    HTTrackIn_(HTTrackIn),
+    HTTrackOut_(HTTrackOut){};
+
+  int numTrack_;
+  int numTrackIn_;
+  int numTrackOut_;
+  
+  float HTTrack_;
+  float HTTrackIn_;
+  float HTTrackOut_;
+  
+};
+
 // delta phi function
 float deltaPhi (float phi1, 
 		 float phi2) ;
@@ -149,6 +183,9 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets,
                                     float minptcut, 
 				    float lepminptcut, 
 				    float deltaR) ;
+
+trackJetEvent produceTrackJetEvent (vector<jetContainer> & trackJets, 
+				    vector<jetContainer> & RecoJets);
 
 vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll,
                                        vector<jetContainer> & jetAll,
@@ -219,7 +256,7 @@ void fillHisto( plotter & analysisPlot,
                 vector<leptonContainer> & softMuons,
                 vector<jetContainer> & RecoJets,
 		vector<jetContainer> & GenJets,
-		vector<jetContainer> & trackJets,
+		trackJetEvent & trackEvent,
                 TLorentzVector & L_met,
                 const string & systematicName = "",
 		const float  & eventFakeWeight = 1.
@@ -234,7 +271,7 @@ void fillHisto2D( plotter & analysisPlot,
 		  vector<leptonContainer> & softMuons,
 		  vector<jetContainer> & RecoJets,
 		  vector<jetContainer> & GenJets,
-		  vector<jetContainer> & trackJets,
+		  trackJetEvent & trackEvent,
 		  TLorentzVector & L_met,
 		  const string & systematicName = "",
 		  const float & eventFakeWeight = 1.
@@ -249,6 +286,7 @@ bool passCutContainerSelection (cutContainer & Cut,
 				vector<leptonContainer> & leptonsIsoTight,
 				vector<leptonContainer> & softMuons,
 				vector<jetContainer> & RecoJets,
+				trackJetEvent & trackEvent,
 				const TLorentzVector & L_met,
 				const float & minPtLeptonCut,                    
                                 const float & leptonIsoLooseCut,

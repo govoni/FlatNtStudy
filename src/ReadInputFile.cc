@@ -481,9 +481,9 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
 
     stringstream line(buffer);      
 
-    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, DetaLL, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagCut, nBVeto, nSoftMu, jetPUID, polarization, etaMaxL;    
+    string layerName, ptL1, ptL2, chargeSign, flavour, nLep, nextra, MET, ptJet1, ptJet2, DetaJJ, Mjj, DetaLL, MllMin, MllMax,  MllZVetoMin, MllZVetoMax, bTagCut, nBVeto, nSoftMu, jetPUID, polarization, etaMaxL, ptJJLLMet, dRJL, HTTrackjets, lZep;    
 
-    line >> layerName >> ptL1 >> ptL2 >> etaMaxL >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagCut >> nBVeto >> nSoftMu >> jetPUID >> polarization;     
+    line >> layerName >> ptL1 >> ptL2 >> etaMaxL >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagCut >> nBVeto >> nSoftMu >> jetPUID >> dRJL >> ptJJLLMet >> lZep >> HTTrackjets >> polarization;     
 
     cutContainer dummy(layerName,
                        make_pair(stof(ptL1),stof(ptL2)),
@@ -503,6 +503,10 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
                        stoi(nBVeto), 
                        stoi(nSoftMu), 		       
                        stof(jetPUID),
+		       stof(dRJL),
+		       stof(ptJJLLMet),
+		       stof(lZep),
+		       stof(HTTrackjets),
                        stoi(polarization));
 
     

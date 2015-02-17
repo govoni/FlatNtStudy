@@ -76,6 +76,10 @@ class cutContainer {
               int   nBVeto, 
 	      int   nSoftMu,
 	      float jetPUID,
+	      float dRlJ,
+	      float ptJJLLMet,
+	      float lZep,
+	      float HTTrackjet,
               int   polarization = 99):
     cutLayerName(cutLayerName),
       ptL( ptL),
@@ -95,6 +99,10 @@ class cutContainer {
       nBVeto(nBVeto),
       nSoftMu(nSoftMu),
       jetPUID(jetPUID),
+      dRlJ(dRlJ),
+      ptJJLLMet(ptJJLLMet),
+      lZep(lZep),
+      HTTrackjet(HTTrackjet),
       polarization(polarization){};
 
   string cutLayerName ;
@@ -115,6 +123,10 @@ class cutContainer {
   int    nBVeto;
   int    nSoftMu;
   float  jetPUID;
+  float  dRlJ;
+  float  ptJJLLMet;
+  float  lZep;
+  float  HTTrackjet;
   int    polarization;
 
 };

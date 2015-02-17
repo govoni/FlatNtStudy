@@ -347,6 +347,69 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets, vector<lepto
   return goodJets;
 }
 
+trackJetEvent produceTrackJetEvent (vector<jetContainer> & trackJets, vector<jetContainer> & RecoJets){
+
+  // track jet info
+  float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
+  int   TKJ_num   = 0, TKJ_num_IN   = 0,  TKJ_num_OUT  = 0 ;
+
+  if(RecoJets.size() >=2){
+
+    float aveEta = 0.5*(RecoJets.at(0).jet4V_.Eta()+RecoJets.at(1).jet4V_.Eta());
+
+    float dRThreshold = 0.5;
+    float TJ_etaMin = RecoJets.at (0).jet4V_.Eta () ;
+    float TJ_etaMax = RecoJets.at (1).jet4V_.Eta () ;
+    float TJ_phiMin = RecoJets.at (0).jet4V_.Phi () ;
+    float TJ_phiMax = RecoJets.at (1).jet4V_.Phi () ;
+    if (TJ_etaMin > TJ_etaMax){
+      swap (TJ_etaMin, TJ_etaMax) ;
+      swap (TJ_phiMin, TJ_phiMax) ;
+    }
+	
+    // loop over track jets                                                                                                                                                
+    for (size_t iJet = 0 ; iJet < trackJets.size () ; ++iJet){
+
+      float iJetPhi = trackJets.at (iJet).jet4V_.Phi () ;
+      float iJetEta = trackJets.at (iJet).jet4V_.Eta () ;
+      float iJetPt  = trackJets.at (iJet).jet4V_.Pt () ;
+
+      float dR2_Min = deltaPhi(TJ_phiMin, iJetPhi);
+      dR2_Min *= dR2_Min ;
+      dR2_Min += (iJetEta - TJ_etaMin) * (iJetEta - TJ_etaMin) ;
+      float dR2_Max = deltaPhi (TJ_phiMax, iJetPhi) ;
+      dR2_Max *= dR2_Max ;
+      dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
+      
+      // veto the tag jets                                                                                                                                                  
+      if (sqrt(dR2_Max) < dRThreshold || sqrt(dR2_Min) < dRThreshold) continue ;
+
+      float iJetModPhi = iJetPhi ;
+      float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
+      if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;
+      else if (iJetZep > 0.5) iJetModPhi -= TJ_phiMax ;
+
+      ++TKJ_num ;
+      TKJ_SumHT += iJetPt ;
+
+      if (iJetEta > TJ_etaMin && iJetEta < TJ_etaMax){
+	++TKJ_num_IN ;
+	TKJ_SumHT_IN += iJetPt ;
+      }
+
+      else if (iJetEta < TJ_etaMin || iJetEta > TJ_etaMax){
+	++TKJ_num_OUT ;
+	TKJ_SumHT_OUT += iJetPt ;
+      }
+    }
+  }
+
+  return trackJetEvent(TKJ_num,TKJ_num_IN,TKJ_num_OUT,
+		       TKJ_SumHT,TKJ_SumHT_IN,TKJ_SumHT_OUT);
+
+}
+
+
 // -------------------------
 vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll, 
 				       vector<jetContainer> & jetAll, 
@@ -605,11 +668,9 @@ void loopOnEvents (plotter & analysisPlots,
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,*reader) ;
       vector<jetContainer> trackJets ;
-            
       float dRThreshold = 0.5 ;      
-      trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
-
-
+            
+      // fake rate
       float eventFakeWeight = 1.;
 
       if(applyFake){ // the sample require the fake rate application
@@ -674,6 +735,11 @@ void loopOnEvents (plotter & analysisPlots,
 	  TLorentzVector fakeL_met ;
 	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
 
+	  // track jets using the new leptons for cleaning
+	  trackJets = dumpTrackJets (trackJetsAll,fakeLeptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+	  trackJetEvent trackEvent;
+	  trackEvent = produceTrackJetEvent (trackJets,RecoJets);
+
 	  // analysis with nominal objects
 	  if( passCutContainerSelection (CutList.at(iCut),
 					 sampleName,
@@ -682,6 +748,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 fakeLeptonsIsoTight,					 
 					 softMuons,
 					 fakeRecoJets,
+					 trackEvent,
 					 fakeL_met,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -689,13 +756,17 @@ void loopOnEvents (plotter & analysisPlots,
 					 finalStateString)){
 
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		      fakeLeptonsIsoTight, softMuons, fakeRecoJets, GenJets, trackJets, fakeL_met, "",eventFakeWeight);
+		      fakeLeptonsIsoTight, softMuons, fakeRecoJets, GenJets, trackEvent, fakeL_met, "",eventFakeWeight);
 	  }	  
 	}
       }      
 
       else { // if not fake rate sample
       
+
+	trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+	trackJetEvent trackEvent;
+	trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
 	/// insert the systematics in the analysis
 	if(analysisPlots.getSystematics() and not applyFake){
@@ -793,6 +864,7 @@ void loopOnEvents (plotter & analysisPlots,
 				       leptonsIsoTight,
 				       softMuons,
 				       RecoJets,
+				       trackEvent,
 				       L_met,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
@@ -800,7 +872,7 @@ void loopOnEvents (plotter & analysisPlots,
 				       finalStateString)){
 	  
 	  fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		    leptonsIsoTight, softMuons, RecoJets, GenJets, trackJets, L_met, "",eventFakeWeight);
+		    leptonsIsoTight, softMuons, RecoJets, GenJets, trackEvent, L_met, "",eventFakeWeight);
 	}
 
 	/// if perform sys analysis      
@@ -815,6 +887,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightScaleUp,
 					 softMuons,
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -822,7 +895,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		      leptonsIsoTightScaleUp, softMuons, RecoJets, GenJets, trackJets, L_met_lepScaleUp, "lepScaleUp",eventFakeWeight);
+		      leptonsIsoTightScaleUp, softMuons, RecoJets, GenJets, trackEvent, L_met_lepScaleUp, "lepScaleUp",eventFakeWeight);
 	  }
 
 	  // analysis scaling leptons down
@@ -833,6 +906,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightScaleDown,
 					 softMuons,
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -840,7 +914,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		      leptonsIsoTightScaleDown,  softMuons, RecoJets, GenJets, trackJets, L_met_lepScaleDown,"lepScaleDown",eventFakeWeight);
+		      leptonsIsoTightScaleDown,  softMuons, RecoJets, GenJets, trackEvent, L_met_lepScaleDown,"lepScaleDown",eventFakeWeight);
 	    
 	  }
 
@@ -852,6 +926,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightRes,
 					 softMuons,
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -859,7 +934,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		      leptonsIsoTightRes,  softMuons, RecoJets, GenJets, trackJets, L_met_lepRes, "lepRes",eventFakeWeight);
+		      leptonsIsoTightRes,  softMuons, RecoJets, GenJets, trackEvent, L_met_lepRes, "lepRes",eventFakeWeight);
 	  }
 
 	  //// jets scale up
@@ -870,6 +945,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,
 					 softMuons,
 					 RecoJetsScaleUp,
+					 trackEvent,
 					 L_met_jetScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -879,7 +955,7 @@ void loopOnEvents (plotter & analysisPlots,
 	    fillHisto(analysisPlots, sampleName, 
 		      CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonsIsoTight, softMuons, RecoJetsScaleUp, 
-		      GenJets,trackJets,
+		      GenJets,trackEvent,
 		      L_met_jetScaleUp, "jetScaleUp",eventFakeWeight);
 	  }
 
@@ -891,6 +967,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,					 
 					 softMuons,
 					 RecoJetsScaleDown,
+					 trackEvent,
 					 L_met_jetScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -900,7 +977,7 @@ void loopOnEvents (plotter & analysisPlots,
 	    fillHisto(analysisPlots, sampleName, 
 		      CutList.at(iCut).cutLayerName,VariableList, 
 		      leptonsIsoTight,softMuons,RecoJetsScaleDown, 
-		      GenJets,trackJets,
+		      GenJets,trackEvent,
 		      L_met_jetScaleDown, 
 		      "jetScaleDown",eventFakeWeight);
 	  }
@@ -914,6 +991,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,
 					 softMuons,
 					 RecoJetsRes,
+					 trackEvent,
 					 L_met_jetRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -924,7 +1002,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      CutList.at(iCut).cutLayerName,VariableList, 
 		      leptonsIsoTight,
 		      softMuons,RecoJetsRes, 
-		      GenJets, trackJets,
+		      GenJets, trackEvent,
 		      L_met_jetRes,
 		      "jetRes",eventFakeWeight);
 	  }	
@@ -1066,10 +1144,7 @@ void loopOnEvents (plotter & analysisPlots,
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,*reader) ;
       vector<jetContainer> trackJets ;
-            
       float dRThreshold = 0.5 ;      
-      trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
-
 
       float eventFakeWeight = 1.;
 
@@ -1133,6 +1208,9 @@ void loopOnEvents (plotter & analysisPlots,
 	  TLorentzVector fakeL_met ;
 	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
 
+	  trackJets = dumpTrackJets (trackJetsAll, fakeLeptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+	  trackJetEvent trackEvent = produceTrackJetEvent(trackJets,RecoJets);
+
 	  // analysis with nominal objects
 	  if( passCutContainerSelection (CutList.at(iCut),
 					 sampleName,
@@ -1141,22 +1219,26 @@ void loopOnEvents (plotter & analysisPlots,
 					 fakeLeptonsIsoTight,
 					 softMuons,
 					 fakeRecoJets,
+					 trackEvent,
 					 fakeL_met,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,vect,
 					 finalStateString)){
 	  
 	    fillHisto(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList, 
-		      fakeLeptonsIsoTight, softMuons, fakeRecoJets, GenJets, trackJets, fakeL_met, "",eventFakeWeight);
+		      fakeLeptonsIsoTight, softMuons, fakeRecoJets, GenJets, trackEvent, fakeL_met, "",eventFakeWeight);
 
 	    fillHisto2D(analysisPlots, sampleName, CutList.at(iCut).cutLayerName, VariableList2D, 
-			fakeLeptonsIsoTight,  softMuons, fakeRecoJets, GenJets, trackJets, fakeL_met, "",eventFakeWeight);
+			fakeLeptonsIsoTight,  softMuons, fakeRecoJets, GenJets, trackEvent, fakeL_met, "",eventFakeWeight);
 	  }
 	}
       }
 
       else { // if not fake rate sample
       
+	trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+	trackJetEvent trackEvent = produceTrackJetEvent(trackJets,RecoJets);
+
 	if(analysisPlots.getSystematics()){
 
 	  // lepton scale and resolution
@@ -1254,6 +1336,7 @@ void loopOnEvents (plotter & analysisPlots,
 				       leptonsIsoTight,
 				       softMuons,				       
 				       RecoJets,
+				       trackEvent,
 				       L_met,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
@@ -1263,13 +1346,13 @@ void loopOnEvents (plotter & analysisPlots,
 	  fillHisto(analysisPlots, sampleName, 
 		    CutList.at(iCut).cutLayerName,VariableList, 
 		    leptonsIsoTight,softMuons,RecoJets, 
-		    GenJets,trackJets,
+		    GenJets,trackEvent,
 		    L_met,"",eventFakeWeight);
 
 	  fillHisto2D(analysisPlots, sampleName, 
 		      CutList.at(iCut).cutLayerName,VariableList2D, 
 		      leptonsIsoTight,softMuons,RecoJets, 
-		      GenJets,trackJets,
+		      GenJets,trackEvent,
 		      L_met,"",eventFakeWeight);
 	}
       
@@ -1285,6 +1368,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightScaleUp,
 					 softMuons,
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1299,14 +1383,14 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJets, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_lepScaleUp, 
 		      "lepScaleUp",eventFakeWeight);
 
 	    fillHisto2D(analysisPlots, sampleName, 
 			CutList.at(iCut).cutLayerName,VariableList2D, 
 			leptonsIsoTightScaleUp,softMuons,RecoJets, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_lepScaleUp,"lepScaleUp",eventFakeWeight);
 	  }
 
@@ -1318,6 +1402,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightScaleDown,
 					 softMuons,					
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1332,7 +1417,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJets, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_lepScaleDown, 
 		      "lepScaleDown",eventFakeWeight);
 
@@ -1340,7 +1425,7 @@ void loopOnEvents (plotter & analysisPlots,
 			CutList.at(iCut).cutLayerName,VariableList2D, 
 			leptonsIsoTightScaleDown,
 			softMuons,RecoJets, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_lepScaleDown,"lepScaleDown",eventFakeWeight);
 
 	  }
@@ -1354,6 +1439,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTightRes,
 					 softMuons,
 					 RecoJets,
+					 trackEvent,
 					 L_met_lepRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1368,7 +1454,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJets, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_lepRes, 
 		      "lepRes",eventFakeWeight);
 
@@ -1377,7 +1463,7 @@ void loopOnEvents (plotter & analysisPlots,
 			leptonsIsoTightRes,
 			softMuons,
 			RecoJets, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_lepRes,"lepRes",eventFakeWeight);
 
 	  }
@@ -1390,6 +1476,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,
 					 softMuons,
 					 RecoJetsScaleUp,
+					 trackEvent,
 					 L_met_jetScaleUp,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1404,7 +1491,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJetsScaleUp, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_jetScaleUp, 
 		      "jetScaleUp",eventFakeWeight);
 
@@ -1413,7 +1500,7 @@ void loopOnEvents (plotter & analysisPlots,
 			leptonsIsoTight,
 			softMuons,
 			RecoJetsScaleUp, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_jetScaleUp,"jetScaleUp",eventFakeWeight);
 	  }
 
@@ -1425,6 +1512,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,
 					 softMuons,
 					 RecoJetsScaleDown,
+					 trackEvent,
 					 L_met_jetScaleDown,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1439,7 +1527,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJetsScaleDown, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_jetScaleDown, 
 		      "jetScaleDown",eventFakeWeight);
 
@@ -1448,7 +1536,7 @@ void loopOnEvents (plotter & analysisPlots,
 			leptonsIsoTight,
 			softMuons,
 			RecoJetsScaleDown, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_jetScaleDown,"jetScaleDown",eventFakeWeight);
 	  }
 
@@ -1461,6 +1549,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 leptonsIsoTight,
 					 softMuons,
 					 RecoJetsRes,
+					 trackEvent,
 					 L_met_jetRes,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
@@ -1475,7 +1564,7 @@ void loopOnEvents (plotter & analysisPlots,
 		      softMuons,
 		      RecoJetsRes, 
 		      GenJets,
-		      trackJets,
+		      trackEvent,
 		      L_met_jetRes,
 		      "jetRes",eventFakeWeight);
 
@@ -1484,7 +1573,7 @@ void loopOnEvents (plotter & analysisPlots,
 			leptonsIsoTight,
 			softMuons,
 			RecoJetsRes, 
-			GenJets,trackJets,
+			GenJets,trackEvent,
 			L_met_jetRes,"jetRes",eventFakeWeight);
 
 	  }
@@ -1503,7 +1592,7 @@ void fillHisto( plotter & analysisPlots,
 		vector<leptonContainer> & softMuons,
 		vector<jetContainer> & RecoJets,
 		vector<jetContainer> & GenJets,
-		vector<jetContainer> & trackJets,
+		trackJetEvent & trackEvent,
                 TLorentzVector & L_met,
 		const string & systematicName,
 		const float & eventFakeWeight
@@ -1518,7 +1607,7 @@ void fillHisto( plotter & analysisPlots,
   L_LLmet = L_dilepton + L_met ;
 
   float asimJ = 0, asimL = 0, Rvar = 0, aveEta = 0;
-  float asimGenJ = 0, RvarGen = 0, aveEtaGen = 0;
+  float asimGenJ = 0, RvarGen = 0;
 
   asimL = (leptonsIsoTight.at(0).lepton4V_.Pt()-leptonsIsoTight.at(1).lepton4V_.Pt())/(leptonsIsoTight.at(0).lepton4V_.Pt()+leptonsIsoTight.at(1).lepton4V_.Pt()) ;      
 
@@ -1533,63 +1622,8 @@ void fillHisto( plotter & analysisPlots,
     L_dijet_gen   = GenJets.at(0).jet4V_ + GenJets.at(1).jet4V_;                                                                                              
     asimGenJ      = (GenJets.at(0).jet4V_.Pt()-GenJets.at(1).jet4V_.Pt())/(GenJets.at(0).jet4V_.Pt()+GenJets.at(1).jet4V_.Pt()) ;                             
     RvarGen       = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(GenJets.at(0).jet4V_.Pt()*GenJets.at(1).jet4V_.Pt()) ;                     
-    aveEtaGen     = 0.5*(GenJets.at(0).jet4V_.Eta()+GenJets.at(1).jet4V_.Eta());
-  }
-      
-  // track jet info
-  float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
-  int   TKJ_num   = 0, TKJ_num_IN   = 0,  TKJ_num_OUT  = 0 ;
-  
-  if(RecoJets.size() >=2){
-
-    float dRThreshold = 0.5;
-    float TJ_etaMin = RecoJets.at (0).jet4V_.Eta () ;
-    float TJ_etaMax = RecoJets.at (1).jet4V_.Eta () ;
-    float TJ_phiMin = RecoJets.at (0).jet4V_.Phi () ;
-    float TJ_phiMax = RecoJets.at (1).jet4V_.Phi () ;
-    if (TJ_etaMin > TJ_etaMax){
-      swap (TJ_etaMin, TJ_etaMax) ;
-      swap (TJ_phiMin, TJ_phiMax) ;
-    }
-
-    // loop over track jets                                                                                                                                                
-    for (size_t iJet = 0 ; iJet < trackJets.size () ; ++iJet){
-
-      float iJetPhi = trackJets.at (iJet).jet4V_.Phi () ;
-      float iJetEta = trackJets.at (iJet).jet4V_.Eta () ;
-      float iJetPt  = trackJets.at (iJet).jet4V_.Pt () ;
-
-      float dR2_Min = deltaPhi(TJ_phiMin, iJetPhi);
-      dR2_Min *= dR2_Min ;
-      dR2_Min += (iJetEta - TJ_etaMin) * (iJetEta - TJ_etaMin) ;
-      float dR2_Max = deltaPhi (TJ_phiMax, iJetPhi) ;
-      dR2_Max *= dR2_Max ;
-      dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
-
-      // veto the tag jets                                                                                                                                                  
-      if (sqrt(dR2_Max) < dRThreshold || sqrt(dR2_Min) < dRThreshold) continue ;
-
-      float iJetModPhi = iJetPhi ;
-      float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
-      if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;
-      else if (iJetZep > 0.5) iJetModPhi -= TJ_phiMax ;
-
-      ++TKJ_num ;
-      TKJ_SumHT += iJetPt ;
-
-      if (iJetEta > TJ_etaMin && iJetEta < TJ_etaMax){
-	++TKJ_num_IN ;
-	TKJ_SumHT_IN += iJetPt ;
-      }
-
-      else if (iJetEta < TJ_etaMin || iJetEta > TJ_etaMax){
-	++TKJ_num_OUT ;
-	TKJ_SumHT_OUT += iJetPt ;
-      }
-    }
   }
     
-
   TString Name ;
   string  NameSample ; 
   if(TString(sampleName).Contains("Madgraph_")){
@@ -1601,9 +1635,10 @@ void fillHisto( plotter & analysisPlots,
     NameSample = sampleName ;
 
   // cunt b-jet
-  int nBjetsL = 0, nBjetsM = 0, nBjetsT = 0;
   // make mass between l1 and l2 and jet closer to W
   // make mass between l1 and l2 and pair of jet closer to T
+  int nBjetsL = 0, nBjetsM = 0, nBjetsT = 0;
+
   TLorentzVector L_l1j, L_l2j, L_l1jj, L_l2jj;
 
   float dMassW_l1 = 9999, dMassTop_l1 = 9999; 
@@ -1656,22 +1691,22 @@ void fillHisto( plotter & analysisPlots,
 
     // track jets
     if(VariableList.at(iVar).variableName == "numTkjets" and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num,                eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.numTrack_, eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "numTkjets_In"  and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_IN,             eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.numTrackIn_, eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "numTkjets_Out" and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_num_OUT,            eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.numTrackOut_, eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets"      and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT,              eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.HTTrack_,    eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets_In"   and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_IN,           eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.HTTrackIn_,  eventFakeWeight,systematicName) ;
     }
     else if(VariableList.at(iVar).variableName == "HTtkjets_Out"  and RecoJets.size() >=2){ 
-      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  TKJ_SumHT_OUT,          eventFakeWeight,systematicName) ;
+      analysisPlots.fillHisto (NameSample, cutLayerName, VariableList.at(iVar).variableName,  trackEvent.HTTrackOut_, eventFakeWeight,systematicName) ;
     }
 
     // njets
@@ -1853,16 +1888,10 @@ void fillHisto( plotter & analysisPlots,
 
     /// mixed variables using all event objects
     else if(VariableList.at(iVar).variableName == "leadLepZep" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
-    }
-    else if(VariableList.at(iVar).variableName == "leadLepZep_gen" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(0).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs((leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))),eventFakeWeight,systematicName);   
     }
     else if(VariableList.at(iVar).variableName == "trailLepZep" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
-    }
-    else if(VariableList.at(iVar).variableName == "trailLepZep_gen" and RecoJets.size() >= 2){
-      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,(leptonsIsoTight.at(1).lepton4V_.Eta()-aveEtaGen)/(fabs(GenJets.at(0).jet4V_.Eta()-GenJets.at(1).jet4V_.Eta())),eventFakeWeight,systematicName);   
+      analysisPlots.fillHisto (NameSample,cutLayerName,VariableList.at(iVar).variableName,fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()))),eventFakeWeight,systematicName);   
     }
            
     else if(VariableList.at(iVar).variableName == "R"){
@@ -2064,7 +2093,7 @@ void fillHisto2D ( plotter & analysisPlots,
 		   vector<leptonContainer> & softMuons,
 		   vector<jetContainer> & RecoJets,
 		   vector<jetContainer> & GenJets,
-		   vector<jetContainer> & trackJets,
+		   trackJetEvent & trackEvent,
 		   TLorentzVector & L_met,
 		   const string & systematicName,
 		   const float & eventFakeWeight){
@@ -2079,7 +2108,7 @@ void fillHisto2D ( plotter & analysisPlots,
 
   L_LLmet = L_dilepton + L_met ;
       
-  float asimJ = 0, asimL = 0, Rvar = 0, aveEta = 0;
+  float asimJ = 0, asimL = 0, Rvar = 0;
 
   asimL = (leptonsIsoTight.at(0).lepton4V_.Pt()-leptonsIsoTight.at(1).lepton4V_.Pt())/(leptonsIsoTight.at(0).lepton4V_.Pt()+leptonsIsoTight.at(1).lepton4V_.Pt()) ;      
 
@@ -2087,63 +2116,8 @@ void fillHisto2D ( plotter & analysisPlots,
     L_dijet  = RecoJets.at(0).jet4V_ + RecoJets.at(1).jet4V_;                                                                                                    
     asimJ    = (RecoJets.at(0).jet4V_.Pt()-RecoJets.at(1).jet4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()+RecoJets.at(1).jet4V_.Pt()) ;                                        
     Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;                  
-    aveEta   = 0.5*(RecoJets.at(0).jet4V_.Eta()+RecoJets.at(1).jet4V_.Eta());
   }
-    
-      
-  // track jet info
-  float TKJ_SumHT = 0.,TKJ_SumHT_IN = 0., TKJ_SumHT_OUT = 0. ;
-  int   TKJ_num   = 0, TKJ_num_IN   = 0,  TKJ_num_OUT  = 0 ;
-  
-  if(RecoJets.size() >=2){
-
-    float dRThreshold = 0.5 ;
-    float TJ_etaMin = RecoJets.at (0).jet4V_.Eta () ;
-    float TJ_etaMax = RecoJets.at (1).jet4V_.Eta () ;
-    float TJ_phiMin = RecoJets.at (0).jet4V_.Phi () ;
-    float TJ_phiMax = RecoJets.at (1).jet4V_.Phi () ;
-    if (TJ_etaMin > TJ_etaMax){
-      swap (TJ_etaMin, TJ_etaMax) ;
-      swap (TJ_phiMin, TJ_phiMax) ;
-    }
-
-    // loop over track jets                                                                                                                                                
-    for (size_t iJet = 0 ; iJet < trackJets.size () ; ++iJet){
-      
-      float iJetPhi = trackJets.at (iJet).jet4V_.Phi () ;
-      float iJetEta = trackJets.at (iJet).jet4V_.Eta () ;
-      float iJetPt  = trackJets.at (iJet).jet4V_.Pt () ;
-      
-      float dR2_Min = deltaPhi(TJ_phiMin, iJetPhi);
-      dR2_Min *= dR2_Min ;
-      dR2_Min += (iJetEta - TJ_etaMin) * (iJetEta - TJ_etaMin) ;
-      float dR2_Max = deltaPhi (TJ_phiMax, iJetPhi) ;
-      dR2_Max *= dR2_Max ;
-      dR2_Max += (iJetEta - TJ_etaMax) * (iJetEta - TJ_etaMax) ;
-      
-      // veto the tag jets                                                                                                                                                  
-      if (sqrt(dR2_Max) < dRThreshold || sqrt(dR2_Min) < dRThreshold) continue ;
-      
-      float iJetModPhi = iJetPhi ;
-      float iJetZep    = (trackJets.at (iJet).jet4V_.Eta () - aveEta) /(TJ_etaMax - TJ_etaMin);
-      if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;
-      else if (iJetZep > 0.5) iJetModPhi -= TJ_phiMax ;
-      
-      ++TKJ_num ;
-      TKJ_SumHT += iJetPt ;
-	  
-      if (iJetEta > TJ_etaMin && iJetEta < TJ_etaMax){
-	++TKJ_num_IN ;
-	TKJ_SumHT_IN += iJetPt ;
-      }
-
-      else if (iJetEta < TJ_etaMin || iJetEta > TJ_etaMax){
-	++TKJ_num_OUT ;
-	TKJ_SumHT_OUT += iJetPt ;
-      }
-    }
-    
-  }
+          
 
   TString Name ; 
   string NameSample ;
@@ -2683,6 +2657,7 @@ bool passCutContainerSelection (cutContainer & Cut,
 				vector<leptonContainer> & leptonsIsoTight,
 				vector<leptonContainer> & softMuons,
 				vector<jetContainer> & RecoJets,
+				trackJetEvent & trackEvent,
 				const TLorentzVector & L_met,
 				const float & minPtLeptonCut,
 				const float & leptonIsoLooseCut,
@@ -2918,7 +2893,28 @@ bool passCutContainerSelection (cutContainer & Cut,
     iBin++;   
   }
 
+  // apply further cuts for fakes
+  float aveEta    = 0.5*(RecoJets.at(0).jet4V_.Eta()+RecoJets.at(1).jet4V_.Eta());
+  float leadZep   = fabs((leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+  float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
 
+
+  if(finalStateString != "UU" and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(finalStateString != "UU" and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+
+  if(finalStateString != "UU" and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+
+  if(finalStateString != "UU" and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(finalStateString != "UU" and leadZep  > Cut.lZep) return false ;
+  if(finalStateString != "UU" and trailZep > Cut.lZep) return false ;
+
+  if(vect.size()!=0){
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"fake bkg reduction");
+    iBin++;   
+  }
+
+  
   // polarized cut
   if(Cut.polarization != 99 or TString(sampleName).Contains("Madgraph")){
 
@@ -3168,6 +3164,16 @@ bool passCutContainerSelection (readTree* reader,
   RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 99., Cut.jetPUID, minPtLeptonCutCleaning, matchingCone);   
   if(RecoJets.size() < 2 ) return false;
 
+  // take track jets                                                                                                                                                         
+  vector<jetContainer> trackJetsAll;
+  fillTrackJetArray (trackJetsAll,*reader) ;
+  vector<jetContainer> trackJets ;
+  float dRThreshold = 0.5 ;
+  trackJets = dumpTrackJets (trackJetsAll, leptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
+  trackJetEvent trackEvent;
+  trackEvent = produceTrackJetEvent (trackJets,RecoJets);
+
+
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
@@ -3240,6 +3246,31 @@ bool passCutContainerSelection (readTree* reader,
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
+    iBin++;   
+  }
+
+
+
+  // apply further cuts for fakes
+  float aveEta    = 0.5*(RecoJets.at(0).jet4V_.Eta()+RecoJets.at(1).jet4V_.Eta());
+  float leadZep   = fabs((leptonsIsoTight.at(0).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+  float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
+
+
+  if(finalStateString != "UU" and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(finalStateString != "UU" and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+  
+  TLorentzVector L_met;
+  L_met.SetPtEtaPhiM(reader->pfmet,0.,reader->pfmetphi,0.);
+  if(finalStateString != "UU" and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+
+  if(finalStateString != "UU" and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(finalStateString != "UU" and leadZep  > Cut.lZep) return false ;
+  if(finalStateString != "UU" and trailZep > Cut.lZep) return false ;
+
+  if(vect.size()!=0){
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"fake bkg reduction");
     iBin++;   
   }
 
