@@ -8,6 +8,4 @@ PHANTOM_WZ_EWK_SF_126_4p0_UU                                WZ_EWK              
 PHANTOM_WZ_EWK_DF_126_4p0_UE                                WZ_EWK                861       1.96E-003                        1               0
 PHANTOM_WZ_QCDwg_SF_4p0_UU                                  WZ_QCD                801       8.1326E-003                      1               0 
 PHANTOM_WZ_QCDwg_DF_4p0_UE                                  WZ_QCD                801       8.1326E-003                      1               0 
-#PHANTOM_WZ_QCD_SF_4p0_UU                                    WZ_QCD                801       2.47E-003                        1               0 
-#PHANTOM_WZ_QCD_DF_4p0_UE                                    WZ_QCD                801       2.47E-003                        1               0 
 TTbar_4p0                                                   TTbar                 12        242.5                            1              -1
