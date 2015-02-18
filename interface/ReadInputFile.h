@@ -282,6 +282,14 @@ class fakeRateContainer {
   TH2F* eFakeRate ;
   TGraph2D* electronFakeRate;
 
+  //bin center
+  TH2F* mmPtCentre;
+  TH2F* emPtCentre;
+  TH2F* mePtCentre;
+  TH2F* eePtCentre;
+
+  TH2F* mPtCentre;
+  TH2F* ePtCentre;
 
 };
 
@@ -323,6 +331,13 @@ class fakeMigrationContainer {
   TProfile* mEndcapProfile ;
   TGraph *muonEndcap ;
 
+  TH1F* mmPtMigrationCentre;
+  TH1F* emPtMigrationCentre;
+  TH1F* mePtMigrationCentre;
+  TH1F* eePtMigrationCentre;
+
+  TH1F* mPtMigrationCentre;
+  TH1F* ePtMigrationCentre;
 
 };
 

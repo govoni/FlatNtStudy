@@ -2,8 +2,8 @@
 
 using namespace std;
 
-#define upperPtBound 3000
-#define upperEtaBound 5.5
+#define upperPtBound  1000
+#define upperEtaBound 3
 
 fakeRateContainer::~fakeRateContainer(){
 
@@ -45,6 +45,20 @@ fakeRateContainer::~fakeRateContainer(){
   if(electronFakeRate!=0)
     electronFakeRate->Delete() ;
 
+  if(mmPtCentre!=0)
+    mmPtCentre->Delete();
+  if(mePtCentre!=0)
+    mePtCentre->Delete();
+  if(emPtCentre!=0)
+    emPtCentre->Delete();
+  if(eePtCentre!=0)
+    eePtCentre->Delete();
+
+  if(mPtCentre!=0)
+    mPtCentre->Delete();
+  if(ePtCentre!=0)
+    ePtCentre->Delete();
+
 }
 
 fakeRateContainer::fakeRateContainer(const string & fileName){
@@ -53,6 +67,10 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
     inputFile = TFile::Open("input/FakeRate.root","READ");
   else
     inputFile = TFile::Open(fileName.c_str(),"READ");
+
+  cout<<"start to build the fake rate container"<<endl;
+
+  // electron case
 
   eeDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_e");
   meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_e");
@@ -66,49 +84,92 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
 
   eFakeRate = (TH2F*) eNumerator->Clone("eFakeRate");
   eFakeRate->Divide(eDenominator);
+  eFakeRate->Smooth();
+  
+  // center bin histo
+  eePtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_e_jet_to_e");
+  mePtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_mu_jet_to_e");
 
-  // trick for a correct TGraph2D interpolation
-  float* ebinningX = new float[eFakeRate->GetNbinsX()+2];
-  for(int iBinX = 1; iBinX <= eFakeRate->GetNbinsX()+1; iBinX++){
-    if(iBinX == 1)
-      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX)-eFakeRate->GetXaxis()->GetBinWidth(iBinX);
-    else if(iBinX == eFakeRate->GetNbinsX())
-      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX)+eFakeRate->GetXaxis()->GetBinWidth(iBinX);
-    else 
-      ebinningX[iBinX-1] = eFakeRate->GetXaxis()->GetBinLowEdge(iBinX);
+  ePtCentre  = (TH2F*) eePtCentre->Clone("ePtCentre");
+  ePtCentre->Reset("ICES");
+
+  for(int iBinX = 0; iBinX < eePtCentre->GetNbinsX()+1; iBinX++){  
+    for(int iBinY = 0; iBinY < eePtCentre->GetNbinsY()+1; iBinY++){  
+      ePtCentre->SetBinContent(iBinX,iBinY,(eePtCentre->GetBinContent(iBinX,iBinY)+mePtCentre->GetBinContent(iBinX,iBinY))/2);
+    }
   }
-  ebinningX[eFakeRate->GetNbinsX()+1] = upperEtaBound;
+  
+  electronFakeRate = new TGraph2D();
 
-  float* ebinningY = new float[eFakeRate->GetNbinsY()+2];
-  for(int iBinY = 1; iBinY <= eFakeRate->GetNbinsY()+1; iBinY++){
-    if(iBinY == 1)
-      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY)-eFakeRate->GetYaxis()->GetBinWidth(iBinY);
-    else if(iBinY == eFakeRate->GetNbinsY())
-      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY)+eFakeRate->GetYaxis()->GetBinWidth(iBinY);
-    else 
-      ebinningY[iBinY-1] = eFakeRate->GetYaxis()->GetBinLowEdge(iBinY);
-  }
+  int nPoint = 0;
 
-  ebinningY[eFakeRate->GetNbinsY()+1] = upperPtBound;
+  for(int iBinX = 0; iBinX <= ePtCentre->GetNbinsX()+1; iBinX++){
+    for(int iBinY = 0; iBinY <= ePtCentre->GetNbinsY()+1; iBinY++){
 
-  TH2F* eFakeRateTemp = new TH2F("eFakeRateTemp","",eFakeRate->GetNbinsX()+1,ebinningX,eFakeRate->GetNbinsY()+1,ebinningY);
+      float etaPoint = 0;
+      float ptPoint  = 0;
+      float valuePoint = 0;
 
-  for(int iBinX = 0; iBinX < eFakeRateTemp->GetNbinsX(); iBinX++){    
-    for(int iBinY = 0; iBinY < eFakeRateTemp->GetNbinsY(); iBinY++){
-      eFakeRateTemp->SetBinContent(iBinX+1,iBinY+1,eFakeRate->GetBinContent(iBinX+1,iBinY+1));
+      nPoint++;
+
+      if(iBinX == 0)
+	etaPoint = -0.1 ;
+      if(iBinX == ePtCentre->GetNbinsX()+1)
+	etaPoint = upperEtaBound ;
+      else
+	etaPoint = eFakeRate->GetXaxis()->GetBinCenter(iBinX);
+
+      if(iBinY == 0)
+	ptPoint = 0 ;
+      if(iBinY == ePtCentre->GetNbinsY()+1)
+	ptPoint = upperPtBound ;
+      else{
+	if(iBinX == 0)
+	  ptPoint = ePtCentre->GetBinContent(iBinX+1,iBinY);
+	else if(iBinX == ePtCentre->GetNbinsX()+1)
+	  ptPoint = ePtCentre->GetBinContent(iBinX-1,iBinY);
+	else
+	  ptPoint = ePtCentre->GetBinContent(iBinX,iBinY);
+      }
+
+     
+      if(iBinX == 0 and iBinY == 0){
+	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY+1);
+      }
+      else if(iBinY == ePtCentre->GetNbinsY()+1 and iBinX == ePtCentre->GetNbinsX()+1 ){
+	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY-1);
+      }
+      else if(iBinX == 0 and iBinY == ePtCentre->GetNbinsY()+1){
+	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY-1);
+      }
+     else if(iBinY == 0 and iBinX == ePtCentre->GetNbinsX()+1){
+	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY+1);
+      }
+
+      else if(iBinX == 0){
+	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY);
+      }
+      else if(iBinY == 0){
+	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY+1);
+      }
+      else if(iBinX == ePtCentre->GetNbinsX()+1 ){
+	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY);
+      }
+      else if(iBinY == ePtCentre->GetNbinsY()+1){
+	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY-1);
+      }
+      
+      else {
+	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY);
+      }
+
+      electronFakeRate->SetPoint(nPoint,etaPoint,ptPoint,valuePoint);
+
     }
   }
 
-  for(int iBinX = 0; iBinX < eFakeRateTemp->GetNbinsX(); iBinX++){    
-    eFakeRateTemp->SetBinContent(iBinX+1,eFakeRateTemp->GetNbinsY(),eFakeRateTemp->GetBinContent(iBinX+1,eFakeRateTemp->GetNbinsY()-1));
-  }				 
-
-  for(int iBinY = 0; iBinY < eFakeRateTemp->GetNbinsY(); iBinY++){    
-    eFakeRateTemp->SetBinContent(eFakeRateTemp->GetNbinsX(),iBinY+1,eFakeRateTemp->GetBinContent(eFakeRateTemp->GetNbinsX()-1,iBinY+1));
-  }				 
-
   
-  electronFakeRate = new TGraph2D(eFakeRateTemp);
+  // muon sector
   
   mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_mu");
   emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_mu");
@@ -122,50 +183,90 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
   
   mFakeRate = (TH2F*) mNumerator->Clone("mFakeRate");
   mFakeRate->Divide(mDenominator);
+  mFakeRate->Smooth();
 
-  // trick for a correct TGraph2D interpolation
-  float* mbinningX = new float[mFakeRate->GetNbinsX()+2];
-  for(int iBinX = 1; iBinX <= mFakeRate->GetNbinsX()+1; iBinX++){
-    if(iBinX == 1)
-      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX)-mFakeRate->GetXaxis()->GetBinWidth(iBinX);
-    else if(iBinX == mFakeRate->GetNbinsX())
-      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX)+mFakeRate->GetXaxis()->GetBinWidth(iBinX);
-    else 
-      mbinningX[iBinX-1] = mFakeRate->GetXaxis()->GetBinLowEdge(iBinX);
-  }
+  // take the pt center for each bin
+  emPtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_e_jet_to_mu");
+  mmPtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_mu_jet_to_mu");
 
-  mbinningX[mFakeRate->GetNbinsX()+1] = upperEtaBound;
-
-  float* mbinningY = new float[mFakeRate->GetNbinsY()+2];
-  for(int iBinY = 1; iBinY <= mFakeRate->GetNbinsY()+1; iBinY++){
-    if(iBinY == 1)
-      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY)-mFakeRate->GetYaxis()->GetBinWidth(iBinY);
-    else if(iBinY == mFakeRate->GetNbinsY())
-      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY)+mFakeRate->GetYaxis()->GetBinWidth(iBinY);
-    else 
-      mbinningY[iBinY-1] = mFakeRate->GetYaxis()->GetBinLowEdge(iBinY);
-  }
-
-  mbinningY[mFakeRate->GetNbinsY()+1] = upperPtBound;
-
-  TH2F* mFakeRateTemp = new TH2F("mFakeRateTemp","",mFakeRate->GetNbinsX()+1,mbinningX,mFakeRate->GetNbinsY()+1,mbinningY);
-
-  for(int iBinX = 0; iBinX < mFakeRateTemp->GetNbinsX(); iBinX++){    
-    for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){
-      mFakeRateTemp->SetBinContent(iBinX+1,iBinY+1,mFakeRate->GetBinContent(iBinX+1,iBinY+1));
+  mPtCentre   = (TH2F*) mmPtCentre->Clone("mPtCentre");
+  mPtCentre->Reset("ICES");
+  
+  for(int iBinX = 0; iBinX < mmPtCentre->GetNbinsX()+1; iBinX++){  
+    for(int iBinY = 0; iBinY < mmPtCentre->GetNbinsY()+1; iBinY++){  
+      mPtCentre->SetBinContent(iBinX,iBinY,(mmPtCentre->GetBinContent(iBinX,iBinY)+emPtCentre->GetBinContent(iBinX,iBinY))/2);
     }
   }
 
-  for(int iBinX = 0; iBinX < mFakeRateTemp->GetNbinsX(); iBinX++){    
-    mFakeRateTemp->SetBinContent(iBinX+1,mFakeRateTemp->GetNbinsY(),mFakeRateTemp->GetBinContent(iBinX+1,mFakeRateTemp->GetNbinsY()-1));
-  }				 
 
-  for(int iBinY = 0; iBinY < mFakeRateTemp->GetNbinsY(); iBinY++){    
-    mFakeRateTemp->SetBinContent(mFakeRateTemp->GetNbinsX(),iBinY+1,mFakeRateTemp->GetBinContent(mFakeRateTemp->GetNbinsX()-1,iBinY+1));
-  }				 
+  muonFakeRate = new TGraph2D();
 
-  muonFakeRate = new TGraph2D(mFakeRateTemp);
+  nPoint = 0;
 
+  for(int iBinX = 0; iBinX <= mPtCentre->GetNbinsX()+1; iBinX++){
+    for(int iBinY = 0; iBinY <= mPtCentre->GetNbinsY()+1; iBinY++){
+
+      float etaPoint = 0;
+      float ptPoint  = 0;
+      float valuePoint = 0;
+
+      nPoint++;
+
+      if(iBinX == 0)
+	etaPoint = -0.1 ;
+      if(iBinX == mPtCentre->GetNbinsX()+1)
+	etaPoint = upperEtaBound ;
+      else
+	etaPoint = mFakeRate->GetXaxis()->GetBinCenter(iBinX);
+
+      if(iBinY == 0)
+	ptPoint = 0 ;
+      if(iBinY == mPtCentre->GetNbinsY()+1)
+	ptPoint = upperPtBound ;
+      else{
+	if(iBinX == 0)
+	  ptPoint = mPtCentre->GetBinContent(iBinX+1,iBinY);
+	else if(iBinX == mPtCentre->GetNbinsX()+1)
+	  ptPoint = mPtCentre->GetBinContent(iBinX-1,iBinY);
+	else
+	  ptPoint = mPtCentre->GetBinContent(iBinX,iBinY);
+      }
+
+      if(iBinX == 0 and iBinY == 0){
+	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY+1);
+      }
+      else if(iBinY == mPtCentre->GetNbinsY()+1 and iBinX == mPtCentre->GetNbinsX()+1 ){
+	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY-1);
+      }
+      else if(iBinX == 0 and iBinY == mPtCentre->GetNbinsY()+1){
+	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY-1);
+      }
+     else if(iBinY == 0 and iBinX == mPtCentre->GetNbinsX()+1){
+	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY+1);
+      }
+
+      else if(iBinX == 0){
+	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY);
+      }
+      else if(iBinY == 0){
+	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY+1);
+      }
+      else if(iBinX == mPtCentre->GetNbinsX()+1 ){
+	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY);
+      }
+      else if(iBinY == mPtCentre->GetNbinsY()+1){
+	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY-1);
+      }
+      
+      else {
+	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY);
+      }
+
+      muonFakeRate->SetPoint(nPoint,etaPoint,ptPoint,valuePoint);
+
+    }
+  }
+  
 }
 
 float fakeRateContainer::getFakeRate (const int & PID, const float & pt, const float & eta){
@@ -230,6 +331,20 @@ fakeMigrationContainer::~fakeMigrationContainer(){
   if(mEndcapProfile !=0)
     mEndcapProfile->Delete();
 
+  if(mePtMigrationCentre!=0)
+    mePtMigrationCentre->Delete();
+  if(mmPtMigrationCentre!=0)
+    mmPtMigrationCentre->Delete();
+  if(emPtMigrationCentre!=0)
+    emPtMigrationCentre->Delete();
+  if(eePtMigrationCentre!=0)
+    eePtMigrationCentre->Delete();
+
+  if(ePtMigrationCentre!=0)
+    ePtMigrationCentre->Delete();
+  if(mPtMigrationCentre!=0)
+    mPtMigrationCentre->Delete();
+
 }
 
 fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
@@ -239,35 +354,78 @@ fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
   else
     inputFile = TFile::Open(fileName.c_str(),"READ");
 
+  cout<<"start to build the fake rate migration container"<<endl;
+
   eeBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_e");
   meBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_e");
   eBarrel  = (TH2F*) eeBarrel->Clone("eBarrel");
   eBarrel->Add(meBarrel);
+  eBarrel->Smooth();
   eBarrelProfile = eBarrel->ProfileX("_fX");
-  electronBarrel = new TGraph(eBarrelProfile);
 
   eeEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_e");
   meEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_e");
   eEndcap  = (TH2F*) eeEndcap->Clone("eEndcap");
   eEndcap->Add(meEndcap);
+  eEndcap->Smooth();
   eEndcapProfile = eEndcap->ProfileX("_fX");
-  electronEndcap = new TGraph(eEndcapProfile);
+
+  mePtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_mu_jet_to_e");
+  eePtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_e_jet_to_e");
+
+  ePtMigrationCentre   = (TH1F*) eePtMigrationCentre->Clone("ePtMigrationCentre");
+  ePtMigrationCentre->Reset("ICES");
+
+  for(int iBinX = 0; iBinX <= eePtMigrationCentre->GetNbinsX()+1; iBinX++){  
+      ePtMigrationCentre->SetBinContent(iBinX,(eePtMigrationCentre->GetBinContent(iBinX)+mePtMigrationCentre->GetBinContent(iBinX))/2);    
+  }
+
+  electronBarrel = new TGraph();
+  electronEndcap = new TGraph();
+
+  for(int iBin = 0; iBin < eBarrelProfile->GetNbinsX(); iBin++){
+    electronBarrel->SetPoint(iBin+1,ePtMigrationCentre->GetBinContent(iBin+1),eBarrelProfile->GetBinContent(iBin+1));
+  }
+
+  for(int iBin = 0; iBin < eEndcapProfile->GetNbinsX(); iBin++){
+    electronEndcap->SetPoint(iBin+1,ePtMigrationCentre->GetBinContent(iBin+1),eEndcapProfile->GetBinContent(iBin+1));
+  }
 
   mmBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_mu");
   emBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_mu");
   mBarrel  = (TH2F*) mmBarrel->Clone("mBarrel");
   mBarrel->Add(emBarrel);
+  mBarrel->Smooth();
   mBarrelProfile = mBarrel->ProfileX("_fX");
-  muonBarrel = new TGraph(mBarrelProfile);
 
   mmEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_mu");
   emEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_mu");
   mEndcap  = (TH2F*) mmEndcap->Clone("mEndcap");
   mEndcap->Add(emEndcap);
+  mEndcap->Smooth();
   mEndcapProfile = mEndcap->ProfileX("_fX");
-  muonEndcap = new TGraph(mEndcapProfile);
 
 
+  mmPtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_mu_jet_to_mu");
+  emPtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_e_jet_to_mu");
+
+  mPtMigrationCentre  = (TH1F*) mmPtMigrationCentre->Clone("muPtMigrationCentre");
+  mPtMigrationCentre->Reset("ICES");
+
+  for(int iBinX = 0; iBinX < mmPtMigrationCentre->GetNbinsX()+1; iBinX++){  
+    mPtMigrationCentre->SetBinContent(iBinX,(mmPtMigrationCentre->GetBinContent(iBinX)+emPtMigrationCentre->GetBinContent(iBinX))/2);
+  }
+
+  muonBarrel = new TGraph();
+  muonEndcap = new TGraph();
+
+  for(int iBin = 0; iBin < mBarrelProfile->GetNbinsX(); iBin++){
+    muonBarrel->SetPoint(iBin+1,mPtMigrationCentre->GetBinContent(iBin+1),mBarrelProfile->GetBinContent(iBin+1));
+  }
+
+  for(int iBin = 0; iBin < mEndcapProfile->GetNbinsX(); iBin++){
+    muonEndcap->SetPoint(iBin+1,mPtMigrationCentre->GetBinContent(iBin+1),mEndcapProfile->GetBinContent(iBin+1));
+  }
 }
 
 float fakeMigrationContainer::getMigration (const int & PID, const float & pt, const float & eta){
