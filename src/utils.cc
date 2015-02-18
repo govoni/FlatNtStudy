@@ -492,7 +492,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   }
   else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 13){
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     else
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
@@ -512,7 +512,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   }
   else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 11){
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     else
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
     if(inputLepton.flavour_ > 0)
@@ -676,7 +676,7 @@ void loopOnEvents (plotter & analysisPlots,
       if(applyFake){ // the sample require the fake rate application
 
 
-	if(leptonsIsoTight.size() < 1 ) continue ; // if less than one isolated lepton over the minimum pt
+	if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) continue ; // if less than one isolated lepton over the minimum pt
 
 	// take the fake weigh from the cleaned jet collection over threshold
 	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
@@ -727,13 +727,13 @@ void loopOnEvents (plotter & analysisPlots,
 
 	  //re-clean jets for this new lepton
 	  vector<jetContainer> fakeRecoJets;
-	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
+	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
 
 	  // take into account the charge assignment
 	  eventFakeWeight = eventFakeWeight*0.5;
 
 	  TLorentzVector fakeL_met ;
-	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
+	  fakeL_met  = L_met - fakeLepton.lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
 
 	  // track jets using the new leptons for cleaning
 	  trackJets = dumpTrackJets (trackJetsAll,fakeLeptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
@@ -1149,7 +1149,8 @@ void loopOnEvents (plotter & analysisPlots,
       float eventFakeWeight = 1.;
 
       if(applyFake){ // the sample require the fake rate application
-	if(leptonsIsoTight.size() < 1 ) continue ; // if less than one isolated lepton over the minimum pt
+
+	if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) continue ; // if less than one isolated lepton over the minimum pt
 	
 	// take the fake weigh from the cleaned jet collection over threshold
 	if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13) 
@@ -1191,8 +1192,10 @@ void loopOnEvents (plotter & analysisPlots,
 	  vector<leptonContainer> fakeLeptonsIsoTight;
 	  fakeLeptonsIsoTight = leptonsIsoTight ;
 	  fakeLeptonsAll = LeptonsAll;
-	  fakeLeptonsIsoTight.push_back(createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration,finalStateString));
-	  fakeLeptonsAll.push_back(fakeLeptonsIsoTight.back());
+	  leptonContainer fakeLepton ;
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration,finalStateString);
+	  fakeLeptonsIsoTight.push_back(fakeLepton);
+	  fakeLeptonsAll.push_back(fakeLepton);
 
 	  sort(fakeLeptonsAll.rbegin(),fakeLeptonsAll.rend());
 	  sort(fakeLeptonsIsoTight.rbegin(),fakeLeptonsIsoTight.rend());
@@ -1200,13 +1203,13 @@ void loopOnEvents (plotter & analysisPlots,
 
 	  //re-clean jets for this new lepton
 	  vector<jetContainer> fakeRecoJets;
-	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, 0., matchingCone);
+	  fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
 
 	  // take into account the charge assignment
 	  eventFakeWeight = eventFakeWeight*0.5;
 
 	  TLorentzVector fakeL_met ;
-	  fakeL_met  = L_met - fakeLeptonsIsoTight.back().lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
+	  fakeL_met  = L_met - fakeLepton.lepton4V_ + RecoJetsForFake.at(iJet).jet4V_;
 
 	  trackJets = dumpTrackJets (trackJetsAll, fakeLeptonsIsoTight, 1., minPtLeptonCutCleaning, dRThreshold);
 	  trackJetEvent trackEvent = produceTrackJetEvent(trackJets,RecoJets);
