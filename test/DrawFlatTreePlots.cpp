@@ -54,7 +54,7 @@ int main (int argc, char ** argv) {
   string InputBaseDirectory           = gConfigParser -> readStringOption("Input::InputBaseDirectory");
   string InputSampleList              = gConfigParser -> readStringOption("Input::InputSampleList");
 
-  map<string,vector<sampleContainer> > sampleMap ;
+  unordered_map<string,vector<sampleContainer> > sampleMap ;
   if(ReadInputSampleFile(InputSampleList,sampleMap) <= 0){
     cerr<<" Empty Input Sample File or not Exisisting --> Exit "<<endl; return -1;}
   
@@ -101,8 +101,8 @@ int main (int argc, char ** argv) {
 
   map<string,TH1F*> histoCutEff ;
 
-  for( map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){
-
+  for( unordered_map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){
+    
    TChain* chain = new TChain (treeName.c_str()) ;  
    int numBefore = 0;
    // take input files

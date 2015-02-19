@@ -52,9 +52,9 @@ etaj1etaj2                  20     -15     5           #eta_{j1}*#eta_{j2}
 etal1                       20     -3      3           #eta_{l1}
 etal2                       20     -3      3           #eta_{l2}
 etall                       20     -3      3           #eta_{ll}
-phill                       30     -3.14   3.14        #phi_{ll}
-dRll                        30      0      10          #deltaR_{ll}
-etal1etal2                  25     -5      6           #eta_{l1}*#eta_{l2}
+phill                       20     -3.14   3.14        #phi_{ll}
+dRll                        20      0      10          #deltaR_{ll}
+etal1etal2                  20     -5      6           #eta_{l1}*#eta_{l2}
 met                         25     20      500         E_{T}^{miss}
 R                           12      0      8           R
 leadLepZep                  15      0      1.          Zep_{l1}
