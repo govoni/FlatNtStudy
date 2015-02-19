@@ -31,8 +31,8 @@ nSoftMu                     4       0      4           N_{#mu}^{soft}
 ptj1                        25      30     600         p_{T}^{j1}
 ptj2                        25      30     400         p_{T}^{j2}
 ptjj                        25      30     500         p_{T}^{jj} 
-etaj1                       20      -4     4           #eta_{j1}
-etaj2                       20      -4     4           #eta_{j2}
+etaj1                       25      -5     5           #eta_{j1}
+etaj2                       25      -5     5           #eta_{j2}
 detajj                      25      0      8           #Delta#eta_{jj}
 mjj                         25      200    3000        m_{jj}  
 ml1jW                       25      20     400         m_{l1j}^{W}

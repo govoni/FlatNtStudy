@@ -26,83 +26,9 @@
 #include "TLatex.h"
 #include "TMath.h"
 
+#include "histoUtils.h"
+
 using namespace std ;
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-// add the overflow bin as real bin to the histo
-void   addOverFlow (TH1F * input) ;            
-
-void   addOverAndUnderFlow (TH1F* histo);
-
-// give an histogram set the poisson error bars
-void   setPoissonErrorsToHisto (TH1F * input) ;
-
-// give an histogram set the poisson error bars
-void   setPoissonErrorsTo2DHisto (TH2F * input) ;
-
-// give an histogram set the poisson error bars
-void   setAsymmetricErrorsToHisto (TH1F * input) ;
-
-// give an histogram set the poisson error bars
-void   setAsymmetricErrorsTo2DHisto (TH2F * input) ;
-
-// take an histogram with bin errors
-TH1F*  getHistoOfErrors (TH1F * input, 
-			 int isLog) ; 
-
-// create a stack from a histo
-THStack* CreateStack (TH1F * histo) ; 
-
-TH1F* unRollingHistogram(TH2F* histo, int errorType);
-
-void makePositiveDefine(TH1F* histo);
-
-void makePositiveDefine(TH2F* histo);
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-// re-roll unrolled 2D distributions and return a TH2F.
-// templated on RooFit objects, works for RooHist and RooCurve,
-// which are the toy and the fitting functions in the combine
-// output, respectively.
-
-template <class T>
-TH2F * roll (
-    T * original,    // thing to be re-rolled
-    int nBinsX, float Xmin, float Xmax,
-    int nBinsY, float Ymin, float Ymax,
-    RooHist * reference     // unrolled events, to get
-                            //   the centre of the bins
-  )
-{
-  int nBinsOriginal = reference->GetN () ;
-//   cout << " nBinsX = " << nBinsX << endl ;
-//   cout << " nBinsY = " << nBinsY << endl ;
-//   cout << " tot = " << nBinsOriginal << endl ;
-  if (nBinsY * nBinsX != nBinsOriginal)
-    {
-      cerr << " problems in number of bins" << endl ;
-      exit (1) ;
-    }
-  TString name = "roll_" ;
-  name += original->GetName () ;  
-  TH2F * dummy = new TH2F (name, name, 
-      nBinsX, Xmin, Xmax,
-      nBinsY, Ymin, Ymax
-    ) ;
-  for (int i = 1 ; i <= nBinsOriginal ; ++i)
-    {
-      Double_t yvalue = original->Eval (i - 0.5) ;
-      int xbin = i / nBinsY + 1 ;
-      int ybin = i % nBinsY ;
-
-      dummy->SetBinContent (xbin, ybin, yvalue) ;
-    }
-  return dummy ;
-}
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----

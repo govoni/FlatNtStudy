@@ -2,204 +2,7 @@
 
 using namespace std ;
 
-
-// add the overflow bin to a histogram
-void addOverFlow (TH1F * input) {
-
-  TH1F * dummy = new TH1F (
-    "tempo",
-    input->GetTitle (),
-    input->GetNbinsX () + 1,
-    input->GetXaxis ()->GetXmin (),
-    input->GetXaxis ()->GetXmax () + input->GetBinWidth (1)
-  ) ;
-
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
-      dummy->SetBinContent (iBin, input->GetBinContent (iBin)) ;
-      dummy->SetBinError (iBin, input->GetBinError (iBin)) ;
-  }
-
-  if(input->GetDefaultSumw2())
-    dummy->Sumw2 () ;
-
-  string name = input->GetName () ;  
-  input->SetName ("trash") ;   
-  dummy->GetXaxis()->SetTitle(input->GetXaxis()->GetTitle());
-  dummy->SetName (name.c_str ()) ;
-  swap (*input, *dummy) ;
-  return ;
-
-}
-
-void addOverAndUnderFlow (TH1F* histo){
-
-  histo->SetBinContent(histo->GetNbinsX(),histo->GetBinContent(histo->GetNbinsX())+histo->GetBinContent(histo->GetNbinsX()+1));
-  histo->SetBinContent(1,histo->GetBinContent(1)+histo->GetBinContent(0));
-  if(!histo->GetDefaultSumw2()){
-    histo->SetBinError(histo->GetNbinsX(),sqrt(histo->GetBinError(histo->GetNbinsX())*histo->GetBinError(histo->GetNbinsX())+
-                                               histo->GetBinContent(histo->GetNbinsX()+1)));
-    histo->SetBinError(1,sqrt(histo->GetBinContent(1)*histo->GetBinError(1)+histo->GetBinContent(0)));
-  }
-
-}
-
-
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void setPoissonErrorsToHisto (TH1F * input) { // set the error in each bin as sqrt(binContent)
-
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
-      input->SetBinError (iBin, sqrt (input->GetBinContent (iBin))) ;
-  }
-
-  return ;
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void setPoissonErrorsTo2DHisto (TH2F * input) { // set the error in each bin as sqrt(binContent)
-
-  for (int iBinX = 0 ; iBinX <= input->GetNbinsX () + 1 ; ++iBinX) {
-    for (int iBinY = 0 ; iBinY <= input->GetNbinsY () + 1 ; ++iBinY) {
-      input->SetBinError (iBinX,iBinY,sqrt (input->GetBinContent (iBinX,iBinY))) ;
-    }
-  }
-
-  return ;
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void setAsymmetricErrorsToHisto (TH1F * input) { // set the error in each bin as sqrt(binContent)
-
-  input->SetBinErrorOption(TH1::kPoisson);
-  return ;
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void setAsymmetricErrorsTo2DHisto (TH2F * input) { // set the error in each bin as sqrt(binContent)
-
-  input->SetBinErrorOption(TH1::kPoisson);
-
-  return ;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-TH1F *  getHistoOfErrors (TH1F * input, int isLog) {
-
-  string name = "err_" ;
-  name += input->GetName () ;
-  if(isLog) name +="_log";
-  string title = "errors of " ;
-  title += input->GetTitle () ;
-  TH1F * dummy = new TH1F (
-    name.c_str (),
-    title.c_str (),
-    input->GetNbinsX (),
-    input->GetXaxis ()->GetXmin (),
-    input->GetXaxis ()->GetXmax ()
-  ) ;
-
-  for (int iBin = 0 ; iBin <= input->GetNbinsX () + 1 ; ++iBin) {
-      dummy->SetBinContent (iBin, input->GetBinError (iBin)) ;
-  }
-
-  return dummy ;
-
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-TH1F* unRollingHistogram (TH2F* histo, int errorType){
-
-  TH1F* dummy = new TH1F("dummy","",(histo->GetNbinsX())*(histo->GetNbinsY()),0,histo->GetNbinsX()*histo->GetNbinsY());
-  dummy->SetName((string(histo->GetName())+"_dummy").c_str());
-  dummy->Sumw2();
-
-  // copy all the entries (basic structure inside the matrix)
-  for(int iBinX = 1; iBinX <= histo->GetNbinsX() ; iBinX++){
-    for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
-      dummy->SetBinContent((iBinX-1)*histo->GetNbinsY()+iBinY,histo->GetBinContent(iBinX,iBinY));
-      dummy->SetBinError((iBinX-1)*histo->GetNbinsY()+iBinY,histo->GetBinError(iBinX,iBinY));
-    }
-  }
-
-  // now add underflow alogn Y axis
-  for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
-    dummy->SetBinContent(iBinY,histo->GetBinContent(1,iBinY)+histo->GetBinContent(0,iBinY));
-  }
-
-  // now add overflow alogn Y axis
-  for(int iBinY = 1; iBinY <= histo->GetNbinsY() ; iBinY++){
-    dummy->SetBinContent(histo->GetNbinsY()*(histo->GetNbinsX()-1)+iBinY,histo->GetBinContent(histo->GetNbinsX(),iBinY)+histo->GetBinContent(histo->GetNbinsX()+1,iBinY));
-  }
-
-
-  // now add underflow alogn X axis
-  for(int iBinX = 1; iBinX <= histo->GetNbinsX() ; iBinX++){
-    dummy->SetBinContent((histo->GetNbinsY()*(iBinX-1)+1),histo->GetBinContent(iBinX,1)+histo->GetBinContent(iBinX,0));
-  }
-
-  // now add overflow alogn X axis
-  for(int iBinX = 0; iBinX <= histo->GetNbinsX()+1 ; iBinX++){
-      
-    dummy->SetBinContent((histo->GetNbinsY()*(iBinX)),histo->GetBinContent(iBinX,histo->GetNbinsY())+histo->GetBinContent(iBinX,histo->GetNbinsY()+1));
-  }
-
-  dummy->SetBinContent(1,histo->GetBinContent(0,0)+dummy->GetBinContent(1));
-  dummy->SetBinContent(histo->GetNbinsY(),histo->GetBinContent(0,histo->GetNbinsY()+1)+dummy->GetBinContent(histo->GetNbinsY()));
-  dummy->SetBinContent(histo->GetNbinsY()*(histo->GetNbinsX()-1),histo->GetBinContent(histo->GetNbinsX()+1,0)+dummy->GetBinContent(histo->GetNbinsY()*(histo->GetNbinsX()-1)));
-  dummy->SetBinContent(histo->GetNbinsX()*histo->GetNbinsY(),histo->GetBinContent(histo->GetNbinsX()+1,histo->GetNbinsY()+1)+dummy->GetBinContent(histo->GetNbinsY()*histo->GetNbinsX()));
-
-
-  if(errorType == 0){
-    setPoissonErrorsToHisto(dummy);
-  }
-  else if(errorType ==1){
-    setAsymmetricErrorsToHisto(dummy);
-  }
-
-  return dummy;
-
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-THStack * stackMe (TH1F * histo){
-
-  string name = histo->GetName () ;
-  name += "_st" ;
-  THStack * dummy = new THStack (name.c_str (), "") ;
-  dummy->Add (histo) ;
-  return dummy ;
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void makePositiveDefine(TH1F* histo){
-
-  for(int iBin = 0; iBin <= histo->GetNbinsX()+1; iBin++){
-    if( histo->GetBinContent(iBin) < 0)
-      histo->SetBinContent(iBin,0);
-  }
-
-  return ;
-}
-
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-void makePositiveDefine(TH2F* histo){
-
-  for(int iBinX = 0; iBinX <= histo->GetNbinsX()+1; iBinX++){
-    for(int iBinY = 0; iBinY <= histo->GetNbinsY()+1; iBinY++){
-      if( histo->GetBinContent(iBinX,iBinY) < 0)
-	histo->SetBinContent(iBinX,iBinY,0);
-    }
-  }
-
-  return ;
-}
-
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
 plotter::plotter (float lumi, 
 		  string folderName,
 		  bool includeSystematics) :
@@ -1166,17 +969,24 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // add bkg to the stack and identify the position of the two signals in the sample
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  int sigSamplesNum = 0 ;
   vector<int> signalPos (2, 0) ;
+  int sigSamplesNum = 0;
   for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample){
 
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == 1) {
-      signalPos.at (sigSamplesNum) = iSample ;
-      ++sigSamplesNum ;
+    if (m_samples[sampleName].m_isSignal == 1 and TString(sampleName).Contains("126")) {
+      signalPos.at (0) = iSample ;
+      sigSamplesNum++;
       continue ;
     }
+
+    else if (m_samples[sampleName].m_isSignal == 1 and TString(sampleName).Contains("noH")) {
+      signalPos.at (1) = iSample ;
+      sigSamplesNum++;
+      continue ;
+    }
+
     TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
     if(string(h_var->GetXaxis()->GetTitle())!="")
       xaxisTitle = h_var->GetXaxis()->GetTitle();
@@ -1209,7 +1019,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
   TH1F * diff = (TH1F *) h_noH->Clone (name.c_str ()) ;
   diff->Add (h_sigSM, -1.) ;
-  diff->SetLineColor (4) ;
+  diff->SetLineColor (2) ;
   diff->SetLineWidth (2) ;
   diff->SetFillStyle (0) ;
   leg.AddEntry (diff, "noH - 126", "fl") ;
@@ -1231,6 +1041,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   name += h_sigSM->GetName () ;
   TH1F * SM_histo = (TH1F *) SM_stack->GetStack ()->Last ()->Clone (name.c_str ()) ;
   SM_histo->SetFillColor (1) ;
+  SM_histo->SetLineColor (4) ;
   SM_histo->SetFillStyle (3004) ;
   leg.AddEntry (SM_histo, "bkg + EWK H126", "fl") ;
 
