@@ -180,7 +180,7 @@ vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets,
 			       float jetPUIDcut, 
 			       float lepminptcut, 
 			       float deltaR,
-			       float etaMax = 10) ;
+			       float etaMax = 4.7) ;
 
 vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets, 
 				    vector<leptonContainer> & TL_leptons, 

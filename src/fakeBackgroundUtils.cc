@@ -524,7 +524,12 @@ void makeFakeChargeBackground(const string & sampleName,
       vector<leptonContainer> newLeptonsIsoTight;
       
       if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
-	eventFakeWeight = electronChargeMisID;
+
+	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
+	  eventFakeWeight = electronChargeMisIDBarrel;
+	else
+	  eventFakeWeight = electronChargeMisIDEndcap;
+
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(misIDLepton);
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
@@ -533,7 +538,12 @@ void makeFakeChargeBackground(const string & sampleName,
 
       }
       else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 1){
-	eventFakeWeight = electronChargeMisID;
+
+	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
+	  eventFakeWeight = electronChargeMisIDBarrel;
+	else
+	  eventFakeWeight = electronChargeMisIDEndcap;
+
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
 	newLeptonsIsoTight.push_back(misIDLepton);
@@ -714,7 +724,12 @@ void makeFakeChargeBackground(const string & sampleName,
       vector<leptonContainer> newLeptonsIsoTight;
       
       if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
-	eventFakeWeight = electronChargeMisID;
+
+	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
+	  eventFakeWeight = electronChargeMisIDBarrel;
+	else
+	  eventFakeWeight = electronChargeMisIDEndcap;
+
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(misIDLepton);
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
@@ -723,7 +738,12 @@ void makeFakeChargeBackground(const string & sampleName,
 
       }
       else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 1){
-	eventFakeWeight = electronChargeMisID;
+
+	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
+	  eventFakeWeight = electronChargeMisIDBarrel;
+	else
+	  eventFakeWeight = electronChargeMisIDEndcap;
+
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
 	newLeptonsIsoTight.push_back(misIDLepton);

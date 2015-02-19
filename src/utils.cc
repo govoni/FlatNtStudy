@@ -2786,8 +2786,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 	polarizationFlag = 2 ; //TT
 
       if(TString(sampleName).Contains("_LL")  and polarizationFlag != 0) return false;
-      if(TString(sampleName).Contains("_TL")  and polarizationFlag != 1) return false;
       if(TString(sampleName).Contains("_TT")  and polarizationFlag != 2) return false;
+      if((TString(sampleName).Contains("_TL") or TString(sampleName).Contains("_LT"))  and polarizationFlag != 1) return false;
 
       if(vect.size()!=0){
 	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   

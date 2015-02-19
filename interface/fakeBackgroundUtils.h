@@ -12,8 +12,9 @@
 #include "ReadInputFile.h"
 #include "utils.h"
 
-#define muonChargeMisID 10E-6
-#define electronChargeMisID 10E-3
+#define muonChargeMisID           1E-6
+#define electronChargeMisIDBarrel 5E-4
+#define electronChargeMisIDEndcap 3E-3
 
 using namespace std ;
 
