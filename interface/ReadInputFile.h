@@ -9,6 +9,7 @@
 #include <sstream>
 #include <algorithm>
 #include <map>
+#include <unordered_map>
 
 #include "TString.h"
 #include "TH1F.h"
@@ -344,6 +345,8 @@ class fakeMigrationContainer {
 // functions
 
 int ReadInputSampleFile   (const string & , map<string, vector<sampleContainer> > & );
+
+int ReadInputSampleFile   (const string & , unordered_map<string, vector<sampleContainer> > & );
 
 int ReadInputVariableFile (const string & , vector<variableContainer> & );
 

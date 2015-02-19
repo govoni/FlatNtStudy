@@ -443,7 +443,7 @@ float fakeMigrationContainer::getMigration (const int & PID, const float & pt, c
   if(fabs(PID) == 13 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
     return muonEndcap->Eval(pt);
   }
-  else return 1;
+  else return 0;
 
 }
 
@@ -461,6 +461,64 @@ int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sample
   vector<float>       SampleCrossSection;
   vector<int>         NumEntriesBefore;
   vector<int>         isSignal;
+
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" " ) continue ;
+    stringstream line(buffer);
+
+    string  NameSampleTemp;
+    string  NameReducedSampleTemp;
+    string  ColorSampleTemp;
+    string  SampleCrossSectionTemp;
+    string  NumEntresBeforeTemp;
+    string  isSignalTemp;
+
+    line >> NameSampleTemp >> NameReducedSampleTemp >> ColorSampleTemp >> SampleCrossSectionTemp >> NumEntresBeforeTemp >> isSignalTemp;
+
+    NameSample.push_back(NameSampleTemp);   
+    NameReducedSample.push_back(NameReducedSampleTemp);
+    ColorSample.push_back(stoi(ColorSampleTemp)); 
+    SampleCrossSection.push_back(stof(SampleCrossSectionTemp)); 
+    NumEntriesBefore.push_back(stoi(NumEntresBeforeTemp));  
+    isSignal.push_back(stoi(isSignalTemp));
+  }
+
+  
+  for(size_t iSample = 0; iSample < NameReducedSample.size(); iSample++){
+    SampleContainer[NameReducedSample.at(iSample)].push_back(
+           sampleContainer(NameSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
+  }
+
+
+  NameSample.clear();
+  NameReducedSample.clear();
+  ColorSample.clear();
+  SampleCrossSection.clear();
+  NumEntriesBefore.clear();
+  isSignal.clear();
+
+  return SampleContainer.size() ;
+
+}
+
+
+int ReadInputSampleFile(const string & InputSampleList, unordered_map<string,vector<sampleContainer> > & SampleContainer){
+
+
+  ifstream inputFile (InputSampleList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+
+  vector<string> NameSample;
+  vector<string> NameReducedSample;
+  vector<int>    ColorSample;
+  vector<float>  SampleCrossSection;
+  vector<int>    NumEntriesBefore;
+  vector<int>    isSignal;
 
   while(!inputFile.eof()){
   

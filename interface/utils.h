@@ -14,6 +14,10 @@
 
 using namespace std ;
 
+#define pdgWMass 80.385
+#define pdgTopMass 173.21
+#define softMuonPt 3.
+
 // class to contain lepton information
 class leptonContainer {
 
@@ -94,7 +98,7 @@ class jetContainer {
 };
 
 
-// class to contain jet information
+// class to contain track jet event information
 class trackJetEvent {
 
  public:
@@ -184,28 +188,17 @@ vector<jetContainer> dumpTrackJets (vector<jetContainer> & TL_jets,
 				    float lepminptcut, 
 				    float deltaR) ;
 
+// produce track jet info for an event
 trackJetEvent produceTrackJetEvent (vector<jetContainer> & trackJets, 
 				    vector<jetContainer> & RecoJets);
 
+// dump soft muon information
 vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll,
                                        vector<jetContainer> & jetAll,
                                        float isolationCut,
                                        float minLeptonCut,
                                        float minptcut,
                                        float deltaR);
-
-/// method to get the fake weight and the new lepton kinematic
-float getFakeWeight( jetContainer inputJet,
-		     fakeRateContainer & fakeRate,
-		     string leptonFlavour,
-		     vector<jetContainer> & jetCollection);
-
-
-leptonContainer createFakeLepton( jetContainer inputJet,
-				  leptonContainer inputLepton,
-				  fakeMigrationContainer & fakeMigration,
-				  string finalStateString);
-
 
 // method to loop on events
                                                                                                                                             
