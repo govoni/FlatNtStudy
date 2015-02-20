@@ -342,6 +342,7 @@ int main (int argc, char ** argv) {
         makePositiveDefine(HminusNoH_res_lUp);
 
 	HminusNoH_res_lDw = mirrorHistogram("histo_HminusNoH_CMS_res_lDown",HminusNoH,HminusNoH_res_lUp);
+	makePositiveDefine(HminusNoH_res_lDw);
 
 	HminusNoH_scale_jUp = (TH1F*) noHiggs_scale_jUp->Clone("histo_HminusNoH_CMS_scale_jUp");
 	HminusNoH_scale_jUp->Add(Higgs126_scale_jUp,-1);
@@ -356,7 +357,7 @@ int main (int argc, char ** argv) {
         makePositiveDefine(Higgs126_res_jUp);
 
 	HminusNoH_res_jDw = mirrorHistogram("histo_HminusNoH_CMS_res_jDown",HminusNoH,HminusNoH_res_jUp);
-
+	makePositiveDefine(HminusNoH_res_jDw);
       }
       
       // make the total distribution as dataset for combine
@@ -406,7 +407,7 @@ int main (int argc, char ** argv) {
 	if(HminusNoH != 0 and TString(SampleVector.at(iSample).m_sampleName).Contains("noH")){ // for partial unitarization scenario
 	  lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	  lineProcess += "HminusNoH   ";
-          hNominal     =  HminusNoH ;
+          hNominal     =  HminusNoH ; // overlow and underflow already added
 	}
 	else{
 	  
@@ -424,10 +425,17 @@ int main (int argc, char ** argv) {
 	  hNominal->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
         
         /// not for H-noH analysis
-	if(HminusNoH != 0 and TString(SampleVector.at(iSample).m_sampleName).Contains("noH")){
+	if(HminusNoH != 0){
+	  if(TString(SampleVector.at(iSample).m_sampleName).Contains("noH")){
 	    lineProcess2 += Form("%d   ",nSignal);          
 	    nSignal--;
 	    lineRate += Form("%f   ",hNominal->Integral());  
+	  }
+	  else{
+	    lineProcess2 += Form("%d   ",nBackground);
+	    nBackground++;
+	    lineRate += Form("%f   ",hNominal->Integral());  	
+	  }
 	}
 	else {
 	  if(SampleVector.at(iSample).m_isSignal > 0){
@@ -438,7 +446,6 @@ int main (int argc, char ** argv) {
 	    lineProcess2 += Form("%d   ",nBackground);
 	    nBackground++;
 	  }
-
 	  lineRate += Form("%f   ",hNominal->Integral());  	
 	}
       }
@@ -507,28 +514,31 @@ int main (int argc, char ** argv) {
 	  hNominal = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName] ;         
 	  // scale up for lepton scale
 	  hLepScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lUp").c_str());
+	  addOverAndUnderFlow(hLepScaleUp);
+
 	  // scale down for lepton scale
 	  hLepScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lDown").c_str());
+	  addOverAndUnderFlow(hLepScaleDown);
+
 	  // smear by resolution	  
 	  hLepResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lUp").c_str());
-	  // mirroring for down histo
-	  hLepResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lDown",hNominal,hLepResUp);
+	  addOverAndUnderFlow(hLepResUp);
 
+	  // mirroring for down histo
+	  hLepResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_lDown",hNominal,hLepResUp); // no need to add over and under
+	  
 
 	  hJetScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleUp[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jUp").c_str());
+	  addOverAndUnderFlow(hJetScaleUp);
+
 	  hJetScaleDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetScaleDown[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_jDown").c_str());
+	  addOverAndUnderFlow(hJetScaleDown);
+
 	  hJetResUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_jetRes[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jUp").c_str());
+	  addOverAndUnderFlow(hJetResUp);
+
 	  // mirroring for down histo
 	  hJetResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown",hNominal,hJetResUp);
-
-	  // add overflow and underflow         
-	  addOverAndUnderFlow(hLepScaleUp);
-	  addOverAndUnderFlow(hLepScaleDown);
-	  addOverAndUnderFlow(hLepResUp);
-	  addOverAndUnderFlow(hLepResDown);
-	  addOverAndUnderFlow(hJetScaleUp);
-	  addOverAndUnderFlow(hJetScaleDown);
-	  addOverAndUnderFlow(hJetResUp);
 
 	  // write the histograms in the file
 	  hLepScaleUp->Write();
@@ -541,8 +551,8 @@ int main (int argc, char ** argv) {
 	  hJetResDown->Write();
 
 	  // stat shapes taking into account the MC statistics
-	  hStatUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
-	  hStatDown = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
+	  hStatUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
+	  hStatDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
 
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
@@ -551,16 +561,13 @@ int main (int argc, char ** argv) {
 	      hStatDown->SetBinContent(iBin,0);
 	  }
 
-	  addOverAndUnderFlow(hJetResDown);
-	  addOverAndUnderFlow(hStatUp);
-	  addOverAndUnderFlow(hStatDown);
-
 	  hStatUp->Write();
 	  hStatDown->Write();
 	}
 	
 
 	else if (TString(SampleVector.at(iSample).m_sampleName).Contains("noH") and HminusNoH != 0){
+
 	  hStatUp   = (TH1F*) HminusNoH->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeUp");
 	  hStatDown = (TH1F*) HminusNoH->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeDown");
 
@@ -816,7 +823,7 @@ int main (int argc, char ** argv) {
       string jetResShape   = "CMS_res_j    shapeN2";
       string statShape     = "";
 
-      // make systematics lnN lines
+      // Make systematics lnN lines
       string lumiSys        = "CMS_lumi         lnN";
       string fakeLeptonSys  = "CMS_fakeLep      lnN";
       string wrongChargeSys = "CMS_wrongCharge  lnN";
@@ -846,11 +853,18 @@ int main (int argc, char ** argv) {
 	else
 	  hNominal->Write(("histo_"+SampleVector.at(iSample).m_sampleName).c_str());
         
-        /// rate line computation
-	if(HminusNoH != 0 and TString(SampleVector.at(iSample).m_sampleName).Contains(" noH")){
+	/// rate line computation
+	if(HminusNoH != 0){
+	  if(TString(SampleVector.at(iSample).m_sampleName).Contains("noH")){
 	    lineProcess2 += Form("%d   ",nSignal);          
 	    nSignal--;
 	    lineRate += Form("%f   ",hNominal->Integral());  
+	  }
+	  else{
+	    lineProcess2 += Form("%d   ",nBackground);
+	    nBackground++;
+	    lineRate += Form("%f   ",hNominal->Integral());  	
+	  }
 	}
 	else {
 	  if(SampleVector.at(iSample).m_isSignal > 0){
@@ -863,8 +877,7 @@ int main (int argc, char ** argv) {
 	  }
 	  lineRate += Form("%f   ",hNominal->Integral());  	
 	}
-
-
+	
         // make the stat histograms	
 	if((HminusNoH == 0 or (HminusNoH !=0 and !TString(SampleVector.at(iSample).m_sampleName).Contains("noH"))) and SampleVector.at(iSample).m_isSignal >= 0){
 
