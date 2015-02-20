@@ -78,7 +78,8 @@ def submitBatchJobCombine(command, fn, fileNames):
         nametemp = fileNames.replace("COMB","");
         outScript.write('cp '+currentDir+"/"+nametemp+'*UU* ./ \n');
         outScript.write('cp '+currentDir+"/"+nametemp+'*EE* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*DF* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UE* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EU* ./ \n');
 
     outScript.write(command+'\n');
     
@@ -145,7 +146,8 @@ if __name__ == '__main__':
             if options.channel == "COMB" :
                 os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_DF | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UE | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EU | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
                 
@@ -162,12 +164,14 @@ if __name__ == '__main__':
                         lineString = str(line.split(" ")[0]);
                         lineString = lineString.replace("_UU","");
                         lineString = lineString.replace("_EE","");
-                        lineString = lineString.replace("_DF","");                        
+                        lineString = lineString.replace("_EU","");                        
+                        lineString = lineString.replace("_UE","");                        
                     else :
                         temp = line.split(" ")[0];
                         temp = temp.replace("_UU","");
                         temp = temp.replace("_EE","");
-                        temp = temp.replace("_DF","");                        
+                        temp = temp.replace("_EU","");                        
+                        temp = temp.replace("_UE","");                        
                         if not temp == lineString :
                             continue ;
                         combineCommand += " "+line.split(" ")[0];
@@ -176,7 +180,8 @@ if __name__ == '__main__':
                 combinedCard = combineCommand.split(" ")[len(combineCommand.split(" "))-1];
                 combinedCard = combinedCard.replace("_UU","_COMB")
                 combinedCard = combinedCard.replace("_EE","_COMB")
-                combinedCard = combinedCard.replace("_DF","_COMB")
+                combinedCard = combinedCard.replace("_EU","_COMB")
+                combinedCard = combinedCard.replace("_UE","_COMB")
                 combineCommand += " > " +combinedCard;
                 datacardList.append(combinedCard);
                 if not options.noCombineCards :
@@ -215,7 +220,8 @@ if __name__ == '__main__':
             if options.channel == "COMB" :
                 os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_DF | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EU | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UE | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
 
@@ -232,12 +238,14 @@ if __name__ == '__main__':
                         lineString = str(line.split(" ")[0]);
                         lineString = lineString.replace("_UU","");
                         lineString = lineString.replace("_EE","");
-                        lineString = lineString.replace("_DF","");                        
+                        lineString = lineString.replace("_EU","");                        
+                        lineString = lineString.replace("_UE","");                        
                     else :
                         temp = line.split(" ")[0];
                         temp = temp.replace("_UU","");
                         temp = temp.replace("_EE","");
-                        temp = temp.replace("_DF","");                        
+                        temp = temp.replace("_EU","");                        
+                        temp = temp.replace("_UE","");                        
                         if not temp == lineString :
                             continue ;
                         combineCommand += " "+line.split(" ")[0];
@@ -246,7 +254,8 @@ if __name__ == '__main__':
                 combinedCard = combineCommand.split(" ")[len(combineCommand.split(" "))-1];
                 combinedCard = combinedCard.replace("_UU","_COMB")
                 combinedCard = combinedCard.replace("_EE","_COMB")
-                combinedCard = combinedCard.replace("_DF","_COMB")
+                combinedCard = combinedCard.replace("_EU","_COMB")
+                combinedCard = combinedCard.replace("_UE","_COMB")
                 combineCommand += " > "+ combinedCard;
                 datacardList.append(combinedCard);
                 if not options.noCombineCards :
@@ -276,7 +285,9 @@ if __name__ == '__main__':
            continue ;
        if  options.channel == "EE" and card.find("_EE") == -1 :
            continue ;
-       if  options.channel == "DF" and card.find("_DF") == -1 :
+       if  options.channel == "EU" and card.find("_UE") == -1 :
+           continue ;
+       if  options.channel == "UE" and card.find("_EU") == -1 :
            continue ;
        if  options.channel == "COMB" and card.find("_COMB") == -1 :
            continue ;

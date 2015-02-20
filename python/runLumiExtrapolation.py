@@ -70,7 +70,9 @@ def submitBatchJobCombine(command, fn, fileNames):
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
         nametemp = nametemp.replace("UU","EE");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EE","DF");
+        nametemp = nametemp.replace("EE","EU");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("EU","UE");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
 
     outScript.write(command+'\n');
@@ -110,7 +112,8 @@ if __name__ == '__main__':
     ## make the card list
     os.system("ls | grep txt | grep -v COMB | grep _UU.txt | grep "+options.inputVariable+" > list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _EE.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _DF.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EU.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UE.txt | grep "+options.inputVariable+" >> list.txt");
 
     datacardFile = open("list.txt","r");
     datacardList = [];
@@ -213,8 +216,10 @@ if __name__ == '__main__':
     for lumi in luminosity :
         for datacard in createdCards :
             if datacard.find("_%d"%(lumi)) != -1 :
-                if datacard.find("_DF") != -1 :
-                    combinedCards.append(datacard.replace("_DF","_COMB"));
+                if datacard.find("_UE") != -1 :
+                    combinedCards.append(datacard.replace("_UE","_COMB"));
+                if datacard.find("_EU") != -1 :
+                    combinedCards.append(datacard.replace("_EU","_COMB"));
                 if datacard.find("_UU") != -1 :
                     combinedCards.append(datacard.replace("_UU","_COMB"));
                 if datacard.find("_EE") != -1 :
@@ -223,8 +228,8 @@ if __name__ == '__main__':
 
     if not options.noGenerateCards :
         for card in combinedCards :
-            print "combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card;  
-            os.system("combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_DF")+" > "+card);        
+            print "combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_EU")+" "+card.replace("_COMB","_UE")+" > "+card;  
+            os.system("combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_EU")+" "+card.replace("_COMB","_UE")+" > "+card);        
 
     totalCards = createdCards + combinedCards
 
