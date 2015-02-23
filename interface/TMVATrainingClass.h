@@ -22,7 +22,9 @@
 #include "TKey.h"
 
 #include "ReadInputFile.h"
+#include "utils.h"
 #include "readTree.h"
+#include "fakeBackgroundUtils.h"
 
 #if not defined(__CINT__) || defined(__MAKECINT__)
 #include "TMVA/MsgLogger.h"
@@ -46,8 +48,8 @@ class TMVATrainingClass {
   TMVATrainingClass(){};
 
   // constructor from list of files
-  TMVATrainingClass(const vector<TFile*> & signalFileList,  // list of TFile for the signal
-                    const vector<TFile*> & backgroundFileList, // list of TFile for background
+  TMVATrainingClass(const map<sampleContainer,vector<TFile*> > & signalFileList,  // list of TFile for the signal
+                    const map<sampleContainer,vector<TFile*> > & backgroundFileList, // list of TFile for background
                     const string & TreeName,                // string name for signal tree
                     const string & outputFilePath ,         // output path for the TMVA files
 		    const string & outputFileName,          // output file name
@@ -55,8 +57,8 @@ class TMVATrainingClass {
 		    const string & transformation = "");    // transformation to be applied on the input variables
 
   // constructor from list of trees
-  TMVATrainingClass(const vector<TTree*> & signalTreeList,     // signal tree list
-		    const vector<TTree*> & backgroundTreeList, // background tree list
+  TMVATrainingClass(const map<sampleContainer,vector<TTree*> > & signalTreeList,     // signal tree list
+		    const map<sampleContainer,vector<TTree*> > & backgroundTreeList, // background tree list
 		    const string & TreeName,                   // tree name
 		    const string & outputFilePath ,            // output path for storing TMVA files
 		    const string & outputFileName,             // output file name
@@ -64,8 +66,8 @@ class TMVATrainingClass {
 		    const string & transformation = "");       // transformation to be applied on the input variables
 
   // constructor from list of trees
-  TMVATrainingClass(const vector<TChain*> & signalChainList,     // signal tree list
-		    const vector<TChain*> & backgroundChainList, // background tree list
+  TMVATrainingClass(const map<sampleContainer,vector<TChain*> > & signalChainList,     // signal tree list
+		    const map<sampleContainer,vector<TChain*> > & backgroundChainList, // background tree list
 		    const string & TreeName,                   // tree name
 		    const string & outputFilePath ,            // output path for storing TMVA files
 		    const string & outputFileName,             // output file name
@@ -76,12 +78,12 @@ class TMVATrainingClass {
   ~TMVATrainingClass();
 
   // Set global event weight for signal and background
-  void BookMVATrees ( const vector<float> & signalGlobalWeight,        // global cross section weight for each signal file or tree
-                      const vector<float> & backgroundGlobalWeight) ;  // global cross section weight for each background file or tree
+  void BookMVATrees ( const map<sampleContainer,float> & signalGlobalWeight,        // global cross section weight for each signal file or tree
+                      const map<sampleContainer,float> & backgroundGlobalWeight) ;  // global cross section weight for each background file or tree
 
   // Set Training and Spectator Variables
-  void AddTrainingVariables ( const vector<string> & mapTrainingVariables,   // input list of training variables
-                              const vector<string> & mapSpectatorVariables,
+  void AddTrainingVariables ( const vector<string> & trainingVariables,   // input list of training variables
+                              const vector<string> & spectatorVariables,
                               const bool & trainEachVarIndependently = false); // input list of spectator ones	       
 
   // prepare events for training
@@ -90,11 +92,11 @@ class TMVATrainingClass {
                            string weightStringBackground, // re-weighting expression or branch for background events
                            const pair<int,int>  & PileUpBinOfTraining = make_pair(0,500), // pile-up bin of training
 			   const string & finalStateString = "UU",
-                           const int & nTraining    = 0, // number of events used for training
-                           const int & nTesting     = 0, // number of events used for testing
+			   const string & fakeRateFile = "input/FakeRate.root",
+                           const int    & nTraining    = 0, // number of events used for training
+                           const int    & nTesting     = 0, // number of events used for testing
                            const string & splitMode = "Random",  // split mode
                            const string & NormMode  = "NumEvents"); // normalization mode
-
 
 
   // Train rectangular cut methods
@@ -155,7 +157,12 @@ class TMVATrainingClass {
 
 
   // fill vector with variables values after cut given the list name
-  void FillVariablesNtupla(vector<float> & variableValue, const vector<string> & variableList);
+  void FillVariablesNtupla(vector<float> & variableValue, 
+			   const vector<string> & variableList,
+			   std::vector<leptonContainer> &,
+			   std::vector<jetContainer> &,
+			   TLorentzVector &,
+			   readTree*);
 
   // Close the output file
   void CloseTrainingAndTesting (){ 
@@ -164,25 +171,25 @@ class TMVATrainingClass {
   }
 
   // Set Signal Tree giving file
-  void SetSignalTree (const vector<TFile*> & signalFileList,  
+  void SetSignalTree (const map<sampleContainer,vector<TFile*> > & signalFileList,  
                       const string & TreeName = "easyDelphes");
   // Set Signal Tree giving tree
-  void SetSignalTree (const vector<TTree*>  & signalTreeList);
-  void SetSignalTree (const vector<TChain*> & signalChainList);
+  void SetSignalTree (const map<sampleContainer,vector<TTree*> >  & signalTreeList);
+  void SetSignalTree (const map<sampleContainer,vector<TChain*> > & signalChainList);
 
   // Set Background Tree giving file
-  void SetBackgroundTree (const vector<TFile*> & backgroundFileList, 
+  void SetBackgroundTree (const map<sampleContainer,vector<TFile*> > & backgroundFileList, 
                           const string & TreeName = "easyDelphes");
 
   // Set Background Tree giving tree
-  void SetBackgroundTree (const vector<TTree*> & backgroundTreeList);
-  void SetBackgroundTree (const vector<TChain*> & backgroundChainList);
+  void SetBackgroundTree (const map<sampleContainer,vector<TTree*> > & backgroundTreeList);
+  void SetBackgroundTree (const map<sampleContainer,vector<TChain*> > & backgroundChainList);
 
   // Set the training variables name
-  void SetTrainingVariables  (const vector<string > & mapTrainingVariables);
+  void SetTrainingVariables  (const vector<string > & trainingVariables);
 
   // Set the spectator variables name
-  void SetSpectatorVariables (const vector<string > & mapSpectatorVariables);
+  void SetSpectatorVariables (const vector<string > & spectatorVariables);
 
   // Set the output file Name
   void SetOutputFile ( const string & outputFilePath , 
@@ -195,8 +202,8 @@ class TMVATrainingClass {
   void SetLabel ( const string & Label );
 
   // Set Global Event re-weight due to the luminosity
-  void SetGlobalSampleWeight (const vector<float> & signalGlobalWeight, 
-                              const vector<float> & backgroundGlobalWeight) ;
+  void SetGlobalSampleWeight (const map<sampleContainer,float> & signalGlobalWeight, 
+                              const map<sampleContainer,float> & backgroundGlobalWeight) ;
 
   // Set Event re-weight : pile-Up, efficiency, cps, interference, btag .. etc
   void SetEventWeight ( const string & weightStringSignal, 
@@ -206,7 +213,7 @@ class TMVATrainingClass {
   void SetTransformations (const string & transformations = "");
 
   //Set basic event info for cut
-  void SetBasicEventCutInfo ( const bool & usePuppiAsDefault = false,
+  void SetBasicEventCutInfo ( const bool &  usePuppiAsDefault = false,
 			      const float & minPtLeptonCut  = 10,
 			      const float & minPtLeptonCutCleaning = 15,
 			      const float & leptonIsoCut_mu   = 0.6,
@@ -234,23 +241,23 @@ class TMVATrainingClass {
   pair<float,float> npuRange_ ;
 
   // list of trees for signal and background
-  vector<TTree*> signalTreeList_ ;
-  vector<TTree*> backgroundTreeList_ ;
+  map<sampleContainer,vector<TTree*> > signalTreeList_ ;
+  map<sampleContainer,vector<TTree*> > backgroundTreeList_ ;
 
   // list of trees for signal and background after cut
-  vector<TNtuple*> signalTNtuplaForTraining_ ;
-  vector<TNtuple*> backgroundTNtuplaForTraining_ ;
+  map<string,vector<TNtuple*> > signalTNtuplaForTraining_ ;
+  map<string,vector<TNtuple*> > backgroundTNtuplaForTraining_ ;
 
   //cut container
   cutContainer cutEvent_;
   
   // list of input and spectator variables
-  vector<string> mapTrainingVariables_ ;
-  vector<string> mapSpectatorVariables_ ;
+  vector<string> trainingVariables_ ;
+  vector<string> spectatorVariables_ ;
 
   // Global re-weight for luminosity
-  vector<float> signalGlobalWeight_ ;
-  vector<float> backgroundGlobalWeight_ ;
+  map<sampleContainer,float> signalGlobalWeight_ ;
+  map<sampleContainer,float> backgroundGlobalWeight_ ;
    
   // TreeName
   string TreeName_ ;

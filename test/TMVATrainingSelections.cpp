@@ -276,6 +276,7 @@ int main (int argc, char** argv){
       signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
       signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
       signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*5.root").c_str()) ;
     }
 
     TObjArray *fileElements = 0;
@@ -315,7 +316,7 @@ int main (int argc, char** argv){
   vector<float> signalGlobalWeight;
   vector<float> backgroundGlobalWeight;
 
-  
+  /*  
   for(size_t puBin = 0; puBin+1 < pileUpBin.size() ; puBin++){
 
     cout<<"PU Bin of Training: Min = "<<pileUpBin.at(puBin)<<" Max = "<<pileUpBin.at(puBin+1)<<endl;
@@ -457,6 +458,6 @@ int main (int argc, char** argv){
     }
 
   } 
-    
+  */
   return 0 ;
 }
