@@ -179,11 +179,12 @@ int main (int argc, char ** argv) {
 
 
    loopOnEvents(analysisPlots,
+		sampleName,         // sample name
+		0,
 		ReadTree,
 		CutList,
 		variableList1D,     // 1D variables
 		variableList2D,     // 2D variables
-		sampleName,         // sample name
 		usePuppiAsDefault,  // use puppi flag
 		minLeptonCutPt,     // lepton pt cut
 		minLeptonCleaningPt,// cleaning cut

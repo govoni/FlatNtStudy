@@ -31,6 +31,7 @@ leptonContainer createFakeLepton( jetContainer inputJet,
                                   string finalStateString);
 
 void makeFakeLeptonBackground(const string & sampleName,
+			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,
@@ -53,6 +54,7 @@ void makeFakeLeptonBackground(const string & sampleName,
                               );
 
 void makeFakeLeptonBackground(const string & sampleName,
+			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,
@@ -79,6 +81,7 @@ void makeFakeLeptonBackground(const string & sampleName,
 // -------------------
 
 void makeFakeChargeBackground(const string & sampleName,
+			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,
@@ -98,6 +101,7 @@ void makeFakeChargeBackground(const string & sampleName,
                               map <string,TH1F*> & vect);
 
 void makeFakeChargeBackground(const string & sampleName,
+			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,

@@ -104,8 +104,8 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
       
       ++selectedEvents ;
 
-      analysisPlots.fillHisto (sampleName, "total", "leadLepZep", (leptonVectTight.at (0).lepton4V_.Eta () - avEta) / dEta, 1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "traiLepZep", (leptonVectTight.at (1).lepton4V_.Eta () - avEta) / dEta, 1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "leadLepZep", (leptonVectTight.at (0).lepton4V_.Eta () - avEta) / dEta, 1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "traiLepZep", (leptonVectTight.at (1).lepton4V_.Eta () - avEta) / dEta, 1.) ;
       
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,reader) ;
@@ -158,28 +158,28 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
           float iJetZep = (trackJets.at (iJet).jet4V_.Eta () - avEta) / dEta ;
           if (iJetZep < -0.5)     iJetModPhi -= TJ_phiMin ;
           else if (iJetZep > 0.5) iJetModPhi -= TJ_phiMax ;
-          analysisPlots.fill2DHisto (sampleName, "total", "strangeTopo", 
+          analysisPlots.fill2DHisto (sampleName, 0, "total", "strangeTopo", 
                                      iJetZep, iJetModPhi, 1) ;
 
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPt",  trackJets.at (iJet).jet4V_.Pt (), 1.) ;
-          analysisPlots.fillHisto (sampleName, "total", "tkJetEta", trackJets.at (iJet).jet4V_.Eta (), 1.) ;
-          analysisPlots.fillHisto (sampleName, "total", "tkJetZep", iJetZep, 1.) ;
-          analysisPlots.fillHisto (sampleName, "total", "tkJetPhi", trackJets.at (iJet).jet4V_.Phi (), 1.) ;
+          analysisPlots.fillHisto (sampleName, 0, "total", "tkJetPt",  trackJets.at (iJet).jet4V_.Pt (), 1.) ;
+          analysisPlots.fillHisto (sampleName, 0, "total", "tkJetEta", trackJets.at (iJet).jet4V_.Eta (), 1.) ;
+          analysisPlots.fillHisto (sampleName, 0, "total", "tkJetZep", iJetZep, 1.) ;
+          analysisPlots.fillHisto (sampleName, 0, "total", "tkJetPhi", trackJets.at (iJet).jet4V_.Phi (), 1.) ;
 
           ++TKJ_num ;
           TKJ_SumHT += iJetPt ;
           if (fabs (iJetEta) < 2.5) TKJ_SumHT_eta2p5 += iJetPt ;
           if (iJetPt > 3.) 
             {
-              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_ThreeGeV", iJetEta, 1.) ;
-              analysisPlots.fillHisto (sampleName, "total", "tkJetZep_ThreeGeV", iJetZep, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetEta_ThreeGeV", iJetEta, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetZep_ThreeGeV", iJetZep, 1.) ;
               ++TKJ_num_ThreeGeV ;
               TKJ_SumHT_ThreeGeV += iJetPt ;
             }
           if (iJetPt > 4.) 
             {
-              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_FourGeV", iJetEta, 1.) ;
-              analysisPlots.fillHisto (sampleName, "total", "tkJetZep_FourGeV", iJetZep, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetEta_FourGeV", iJetEta, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetZep_FourGeV", iJetZep, 1.) ;
               ++TKJ_num_FourGeV ;
               TKJ_SumHT_FourGeV += iJetPt ;
             }
@@ -190,8 +190,8 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
           if (iJetEta > TJ_etaMin &&
               iJetEta < TJ_etaMax) 
             {
-			  analysisPlots.fillHisto (sampleName, "total", "tkJetPt_IN", iJetPt, 1.) ;
-              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_IN", iJetEta, 1.) ;
+			  analysisPlots.fillHisto (sampleName, 0, "total", "tkJetPt_IN", iJetPt, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetEta_IN", iJetEta, 1.) ;
 			  ++TKJ_num_IN ;
 			  TKJ_SumHT_IN += iJetPt ;
 			  if (iJetPt > 3.) 
@@ -211,8 +211,8 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
 		  else if (iJetEta < TJ_etaMin ||
                    iJetEta > TJ_etaMax) 
             {
-			  analysisPlots.fillHisto (sampleName, "total", "tkJetPt_OUT", iJetPt, 1.) ;
-              analysisPlots.fillHisto (sampleName, "total", "tkJetEta_OUT", iJetEta, 1.) ;
+			  analysisPlots.fillHisto (sampleName, 0, "total", "tkJetPt_OUT", iJetPt, 1.) ;
+              analysisPlots.fillHisto (sampleName, 0, "total", "tkJetEta_OUT", iJetEta, 1.) ;
 			  ++TKJ_num_OUT ;
 			  TKJ_SumHT_OUT += iJetPt ;
 			  if (iJetPt > 3.) 
@@ -228,33 +228,33 @@ float fillHistos (plotter & analysisPlots, readTree & reader, const string sampl
 			} // only the forward regions
        } // loop over track jets
       
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum",                TKJ_num,                1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV",        TKJ_num_FourGeV,        1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV",       TKJ_num_ThreeGeV,       1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_IN",             TKJ_num_IN,             1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV_IN",     TKJ_num_FourGeV_IN,     1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV_IN",    TKJ_num_ThreeGeV_IN,    1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_OUT",            TKJ_num_OUT,            1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_FourGeV_OUT",    TKJ_num_FourGeV_OUT,    1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetNum_ThreeGeV_OUT",   TKJ_num_ThreeGeV_OUT,   1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_eta2p5",       TKJ_SumHT_eta2p5,       1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT",              TKJ_SumHT,              1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV",      TKJ_SumHT_FourGeV,      1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV",     TKJ_SumHT_ThreeGeV,     1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_IN",           TKJ_SumHT_IN,           1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV_IN",   TKJ_SumHT_FourGeV_IN,   1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_IN",  TKJ_SumHT_ThreeGeV_IN,  1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_OUT",          TKJ_SumHT_OUT,          1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_FourGeV_OUT",  TKJ_SumHT_FourGeV_OUT,  1.) ;
-      analysisPlots.fillHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_OUT", TKJ_SumHT_ThreeGeV_OUT, 1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum",                TKJ_num,                1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_FourGeV",        TKJ_num_FourGeV,        1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_ThreeGeV",       TKJ_num_ThreeGeV,       1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_IN",             TKJ_num_IN,             1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_FourGeV_IN",     TKJ_num_FourGeV_IN,     1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_ThreeGeV_IN",    TKJ_num_ThreeGeV_IN,    1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_OUT",            TKJ_num_OUT,            1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_FourGeV_OUT",    TKJ_num_FourGeV_OUT,    1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetNum_ThreeGeV_OUT",   TKJ_num_ThreeGeV_OUT,   1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_eta2p5",       TKJ_SumHT_eta2p5,       1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT",              TKJ_SumHT,              1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_FourGeV",      TKJ_SumHT_FourGeV,      1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_ThreeGeV",     TKJ_SumHT_ThreeGeV,     1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_IN",           TKJ_SumHT_IN,           1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_FourGeV_IN",   TKJ_SumHT_FourGeV_IN,   1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_ThreeGeV_IN",  TKJ_SumHT_ThreeGeV_IN,  1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_OUT",          TKJ_SumHT_OUT,          1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_FourGeV_OUT",  TKJ_SumHT_FourGeV_OUT,  1.) ;
+      analysisPlots.fillHisto (sampleName, 0, "total", "tkJetSumHT_ThreeGeV_OUT", TKJ_SumHT_ThreeGeV_OUT, 1.) ;
 
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetNum_OUTvsIN",          TKJ_num_IN,          TKJ_num_OUT,          1.) ;
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetNum_ThreeGeV_OUTvsIN", TKJ_num_ThreeGeV_IN, TKJ_num_ThreeGeV_OUT, 1.) ;
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetNum_FourGeV_OUTvsIN",  TKJ_num_FourGeV_IN,  TKJ_num_FourGeV_OUT,  1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetNum_OUTvsIN",          TKJ_num_IN,          TKJ_num_OUT,          1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetNum_ThreeGeV_OUTvsIN", TKJ_num_ThreeGeV_IN, TKJ_num_ThreeGeV_OUT, 1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetNum_FourGeV_OUTvsIN",  TKJ_num_FourGeV_IN,  TKJ_num_FourGeV_OUT,  1.) ;
 
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_OUTvsIN",          TKJ_SumHT_IN,          TKJ_SumHT_OUT,          1.) ;
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_ThreeGeV_OUTvsIN", TKJ_SumHT_ThreeGeV_IN, TKJ_SumHT_ThreeGeV_OUT, 1.) ;
-      analysisPlots.fill2DHisto (sampleName, "total", "tkJetSumHT_FourGeV_OUTvsIN",  TKJ_SumHT_FourGeV_IN,  TKJ_SumHT_FourGeV_OUT,  1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetSumHT_OUTvsIN",          TKJ_SumHT_IN,          TKJ_SumHT_OUT,          1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetSumHT_ThreeGeV_OUTvsIN", TKJ_SumHT_ThreeGeV_IN, TKJ_SumHT_ThreeGeV_OUT, 1.) ;
+      analysisPlots.fill2DHisto (sampleName, 0, "total", "tkJetSumHT_FourGeV_OUTvsIN",  TKJ_SumHT_FourGeV_IN,  TKJ_SumHT_FourGeV_OUT,  1.) ;
 
     } // loop over events
   analysisPlots.setPoissonErrors () ;

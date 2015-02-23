@@ -102,69 +102,82 @@ int main (int argc, char ** argv) {
   map<string,TH1F*> histoCutEff ;
 
   for( unordered_map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){
+
+    // for each sample there can be sub samples
+    vector<readTree*> ReadTree;
+    for(vector<sampleContainer>::iterator itSubSample = itSample->second.begin(); itSubSample != itSample->second.end(); itSubSample++){
     
-   TChain* chain = new TChain (treeName.c_str()) ;  
-   int numBefore = 0;
-   // take input files
-   for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
-    numBefore += itSample->second.at(iContainer).numBefore; 
-    chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
-   }
+      TChain* chain = new TChain (treeName.c_str()) ;  
 
-   int totEvent = chain->GetEntries();
+      int numBefore = 0;
+      // take input files
+      numBefore += itSubSample->numBefore; 
+      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*_1.root").c_str()) ;
 
-   readTree* ReadTree  = new readTree((TTree*)(chain));
+      int totEvent = chain->GetEntries();
 
-   cout<<"Sample name : "<<itSample->first<<" Lumi (fb-1) "<<lumi/1000<<" entries before "<<totEvent<<" cross section "<<itSample->second.at(0).xsec<<" Nevents before selections "<<lumi*itSample->second.at(0).xsec<<" weight "<<lumi*itSample->second.at(0).xsec/totEvent<<endl;
+      ReadTree.push_back(new readTree((TTree*)(chain)));
 
-   // add  sample to the analysis plot container
-   if(numBefore > totEvent)
-     analysisPlots.addSample(itSample->first,itSample->second.at(0).xsec,numBefore, itSample->second.at(0).isSignal, itSample->second.at(0).color) ;   // create the sample to analyze
-   else
-     analysisPlots.addSample(itSample->first,itSample->second.at(0).xsec,totEvent, itSample->second.at(0).isSignal, itSample->second.at(0).color) ;   // create the sample to analyze
+      cout<<"Sample name : "<<itSample->first<<" directory files "<<itSubSample->sampleName<<" Lumi (fb-1) "<<lumi/1000<<" entries before "<<totEvent<<" cross section "<<itSubSample->xsec<<" Nevents before selections "<<lumi*itSubSample->xsec<<" weight "<<lumi*itSubSample->xsec/totEvent<<endl;
+
+      // add  sample to the analysis plot container
+      if(numBefore > totEvent)
+	analysisPlots.addSample(itSample->first,itSubSample->xsec, numBefore, itSubSample->isSignal, itSubSample->color) ;   // create the sample to analyze      
+      else
+	analysisPlots.addSample(itSample->first,itSubSample->xsec, totEvent,  itSubSample->isSignal, itSubSample->color) ;   // create the sample to analyze
  
+    }
 
-   // Add cuts to the analysis plot container
-   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
-     analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
-     histoCutEff[itSample->first+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_"+CutList.at(iCut).cutLayerName).c_str(),"",10,0,10);
+    // Add cuts to the analysis plot container
+    for(size_t iCut = 0; iCut < CutList.size(); iCut++){
+      analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
+      for(size_t iSub = 0; iSub < itSample->second.size(); iSub++){
+	histoCutEff[itSample->first+"_pos_"+to_string(iSub)+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_pos_"+to_string(iSub)+"_"+CutList.at(iCut).cutLayerName).c_str(),"",10,0,10);
+      }
 
-     // Add variables to the plot
-     for(size_t iVar = 0; iVar < variableList.size(); iVar++){   
-       analysisPlots.addPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList.at(iVar).variableName,
-                                     variableList.at(iVar).Nbin,variableList.at(iVar).min,variableList.at(iVar).max,variableList.at(iVar).label) ;
-     }
-   }
 
-   
-   string sampleName = itSample->first;
+      // Add variables to the plot
+      for(size_t iVar = 0; iVar < variableList.size(); iVar++){   
+	analysisPlots.addPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList.at(iVar).variableName,
+				      variableList.at(iVar).Nbin,variableList.at(iVar).min,variableList.at(iVar).max,variableList.at(iVar).label) ;
+      }
 
-   loopOnEvents (analysisPlots,
-		 ReadTree,
-		 CutList,
-		 variableList,
-		 sampleName,
-		 usePuppiAsDefault,
-		 minLeptonCutPt,
-		 minLeptonCleaningPt,
-		 leptonIsoCut_mu,
-		 leptonIsoCut_el,
-		 leptonIsoCutLoose,
-		 matchingCone,
-		 minJetCutPt,
-		 histoCutEff,
-		 finalStateString,
-		 "",
-		 fakeRateFile) ; // fill the histogram
-  }
+    }
   
+     
+    string sampleName = itSample->first;
+
+    for(size_t iRead = 0; iRead < ReadTree.size(); iRead++){
+      cout<<"analyzing for sample "<<itSample->first<<" chain number "<<iRead<<endl;
+      loopOnEvents (analysisPlots,  // analysis plot element
+		    sampleName,     // sample name used as reference		    
+		    int(iRead),     // directories in case with the same sample name you want to merge different physics process with different xs
+		    ReadTree.at(iRead), // reader for that tree
+		    CutList,        // list of cuts
+		    variableList,   // list of variables to plot
+		    usePuppiAsDefault, // some options
+		    minLeptonCutPt,
+		    minLeptonCleaningPt,
+		    leptonIsoCut_mu,
+		    leptonIsoCut_el,
+		    leptonIsoCutLoose,
+		    matchingCone,
+		    minJetCutPt,
+		    histoCutEff, // efficiency histogram map vs cut
+		    finalStateString, // final state string
+		    "",
+		    fakeRateFile) ; // fill the histogram      
+    }
     
+  }
+
+  
   // plotting
   // ---- ---- ---- ---- ---- ---- ----
   analysisPlots.setPoissonErrors () ;
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
-    analysisPlots.plotRelativeExcessFullLayer (CutList.at(iCut).cutLayerName, outputPlotDirectory) ;
     analysisPlots.printEventNumber(CutList.at(iCut).cutLayerName,"DeltaPhi_LL");
+    analysisPlots.plotRelativeExcessFullLayer (CutList.at(iCut).cutLayerName, outputPlotDirectory) ;
   }
   
   TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
@@ -175,7 +188,7 @@ int main (int argc, char ** argv) {
   }
 
   outputEfficiency->Close();    
-
+  
   return 0 ;
   
 }  

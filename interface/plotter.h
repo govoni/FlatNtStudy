@@ -36,27 +36,14 @@ using namespace std ;
 // layer is alias for cut ... simple class with a string and a map of TH1
 
 class layer { 
+
  public:
   layer (string name = "dummy") :
   m_layerName (name) {} ;
 
-  vector<TH1F*> getHistos(){
-    vector<TH1F*> vectHisto ;
-    unordered_map<string,TH1F*>::iterator itHisto = m_histos.begin();
-    for( ; itHisto != m_histos.end(); itHisto++){
-      vectHisto.push_back(itHisto->second);
-    }
-    return vectHisto;
-  }
+  vector<TH1F*> getHistos();
 
-  vector<TH2F*> getHistos2D(){
-    vector<TH2F*> vectHisto2D ;
-    unordered_map<string,TH2F*>::iterator itHisto = m_2Dhistos.begin();
-    for( ; itHisto != m_2Dhistos.end(); itHisto++){
-      vectHisto2D.push_back(itHisto->second);
-    }
-    return vectHisto2D;
-  }
+  vector<TH2F*> getHistos2D();
 
   string m_layerName ;
 
@@ -109,15 +96,8 @@ class sample {
       {}
 
 
-  vector<layer> getLayer(){
-    vector<layer> vectLayer ;
-    unordered_map<string, layer>::iterator itLay = m_sampleContent.begin();
-    for( ; itLay != m_sampleContent.end(); itLay++){
-      vectLayer.push_back(itLay->second);
-    }
-    return vectLayer;
-  }
-      
+  vector<layer> getLayer();
+
   string m_sampleName ;
   float m_XS ;
   int   m_totInitialEvents ;
@@ -125,7 +105,9 @@ class sample {
   int   m_color ;
   bool  m_readyForPlotting ;
   float m_weight ;
+
   unordered_map<string, layer> m_sampleContent ; // map of layer name and layer objects
+
   vector<string> m_layersSequence ;
 } ;
 
@@ -134,7 +116,9 @@ class sample {
 
 
 class plotter { // generic plotter class
+
  public:
+
   plotter (float lumi, string folderName = "plots", bool includeSystematics = false) ;
   ~plotter () {} ;
   
@@ -164,9 +148,9 @@ class plotter { // generic plotter class
 
 
   // fill histo
-  void fillHisto     (string sampleName, string layerName, string histoName, 
+  void fillHisto     (string sampleName, int samplePosition, string layerName, string histoName, 
                       float value, float weight, string systematicsName = "") ;
-  void fill2DHisto   (string sampleName, string layerName, string histoName, 
+  void fill2DHisto   (string sampleName, int samplePosition, string layerName, string histoName, 
                       float valueX, float valueY, float weight, string systematicsName = "") ;
 
 
@@ -176,7 +160,7 @@ class plotter { // generic plotter class
   void prepareCanvas (float xmin, float xmax, float ymin, float ymax, 
                       string xaxisTitle, string yaxisTitle, bool hasPull) ;
 
-  TLegend initLegend (int sampleNum) ;
+  TLegend* initLegend (int sampleNum) ;
 
   void setRootAspect () ;
 
@@ -231,10 +215,11 @@ class plotter { // generic plotter class
 
   void resetAll (float lumi) ;
 
+  
   template <class T>
   void DrawPlots (vector<T*> histo, TLegend leg, int sampleNum,
-		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true)
-    {
+		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true){
+
       // FIXME add error bands here
       histo.at (0)->Draw () ;
       if(xaxisTitle == "")
@@ -244,120 +229,127 @@ class plotter { // generic plotter class
       float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
       float ymin = histo.at (0)->GetMinimum () ;
       float ymax = histo.at (0)->GetMaximum () ;
-      for (size_t i = 1 ; i < histo.size () ; ++i)
-        {
+
+      for (size_t i = 1 ; i < histo.size () ; ++i){
           histo.at (i)->Draw () ;
           if (histo.at (i)->GetXaxis ()->GetXmin () < xmin) xmin = histo.at (i)->GetXaxis ()->GetXmin () ;
           if (histo.at (i)->GetXaxis ()->GetXmax () > xmax) xmax = histo.at (i)->GetXaxis ()->GetXmax () ;
           if (histo.at (i)->GetMinimum () < ymin) ymin = histo.at (i)->GetMinimum () ;
           if (histo.at (i)->GetMaximum () > ymax) ymax = histo.at (i)->GetMaximum () ;
-        }
+      }
+
       if (isLog && ymin <= 0) ymin = 0.001 ;
 
       float height = 0.17 ;
       float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
 
-      if (isLog)
-        {
-          float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
-          ymax = pow (10, lymax) ;
-        }
-      else ymax += height * (ymax - ymin) * linesNum ;
+      if (isLog){
+	float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
+	ymax = pow (10, lymax) ;
+      }
+      else 
+	ymax += height * (ymax - ymin) * linesNum ;
+
       if (isLog) m_canvas.SetLogy () ;
 
       prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
       string options = "same histo" ;
     
-    
-      for (size_t i = 0 ; i < histo.size () ; ++i) 
-        {
+      for (size_t i = 0 ; i < histo.size () ; ++i) {
           histo.at (i)->Draw (options.c_str ()) ;
-        }
+      }
+
       leg.Draw () ;
       m_canvas.RedrawAxis () ;
 
       if(plotCanvas){
-       string filename = folderName + histo.at (0)->GetName () ;
-       TString Name (filename.c_str());     
-       cleanFromLateX (Name) ;  
-       if (histo.size () > 1) Name += "_compare" ;
-       if (isLog) Name += "_log" ;
-       Name += ".pdf" ;
-       m_canvas.Print (Name, "pdf") ;
-       Name.ReplaceAll(".pdf",".png");
-       m_canvas.Print (Name, "png") ;
+	string filename = folderName + histo.at (0)->GetName () ;
+	TString Name (filename.c_str());     
+	cleanFromLateX (Name) ;  
+	if (histo.size () > 1) Name += "_compare" ;
+	if (isLog) Name += "_log" ;
+	Name += ".pdf" ;
+	m_canvas.Print (Name, "pdf") ;
+	Name.ReplaceAll(".pdf",".png");
+	m_canvas.Print (Name, "png") ;
       }
       
 
-      if (isLog) m_canvas.SetLogy (0) ;
-
+      if (isLog) 
+	m_canvas.SetLogy (0) ;
+      
       return;
+
     } // DrawPlots
 
   template <class T>
   void Draw2DPlots (vector<T*> histo, TLegend leg, int sampleNum,
-		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true)
-    {
-      if (isLog) m_canvas.SetLogz () ;
-      float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
-      float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
-      float ymin = histo.at (0)->GetYaxis ()->GetXmin () ;
-      float ymax = histo.at (0)->GetYaxis ()->GetXmax () ;
-      if ("" == xaxisTitle) xaxisTitle = histo.at (0)->GetXaxis ()->GetTitle () ;
-      if ("" == yaxisTitle) yaxisTitle = histo.at (0)->GetYaxis ()->GetTitle () ;
+		  string xaxisTitle, string yaxisTitle, int isLog, string folderName, bool plotCanvas = true){
 
-      prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
+    if (isLog) 
+      m_canvas.SetLogz () ;
+    float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
+    float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
+    float ymin = histo.at (0)->GetYaxis ()->GetXmin () ;
+    float ymax = histo.at (0)->GetYaxis ()->GetXmax () ;
+    if ("" == xaxisTitle) xaxisTitle = histo.at (0)->GetXaxis ()->GetTitle () ;
+    if ("" == yaxisTitle) yaxisTitle = histo.at (0)->GetYaxis ()->GetTitle () ;
 
-      string options = "same cont2" ;
-      for (size_t i = 0 ; i < histo.size () ; ++i) 
-        {
-          histo.at (i)->Draw (options.c_str ()) ;
-        }
-      leg.Draw () ;
-      m_canvas.RedrawAxis () ;
+    prepareCanvas (xmin, xmax, ymin, ymax, xaxisTitle, yaxisTitle, 0) ;
+      
+    string options = "same cont2" ;
+    for (size_t i = 0 ; i < histo.size () ; ++i) 
+      histo.at (i)->Draw (options.c_str ()) ;
 
-      if (plotCanvas)
-        {
-          string filename = folderName + histo.at (0)->GetName () ;
-          TString Name (filename.c_str ()) ;       
-          cleanFromLateX (Name) ;  
-          if (histo.size () > 1) Name += "_compare" ;
-          if (isLog) Name += "_log" ;
-          Name += ".pdf" ;
-          m_canvas.Print (Name, "pdf") ;
-          Name.ReplaceAll (".pdf",".png") ;
-          m_canvas.Print (Name, "png") ;
-        }
+    leg.Draw () ;
+    m_canvas.RedrawAxis () ;
+    
+    if (plotCanvas){
+      string filename = folderName + histo.at (0)->GetName () ;
+      TString Name (filename.c_str ()) ;       
+      cleanFromLateX (Name) ;  
+      if (histo.size () > 1) Name += "_compare" ;
+      if (isLog) Name += "_log" ;
+      Name += ".pdf" ;
+      m_canvas.Print (Name, "pdf") ;
+      Name.ReplaceAll (".pdf",".png") ;
+      m_canvas.Print (Name, "png") ;
+    }
 
-      if (isLog) m_canvas.SetLogz (0) ;
+    if (isLog) 
+      m_canvas.SetLogz (0) ;
 
       return;
-    } // Draw2DPlots
-
+  } // Draw2DPlots
+  
 
   // get the sample map
   vector<sample> getSamples(){
     vector<sample> sampleList ;
-    unordered_map<string, sample>::iterator itSample = m_samples.begin();
-    for( ; itSample != m_samples.end(); itSample++)
-      sampleList.push_back(itSample->second);
-    return sampleList;;
+    unordered_map<string, vector<sample> >::iterator itSample = m_samples.begin();
+    for( ; itSample != m_samples.end(); itSample++){
+      vector<sample>::iterator itSubSample = itSample->second.begin();
+      for( ; itSubSample != itSample->second.end(); itSubSample++)
+	sampleList.push_back((*itSubSample));
+    }
+    return sampleList;
   }
-
-
+  
   bool getSystematics(){
     return m_includeSystematics;
   }
 
+ 
+
  private:
 
- string m_folderName ; 
- float m_lumi ;
- bool m_includeSystematics ;
+ string  m_folderName ; 
+ float   m_lumi ;
+ bool    m_includeSystematics ;
  TCanvas m_canvas ;
 
- unordered_map<string, sample> m_samples ; //map of sample names and sample object
- unordered_map<string, string> m_titles ;
+ unordered_map<string, vector<sample> > m_samples ; //map of sample names and sample object
+ unordered_map<string, vector<string> > m_titles ;
  vector<string> m_samplesSequence ;
 } ;
 

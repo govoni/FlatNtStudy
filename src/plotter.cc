@@ -2,10 +2,46 @@
 
 using namespace std ;
 
+// layer class  --------------------
+
+vector<TH1F*> layer::getHistos(){
+
+  vector<TH1F*> vectHisto ;
+  unordered_map<string,TH1F*>::iterator itHisto = m_histos.begin();
+  for( ; itHisto != m_histos.end(); itHisto++){
+    vectHisto.push_back(itHisto->second);
+  }
+  return vectHisto;
+ 
+}
+
+vector<TH2F*> layer::getHistos2D(){
+
+  vector<TH2F*> vectHisto2D ;
+  unordered_map<string,TH2F*>::iterator itHisto = m_2Dhistos.begin();
+  for( ; itHisto != m_2Dhistos.end(); itHisto++){
+    vectHisto2D.push_back(itHisto->second);
+
+  }
+  return vectHisto2D;
+}
+
+// sample class  ---------------
+
+vector<layer> sample::getLayer(){
+  vector<layer> vectLayer ;
+  unordered_map<string, layer>::iterator itLay = m_sampleContent.begin();
+  for( ; itLay != m_sampleContent.end(); itLay++){
+    vectLayer.push_back(itLay->second);
+  }
+  return vectLayer;
+}
+
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-plotter::plotter (float lumi, 
+plotter::plotter (float  lumi, 
 		  string folderName,
-		  bool includeSystematics) :
+		  bool   includeSystematics) :
   m_folderName (folderName) ,
   m_lumi (lumi) ,
   m_includeSystematics(includeSystematics),
@@ -18,18 +54,22 @@ plotter::plotter (float lumi,
 // add an empty structure to collect all the plots relative to a sample
 void plotter::addSample (string sampleName, float XS, int totInitialEvents, int isSignal, int color){
 
-  m_samples[sampleName] = sample (sampleName, XS, m_lumi, totInitialEvents, isSignal, color) ;
-  m_samplesSequence.push_back (sampleName) ;
+  m_samples[sampleName].push_back(sample(sampleName, XS, m_lumi, totInitialEvents, isSignal, color));
+  if( find(m_samplesSequence.begin(),m_samplesSequence.end(),sampleName) == m_samplesSequence.end())
+    m_samplesSequence.push_back (sampleName) ;
 }
 
 
 // add a layer of plots (corresponding to a given cut) to a sample
-void plotter::addLayerToSample (string sampleName, string layerName)
-{
-  m_samples[sampleName].m_sampleContent[layerName] = layer (layerName) ;
-  m_samples[sampleName].m_layersSequence.push_back (layerName) ;
-}
+void plotter::addLayerToSample (string sampleName, string layerName){
 
+  vector<sample>::iterator itSample = m_samples[sampleName].begin();
+  for( ; itSample != m_samples[sampleName].end(); itSample++){
+    itSample->m_sampleContent[layerName] = layer (layerName) ;
+    itSample->m_layersSequence.push_back (layerName) ;
+  }
+
+}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -39,28 +79,34 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
 			      string layerName,   // name of the layer
                               string plotName,    // name of the plot
 			      int nBins, float xMin, float xMax, string labelName, // histo definition
-			      bool sumW2)
-{
-  if (labelName == "") labelName = plotName ;
-  string h_name = sampleName + "_" + layerName + "_" + plotName ;  
-  TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
-  dummy->GetXaxis()->SetTitle(labelName.c_str()); 
+			      bool sumW2){
 
-  if(sumW2)
-    dummy->Sumw2 () ;
+  if (labelName == "") 
+    labelName = plotName ;
 
-  m_samples[sampleName].m_sampleContent[layerName].m_histos[plotName] = dummy ;
+  vector<sample>::iterator itSample = m_samples[sampleName].begin();
+  int iSample = 0;
+  for( ; itSample != m_samples[sampleName].end(); itSample++){
+    string h_name = sampleName + "_" + layerName + "_" + plotName + "_" + to_string(iSample) ;  
+    iSample++;
+    TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
+    dummy->GetXaxis()->SetTitle(labelName.c_str()); 
+    if(sumW2)
+      dummy->Sumw2 () ;
 
-  if(m_includeSystematics){
+    itSample->m_sampleContent[layerName].m_histos[plotName] = dummy ;
 
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
+    if(m_includeSystematics){
 
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_lepScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_lepScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
 
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepRes[plotName] = (TH1F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetRes[plotName] = (TH1F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_jetScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_jetScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
+
+      itSample->m_sampleContent[layerName].m_histos_lepRes[plotName] = (TH1F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_jetRes[plotName] = (TH1F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
+    }
   }
 }
 
@@ -78,36 +124,43 @@ void plotter::add2DPlotToLayer (string sampleName,
 				string labelNameX, string labelNameY,
                                 bool sumW2){
 
+
+  
+
   if (labelNameX == "") labelNameX = plotName + "_x" ;
   if (labelNameY == "") labelNameY = plotName + "_y" ;
-  string h_name = sampleName + "_" + layerName + "_" + plotName ;
-  TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
+
+  vector<sample>::iterator itSample = m_samples[sampleName].begin();
+  int iSample = 0;
+
+  for( ; itSample != m_samples[sampleName].end(); itSample++){
+    string h_name = sampleName + "_" + layerName + "_" + plotName + "_" + to_string(iSample);
+    iSample++;
+    TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
                            nBinsX, xMinX, xMaxX,
                            nBinsY, xMinY, xMaxY) ;
-  dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
-  dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
+    dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
+    dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
 
-  if(sumW2)
-    dummy->Sumw2 () ;
+    if(sumW2)
+      dummy->Sumw2 () ;
+    
+    itSample->m_sampleContent[layerName].m_2Dhistos[plotName] = dummy ;
 
-  m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[plotName] = dummy ;
+    if(m_includeSystematics){
 
-  if(m_includeSystematics){
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
 
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
 
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
-
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepRes[plotName] = (TH2F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetRes[plotName] = (TH2F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
-
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepRes[plotName] = (TH2F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetRes[plotName] = (TH2F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
+      
+    }
   }
-
 }
-
-
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
@@ -118,359 +171,376 @@ void plotter::copyLayerInSample (string sampleName, string target, string origin
   addLayerToSample (sampleName, target) ; // add a layer to the new target sample
 
   // loop over histos in the layer "origin" of sample "sampleName"
-  for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos.begin () ;
-       iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos.end () ;
-       ++iHisto){
+  int iSample = 0;
+
+  for(vector<sample>::iterator itSample = m_samples[sampleName].begin(); itSample != m_samples[sampleName].end(); itSample++){    
+
+    for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos.begin () ;
+	 itHisto != itSample->m_sampleContent[origin].m_histos.end () ;
+	 ++itHisto){
     
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-  }   
-
-  for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos.begin () ;
-       iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos.end () ;
-       ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-  }
-
-
-  // if systematics are included
-
-  if(m_includeSystematics){
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_lepScaleUp.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_lepScaleUp.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
+      string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+      itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+      itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+      itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
     }   
+
+    for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos.begin () ;
+	 itHisto != itSample->m_sampleContent[origin].m_2Dhistos.end () ;
+	 ++itHisto){
     
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepScaleUp.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepScaleUp.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
+      string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+      itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+      itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+      itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
     }
 
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_lepScaleDown.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_lepScaleDown.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
 
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepScaleDown.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepScaleDown.end () ;
-	 ++iHisto){
+    // if systematics are included
+
+    if(m_includeSystematics){
+
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_lepScaleUp.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_lepScaleUp.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
+    
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_lepScaleUp.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_lepScaleUp.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
+
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_lepScaleDown.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_lepScaleDown.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
+
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_lepScaleDown.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_lepScaleDown.end () ;
+	   ++itHisto){
       
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
   
   
-    // loop over histos in the layer "origin" of sample "sampleName"
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_jetScaleUp.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_jetScaleUp.end () ;
-	 ++iHisto){
+      // loop over histos in the layer "origin" of sample "sampleName"
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_jetScaleUp.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_jetScaleUp.end () ;
+	   ++itHisto){
       
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
     
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetScaleUp.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetScaleUp.end () ;
-	 ++iHisto){
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_jetScaleUp.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_jetScaleUp.end () ;
+	   ++itHisto){
+	
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
+
+      // loop over histos in the layer "origin" of sample "sampleName"
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_jetScaleDown.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_jetScaleDown.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
+
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_jetScaleDown.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_jetScaleDown.end () ;
+	   ++itHisto){
       
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
+
+      // resolution
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_lepRes.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_lepRes.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
+    
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_lepRes.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_lepRes.end () ;
+	   ++itHisto){
+    
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
+      
+      for (unordered_map<string, TH1F *>::iterator itHisto = itSample->m_sampleContent[origin].m_histos_jetRes.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_histos_jetRes.end () ;
+	   ++itHisto){
+      
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first] = (TH1F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_histos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }   
+    
+      for (unordered_map<string, TH2F *>::iterator itHisto = itSample->m_sampleContent[origin].m_2Dhistos_jetRes.begin () ;
+	   itHisto != itSample->m_sampleContent[origin].m_2Dhistos_jetRes.end () ;
+	   ++itHisto){
+      
+	string h_name = sampleName + "_" + target + "_" + itHisto->first + "_" + to_string(iSample) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first] = (TH2F *) itHisto->second->Clone (h_name.c_str ()) ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->Reset () ;
+	itSample->m_sampleContent[target].m_2Dhistos[itHisto->first]->SetTitle (h_name.c_str ()) ;
+      }
     }
-
-    // loop over histos in the layer "origin" of sample "sampleName"
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_jetScaleDown.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_jetScaleDown.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
-
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetScaleDown.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetScaleDown.end () ;
-	 ++iHisto){
-      
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }
-
-    // resolution
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_lepRes.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_lepRes.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
-    
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepRes.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_lepRes.end () ;
-	 ++iHisto){
-    
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_histos_jetRes.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_histos_jetRes.end () ;
-	 ++iHisto){
-      
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_histos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }   
-    
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetRes.begin () ;
-	 iHisto != m_samples[sampleName].m_sampleContent[origin].m_2Dhistos_jetRes.end () ;
-	 ++iHisto){
-      
-      string h_name = sampleName + "_" + target + "_" + iHisto->first ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->Reset () ;
-      m_samples[sampleName].m_sampleContent[target].m_2Dhistos[iHisto->first]->SetTitle (h_name.c_str ()) ;
-    }
+    iSample ++;
   }
-
   return ;
 }
 
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-
 // duplicate a sample structure
 void plotter::copySampleStructure (string target, string origin, float newXS, int newTotInitialEvents, int isSignal, int newColor){
 
   addSample (target, newXS, newTotInitialEvents, isSignal, newColor) ; // add a new sample
 
-  if (m_samples[origin].m_sampleContent.size () == 0) return ;
+  vector<sample>::iterator itSampleOrig   = m_samples[origin].begin();
+  vector<sample>::iterator itSampleTarget = m_samples[target].begin();
 
-  string firstLayer = m_samples[origin].m_layersSequence.at (0) ;
+  string firstLayer = itSampleOrig->m_layersSequence.at (0) ;
   addLayerToSample (target, firstLayer) ; // add the first layer
-  
-  for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos.end () ;
-       ++iHisto){
+ 
+  for( ; itSampleOrig != m_samples[origin].end() and itSampleTarget != m_samples[target].end();
+       itSampleOrig++ , itSampleTarget++){
+
+    if (itSampleOrig->m_sampleContent.size () == 0) return ;
+
+    for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos.begin () ;
+	 iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos.end () ;
+	 ++iHisto){
     
       string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+      itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+    }
+  
+    for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos.begin () ;
+	 iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos.end () ;
+	 ++iHisto){
+    
+      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+      itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+      itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+    }
+
+    if(m_includeSystematics){
+
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_lepScaleUp.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_lepScaleUp.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepScaleUp.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepScaleUp.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+      
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_lepScaleDown.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_lepScaleDown.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepScaleDown.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepScaleDown.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+
+      //////
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_jetScaleUp.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_jetScaleUp.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetScaleUp.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetScaleUp.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_jetScaleDown.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_jetScaleDown.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetScaleDown.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetScaleDown.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+
+      ///
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_lepRes.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_lepRes.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepRes.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_lepRes.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_histos_jetRes.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_histos_jetRes.end () ;
+	   ++iHisto){
+      
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
+      }
+  
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetRes.begin () ;
+	   iHisto != itSampleOrig->m_sampleContent[firstLayer].m_2Dhistos_jetRes.end () ;
+	   ++iHisto){
+    
+	string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
+	itSampleTarget->m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+      }
+    }
+
   }
   
-  for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
+  for (unsigned int iLayer = 1 ; iLayer < itSampleOrig->m_layersSequence.size () ; ++iLayer){
+    copyLayerInSample (target, itSampleOrig->m_layersSequence.at (iLayer), firstLayer) ;
   }
 
-  if(m_includeSystematics){
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_lepScaleUp.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_lepScaleUp.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepScaleUp.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepScaleUp.end () ;
-       ++iHisto){
+  return ;
     
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_lepScaleDown.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_lepScaleDown.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepScaleDown.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepScaleDown.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-
-    //////
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_jetScaleUp.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_jetScaleUp.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetScaleUp.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetScaleUp.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_jetScaleDown.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_jetScaleDown.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetScaleDown.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetScaleDown.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-
-    ///
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_lepRes.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_lepRes.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepRes.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_lepRes.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-
-    for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_histos_jetRes.begin () ;
-	 iHisto != m_samples[origin].m_sampleContent[firstLayer].m_histos_jetRes.end () ;
-	 ++iHisto){
-      
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first] = (TH1F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_histos[iHisto->first]->Reset () ;
-    }
-  
-    for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetRes.begin () ;
-       iHisto != m_samples[origin].m_sampleContent[firstLayer].m_2Dhistos_jetRes.end () ;
-       ++iHisto){
-    
-      string h_name = target + "_" + firstLayer + "_" + iHisto->first ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first] = (TH2F *) iHisto->second->Clone (h_name.c_str ()) ;
-      m_samples[target].m_sampleContent[firstLayer].m_2Dhistos[iHisto->first]->Reset () ;
-    }
-  }
-  
-  for (unsigned int iLayer = 1 ; iLayer < m_samples[origin].m_layersSequence.size () ; ++iLayer){
-      copyLayerInSample (target, m_samples[origin].m_layersSequence.at (iLayer), firstLayer) ;
-  }
-
-  return ;    
 }
-
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::printStructure ()
-{
-  // loop over samples
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
-       iSample != m_samples.end () ;
-       ++iSample){
-    
-    cout << iSample->first << "\t" 
-	 << iSample->second.m_sampleName << "\t"
-	 << iSample->second.m_XS << "\t"
-	 << iSample->second.m_totInitialEvents << "\t"
-	 << iSample->second.m_isSignal << "\t"
-	 << iSample->second.m_color << "\n" ;
+void plotter::printStructure () {
 
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+  // loop over samples
+  for (unordered_map<string, vector<sample> >::iterator itSample = m_samples.begin () ;
+       itSample != m_samples.end () ;
+       ++itSample){
+
+    cout << itSample->first << "\t" ;
+	
+    for( vector<sample>::iterator itSubSample = itSample->second.begin();
+	 itSubSample != itSample->second.end();
+	 itSubSample++){
+
+      cout << itSubSample->m_sampleName << "\t"
+	   << itSubSample->m_XS << "\t"
+	   << itSubSample->m_totInitialEvents << "\t"
+	   << itSubSample->m_isSignal << "\t"
+	   << itSubSample->m_color << "\n" ;
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
         
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
       
-      cout << " + " << name << "\t" 
-	   << iSample->second.m_sampleContent[name].m_layerName << "\n" ;
+	cout << " + " << name << "\t" 
+	     << itSubSample->m_sampleContent[name].m_layerName << "\n" ;
       // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
              
-	cout << "    + " << iHisto->first << "\t"
-	     << iHisto->second->GetName () << "\t"
-	     << iHisto->second->Integral () << "\t"
-	     << iHisto->second->GetNbinsX () << "\n" ;
-      } // loop over histos	  
+	  cout << "    + " << iHisto->first << "\t"
+	       << iHisto->second->GetName () << "\t"
+	       << iHisto->second->Integral () << "\t"
+	       << iHisto->second->GetNbinsX () << "\n" ;
+	} // loop over histos	  
        
-      // loop over 2D histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
+	// loop over 2D histos
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto){
              
-	cout << "    + " << iHisto->first << "\t"
-	     << iHisto->second->GetName () << "\t"
-	     << iHisto->second->Integral () << "\n" ;
-      } // loop over histos	  
-    } // loop over layers
-  } // loop over samples
+	  cout << "    + " << iHisto->first << "\t"
+	       << iHisto->second->GetName () << "\t"
+	       << iHisto->second->Integral () << "\n" ;
+	} // loop over histos	  
+      } // loop over layers
+    } // loop over sub samples
+  } // loop over sample
 }
 
 void plotter::printEventNumber(string layerName, string histoName){
@@ -479,33 +549,48 @@ void plotter::printEventNumber(string layerName, string histoName){
   cout<<"<<<<<<<<<<<<<<<<<<<<<<<<<<<"<<endl;
   cout<<"Event number for : Layer Name "<<layerName<<" Histo Name "<<histoName<<endl;
 
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
-       iSample != m_samples.end () ;
-       ++iSample){
+  for (unordered_map<string, vector<sample> >::iterator itSample = m_samples.begin () ;
+       itSample != m_samples.end () ;
+       ++itSample){
    
-    cout << iSample->first << "\t" ;
-
+    cout << itSample->first << "\t" ;    
+         
     // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+    for (unsigned int iLayer = 0 ; iLayer < itSample->second.at(0).m_layersSequence.size () ; ++iLayer){
       
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
+      string name = itSample->second.at(0).m_layersSequence.at (iLayer) ;
       if(name != layerName) continue ;
 
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
-   
-	if(histoName != iHisto->first) continue ;
-	cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1) << "\n";
-      }
+      float integralVal1D = 0.;
+      float integralVal2D = 0.;
 
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
-   
-	if(histoName != iHisto->first) continue ;
-	cout << setprecision(5) <<" events : integral "<< iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1,0,iHisto->second->GetNbinsY()+1) << "\n";
+      for(vector<sample>::iterator itSubSample = itSample->second.begin();
+	  itSubSample != itSample->second.end();
+	  itSubSample++){
+
+
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
+	  
+	  if(histoName != iHisto->first) continue ;
+	  integralVal1D += iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1);
+	}
+
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto){
+	  
+	  if(histoName != iHisto->first) continue ;
+	  integralVal2D += iHisto->second->Integral (0,iHisto->second->GetNbinsX()+1,0,iHisto->second->GetNbinsY()+1);
+	}
       }
+      
+      if(integralVal1D!=0.)
+	cout << setprecision(5) <<" events : integral "<< integralVal1D << "\n";
+      if(integralVal2D!=0.)
+	cout << setprecision(5) <<" events : integral "<< integralVal2D << "\n";
+
     }
   }
 }
@@ -514,54 +599,57 @@ void plotter::printEventNumber(string layerName, string histoName){
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::fillHisto (string sampleName, string layerName, string histoName, 
+void plotter::fillHisto (string sampleName,int samplePosition, string layerName, string histoName, 
                          float value, float weight, string systematicName) {
 
   //PG NB assuming the histo is existing, not to slow down with cross-checks!
   if(systematicName !="" and not m_includeSystematics) return ;
 
   if(systematicName =="" or systematicName == "nominal" or systematicName == "central")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepScaleUp")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepScaleUp[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_lepScaleUp[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepScaleDown")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepScaleDown[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_lepScaleDown[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetScaleUp")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetScaleUp[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_jetScaleUp[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetScaleDown")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetScaleDown[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_jetScaleDown[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepRes")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_lepRes[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_lepRes[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetRes")
-    m_samples[sampleName].m_sampleContent[layerName].m_histos_jetRes[histoName]->Fill (value, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_histos_jetRes[histoName]->Fill (value, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
+
 
   return ;
+
 }
-
-
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::fill2DHisto (string sampleName, string layerName, string histoName, 
+void plotter::fill2DHisto (string sampleName, int samplePosition, string layerName, string histoName, 
                            float valueX,float valueY, float weight, string systematicName) {
 
   if(systematicName !="" and not m_includeSystematics) return ;
 
+
+    
   if(systematicName =="" or systematicName == "nominal" or systematicName == "central")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepScaleUp")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepScaleUp[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_lepScaleUp[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepScaleDown")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepScaleDown[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_lepScaleDown[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetScaleUp")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetScaleUp[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_jetScaleUp[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetScaleDown")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetScaleDown[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_jetScaleDown[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "lepRes")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_lepRes[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_lepRes[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
   else if(systematicName == "jetRes")
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos_jetRes[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].m_weight) ;
+    m_samples[sampleName].at(samplePosition).m_sampleContent[layerName].m_2Dhistos_jetRes[histoName]->Fill (valueX, valueY, weight * m_samples[sampleName].at(samplePosition).m_weight) ;
+
 
   return ;
 }
@@ -569,51 +657,56 @@ void plotter::fill2DHisto (string sampleName, string layerName, string histoName
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
-
 void plotter::prepareSampleForPlotting (string sampleName){
 
-  if (m_samples[sampleName].m_readyForPlotting) return ;
+  for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+      itSample != m_samples[sampleName].end();
+      itSample++){
+    
+    if (itSample->m_readyForPlotting) return ;
+    
+    // loop over layers
+    for (unsigned int iLayer = 0 ; iLayer < itSample->m_layersSequence.size () ; ++iLayer) {
 
-  // loop over layers
-  for (unsigned int iLayer = 0 ; iLayer < m_samples[sampleName].m_layersSequence.size () ; ++iLayer) {
-
-      string name = m_samples[sampleName].m_layersSequence.at (iLayer) ;
+      string name = itSample->m_layersSequence.at (iLayer) ;
 
       // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[name].m_histos.begin () ;
-           iHisto != m_samples[sampleName].m_sampleContent[name].m_histos.end () ;
+      for (unordered_map<string, TH1F *>::iterator iHisto = itSample->m_sampleContent[name].m_histos.begin () ;
+           iHisto != itSample->m_sampleContent[name].m_histos.end () ;
            ++iHisto){
 
 	addOverFlow (iHisto->second) ; 
-	if (m_samples[sampleName].m_isSignal == 1){
+	if (itSample->m_isSignal == 1){
 	  iHisto->second->SetFillColor (0) ;
-	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetLineColor (itSample->m_color) ;
 	  iHisto->second->SetLineWidth (2) ;
 	}
 	else{  
-	  iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
-	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetFillColor (itSample->m_color) ;
+	  iHisto->second->SetLineColor (itSample->m_color) ;
 	}
       } // loop over histos
-
+      
       // loop over 2D histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = m_samples[sampleName].m_sampleContent[name].m_2Dhistos.begin () ;
-           iHisto != m_samples[sampleName].m_sampleContent[name].m_2Dhistos.end () ;
+      for (unordered_map<string, TH2F *>::iterator iHisto = itSample->m_sampleContent[name].m_2Dhistos.begin () ;
+           iHisto != itSample->m_sampleContent[name].m_2Dhistos.end () ;
            ++iHisto){
 
-	if (m_samples[sampleName].m_isSignal == 1 ){
+	if (itSample->m_isSignal == 1 ){
 	  //              iHisto->second->SetFillColor (0) ;
-	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  iHisto->second->SetLineColor (itSample->m_color) ;
 	  //              iHisto->second->SetLineWidth (2) ;
 	}
 	else{  
-	  //              iHisto->second->SetFillColor (m_samples[sampleName].m_color) ;
-	  iHisto->second->SetLineColor (m_samples[sampleName].m_color) ;
+	  //              iHisto->second->SetFillColor (itSample->m_color) ;
+	  iHisto->second->SetLineColor (itSample->m_color) ;
 	}
       } // loop over 2D histos      
     } // loop over layers
 
-  m_samples[sampleName].m_readyForPlotting = true ;
+    itSample->m_readyForPlotting = true ;
+  }// loop over sub samples
+
 
 }
 
@@ -676,90 +769,133 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
 
   prepareSampleForPlotting (sampleName) ; // prepare histo object
 
-  std::unordered_map<string, TH1F *>::const_iterator got1D =
-    m_samples[sampleName].m_sampleContent[layerName].m_histos.find (histoName) ; // take an iterator on 1D histo for that sample and that layer
+  int iSample = 0;
 
-  // 1D histo found, plotting
-  if ( got1D != m_samples[sampleName].m_sampleContent[layerName].m_histos.end ()){
+  vector<TH1F*> histoToPlot   ;
+  vector<TH2F*> histoToPlot2D ;
+  TLegend* leg = 0 ;
+  TLegend* leg2D = 0 ;
 
-    TH1F * h_var = got1D->second ;
-    m_canvas.cd () ;
+  for( vector<sample>::iterator itSample = m_samples[sampleName].begin();
+       itSample != m_samples[sampleName].end();
+       itSample++){
 
-    TLegend leg = initLegend (1) ; // crate the legend
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var,name.Data(), "fl") ;
+    unordered_map<string, TH1F *>::const_iterator got1D =
+      itSample->m_sampleContent[layerName].m_histos.find (histoName) ; // take an iterator on 1D histo for that sample and that layer
 
-    DrawPlots (vector<TH1F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ; // draw the histo
+    // 1D histo found, plotting
+    if ( got1D != itSample->m_sampleContent[layerName].m_histos.end ()){
+      
+      TH1F * h_var = got1D->second ;
+      m_canvas.cd () ;
+
+      if(iSample == 0){
+	leg = initLegend (1) ; // crate the legend
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var,name.Data(), "fl") ;
+      }
+
+      histoToPlot.push_back(h_var);
+    }
+
+    unordered_map<string, TH2F *>::const_iterator got2D =
+      itSample->m_sampleContent[layerName].m_2Dhistos.find (histoName) ;
+
+    // 1D histo found, plotting
+    if ( got2D != itSample->m_sampleContent[layerName].m_2Dhistos.end ()){
+
+      TH2F * h_var = got2D->second ;
+      m_canvas.cd () ;
+
+      if(iSample == 0){
+	leg2D = initLegend (1) ;
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg2D->AddEntry (h_var, name.Data(), "fl") ;
+      }
+      
+      histoToPlot2D.push_back(h_var);
+    }
+    iSample++ ;
   }
 
-  std::unordered_map<string, TH2F *>::const_iterator got2D =
-    m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos.find (histoName) ;
 
-  // 1D histo found, plotting
-  if ( got2D != m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos.end ()){
-
-    TH2F * h_var = got2D->second ;
-    m_canvas.cd () ;
-
-    TLegend leg = initLegend (1) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
-
-    Draw2DPlots (vector<TH2F *> (1, h_var), leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
-  }
+  DrawPlots (histoToPlot, *leg, 1, xaxisTitle, yaxisTitle, isLog, folderName) ; // draw the histo
+  Draw2DPlots (histoToPlot2D, *leg2D, 1, xaxisTitle, yaxisTitle, isLog, folderName) ;
 
   return ;
 }
 
 
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-
 // plot a single histogram in a layer
 void plotter::plotSingleLayer (string layerName, string histoName, 
                                string xaxisTitle, string yaxisTitle, int isLog, string folderName){ // plot all the samples in a stack for a layer
 
   string name = string ("st_") + layerName + "_" + histoName ;
+
   THStack * stack = new THStack (name.c_str (), "") ;
+
   int nsamples = m_samplesSequence.size () ;
 
-  TLegend leg = initLegend (nsamples) ;
+  TLegend* leg = initLegend (nsamples) ;
 
   // add bkg to the stack
   for (int iSample = 0 ; iSample < nsamples ; ++iSample){
 
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == 1) continue ;
-    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-    stack->Add (h_var) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
-  }
+    int iSub = 0;
+    for( vector<sample>::iterator itSample = m_samples[sampleName].begin();
+	 itSample != m_samples[sampleName].end();
+	 itSample++){
+      
+      if (itSample->m_isSignal == 1) continue ;
+      TH1F * h_var = itSample->m_sampleContent[layerName].m_histos[histoName] ;
+      stack->Add (h_var) ;
+      if(iSub == 0){
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var, name.Data(), "fl") ;
+      }
+      iSub++;
+    }
+  }  
   
   // add signal to the stack
   for (int iSample = 0 ; iSample < nsamples ; ++iSample){
 
     string sampleName = m_samplesSequence.at (iSample) ;
-    if (m_samples[sampleName].m_isSignal != 1) continue ;
-    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-    stack->Add (h_var) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
+
+    int iSub = 0;
+
+    for( vector<sample>::iterator itSample = m_samples[sampleName].begin();
+	 itSample != m_samples[sampleName].end();
+	 itSample++){
+      
+
+      if (itSample->m_isSignal != 1) continue ;
+      TH1F * h_var = itSample->m_sampleContent[layerName].m_histos[histoName] ;
+      stack->Add (h_var) ;
+      if(iSub == 0){
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var, name.Data(), "fl") ;
+      }
+      iSub++;
+    }	
   }
 
-  DrawPlots (vector<THStack *> (1, stack), leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  DrawPlots (vector<THStack *> (1, stack), *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
   
   return ;
 }
 
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 // plot all the histograms of a layer
 void plotter::plotFullLayer (string layerName) { // plot all the layers
@@ -770,8 +906,8 @@ void plotter::plotFullLayer (string layerName) { // plot all the layers
   
   // loop over variables and call plot single layer
   for (unordered_map<string, TH1F *>::iterator iHisto = 
-         m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
-       iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
+         m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.begin () ;
+       iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto){
 
     if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
@@ -802,23 +938,33 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
   // FIXME isNormalized needs to be implemented
   // FIXME ScaleSignal needs to be implemented
   string name = string ("comp_bkg_") + layerName + "_" + histoName ;
+
   THStack * bkg_stack = new THStack (name.c_str (), "") ;
+
   int nsamples = m_samplesSequence.size () ;
 
-  TLegend leg = initLegend (nsamples) ;
+  TLegend* leg = initLegend (nsamples) ;
 
   // add bkg to the stack
   for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample){
     
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == 1) continue ;
-    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-    bkg_stack->Add (h_var) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
-    
+    int iSub = 0;
+    for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+	itSample!= m_samples[sampleName].end();
+	itSample++){
+
+      if (itSample->m_isSignal == 1) continue ;
+      TH1F * h_var = itSample->m_sampleContent[layerName].m_histos[histoName] ;
+      bkg_stack->Add (h_var) ;
+      if(iSub == 0){
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var, name.Data(), "fl") ;
+      }
+      iSub++;
+    }
   }
   
   name = string ("comp_sig_") + layerName + "_" + histoName ;
@@ -827,20 +973,29 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
   // add signal to the stack
   for (int iSample = 0 ; iSample < nsamples ; ++iSample){
     
+    int iSub = 0;
     string sampleName = m_samplesSequence.at (iSample) ;
-    if (m_samples[sampleName].m_isSignal != 1) continue ;
-    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-    sig_stack->Add (h_var) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
+
+    for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+	itSample!= m_samples[sampleName].end();
+	itSample++){
+      if (itSample->m_isSignal != 1) continue ;
+      TH1F * h_var = itSample->m_sampleContent[layerName].m_histos[histoName] ;
+      sig_stack->Add (h_var) ;
+      if(iSub == 0){
+	TString name = Form("%s",sampleName.c_str ());
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var, name.Data(), "fl") ;
+      }
+      iSub++;
+    }
   }
 
   vector<THStack *> histos ;
   histos.push_back (bkg_stack) ;
   histos.push_back (sig_stack) ;
   
-  DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  DrawPlots (histos, *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
 
   return ;
 }
@@ -857,8 +1012,8 @@ void plotter::compareStoBFullLayer (string layerName, string folderTag){
 
   // loop over variables and call plot single layer
   for (unordered_map<string, TH1F *>::iterator iHisto = 
-         m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
-       iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
+         m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.begin () ;
+       iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto){
 
     compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
@@ -894,26 +1049,39 @@ void plotter::compareStoB2D (string layerName, string histoName,
     string sampleName = m_samplesSequence.at (iSample) ;
     
     prepareSampleForPlotting (sampleName) ;
-    TH2F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_2Dhistos[histoName] ;
-    if (m_samples[sampleName].m_isSignal == 1){
-      if (sig_stack == 0)  sig_stack = (TH2F *) h_var->Clone (sigName.c_str ()) ;
-      else                 sig_stack->Add (h_var) ;
-    }
-    else  {
-      if (bkg_stack == 0)  bkg_stack = (TH2F *) h_var->Clone (bkgName.c_str ()) ;
-      else                 bkg_stack->Add (h_var) ;
+
+    int iSub = 0;
+    for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+	itSample!= m_samples[sampleName].end();
+	itSample++){
+
+
+      TH2F * h_var = itSample->m_sampleContent[layerName].m_2Dhistos[histoName] ;
+      if (itSample->m_isSignal == 1){
+      if (sig_stack == 0)  
+	sig_stack = (TH2F *) h_var->Clone (sigName.c_str ()) ;
+      else                 
+	sig_stack->Add (h_var) ;
+      }
+      else  {
+	if (bkg_stack == 0)  
+	  bkg_stack = (TH2F *) h_var->Clone (bkgName.c_str ()) ;
+	else                 
+	  bkg_stack->Add (h_var) ;
+      }
+      iSub++;
     }
   } // loop over samples
 
-  TLegend leg = initLegend (nsamples) ;
-  leg.AddEntry (sig_stack, "sig", "fl") ;
-  leg.AddEntry (bkg_stack, "bkg", "fl") ;
+  TLegend* leg = initLegend (nsamples) ;
+  leg->AddEntry (sig_stack, "sig", "fl") ;
+  leg->AddEntry (bkg_stack, "bkg", "fl") ;
   
   vector<TH2F *> histos ;
   histos.push_back (sig_stack) ;
   histos.push_back (bkg_stack) ;
   
-  Draw2DPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  Draw2DPlots (histos, *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
 
   return ;
 }
@@ -929,9 +1097,10 @@ void plotter::compareStoBFullLayer2D (string layerName, string folderTag){
 
   // loop over variables and call plot single layer
   for (unordered_map<string, TH2F *>::iterator iHisto = 
-         m_samples.begin ()->second.m_sampleContent[layerName].m_2Dhistos.begin () ;
-       iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_2Dhistos.end () ; 
+         m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_2Dhistos.begin () ;
+       iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_2Dhistos.end () ; 
        ++iHisto){
+
     compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
                    0, 1., 0, outFolderName) ;
     compareStoB2D (layerName, iHisto->first.c_str (), "", "", 
@@ -945,11 +1114,6 @@ void plotter::compareStoBFullLayer2D (string layerName, string folderTag){
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-/*
-this is in case of two alternative signal samples.
-The one with the smallest XS (and the SM one) is the first, the one with the largest XS is the second.
-This is tailored to the VBS WW same-sign analysis.
-*/
 
 void plotter::plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
                                   bool isNormalized, float scaleSignal, int isLog,
@@ -964,7 +1128,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   THStack * nH_stack = new THStack (name.c_str (), "") ;  
   int nsamples = m_samplesSequence.size () ;
 
-  TLegend leg = initLegend (nsamples + 1) ;
+  TLegend* leg = initLegend (nsamples + 1) ;
 
   // add bkg to the stack and identify the position of the two signals in the sample
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -975,54 +1139,104 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
     string sampleName = m_samplesSequence.at (iSample) ;
     prepareSampleForPlotting (sampleName) ;
-    if (m_samples[sampleName].m_isSignal == 1 and TString(sampleName).Contains("126")) {
-      signalPos.at (0) = iSample ;
-      sigSamplesNum++;
-      continue ;
-    }
+    
+    int iSub = 0;
+    for(vector<sample>::iterator itSubSample = m_samples[sampleName].begin();
+	itSubSample!=m_samples[sampleName].end();
+	itSubSample++){
+       
+      
+      if (itSubSample->m_isSignal == 1 and TString(sampleName).Contains("126") and iSub == 0) {
+	signalPos.at (0) = iSample ;
+	sigSamplesNum++;
+	continue ;
+      }
 
-    else if (m_samples[sampleName].m_isSignal == 1 and TString(sampleName).Contains("noH")) {
-      signalPos.at (1) = iSample ;
-      sigSamplesNum++;
-      continue ;
-    }
+      else if (itSubSample->m_isSignal == 1 and TString(sampleName).Contains("noH")) {
+	signalPos.at (1) = iSample ;
+	sigSamplesNum++;
+	continue ;
+      }
+      
+      TH1F * h_var = itSubSample->m_sampleContent[layerName].m_histos[histoName] ;
 
-    TH1F * h_var = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;
-    if(string(h_var->GetXaxis()->GetTitle())!="")
-      xaxisTitle = h_var->GetXaxis()->GetTitle();
-    SM_stack->Add (h_var) ;
-    nH_stack->Add (h_var) ;
-    TString name = Form("%s",sampleName.c_str ());
-    name.ReplaceAll("_"," ");
-    leg.AddEntry (h_var, name.Data(), "fl") ;
+      if(string(h_var->GetXaxis()->GetTitle())!="")
+	xaxisTitle = h_var->GetXaxis()->GetTitle();
+
+      SM_stack->Add (h_var) ;
+      nH_stack->Add (h_var) ;
+      if(iSub == 0){
+	TString name = Form("%s",sampleName.c_str ());      
+	name.ReplaceAll("_"," ");
+	leg->AddEntry (h_var, name.Data(), "fl") ;  
+      }
+
+      iSub++;
+    }
+    
   }
+  
   if (2 != sigSamplesNum){
     cout << "ERROR: found " << sigSamplesNum << " signal samples, exiting" << endl ;
     exit (1) ;
   }
-
+  
   // add the first signal to the stack, to bild up the total SM expectations
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   string sampleName = m_samplesSequence.at (signalPos.at (0)) ;
-  TH1F * h_sigSM = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;  
-  SM_stack->Add (h_sigSM) ;
 
+  int iSub = 0;
+  TH1F* h_sigSM = 0;
+
+  for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+      itSample!= m_samples[sampleName].end();
+      itSample++){
+
+    if(iSub == 0)
+      h_sigSM = (TH1F*) itSample->m_sampleContent[layerName].m_histos[histoName]->Clone("h_sigSM") ;  
+    else 
+      h_sigSM->Add(itSample->m_sampleContent[layerName].m_histos[histoName]);
+
+    SM_stack->Add (itSample->m_sampleContent[layerName].m_histos[histoName]) ;
+
+    iSub++;
+  }
+
+  
   // calculate the difference between noH and SM126
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   sampleName = m_samplesSequence.at (signalPos.at (1)) ;
-  TH1F * h_noH = m_samples[sampleName].m_sampleContent[layerName].m_histos[histoName] ;  
-  nH_stack->Add (h_noH) ;
-  name = "diff_" ;
-  name += h_noH->GetName () ;
+  iSub = 0;
+  TH1F * h_noH = 0 ;
+  for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
+      itSample!= m_samples[sampleName].end();
+      itSample++){
 
+    if(iSub == 0)
+      h_noH = (TH1F*) itSample->m_sampleContent[layerName].m_histos[histoName]->Clone("h_noH") ;      
+    else
+      h_noH->Add(itSample->m_sampleContent[layerName].m_histos[histoName]);  
+
+    nH_stack->Add (h_noH) ;
+
+    if(iSub == 0){
+      name = "diff_" ;
+      name += h_noH->GetName () ;
+    }
+
+    iSub++;
+  }
+  
+  
   TH1F * diff = (TH1F *) h_noH->Clone (name.c_str ()) ;
+  
   diff->Add (h_sigSM, -1.) ;
   diff->SetLineColor (2) ;
   diff->SetLineWidth (2) ;
   diff->SetFillStyle (0) ;
-  leg.AddEntry (diff, "noH - 126", "fl") ;
+  leg->AddEntry (diff, "noH - 126", "fl") ;
 
   // put the difference in a THStack and compare it to the expected SM measurement
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -1043,7 +1257,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   SM_histo->SetFillColor (1) ;
   SM_histo->SetLineColor (4) ;
   SM_histo->SetFillStyle (3004) ;
-  leg.AddEntry (SM_histo, "bkg + EWK H126", "fl") ;
+  leg->AddEntry (SM_histo, "bkg + EWK H126", "fl") ;
 
   // get the histogram of the total shape, of SM bkg + noH hypothesis
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -1055,17 +1269,17 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   nH_histo->SetLineWidth (2) ;
   nH_histo->SetLineStyle (2) ;
   nH_histo->SetFillStyle (0) ;
-  leg.AddEntry (nH_histo, "bkg + noH", "fl") ;
+  leg->AddEntry (nH_histo, "bkg + noH", "fl") ;
   histos.push_back (stackMe (nH_histo)) ;
-
+  
   // do the drawing
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  DrawPlots (histos, leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName, false) ;
+  DrawPlots (histos, *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName, false) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
 
   if (isLog) m_canvas.SetLogy (1) ;
   m_canvas.RedrawAxis () ;    
-  leg.Draw () ;
+  leg->Draw () ;
 
   string filename = folderName + histos.at (0)->GetName () ;
   TString Name (filename.c_str());
@@ -1093,7 +1307,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // direct comparison of the uncertainty on the SM to the difference between H and noH
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  TLegend leg2 = initLegend (2) ;
+  TLegend* leg2 = initLegend (2) ;
   TH1F * h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
   TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
   TH1F * h_significance  = (TH1F *) diff->Clone(("h_significance_"+string(h_noH->GetName())).c_str()) ;  
@@ -1111,16 +1325,16 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   h_significance->SetLineWidth (2) ;
   
 
-  leg2.AddEntry (h_tot_SM_err, "SM fluct", "fl") ;
-  leg2.AddEntry (diff, "noH - 126", "fl") ;
-  leg2.AddEntry (h_significance, "(noH - 126)/#sigma_{SM} ", "l") ;
+  leg2->AddEntry (h_tot_SM_err, "SM fluct", "fl") ;
+  leg2->AddEntry (diff, "noH - 126", "fl") ;
+  leg2->AddEntry (h_significance, "(noH - 126)/#sigma_{SM} ", "l") ;
 
   vector<TH1F *> histos2 ;
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
   histos2.push_back (h_significance) ;
-  DrawPlots (histos2, leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
-
+  DrawPlots (histos2, *leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  
   return ;
 }
 
@@ -1137,8 +1351,8 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
 
   // loop over variables and call plot single layer
   for (unordered_map<string, TH1F *>::iterator iHisto = 
-         m_samples.begin ()->second.m_sampleContent[layerName].m_histos.begin () ;
-       iHisto != m_samples.begin ()->second.m_sampleContent[layerName].m_histos.end () ; 
+         m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.begin () ;
+       iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto){
 
     plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
@@ -1156,215 +1370,223 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
 
 void plotter::scaleAllHistos (float scaleFactor){
 
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
 
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+    for(vector<sample>::iterator iSubSample = iSample->second.begin ()  ;
+	iSubSample != iSample->second.end();
+	iSubSample++){
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < iSubSample->m_layersSequence.size () ; ++iLayer){
       
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
+	string name = iSubSample->m_layersSequence.at (iLayer) ;
       
-      // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
-	iHisto->second->Scale (scaleFactor) ;
+	// loop over histos
+	for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != iSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
+	  iHisto->second->Scale (scaleFactor) ;
+	}
+
+	for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != iSubSample->m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto){
+	  iHisto->second->Scale (scaleFactor) ;       
+	} // loop over histos
+
+	if(m_includeSystematics){
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+	  
+
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_jetScaleUp.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_jetScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+
+	  for (unordered_map<string, TH1F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_histos_jetRes.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_histos_jetRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;
+	  }
+	
+	  for (unordered_map<string, TH2F *>::iterator iHisto = iSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != iSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (scaleFactor) ;       
+	  }
+	}      
       }
-
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
-	iHisto->second->Scale (scaleFactor) ;       
-      } // loop over histos
-
-      if(m_includeSystematics){
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;
-	}
-	
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (scaleFactor) ;       
-	}
-
-
-      }
-
     } // loop over layers
   } // loop over samples
   return ;
 }
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 void plotter::saveAllHistos (string filename){
 
   TFile outfile ((m_folderName + "/" + filename).c_str (), "recreate") ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
 
-      // loop over layers
-      for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
+	 
 
-	string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+	
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
+        
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
 	     ++iHisto){
 
 	  iHisto->second->Write () ;
 	} // loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
 	     ++iHisto){
 	  iHisto->second->Write () ;
 	} // loop over histos
 
         if(m_includeSystematics){
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleUp.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleUp.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleUp.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 
           /////////////////////////////////////////////////
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 
-	  for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetRes.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_histos_jetRes.end () ;
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetRes.end () ;
 	       ++iHisto){
 	    
 	    iHisto->second->Write () ;
 	  } // loop over histos
-	  for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	       iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
 	       ++iHisto){
 	    iHisto->second->Write () ;
 	  } // loop over histos
 	}
       } // loop over layers
+    }
   } // loop over samples
   outfile.Close () ;
   return ;
@@ -1376,70 +1598,74 @@ void plotter::saveAllHistos (string filename){
 void plotter::normaliseAll1DHistos (){
 
   cout << "WARNING normalising all the 1D histograms" << endl ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
 
+
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
+
       // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-      // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
-	iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-      } // loop over histos
-
-
-      if(m_includeSystematics){
-
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
+	
 	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
 	     ++iHisto){
 	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
 	} // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	
+	if(m_includeSystematics){
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
-
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+	}
       }
-
     } // loop over layers
   } // loop over samples
   return ;
@@ -1452,67 +1678,72 @@ void plotter::normaliseAll1DHistos (){
 void plotter::normaliseAll2DHistos (){
 
   cout << "WARNING normalising all the 2D histograms" << endl ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
 
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
 
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
           
-      // loop over histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
-	iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-      } // loop over histos
-
-      if(m_includeSystematics){
-
 	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
 	     ++iHisto){
 	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
 	} // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	if(m_includeSystematics){
 
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+	  
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
 
 
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
-	     ++iHisto){
-	  iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
-	} // loop over histos
-
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	       ++iHisto){
+	    iHisto->second->Scale (1. / iHisto->second->Integral ()) ;
+	  } // loop over histos
+	  
+	}
       }
     } // loop over layers
   } // loop over samples
@@ -1537,115 +1768,120 @@ void plotter::normaliseAllHistos (){
 void plotter::setPoissonErrors (){
 
   cout << "WARNING setting all the histograms to the poisson error\n" ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
     
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
           
-      // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
-	setPoissonErrorsToHisto (iHisto->second) ;
-      } // loop over histos
-  
-      // loop over histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
-	setPoissonErrorsTo2DHisto (iHisto->second) ;
-      } // loop over histos
+	// loop over histos
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
+	  setPoissonErrorsToHisto (iHisto->second) ;
+	} // loop over histos
+	
+	// loop over histos
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto){
+	  setPoissonErrorsTo2DHisto (iHisto->second) ;
+	} // loop over histos
  
-      if(m_includeSystematics){
+	if(m_includeSystematics){
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	  
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
   
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleUp.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
   
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
 
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleUp.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
   
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
+	  
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
   
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
 
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetRes.end () ;
+	       ++iHisto){
+	    setPoissonErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
   
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetRes.end () ;
-	     ++iHisto){
-	  setPoissonErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-  
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
-	     ++iHisto){
-	  setPoissonErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	       ++iHisto){
+	    setPoissonErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+	}
       }
     } // loop over layers
   } // loop over samples
@@ -1659,120 +1895,124 @@ void plotter::setPoissonErrors (){
 void plotter::setAsymmetricErrors (){
 
   cout << "WARNING setting all the histograms to the poisson error\n" ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
+
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
+
     
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-      // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto){
-	setAsymmetricErrorsToHisto (iHisto->second) ;
-      } // loop over histos
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
+	
+	// loop over histos
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto){
+	  setAsymmetricErrorsToHisto (iHisto->second) ;
+	} // loop over histos
   
-      // loop over histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto){
-	setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-      } // loop over histos
-
-      if(m_includeSystematics){
-	
 	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleUp.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-
-	///////////
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
-	} // loop over histos
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetRes.end () ;
-	     ++iHisto){
-	  setAsymmetricErrorsToHisto (iHisto->second) ;
-	} // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
 	     ++iHisto){
 	  setAsymmetricErrorsTo2DHisto (iHisto->second) ;
 	} // loop over histos
 	
+	if(m_includeSystematics){
+	
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleUp.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+
+	  ///////////
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetRes.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsToHisto (iHisto->second) ;
+	  } // loop over histos
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	       ++iHisto){
+	    setAsymmetricErrorsTo2DHisto (iHisto->second) ;
+	  } // loop over histos	  
+	}
       }
-
     } // loop over layers
   } // loop over samples
   return ;
@@ -1788,137 +2028,110 @@ void plotter::resetAll (float lumi){
   cout << "WARNING resetting all the stored quantities\n" ;
   cout << "luminosity set to " << lumi << "\n" ;
   m_lumi = lumi ;
-  for (unordered_map<string, sample>::iterator iSample = m_samples.begin () ;
+  for (unordered_map<string, vector<sample> >::iterator iSample = m_samples.begin () ;
        iSample != m_samples.end () ;
        ++iSample){
 
-    // loop over layers
-    for (unsigned int iLayer = 0 ; iLayer < iSample->second.m_layersSequence.size () ; ++iLayer){
-      string name = iSample->second.m_layersSequence.at (iLayer) ;
-          
-      // loop over histos
-      for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_histos.end () ;
-	   ++iHisto)
-	{
+    for( vector<sample>::iterator itSubSample = iSample->second.begin();
+	 itSubSample != iSample->second.end();
+	 itSubSample++){
+
+      // loop over layers
+      for (unsigned int iLayer = 0 ; iLayer < itSubSample->m_layersSequence.size () ; ++iLayer){
+	string name = itSubSample->m_layersSequence.at (iLayer) ;
+	
+	// loop over histos
+	for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_histos.end () ;
+	     ++iHisto)
+	    iHisto->second->Reset () ;
+
+	// loop over histos
+	for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos.begin () ;
+	     iHisto != itSubSample->m_sampleContent[name].m_2Dhistos.end () ;
+	     ++iHisto)
 	  iHisto->second->Reset () ;
-	} // loop over histos
 
-      // loop over histos
-      for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos.begin () ;
-	   iHisto != iSample->second.m_sampleContent[name].m_2Dhistos.end () ;
-	   ++iHisto)
-	{
-	  iHisto->second->Reset () ;
-	} // loop over histos
-
-
-      if(m_includeSystematics){
+	
+	if(m_includeSystematics){
 
           
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
-	     ++iHisto)
-	  {
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
+	  
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
+
+	
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleDown.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
+	  
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepScaleUp.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
+	
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
+
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_jetScaleDown.end () ;
+	       ++iHisto)
+	    iHisto->second->Reset () ;
 	
 	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleUp.end () ;
-	     ++iHisto)
-	  {
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
 
 
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleDown.end () ;
-	     ++iHisto)
-	  {
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
 	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepScaleDown.end () ;
-	     ++iHisto)
-	  {
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_lepRes.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
-
 
           
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepScaleUp.end () ;
-	     ++iHisto)
-	  {
+	  // loop over histos
+	  for (unordered_map<string, TH1F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_histos_lepRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_histos_lepRes.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
 	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleUp.end () ;
-	     ++iHisto)
-	  {
+	  // loop over histos
+	  for (unordered_map<string, TH2F *>::iterator iHisto = itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
+	       iHisto != itSubSample->m_sampleContent[name].m_2Dhistos_jetRes.end () ;
+	       ++iHisto)
 	    iHisto->second->Reset () ;
-	  } // loop over histos
-
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_jetScaleDown.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetScaleDown.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
-
-
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_lepRes.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
-
-          
-	// loop over histos
-	for (unordered_map<string, TH1F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_histos_lepRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_histos_lepRes.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
-	
-	// loop over histos
-	for (unordered_map<string, TH2F *>::iterator iHisto = iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.begin () ;
-	     iHisto != iSample->second.m_sampleContent[name].m_2Dhistos_jetRes.end () ;
-	     ++iHisto)
-	  {
-	    iHisto->second->Reset () ;
-	  } // loop over histos
+	}	
       }
-
     } // loop over layers
   } // loop over samples
   return ;
@@ -1927,13 +2140,12 @@ void plotter::resetAll (float lumi){
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
+TLegend* plotter::initLegend (int sampleNum){
 
-TLegend plotter::initLegend (int sampleNum){
-
-  TLegend leg (0.2, 0.95 - 0.1 * sampleNum * 0.33, 0.87, 0.95) ;
-  leg.SetNColumns (3) ;
-  leg.SetLineStyle (0) ;
-  leg.SetFillStyle (0) ;
+  TLegend* leg = new TLegend (0.2, 0.95 - 0.1 * sampleNum * 0.33, 0.87, 0.95) ;
+  leg->SetNColumns (3) ;
+  leg->SetLineStyle (0) ;
+  leg->SetFillStyle (0) ;
   return leg ;
 }
 

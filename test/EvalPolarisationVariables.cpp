@@ -236,6 +236,7 @@ int main (int argc, char ** argv)
           if (!passCutContainerSelection (reader,
                                         CutList.at (iCut),
                                         name,
+					0,
                                         usePuppiAsDefault,
                                         minLeptonCutPt,
                                         minLeptonCleaningPt,

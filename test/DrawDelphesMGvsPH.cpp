@@ -214,7 +214,8 @@ int main (int argc, char ** argv) {
 
       if(!passCutContainerSelection(readerMG,
                                     CutList.at(iCut),
-                                    name,
+				    name,
+				    0,
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,
@@ -567,6 +568,7 @@ int main (int argc, char ** argv) {
       if(!passCutContainerSelection(readerPH,
                                     CutList.at(iCut),
                                     name,
+				    0,
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,
