@@ -498,19 +498,19 @@ void loopOnEvents (plotter & analysisPlots,
 
     // filter LHE level leptons for madgraph polarized events /////////
     if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
-      if(finalStateString == "UU"){
+      if(TString(finalStateString).Contains("UU")){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
 	  continue;
       }
-      else if(finalStateString == "EE"){
+      else if(TString(finalStateString).Contains("EE")){
 	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
       }
-      else if(finalStateString == "EU"){
+      else if(TString(finalStateString).Contains("EU")){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
 	if(fabs(reader->leptonLHEpid1) != 11) continue;
 	if(fabs(reader->leptonLHEpid2) != 13) continue ;
       }
-      else if(finalStateString == "UE"){
+      else if(TString(finalStateString).Contains("UE")){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
 	if(fabs(reader->leptonLHEpid1) != 13) continue;
 	if(fabs(reader->leptonLHEpid2) != 11) continue ;
@@ -951,19 +951,19 @@ void loopOnEvents (plotter & analysisPlots,
 
     // filter LHE level leptons for madgraph polarized events /////////
     if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
-      if(finalStateString == "UU"){
+      if(TString(finalStateString).Contains("UU")){
 	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
 	  continue;
       }
-      else if(finalStateString == "EE"){
+      else if(TString(finalStateString).Contains("EE")){
 	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
       }
-      else if(finalStateString == "EU"){
+      else if(TString(finalStateString).Contains("EU")){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
 	if(fabs(reader->leptonLHEpid1) != 11) continue;
 	if(fabs(reader->leptonLHEpid2) != 13) continue ;
       }
-      else if(finalStateString == "UE"){
+      else if(TString(finalStateString).Contains("UE")){
 	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
 	if(fabs(reader->leptonLHEpid1) != 13) continue;
 	if(fabs(reader->leptonLHEpid2) != 11) continue ;
@@ -2637,6 +2637,12 @@ bool passCutContainerSelection (cutContainer & Cut,
     if(sign != Cut.chargeSign) return false;
   }
 
+  if(TString(finalStateString).Contains("pp") and (leptonsIsoTight.at(0).charge_ < 0 or leptonsIsoTight.at(1).charge_ < 0))
+     return false;
+
+  if(TString(finalStateString).Contains("mm") and (leptonsIsoTight.at(0).charge_ > 0 or leptonsIsoTight.at(1).charge_ > 0))
+     return false;
+
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
@@ -2654,19 +2660,19 @@ bool passCutContainerSelection (cutContainer & Cut,
     if(sameflavour != Cut.flavour) return false;
   }
 
-  if(finalStateString == "UU"){
+  if(TString(finalStateString).Contains("UU")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
-  else if(finalStateString == "EE"){
+  else if(TString(finalStateString).Contains("EE")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
-  else if(finalStateString == "EU"){
+  else if(TString(finalStateString).Contains("EU")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
-  else if(finalStateString == "UE"){
+  else if(TString(finalStateString).Contains("UE")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
@@ -2702,7 +2708,7 @@ bool passCutContainerSelection (cutContainer & Cut,
       nBjets ++ ;
   }
 
-  if(nBjets > Cut.nBVeto and finalStateString !="UU") return false ;
+  if(nBjets > Cut.nBVeto) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
@@ -2768,14 +2774,14 @@ bool passCutContainerSelection (cutContainer & Cut,
   float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
 
 
-  if(finalStateString != "UU" and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
-  if(finalStateString != "UU" and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+  if(not TString(finalStateString).Contains("UU") and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(not TString(finalStateString).Contains("UU") and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
 
-  if(finalStateString != "UU" and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+  if(not TString(finalStateString).Contains("UU") and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
 
-  if(finalStateString != "UU" and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
-  if(finalStateString != "UU" and leadZep  > Cut.lZep) return false ;
-  if(finalStateString != "UU" and trailZep > Cut.lZep) return false ;
+  if(not TString(finalStateString).Contains("UU") and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(not TString(finalStateString).Contains("UU") and leadZep  > Cut.lZep) return false ;
+  if(not TString(finalStateString).Contains("UU") and trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
@@ -2979,6 +2985,12 @@ bool passCutContainerSelection (readTree* reader,
     if(sign != Cut.chargeSign) return false;
   }
 
+  if(TString(finalStateString).Contains("pp") and (leptonsIsoTight.at(0).charge_ < 0 or leptonsIsoTight.at(1).charge_ < 0))
+     return false;
+
+  if(TString(finalStateString).Contains("mm") and (leptonsIsoTight.at(0).charge_ > 0 or leptonsIsoTight.at(1).charge_ > 0))
+     return false;
+
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
@@ -2996,19 +3008,19 @@ bool passCutContainerSelection (readTree* reader,
     if(sameflavour != Cut.flavour) return false;
   }
 
-  if(finalStateString == "UU"){
+  if(TString(finalStateString).Contains("UU")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
-  else if(finalStateString == "EE"){
+  else if(TString(finalStateString).Contains("EE")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
-  else if(finalStateString == "EU"){
+  else if(TString(finalStateString).Contains("EU")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 11) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 13) return false;
   }
-  else if(finalStateString == "UE"){
+  else if(TString(finalStateString).Contains("UE")){
     if(fabs(leptonsIsoTight.at(0).flavour_) != 13) return false;
     if(fabs(leptonsIsoTight.at(1).flavour_) != 11) return false;
   }
@@ -3057,7 +3069,7 @@ bool passCutContainerSelection (readTree* reader,
       nBjets ++ ;
   }
 
-  if(nBjets > Cut.nBVeto and finalStateString !="UU") return false ;
+  if(nBjets > Cut.nBVeto) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
@@ -3127,16 +3139,16 @@ bool passCutContainerSelection (readTree* reader,
   float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
 
 
-  if(finalStateString != "UU" and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
-  if(finalStateString != "UU" and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+  if(not TString(finalStateString).Contains("UU") and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(not TString(finalStateString).Contains("UU") and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
   
   TLorentzVector L_met;
   L_met.SetPtEtaPhiM(reader->pfmet,0.,reader->pfmetphi,0.);
-  if(finalStateString != "UU" and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+  if(not TString(finalStateString).Contains("UU") and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
 
-  if(finalStateString != "UU" and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
-  if(finalStateString != "UU" and leadZep  > Cut.lZep) return false ;
-  if(finalStateString != "UU" and trailZep > Cut.lZep) return false ;
+  if(not TString(finalStateString).Contains("UU") and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(not TString(finalStateString).Contains("UU") and leadZep  > Cut.lZep) return false ;
+  if(not TString(finalStateString).Contains("UU") and trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   

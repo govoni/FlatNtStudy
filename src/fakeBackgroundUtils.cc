@@ -35,7 +35,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
   TLorentzVector lepton4V ;
 
-  if(scenarioString == "UU" and fabs(inputLepton.flavour_) == 13){
+  if(TString(scenarioString).Contains("UU") and fabs(inputLepton.flavour_) == 13){
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
 
       lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
@@ -49,7 +49,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
 
-  else if(scenarioString == "EE" and fabs(inputLepton.flavour_) == 11){
+  else if(TString(scenarioString).Contains("EE") and fabs(inputLepton.flavour_) == 11){
 
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
@@ -67,7 +67,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
   }
 
-  else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 13){
+  else if(TString(scenarioString).Contains("UE") and fabs(inputLepton.flavour_) == 13){
 
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
@@ -89,7 +89,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
       return leptonContainer(lepton4V,inputLepton.charge_,-11,0.);
   }
 
-  else if(scenarioString == "UE" and fabs(inputLepton.flavour_) == 11){
+  else if(TString(scenarioString).Contains("UE") and fabs(inputLepton.flavour_) == 11){
 
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
 
@@ -111,7 +111,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
 
-  else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 11){
+  else if(TString(scenarioString).Contains("EU") and fabs(inputLepton.flavour_) == 11){
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
 
       lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
@@ -126,7 +126,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
 
-  else if(scenarioString == "EU" and fabs(inputLepton.flavour_) == 13){
+  else if(TString(scenarioString).Contains("EU") and fabs(inputLepton.flavour_) == 13){
 
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
@@ -153,7 +153,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 }
 
 
-// ---------------------                                                                                                                                                        
+// ---------------------                                                                                                                                                      
 void makeFakeLeptonBackground(const string & sampleName,
 			      const int    & samplePosition,
 			      const string & finalStateString,
@@ -182,9 +182,9 @@ void makeFakeLeptonBackground(const string & sampleName,
   if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) return ; // if less than one isolated lepton over the minimum pt                                        
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
     return ;
-  if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
     return ;
 
   vector<jetContainer> RecoJetsForFake;
@@ -203,22 +203,22 @@ void makeFakeLeptonBackground(const string & sampleName,
     eventFakeWeight = 1.;
 
 
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
-    else if(finalStateString == "EE"){
+    else if(TString(finalStateString).Contains("EE")){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
-    else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
     else {
@@ -322,9 +322,9 @@ void makeFakeLeptonBackground(const string & sampleName,
   if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) return ; // if less than one isolated lepton over the minimum pt                                        
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
     return ;
-  if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
     return ;
 
   vector<jetContainer> RecoJetsForFake;
@@ -343,22 +343,22 @@ void makeFakeLeptonBackground(const string & sampleName,
     eventFakeWeight = 1.;
 
 
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
-    else if(finalStateString == "EE"){
+    else if(TString(finalStateString).Contains("EE")){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
-    else if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
     }
-    else if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
     }
     else {
@@ -472,13 +472,13 @@ void makeFakeChargeBackground(const string & sampleName,
   if(leptonsIsoTight.size() != 2) return ; // if less than one isolated lepton over the minimum pt                                                                       
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
     return ;
-  if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
     return ;
-  if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
     return ;
-  if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
     return ;
 
   if(leptonsIsoTight.at(0).charge_ == leptonsIsoTight.at(1).charge_) {
@@ -664,13 +664,13 @@ void makeFakeChargeBackground(const string & sampleName,
   if(leptonsIsoTight.size() != 2) return ; // if less than one isolated lepton over the minimum pt                                                                       
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(finalStateString == "UU" and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
     return ;
-  if(finalStateString == "EE" and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
     return ;
-  if(finalStateString == "EU" and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
     return ;
-  if(finalStateString == "UE" and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
     return ;
 
   if(leptonsIsoTight.at(0).charge_ == leptonsIsoTight.at(1).charge_) {
