@@ -26,7 +26,7 @@ parser.add_option('-b', action='store_true', dest='noX', default=False, help='no
 
 ## parse files
 parser.add_option('--fileDIR',   action="store", type="string", dest="fileDIR", default="")
-parser.add_option('--channel',   action="store", type="string", dest="channel",     default="UU")
+parser.add_option('--channel',   action="store", type="string", dest="channel",     default="UUpp")
 parser.add_option('--outputPlotDIR',       action="store", type="string", dest="outputPlotDIR", default="")
 parser.add_option('--inputVariableList',   action="store", type="string", dest="inputVariableList", default="")
 

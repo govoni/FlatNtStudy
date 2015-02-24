@@ -25,7 +25,7 @@ parser.add_option('-b', action='store_true', dest='noX', default=False, help='no
 
 ## parse files
 parser.add_option('--inputDIR',            action="store", type="string", dest="inputDIR",      default="",   help="input directory where files are located")
-parser.add_option('--channel',             action="store", type="string", dest="channel",       default="UU", help="workspace channel to look at")
+parser.add_option('--channel',             action="store", type="string", dest="channel",       default="UUpp", help="workspace channel to look at")
 parser.add_option('--outputPlotDIR',       action="store", type="string", dest="outputPlotDIR", default="",   help="output directory where to put plots")
 parser.add_option('--inputVariableList',   action="store", type="string", dest="inputVariableList", default="",   help="input variable list")
 parser.add_option('--isCard2D',            action="store", type="int",    dest="isCard2D",          default=0,   help="if 2D or 1D card to be considered")
