@@ -45,6 +45,33 @@ class layer {
 
   vector<TH2F*> getHistos2D();
 
+  bool operator == (const layer & layer2) const {
+    if( m_layerName == layer2.m_layerName) return true;
+    else return false;
+  }
+
+  layer& operator = (const layer & layer2) {
+    m_layerName = layer2.m_layerName;
+    m_histos    = layer2.m_histos;
+    m_2Dhistos  = layer2.m_2Dhistos;
+    m_histos_lepScaleUp  = layer2.m_histos_lepScaleUp;
+    m_2Dhistos_lepScaleUp  = layer2.m_2Dhistos_lepScaleUp;
+    m_histos_lepScaleDown  = layer2.m_histos_lepScaleDown;
+    m_2Dhistos_lepScaleDown  = layer2.m_2Dhistos_lepScaleDown;
+
+    m_histos_lepRes  = layer2.m_histos_lepRes;
+    m_2Dhistos_lepRes  = layer2.m_2Dhistos_lepRes;
+    m_histos_jetRes  = layer2.m_histos_jetRes;
+    m_2Dhistos_jetRes  = layer2.m_2Dhistos_jetRes;
+
+    m_histos_jetScaleUp  = layer2.m_histos_jetScaleUp;
+    m_2Dhistos_jetScaleUp  = layer2.m_2Dhistos_jetScaleUp;
+    m_histos_jetScaleDown  = layer2.m_histos_jetScaleDown;
+    m_2Dhistos_jetScaleDown  = layer2.m_2Dhistos_jetScaleDown;
+
+    return *this;
+  }
+
   string m_layerName ;
 
   unordered_map<string, TH1F *> m_histos ;
@@ -98,6 +125,27 @@ class sample {
 
   vector<layer> getLayer();
 
+  bool operator == (const sample & sample2) const {
+
+    if(m_sampleName == sample2.m_sampleName and m_isSignal == sample2.m_isSignal) return true;
+    else return false;
+  }
+
+  sample& operator = (const sample & sample2){
+    m_sampleName = sample2.m_sampleName;
+    m_XS         = sample2.m_XS;
+    m_totInitialEvents = sample2.m_totInitialEvents;
+    m_isSignal   = sample2.m_isSignal;
+    m_color      = sample2.m_color;
+    m_readyForPlotting = sample2.m_readyForPlotting;
+    m_weight = sample2.m_weight;    
+    m_sampleContent = sample2.m_sampleContent;
+    m_layersSequence = sample2.m_layersSequence;
+
+    return *this;
+
+  }
+
   string m_sampleName ;
   float m_XS ;
   int   m_totInitialEvents ;
@@ -111,6 +159,7 @@ class sample {
   vector<string> m_layersSequence ;
 } ;
 
+void mergeSample (sample & newSample, sample sample1, sample sample2);
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 

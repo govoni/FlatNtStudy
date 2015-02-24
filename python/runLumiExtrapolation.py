@@ -66,13 +66,21 @@ def submitBatchJobCombine(command, fn, fileNames):
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
     else :
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
-        nametemp = fileNames.replace("COMB","UU");
+        nametemp = fileNames.replace("COMB","UUpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("UU","EE");
+        nametemp = fileNames.replace("UUpp","UUmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EE","EU");
+        nametemp = nametemp.replace("UUmm","EEpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EU","UE");
+        nametemp = nametemp.replace("EEpp","EEmm");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("EEmm","EUpp");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("EUpp","EUmm");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("EUmm","UEpp");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = nametemp.replace("UEpp","UEmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
 
     outScript.write(command+'\n');
@@ -110,10 +118,14 @@ if __name__ == '__main__':
             os.system("rm *_%d.root"%(lumi))
     
     ## make the card list
-    os.system("ls | grep txt | grep -v COMB | grep _UU.txt | grep "+options.inputVariable+" > list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EE.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EU.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _UE.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UUpp.txt | grep "+options.inputVariable+" > list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UUmm.txt | grep "+options.inputVariable+" > list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EEpp.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EEmm.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EUpp.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EUmm.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UEpp.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UEmm.txt | grep "+options.inputVariable+" >> list.txt");
 
     datacardFile = open("list.txt","r");
     datacardList = [];
@@ -216,20 +228,31 @@ if __name__ == '__main__':
     for lumi in luminosity :
         for datacard in createdCards :
             if datacard.find("_%d"%(lumi)) != -1 :
-                if datacard.find("_UE") != -1 :
-                    combinedCards.append(datacard.replace("_UE","_COMB"));
-                if datacard.find("_EU") != -1 :
-                    combinedCards.append(datacard.replace("_EU","_COMB"));
-                if datacard.find("_UU") != -1 :
-                    combinedCards.append(datacard.replace("_UU","_COMB"));
-                if datacard.find("_EE") != -1 :
-                    combinedCards.append(datacard.replace("_EE","_COMB"));
+                if datacard.find("_UEpp") != -1 :
+                    combinedCards.append(datacard.replace("_UEpp","_COMB"));
+                if datacard.find("_UEmm") != -1 :
+                    combinedCards.append(datacard.replace("_UEmm","_COMB"));
+                if datacard.find("_EUpp") != -1 :
+                    combinedCards.append(datacard.replace("_EUpp","_COMB"));
+                if datacard.find("_EUmm") != -1 :
+                    combinedCards.append(datacard.replace("_EUmm","_COMB"));
+                if datacard.find("_EEpp") != -1 :
+                    combinedCards.append(datacard.replace("_EEpp","_COMB"));
+                if datacard.find("_EEmm") != -1 :
+                    combinedCards.append(datacard.replace("_EEmm","_COMB"));
+                if datacard.find("_UUpp") != -1 :
+                    combinedCards.append(datacard.replace("_UUpp","_COMB"));
+                if datacard.find("_UUmm") != -1 :
+                    combinedCards.append(datacard.replace("_UUmm","_COMB"));
+
                 break ;
 
     if not options.noGenerateCards :
         for card in combinedCards :
-            print "combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_EU")+" "+card.replace("_COMB","_UE")+" > "+card;  
-            os.system("combineCards.py "+card.replace("_COMB","_EE")+" "+card.replace("_COMB","_UU")+" "+card.replace("_COMB","_EU")+" "+card.replace("_COMB","_UE")+" > "+card);        
+            print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+
+            +card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card;  
+            os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+
+                      +card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card);        
 
     totalCards = createdCards + combinedCards
 

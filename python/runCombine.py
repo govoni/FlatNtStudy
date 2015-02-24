@@ -36,7 +36,7 @@ parser.add_option('--queque',         action="store",      type="string",       
 ##### other basci options for all the methods 
 parser.add_option('--datacardDIR',  action="store", type="string", dest="datacardDIR",  default="")
 parser.add_option('--outputDIR',    action="store", type="string", dest="outputDIR",    default="")
-parser.add_option('--channel',      action="store", type="string", dest="channel",      default="UU")
+parser.add_option('--channel',      action="store", type="string", dest="channel",      default="UUpp")
 
 ###### options for Bias test in the combination tool
 parser.add_option('--nToys',                 action="store",     type="int",    dest="nToys",                 default=0,  help="number of toys to generate")
@@ -76,10 +76,14 @@ def submitBatchJobCombine(command, fn, fileNames):
     else :
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
         nametemp = fileNames.replace("COMB","");
-        outScript.write('cp '+currentDir+"/"+nametemp+'*UU* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*EE* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*UE* ./ \n');
-        outScript.write('cp '+currentDir+"/"+nametemp+'*EU* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UUpp* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UUmm* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EEpp* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EEmm* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UEpp* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*UEmm* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EUpp* ./ \n');
+        outScript.write('cp '+currentDir+"/"+nametemp+'*EUmm* ./ \n');
 
     outScript.write(command+'\n');
     
@@ -144,10 +148,14 @@ if __name__ == '__main__':
 
         for var in variable :
             if options.channel == "COMB" :
-                os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_UE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_EU | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUpp | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUmm | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EEpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EEmm | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UEpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UEmm | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EUpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EUmm | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
                 
@@ -162,26 +170,38 @@ if __name__ == '__main__':
                         combineCommand += " "+line.split(" ")[0];
                         iline = iline+1;
                         lineString = str(line.split(" ")[0]);
-                        lineString = lineString.replace("_UU","");
-                        lineString = lineString.replace("_EE","");
-                        lineString = lineString.replace("_EU","");                        
-                        lineString = lineString.replace("_UE","");                        
+                        lineString = lineString.replace("_UUpp","");
+                        lineString = lineString.replace("_UUmm","");
+                        lineString = lineString.replace("_EEpp","");
+                        lineString = lineString.replace("_EEmm","");
+                        lineString = lineString.replace("_EUpp","");                        
+                        lineString = lineString.replace("_EUmm","");                        
+                        lineString = lineString.replace("_UEpp","");                        
+                        lineString = lineString.replace("_UEmm","");                        
                     else :
                         temp = line.split(" ")[0];
-                        temp = temp.replace("_UU","");
-                        temp = temp.replace("_EE","");
-                        temp = temp.replace("_EU","");                        
-                        temp = temp.replace("_UE","");                        
+                        temp = temp.replace("_UUpp","");
+                        temp = temp.replace("_UUpp","");
+                        temp = temp.replace("_EEpp","");
+                        temp = temp.replace("_EEmm","");
+                        temp = temp.replace("_EUpp","");                        
+                        temp = temp.replace("_EUmm","");                        
+                        temp = temp.replace("_UEpp","");                        
+                        temp = temp.replace("_UEmm","");                        
                         if not temp == lineString :
                             continue ;
                         combineCommand += " "+line.split(" ")[0];
 
                 combineCommand = combineCommand.replace("\n","");
                 combinedCard = combineCommand.split(" ")[len(combineCommand.split(" "))-1];
-                combinedCard = combinedCard.replace("_UU","_COMB")
-                combinedCard = combinedCard.replace("_EE","_COMB")
-                combinedCard = combinedCard.replace("_EU","_COMB")
-                combinedCard = combinedCard.replace("_UE","_COMB")
+                combinedCard = combinedCard.replace("_UUpp","_COMB")
+                combinedCard = combinedCard.replace("_UUmm","_COMB")
+                combinedCard = combinedCard.replace("_EEpp","_COMB")
+                combinedCard = combinedCard.replace("_EEmm","_COMB")
+                combinedCard = combinedCard.replace("_EUpp","_COMB")
+                combinedCard = combinedCard.replace("_EUmm","_COMB")
+                combinedCard = combinedCard.replace("_UEpp","_COMB")
+                combinedCard = combinedCard.replace("_UEmm","_COMB")
                 combineCommand += " > " +combinedCard;
                 datacardList.append(combinedCard);
                 if not options.noCombineCards :
@@ -218,10 +238,14 @@ if __name__ == '__main__':
 
         for var in variable :
             if options.channel == "COMB" :
-                os.system("ls  | grep _"+var+"_UU | grep txt > list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_EE | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_EU | grep txt >> list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_UE | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUpp | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUmm | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EEpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EEmm | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EUpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_EUmm | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UEpp | grep txt >> list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UEmm | grep txt >> list.txt"); # make a list of datacards            
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
 
@@ -236,26 +260,38 @@ if __name__ == '__main__':
                         combineCommand += " "+line.split(" ")[0];
                         iline = iline+1;
                         lineString = str(line.split(" ")[0]);
-                        lineString = lineString.replace("_UU","");
-                        lineString = lineString.replace("_EE","");
-                        lineString = lineString.replace("_EU","");                        
-                        lineString = lineString.replace("_UE","");                        
+                        lineString = lineString.replace("_UUpp","");
+                        lineString = lineString.replace("_UUmm","");
+                        lineString = lineString.replace("_EEpp","");
+                        lineString = lineString.replace("_EEmm","");
+                        lineString = lineString.replace("_EUpp","");                        
+                        lineString = lineString.replace("_EUmm","");                        
+                        lineString = lineString.replace("_UEpp","");                        
+                        lineString = lineString.replace("_UEmm","");                        
                     else :
                         temp = line.split(" ")[0];
-                        temp = temp.replace("_UU","");
-                        temp = temp.replace("_EE","");
-                        temp = temp.replace("_EU","");                        
-                        temp = temp.replace("_UE","");                        
+                        temp = temp.replace("_UUpp","");
+                        temp = temp.replace("_UUmm","");
+                        temp = temp.replace("_EEpp","");
+                        temp = temp.replace("_EEmm","");
+                        temp = temp.replace("_EUpp","");                        
+                        temp = temp.replace("_EUmm","");                        
+                        temp = temp.replace("_UEpp","");                        
+                        temp = temp.replace("_UEmm","");                        
                         if not temp == lineString :
                             continue ;
                         combineCommand += " "+line.split(" ")[0];
                        
                 combineCommand = combineCommand.replace("\n","");
                 combinedCard = combineCommand.split(" ")[len(combineCommand.split(" "))-1];
-                combinedCard = combinedCard.replace("_UU","_COMB")
-                combinedCard = combinedCard.replace("_EE","_COMB")
-                combinedCard = combinedCard.replace("_EU","_COMB")
-                combinedCard = combinedCard.replace("_UE","_COMB")
+                combinedCard = combinedCard.replace("_UUpp","_COMB")
+                combinedCard = combinedCard.replace("_UUmm","_COMB")
+                combinedCard = combinedCard.replace("_EEpp","_COMB")
+                combinedCard = combinedCard.replace("_EEmm","_COMB")
+                combinedCard = combinedCard.replace("_EUpp","_COMB")
+                combinedCard = combinedCard.replace("_EUmm","_COMB")
+                combinedCard = combinedCard.replace("_UEpp","_COMB")
+                combinedCard = combinedCard.replace("_UEmm","_COMB")
                 combineCommand += " > "+ combinedCard;
                 datacardList.append(combinedCard);
                 if not options.noCombineCards :
@@ -281,13 +317,21 @@ if __name__ == '__main__':
 
     for card in datacardList :
 
-       if  options.channel == "UU" and card.find("_UU") == -1 :
+       if  options.channel == "UUpp" and card.find("_UUpp") == -1 :
            continue ;
-       if  options.channel == "EE" and card.find("_EE") == -1 :
+       if  options.channel == "UUmm" and card.find("_UUmm") == -1 :
            continue ;
-       if  options.channel == "EU" and card.find("_UE") == -1 :
+       if  options.channel == "EEpp" and card.find("_EEpp") == -1 :
            continue ;
-       if  options.channel == "UE" and card.find("_EU") == -1 :
+       if  options.channel == "EEmm" and card.find("_EEmm") == -1 :
+           continue ;
+       if  options.channel == "UEpp" and card.find("_UEpp") == -1 :
+           continue ;
+       if  options.channel == "UEmm" and card.find("_UEmm") == -1 :
+           continue ;
+       if  options.channel == "EUpp" and card.find("_EUpp") == -1 :
+           continue ;
+       if  options.channel == "EUmm" and card.find("_EUmm") == -1 :
            continue ;
        if  options.channel == "COMB" and card.find("_COMB") == -1 :
            continue ;

@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <fstream>
 
@@ -62,7 +63,7 @@ int main (int argc, char ** argv) {
   string InputBaseDirectory           = gConfigParser -> readStringOption("Input::InputBaseDirectory");
   string InputSampleList              = gConfigParser -> readStringOption("Input::InputSampleList");
 
-  map<string,vector<sampleContainer> > sampleMap ;
+  unordered_map<string,vector<sampleContainer> > sampleMap ;
   if(ReadInputSampleFile(InputSampleList,sampleMap) <= 0){
     cerr<<" Empty Input Sample File or not Exisisting --> Exit "<<endl; return -1;}
   
@@ -127,77 +128,85 @@ int main (int argc, char ** argv) {
   plotter analysisPlots (lumi,"output",useObjectSystematics) ; // use the plotter structure to make the histograms for each sample and each cutLayer and each variable
   map<string,TH1F*> histoCutEff ;
 
-  for( map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){ // loop on each sample
+  for( unordered_map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){ // loop on each sample
 
-    TChain* chain = new TChain (treeName.c_str()) ;  // take the file chain
-    int numBefore = 0;
+    vector<readTree*> ReadTree;
+    for(vector<sampleContainer>::iterator itSubSample = itSample->second.begin(); itSubSample != itSample->second.end(); itSubSample++){
 
-    for(size_t iContainer = 0; iContainer < itSample->second.size(); iContainer++){     
-      numBefore += itSample->second.at(iContainer).numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
+      TChain* chain = new TChain (treeName.c_str()) ;  // take the file chain
+      int numBefore = 0;
+
+      numBefore += itSubSample->numBefore;
+      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*_1.root").c_str()) ;
+
+      int totEvent = chain->GetEntries();
+
+      ReadTree.push_back( new readTree((TTree*)(chain))); // reader for chain trees
+
+      cout<<"Sample name : "<<itSample->first<<" directory files "<<itSubSample->sampleName<<" Lumi (fb-1) "<<lumi/1000<<" entries before "<<totEvent<<" cross section "<<itSubSample->xsec<<" Nevents before selections "<<lumi*itSubSample->xsec<<" weight "<<lumi*itSubSample->xsec/totEvent<<endl;
+
+      // add  sample to the analysis plot container                                                                                                                             
+      if(numBefore > totEvent)
+        analysisPlots.addSample(itSample->first,itSubSample->xsec, numBefore, itSubSample->isSignal, itSubSample->color) ;   // create the sample to analyze                    
+      else
+        analysisPlots.addSample(itSample->first,itSubSample->xsec, totEvent,  itSubSample->isSignal, itSubSample->color) ;   // create the sample to analyze                    
     }
 
-    int totEvent = chain->GetEntries();
-
-    readTree* ReadTree  = new readTree((TTree*)(chain)); // reader for chain trees
-
-    cout<<"Sample name : "<<itSample->first<<" Lumi (fb-1) "<<lumi/1000<<" entries before "<<totEvent<<" cross section "<<itSample->second.at(0).xsec<<" Nevents before selections "<<lumi*itSample->second.at(0).xsec<<" weight "<<lumi*itSample->second.at(0).xsec/totEvent<<endl;
-
-    // add  sample to the analysis plot container
-    if(numBefore > totEvent)
-      analysisPlots.addSample(itSample->first,itSample->second.at(0).xsec,numBefore, itSample->second.at(0).isSignal, itSample->second.at(0).color) ;   // create the sample to analyze
-    else
-      analysisPlots.addSample(itSample->first,itSample->second.at(0).xsec,totEvent, itSample->second.at(0).isSignal, itSample->second.at(0).color) ;   // create the sample to analyze
  
 
-   // Add cuts to the analysis plot container
-   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
-     analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
-     histoCutEff[itSample->first+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
+    // Add cuts to the analysis plot container
+    for(size_t iCut = 0; iCut < CutList.size(); iCut++){
+      analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
+      for(size_t iSub = 0; iSub < itSample->second.size(); iSub++){
+        histoCutEff[itSample->first+"_pos_"+to_string(iSub)+"_"+CutList.at(iCut).cutLayerName] = new TH1F((itSample->first+"_pos_"+to_string(iSub)+"_"+CutList.at(iCut).cutLayerName).c_str(),"",10,0,10);
+      }
 
-     // Add variables to the plot 1D analysis
-     for(size_t iVar = 0; iVar < variableList1D.size(); iVar++){   
-       analysisPlots.addPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList1D.at(iVar).variableName,
-                                     variableList1D.at(iVar).Nbin,variableList1D.at(iVar).min,variableList1D.at(iVar).max,variableList1D.at(iVar).label,true) ;
-     }
+      // Add variables to the plot 1D analysis
+      for(size_t iVar = 0; iVar < variableList1D.size(); iVar++){   
+	analysisPlots.addPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList1D.at(iVar).variableName,
+				      variableList1D.at(iVar).Nbin,variableList1D.at(iVar).min,variableList1D.at(iVar).max,variableList1D.at(iVar).label,true) ;
+      }
 
-     // Add variables to the plot 1D analysis
-     for(size_t iVar = 0; iVar < variableList2D.size(); iVar++){   
-       analysisPlots.add2DPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY,
-				       variableList2D.at(iVar).NbinX,variableList2D.at(iVar).minX,variableList2D.at(iVar).maxX,
-				       variableList2D.at(iVar).NbinY,variableList2D.at(iVar).minY,variableList2D.at(iVar).maxY,
-				       variableList2D.at(iVar).labelX,variableList2D.at(iVar).labelY,true);
-     }
-   }
+      // Add variables to the plot 1D analysis
+      for(size_t iVar = 0; iVar < variableList2D.size(); iVar++){   
+	analysisPlots.add2DPlotToLayer (itSample->first,CutList.at(iCut).cutLayerName,variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY,
+					variableList2D.at(iVar).NbinX,variableList2D.at(iVar).minX,variableList2D.at(iVar).maxX,
+					variableList2D.at(iVar).NbinY,variableList2D.at(iVar).minY,variableList2D.at(iVar).maxY,
+					variableList2D.at(iVar).labelX,variableList2D.at(iVar).labelY,true);
+      }
+    }
 
    // 1D + 2D analysis
-   string sampleName ;
-   if(TString(itSample->second.at(0).sampleName).Contains("Madgraph"))
-     sampleName = "Madgraph_"+itSample->first ;
-   else
-     sampleName = itSample->first ;
+    string sampleName ;
+    if(TString(itSample->second.at(0).sampleName).Contains("Madgraph"))
+      sampleName = "Madgraph_"+itSample->first ;
+    else
+      sampleName = itSample->first ;
 
+    for(size_t iRead = 0; iRead < ReadTree.size(); iRead++){
+      cout<<"analyzing for sample "<<itSample->first<<" chain number "<<iRead<<endl;
 
-   loopOnEvents(analysisPlots,
-		sampleName,         // sample name
-		0,
-		ReadTree,
-		CutList,
-		variableList1D,     // 1D variables
-		variableList2D,     // 2D variables
-		usePuppiAsDefault,  // use puppi flag
-		minLeptonCutPt,     // lepton pt cut
-		minLeptonCleaningPt,// cleaning cut
-		leptonIsoCut_mu,    // isolation for muons
-		leptonIsoCut_el,    // isolation for electrons
-		leptonIsoCutLoose,  // isolation for loose leptons
-		matchingCone,       // matching cone
-		minJetCutPt,        // min jet pt cut
-		histoCutEff,        // eff cut
-		finalStateString,   // string
-		scenarioString,
-		fakeRateFile
-		);
+      loopOnEvents(analysisPlots,
+		   sampleName,         // sample name
+		   int(iRead),
+		   ReadTree.at(iRead),
+		   CutList,
+		   variableList1D,     // 1D variables
+		   variableList2D,     // 2D variables
+		   usePuppiAsDefault,  // use puppi flag
+		   minLeptonCutPt,     // lepton pt cut
+		   minLeptonCleaningPt,// cleaning cut
+		   leptonIsoCut_mu,    // isolation for muons
+		   leptonIsoCut_el,    // isolation for electrons
+		   leptonIsoCutLoose,  // isolation for loose leptons
+		   matchingCone,       // matching cone
+		   minJetCutPt,        // min jet pt cut
+		   histoCutEff,        // eff cut
+		   finalStateString,   // string
+		   scenarioString,
+		   fakeRateFile
+		   );
+    }
 
   }
 
@@ -216,14 +225,40 @@ int main (int argc, char ** argv) {
   }
 
   // get the sample vector from the analysis plotter object
-  vector<sample> SampleVector ;
-  SampleVector = analysisPlots.getSamples();   
+  vector<sample> SampleVectorTemp ;
+  SampleVectorTemp = analysisPlots.getSamples();   
 
+  
+  vector<sample> SampleVector;
+  // make sure to merge samples with the same sampleName
+  for(size_t iSample = 0; iSample < SampleVectorTemp.size(); iSample++){
+    size_t jSample   = iSample+1;
+    bool foundSample = false;
+    for( ; jSample < SampleVectorTemp.size(); jSample++){
+      if(SampleVectorTemp.at(iSample) == SampleVectorTemp.at(jSample)){
+	foundSample = true;
+	break;
+      }
+    }
 
+    if(jSample < SampleVectorTemp.size() and jSample != iSample and foundSample){
+      sample sampleTemp ;      
+      mergeSample(sampleTemp,SampleVectorTemp.at(iSample),SampleVectorTemp.at(jSample));
+      SampleVector.push_back(sampleTemp);
+      SampleVectorTemp.erase(SampleVectorTemp.begin()+jSample);      
+      continue;
+    }
+    else{
+      SampleVector.push_back(SampleVectorTemp.at(iSample));
+      continue;
+    }
+  }
+
+  
   ////////////////////////////////////////// 
   //####### TH1 sector Datacards #########//
   /////////////////////////////// //////////
-
+  
   //loop on Cuts vector
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
 
@@ -360,7 +395,8 @@ int main (int argc, char ** argv) {
 	HminusNoH_res_jDw = mirrorHistogram("histo_HminusNoH_CMS_res_jDown",HminusNoH,HminusNoH_res_jUp);
 	makePositiveDefine(HminusNoH_res_jDw);
       }
-      
+    
+         
       // make the total distribution as dataset for combine
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
 
@@ -371,7 +407,7 @@ int main (int argc, char ** argv) {
         else 
 	  hTotal->Add(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]);
       }  
-
+      
 
       // make the observed dataser
       hTotal->SetBinContent(1,hTotal->GetBinContent(1)+hTotal->GetBinContent(0)); 
@@ -478,7 +514,6 @@ int main (int argc, char ** argv) {
       TH1F* hStatUp       = 0, *hStatDown = 0;
       TH1F* hLepScaleUp   = 0, *hLepScaleDown = 0, *hLepResUp     = 0, *hLepResDown   = 0;
       TH1F* hJetScaleUp   = 0, *hJetScaleDown = 0, *hJetResUp     = 0, *hJetResDown   = 0;
-
       
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
 
@@ -660,7 +695,6 @@ int main (int argc, char ** argv) {
       outputCard->Close();	      
     }
   }
-  
   
   //###########################//      
   //####### TH2 sector ########//
@@ -1072,8 +1106,7 @@ int main (int argc, char ** argv) {
       
     }
   }
-  
-  
+
   // Make datacards for 1D histograms
   TFile* outputEfficiency = new TFile(("output/"+outputDataCardDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 

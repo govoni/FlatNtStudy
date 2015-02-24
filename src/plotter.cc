@@ -1,3 +1,4 @@
+
 #include "plotter.h"
 
 using namespace std ;
@@ -37,6 +38,285 @@ vector<layer> sample::getLayer(){
   return vectLayer;
 }
 
+void mergeSample (sample & newSample, sample sample1, sample sample2){
+    
+  newSample.m_sampleName = sample1.m_sampleName ;
+  newSample.m_isSignal   = sample1.m_isSignal;
+  newSample.m_XS         = sample1.m_XS + sample2.m_XS;
+  newSample.m_color      = sample1.m_color;
+  newSample.m_readyForPlotting = sample1.m_readyForPlotting;
+  newSample.m_totInitialEvents = sample1.m_totInitialEvents + sample2.m_totInitialEvents;
+  newSample.m_weight           = sample1.m_weight*sample2.m_weight;
+  newSample.m_layersSequence   = sample1.m_layersSequence;
+
+  // clone the sample content of the first
+  for(unordered_map<string, layer>::iterator itMap = sample1.m_sampleContent.begin();
+      itMap != sample1.m_sampleContent.end();
+      itMap++){
+    newSample.m_sampleContent[itMap->first] = itMap->second;
+  }
+
+  // loop on this sample content
+  for(unordered_map<string, layer>::iterator itMap  = newSample.m_sampleContent.begin(); 
+      itMap != newSample.m_sampleContent.end();
+      itMap++){
+
+    unordered_map<string, layer>::iterator itMap2 = sample2.m_sampleContent.begin();
+    for( ; itMap2 != sample2.m_sampleContent.end(); itMap2++){
+      if(itMap->second.m_layerName != itMap2->second.m_layerName) continue;
+      else break;
+    }
+
+    if(itMap2 == sample2.m_sampleContent.end()) continue ;
+    
+    // central histo
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos.begin();
+	itHisto1 != itMap->second.m_histos.end();
+	itHisto1++){
+
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos.begin();
+      for( ; itHisto2 != itMap2->second.m_histos.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+
+      if(itHisto2 == itMap2->second.m_histos.end()) continue;
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+
+    // lept scale up
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_lepScaleUp.begin();
+	itHisto1 != itMap->second.m_histos_lepScaleUp.end();
+	itHisto1++){
+
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_lepScaleUp.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_lepScaleUp.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+	itHisto1->second->SetName(nameTemp);
+    }
+    
+    // lept scale dw
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_lepScaleDown.begin();
+	itHisto1 != itMap->second.m_histos_lepScaleDown.end();
+	itHisto1++){
+
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_lepScaleDown.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_lepScaleDown.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+
+    // lept scale dw
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_lepRes.begin();
+	itHisto1 != itMap->second.m_histos_lepRes.end();
+	itHisto1++){
+
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_lepRes.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_lepRes.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+
+    
+    // jett scale up
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_jetScaleUp.begin();
+	itHisto1 != itMap->second.m_histos_jetScaleUp.end();
+	itHisto1++){
+
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_jetScaleUp.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_jetScaleUp.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+    // jett scale dw
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_jetScaleDown.begin();
+	itHisto1 != itMap->second.m_histos_jetScaleDown.end();
+	itHisto1++){
+      
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_jetScaleDown.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_jetScaleDown.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+
+    // jett scale dw
+    for(unordered_map<string,TH1F*>::iterator itHisto1 = itMap->second.m_histos_jetRes.begin();
+	itHisto1 != itMap->second.m_histos_jetRes.end();
+	itHisto1++){
+      
+      unordered_map<string, TH1F*>::iterator itHisto2 = itMap2->second.m_histos_jetRes.begin();
+      for( ; itHisto2 != itMap2->second.m_histos_jetRes.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	  else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+    
+    /// same thing for TH2
+
+    // central histo
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos.begin();
+	itHisto1 != itMap->second.m_2Dhistos.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+      }
+    
+    // lept scale up
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_lepScaleUp.begin();
+	itHisto1 != itMap->second.m_2Dhistos_lepScaleUp.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_lepScaleUp.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_lepScaleUp.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+      }
+    
+    // lept scale dw
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_lepScaleDown.begin();
+	itHisto1 != itMap->second.m_2Dhistos_lepScaleDown.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_lepScaleDown.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_lepScaleDown.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+    // lept scale dw
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_lepRes.begin();
+	itHisto1 != itMap->second.m_2Dhistos_lepRes.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_lepRes.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_lepRes.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+
+
+    // jett scale up
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_jetScaleUp.begin();
+	itHisto1 != itMap->second.m_2Dhistos_jetScaleUp.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_jetScaleUp.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_jetScaleUp.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	  else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+    // jett scale dw
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_jetScaleDown.begin();
+	itHisto1 != itMap->second.m_2Dhistos_jetScaleDown.end();
+	itHisto1++){
+      
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_jetScaleDown.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_jetScaleDown.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+    // jett scale dw
+    for(unordered_map<string,TH2F*>::iterator itHisto1 = itMap->second.m_2Dhistos_jetRes.begin();
+	itHisto1 != itMap->second.m_2Dhistos_jetRes.end();
+	itHisto1++){
+
+      unordered_map<string, TH2F*>::iterator itHisto2 = itMap2->second.m_2Dhistos_jetRes.begin();
+      for( ; itHisto2 != itMap2->second.m_2Dhistos_jetRes.end(); itHisto2++){
+	if(itHisto2->first != itHisto1->first) continue;
+	else break;
+      }
+      
+      itHisto1->second->Add(itHisto2->second);
+      TString nameTemp = Form("%s",itHisto1->second->GetName());
+      nameTemp.ReplaceAll("_0","");
+      itHisto1->second->SetName(nameTemp);
+    }
+    
+  }    
+}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 plotter::plotter (float  lumi, 
@@ -1321,7 +1601,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   h_tot_SM_err->SetFillColor (1) ;
   h_tot_SM_err->SetFillStyle (3001) ;
 
-  h_significance->SetLineColor (2) ;
+  h_significance->SetLineColor (4) ;
   h_significance->SetLineWidth (2) ;
   
 
