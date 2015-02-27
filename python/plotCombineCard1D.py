@@ -502,7 +502,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
                 getExpectedQuantile(filelist[ifile],signifExp);
 
                 ybins_exp.append(signifExp.GetMean());
-                ybins_err.append(signifExp.GetRMS());                    
+                ybins_err.append(signifExp.GetMeanError());                    
                 ybin_max.append(signifExp.GetMean()+signifExp.GetRMS());
                 break;
 
