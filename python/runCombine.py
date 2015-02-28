@@ -55,7 +55,6 @@ parser.add_option('--rMax',          action="store", type=float, dest="rMax", de
 
 (options, args) = parser.parse_args()
 
-
 ##########################################
 ###### Submit batch job for combine ######
 ##########################################
