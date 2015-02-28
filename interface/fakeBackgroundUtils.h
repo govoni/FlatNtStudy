@@ -18,6 +18,16 @@
 
 using namespace std ;
 
+vector<jetContainer> dumpJetsForFake (vector<jetContainer> & RecoJets,
+                                      vector<jetContainer> & GenJets,
+                                      vector<leptonContainer> & leptonsIsoTight,
+                                      const float & minJetCutPt,
+                                      const float & btagCut,
+                                      const float & jetPUID,
+                                      const float & minPtLeptonCutCleaning,
+                                      const float & matchingCone,
+                                      const float & etaMaxL);
+
 /// method to get the fake weight and the new lepton kinematic                                                                                                                  
 float getFakeWeight( jetContainer inputJet,
                      fakeRateContainer & fakeRate,

@@ -1,5 +1,47 @@
 #include "fakeBackgroundUtils.h"
 
+vector<jetContainer> dumpJetsForFake (vector<jetContainer> & RecoJets,
+				      vector<jetContainer> & GenJets,
+				      vector<leptonContainer> & leptonsIsoTight,
+				      const float & minJetCutPt,
+				      const float & btagCut,
+				      const float & jetPUID,
+				      const float & minPtLeptonCutCleaning,
+				      const float & matchingCone,
+				      const float & etaMaxL){
+  vector<jetContainer> jetForFakes ;
+  
+  for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+
+    if(RecoJets.at(iJet).jet4V_.Pt() < minJetCutPt) continue;
+    if(RecoJets.at(iJet).jetPUID_    < jetPUID) continue;
+    if(RecoJets.at(iJet).btag_       > btagCut) continue;
+    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) > etaMaxL ) continue;
+
+    bool isGoodJet = true;
+
+    for(size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
+      if(leptonsIsoTight.at(iLep).lepton4V_.Pt() < minPtLeptonCutCleaning) continue ;
+      if(leptonsIsoTight.at(iLep).lepton4V_.DeltaR(RecoJets.at(iJet).jet4V_) > matchingCone) continue ;
+      isGoodJet = false ;
+    }
+
+    if(isGoodJet){
+      for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
+	if(RecoJets.at(iJet).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone){ 
+	  jetForFakes.push_back(RecoJets.at(iJet));
+	  break;
+	}
+      }
+    }
+  }
+
+  return jetForFakes;
+
+
+}
+
+
 // ---------------------                                                                                                                                                        
 float getFakeWeight(  jetContainer inputJet,
                       fakeRateContainer & fakeRate,
@@ -7,6 +49,7 @@ float getFakeWeight(  jetContainer inputJet,
                       vector<jetContainer> & jetCollection){
 
   float weight = 1. ;
+
   if(leptonFlavour == "U"){
     weight *= fakeRate.getFakeRate(int(13),inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()) ;
     for(size_t iJet = 0; iJet < jetCollection.size(); iJet++){
@@ -35,33 +78,31 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
   TLorentzVector lepton4V ;
 
-  if(TString(scenarioString).Contains("UU") and fabs(inputLepton.flavour_) == 13){
-    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+  if(TString(scenarioString).Contains("UU") and fabs(inputLepton.flavour_) == 13){ // if UU final state and input lepton is a muon
 
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
       lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
                             0.);
     else
-
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
+    return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.); // return lepton with same flavour and charge
+
   }
 
   else if(TString(scenarioString).Contains("EE") and fabs(inputLepton.flavour_) == 11){
 
-    if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
+    if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55)  // remove endcap barrel gap
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
     else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-
       lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
 			    0.);
     else
-
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
     return leptonContainer(lepton4V,inputLepton.charge_,inputLepton.flavour_,0.);
@@ -69,7 +110,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
   else if(TString(scenarioString).Contains("UE") and fabs(inputLepton.flavour_) == 13){
 
-    if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
+    if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) // create an electron removing the gap
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
     else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
@@ -81,33 +122,26 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
     if(inputLepton.flavour_ > 0)
-
       return leptonContainer(lepton4V,inputLepton.charge_,11,0.);
 
     else
-
       return leptonContainer(lepton4V,inputLepton.charge_,-11,0.);
   }
 
   else if(TString(scenarioString).Contains("UE") and fabs(inputLepton.flavour_) == 11){
 
     if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-
       lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
                             0.);
 
     else
-
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
     if(inputLepton.flavour_ > 0)
-
       return leptonContainer(lepton4V,inputLepton.charge_,13,0.);
-
     else
-
       return leptonContainer(lepton4V,inputLepton.charge_,-13,0.);
   }
 
@@ -181,30 +215,33 @@ void makeFakeLeptonBackground(const string & sampleName,
 
   if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) return ; // if less than one isolated lepton over the minimum pt                                        
 
-  // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
+  // take the fake weight from the cleaned jet collection over threshold                                                                                                    
   if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
     return ;
   if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
     return ;
 
+  // tke the reco jets, check that they are not overlapping with isolated leptons and over threshold + PUID + btagging + etaCut + matched with a GenJet
   vector<jetContainer> RecoJetsForFake;
-  RecoJetsForFake  = dumpJets (RecoJets, 
-			       leptonsIsoTight, 
-			       minJetCutPt, 
-			       999, 
-			       cutElement.jetPUID, 
-			       minPtLeptonCutCleaning, 
-			       matchingCone,
-			       cutElement.etaMaxL);
+  RecoJetsForFake  = dumpJetsForFake (RecoJets, 
+				      GenJets,
+				      leptonsIsoTight, 
+				      minJetCutPt, 
+				      999, 
+				      cutElement.jetPUID, 
+				      minPtLeptonCutCleaning, 
+				      matchingCone,
+				      cutElement.etaMaxL);
+
+  
 
   // fake rate                                                                                                                                                             
   for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
 
     eventFakeWeight = 1.;
 
-
     if(TString(finalStateString).Contains("UU")){
-      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake); // get the fake rate from interpolation
     }
     else if(TString(finalStateString).Contains("EE")){
       eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
@@ -230,7 +267,7 @@ void makeFakeLeptonBackground(const string & sampleName,
     vector<leptonContainer> fakeLeptonsAll;
     vector<leptonContainer> fakeLeptonsIsoTight;
     fakeLeptonsIsoTight = leptonsIsoTight ;
-    fakeLeptonsAll = LeptonsAll;
+    fakeLeptonsAll      = LeptonsAll;
     leptonContainer fakeLepton ;
     fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString);
 
@@ -240,7 +277,7 @@ void makeFakeLeptonBackground(const string & sampleName,
     sort(fakeLeptonsAll.rbegin(),fakeLeptonsAll.rend());
     sort(fakeLeptonsIsoTight.rbegin(),fakeLeptonsIsoTight.rend());
 
-    //re-clean jets for this new lepton                                                                                                                                    
+    //re-clean jets for this new lepton                                                                               
     vector<jetContainer> fakeRecoJets;
     fakeRecoJets  = dumpJets (RecoJets, fakeLeptonsIsoTight, minJetCutPt, 999, cutElement.jetPUID, minPtLeptonCutCleaning, matchingCone);
 
@@ -328,14 +365,15 @@ void makeFakeLeptonBackground(const string & sampleName,
     return ;
 
   vector<jetContainer> RecoJetsForFake;
-  RecoJetsForFake  = dumpJets (RecoJets, 
-			       leptonsIsoTight, 
-			       minJetCutPt, 
-			       999, 
-			       cutElement.jetPUID, 
-			       minPtLeptonCutCleaning, 
-			       matchingCone,
-			       cutElement.etaMaxL);
+  RecoJetsForFake  = dumpJetsForFake (RecoJets,
+                                      GenJets,
+                                      leptonsIsoTight,
+                                      minJetCutPt,
+                                      999,
+                                      cutElement.jetPUID,
+                                      minPtLeptonCutCleaning,
+                                      matchingCone,
+                                      cutElement.etaMaxL);
 
   // fake rate                                                                                                                                                             
   for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){

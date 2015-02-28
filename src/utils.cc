@@ -293,8 +293,10 @@ vector<leptonContainer>  dumpLeptons (vector<leptonContainer> & TL_leptons,
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 
 
-vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, vector<leptonContainer> & TL_leptons, 
-                               float minptcut, float btagcut, float jetPUIDCut, float lepminptcut, float deltaR, float etaMax){
+vector<jetContainer> dumpJets (vector<jetContainer> & TL_jets, 
+			       vector<leptonContainer> & TL_leptons, 
+                               float minptcut, float btagcut, float jetPUIDCut, 
+			       float lepminptcut, float deltaR, float etaMax){
 
   vector<jetContainer> goodJets ;
   for (size_t iJet = 0 ; iJet < TL_jets.size() ; ++iJet){
@@ -420,7 +422,7 @@ vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll,
   for( size_t iLep = 0; iLep < leptonAll.size(); iLep++){
 
     if(leptonAll.at(iLep).lepton4V_.Pt() < minptcut) continue;
-    if(fabs(leptonAll.at(iLep).flavour_) != 13) continue;
+    if(fabs(leptonAll.at(iLep).flavour_) != 13)      continue;
     if(leptonAll.at(iLep).lepton4V_.Pt() > minLeptonCut and leptonAll.at(iLep).iso_ <  isolationCut) continue;
 
     bool goodSoftMu = false;
@@ -463,11 +465,11 @@ void loopOnEvents (plotter & analysisPlots,
 
   int maxevents = reader->fChain->GetEntries() ;
 
-  // define the formulat for systematics study  
+  // define the formulat for systematics study  --> should be provided by Egamma, Muon and JME POGs
   objectFormula scenarioFormula (scenarioString); 
 
   // define fake rate and migration matrix  
-  fakeRateContainer fakeRate(fakeRateFile); 
+  fakeRateContainer       fakeRate(fakeRateFile); 
   fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(fakeRateFile);
 
   // fake rate application --> check if the fake method has to be applied
@@ -503,17 +505,24 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue;
       }
       else if(TString(finalStateString).Contains("EE")){
-	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
+	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
+	  continue;
       }
       else if(TString(finalStateString).Contains("EU")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
-	if(fabs(reader->leptonLHEpid1) != 11) continue;
-	if(fabs(reader->leptonLHEpid2) != 13) continue ;
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	  continue ;
+	if(fabs(reader->leptonLHEpid1) != 11) 
+	  continue;
+	if(fabs(reader->leptonLHEpid2) != 13) 
+	  continue ;
       }
       else if(TString(finalStateString).Contains("UE")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
-	if(fabs(reader->leptonLHEpid1) != 13) continue;
-	if(fabs(reader->leptonLHEpid2) != 11) continue ;
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	  continue ;
+	if(fabs(reader->leptonLHEpid1) != 13) 
+	  continue;
+	if(fabs(reader->leptonLHEpid2) != 11) 
+	  continue ;
       }
     
       // if an event pass the cut, fill the associated map                                                                                                                 
@@ -525,7 +534,8 @@ void loopOnEvents (plotter & analysisPlots,
       L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
       L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
 
-      if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) continue;
+      if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) 
+	continue;
     }    
 
     // loop on the cut list
@@ -534,15 +544,12 @@ void loopOnEvents (plotter & analysisPlots,
       TLorentzVector L_met, L_gen_met;
       TLorentzVector L_met_lepScaleUp, L_met_lepScaleDown, L_met_lepRes, L_met_jetScaleUp, L_met_jetScaleDown, L_met_jetRes;
 
-      if(not usePuppiAsDefault){
-	L_met.SetPtEtaPhiM       (reader->pfmet,0.,reader->pfmetphi, 0.) ;                                                                                                  
-      }
-      else{
-	L_met.SetPtEtaPhiM (reader->pfmet_puppi,0.,reader->pfmetphi_puppi, 0.) ;                                                                                        
-      }
+      if(not usePuppiAsDefault)
+	L_met.SetPtEtaPhiM(reader->pfmet,0.,reader->pfmetphi, 0.) ;                                                                                                        
+      else
+	L_met.SetPtEtaPhiM(reader->pfmet_puppi,0.,reader->pfmetphi_puppi, 0.) ;                                                                                              
 
-      L_gen_met.SetPtEtaPhiM   (reader->metGenpt,0.,reader->metGenphi, 0.) ;                                                                                             
-
+      L_gen_met.SetPtEtaPhiM(reader->metGenpt,0.,reader->metGenphi, 0.) ;                                                                                             
 
       //Lepton Sector ///////      
       vector<leptonContainer> LeptonsAll, LeptonsAllScaleUp, LeptonsAllScaleDown, LeptonsAllRes;
@@ -561,6 +568,7 @@ void loopOnEvents (plotter & analysisPlots,
 	fillPuppiJetArray (RecoJetsAll, *reader) ;
       }
 
+      // take soft muons 
       vector<leptonContainer> softMuons;
       softMuons = dumpSoftMuons(LeptonsAll,RecoJetsAll,leptonIsoCut_mu,minPtLeptonCut,softMuonPt,matchingCone);
 
@@ -574,15 +582,14 @@ void loopOnEvents (plotter & analysisPlots,
 
       // take gen jets                                                                                                                                                     
       vector<jetContainer> GenJets;
-      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, 999, 999, minPtLeptonCutCleaning, matchingCone);
-      
+      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, 0., 999, -999, minPtLeptonCutCleaning, matchingCone);
+
       // take track jets
       vector<jetContainer> trackJetsAll;
       fillTrackJetArray (trackJetsAll,*reader) ;
             
       if(applyFake){ // the sample require the fake rate application
 	
-
 	makeFakeLeptonBackground( sampleName,        // name of the sample
 				  samplePosition,     // position used in case of mutiple physics process with same sample name
 				  finalStateString,  // final state string
@@ -956,17 +963,24 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue;
       }
       else if(TString(finalStateString).Contains("EE")){
-	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
+	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
+	  continue;
       }
       else if(TString(finalStateString).Contains("EU")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
-	if(fabs(reader->leptonLHEpid1) != 11) continue;
-	if(fabs(reader->leptonLHEpid2) != 13) continue ;
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	  continue ;
+	if(fabs(reader->leptonLHEpid1) != 11) 
+	  continue;
+	if(fabs(reader->leptonLHEpid2) != 13) 
+	  continue ;
       }
       else if(TString(finalStateString).Contains("UE")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) continue ;
-	if(fabs(reader->leptonLHEpid1) != 13) continue;
-	if(fabs(reader->leptonLHEpid2) != 11) continue ;
+	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	  continue ;
+	if(fabs(reader->leptonLHEpid1) != 13) 
+	  continue;
+	if(fabs(reader->leptonLHEpid2) != 11) 
+	  continue ;
       }
 
       // if an event pass the cut, fill the associated map                                                                                                                 
@@ -978,7 +992,8 @@ void loopOnEvents (plotter & analysisPlots,
       L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
       L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
 
-      if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) continue;
+      if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) 
+	continue;
     }
 
 
@@ -987,13 +1002,11 @@ void loopOnEvents (plotter & analysisPlots,
       TLorentzVector L_met, L_gen_met;
       TLorentzVector L_met_lepScaleUp, L_met_lepScaleDown, L_met_lepRes, L_met_jetScaleUp, L_met_jetScaleDown, L_met_jetRes;
 
-      if(not usePuppiAsDefault){
+      if(not usePuppiAsDefault)
 	L_met.SetPtEtaPhiM       (reader->pfmet,0.,reader->pfmetphi, 0.) ;                                                                                                  
-      }
-      else{
+      else
 	L_met.SetPtEtaPhiM (reader->pfmet_puppi,0.,reader->pfmetphi_puppi, 0.) ;                                                                                        
-      }
-
+      
       L_gen_met.SetPtEtaPhiM   (reader->metGenpt,0.,reader->metGenphi, 0.) ;                                                                                             
 
       //Lepton Sector ///////      
@@ -1027,7 +1040,7 @@ void loopOnEvents (plotter & analysisPlots,
 
       // take gen jets                                                                                                                                                     
       vector<jetContainer> GenJets;
-      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, minJetCutPt, 999, 999, minPtLeptonCutCleaning, matchingCone);
+      GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, 0., 999, -999, minPtLeptonCutCleaning, matchingCone);
       
       // take track jets
       vector<jetContainer> trackJetsAll;
