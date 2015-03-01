@@ -43,7 +43,7 @@ parser.add_option('--nToys',                 action="store", type="int",    dest
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
-luminosity     = [20,50,75,100,150,250,500,750,1200,1800,2400,3000];
+luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000];
 
 (options, args) = parser.parse_args()
 
@@ -68,19 +68,19 @@ def submitBatchJobCombine(command, fn, fileNames):
         outScript.write('cp '+currentDir+"/"+fileNames+'* ./ \n');
         nametemp = fileNames.replace("COMB","UUpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = fileNames.replace("UUpp","UUmm");
+        nametemp = fileNames.replace("COMB","UUmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("UUmm","EEpp");
+        nametemp = fileNames.replace("COMB","EEpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EEpp","EEmm");
+        nametemp = fileNames.replace("COMB","EEmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EEmm","EUpp");
+        nametemp = fileNames.replace("COMB","EUpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EUpp","EUmm");
+        nametemp = fileNames.replace("COMB","EUmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("EUmm","UEpp");
+        nametemp = fileNames.replace("COMB","UEpp");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
-        nametemp = nametemp.replace("UEpp","UEmm");
+        nametemp = fileNames.replace("COMB","UEmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
 
     outScript.write(command+'\n');
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     
     ## make the card list
     os.system("ls | grep txt | grep -v COMB | grep _UUpp.txt | grep "+options.inputVariable+" > list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _UUmm.txt | grep "+options.inputVariable+" > list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UUmm.txt | grep "+options.inputVariable+" >> list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _EEpp.txt | grep "+options.inputVariable+" >> list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _EEmm.txt | grep "+options.inputVariable+" >> list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _EUpp.txt | grep "+options.inputVariable+" >> list.txt");
@@ -249,10 +249,8 @@ if __name__ == '__main__':
 
     if not options.noGenerateCards :
         for card in combinedCards :
-            print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+
-            +card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card;  
-            os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+
-                      +card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card);        
+            print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card;  
+            os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card);        
 
     totalCards = createdCards + combinedCards
 

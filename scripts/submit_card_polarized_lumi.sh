@@ -1,5 +1,5 @@
-python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized/Card2D/lumiExtrapolation/ --inputVariable mll_ptJJ --outputDIR computeAsymptotic --makeAsymptotic --injectSignal 1 --nToys 100 --rMin -1 --rMax 3 --batchMode --queque cmscaf1nh 
+python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/lumiExtrapolation/ --inputVariable mjj_mll --outputDIR computeAsymptotic --makeAsymptotic --injectSignal 1 --nToys 100 --rMin -5 --rMax 6 --batchMode --queque 8nh 
 
-python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized/Card2D/lumiExtrapolation/ --inputVariable mll_ptJJ --outputDIR computeProfileLikelihood --makeProfileLikelihood --injectSignal 1 --nToys 500 --rMin -1 --rMax 3 --batchMode --queque cmscaf1nh --noGenerateCards
+python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/lumiExtrapolation/ --inputVariable mjj_mll --outputDIR computeProfileLikelihood --makeProfileLikelihood --injectSignal 1 --nToys 300 --rMin -5 --rMax 6 --batchMode --queque 1nh --noGenerateCards
 
-python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized/Card2D/lumiExtrapolation/ --inputVariable mll_ptJJ --outputDIR computeMaxLikelihoodFit --makeMaxLikelihoodFit --injectSignal 1 --nToys 100 --rMin -1 --rMax 3 --batchMode --queque cmscaf1nh --noGenerateCards
+python python/runLumiExtrapolation.py --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/lumiExtrapolation/ --inputVariable mjj_mll --outputDIR computeMaxLikelihoodFit --makeMaxLikelihoodFit --injectSignal 1 --nToys 100 --rMin -5 --rMax 6 --batchMode --queque 8nh --noGenerateCards
