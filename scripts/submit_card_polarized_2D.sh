@@ -68,6 +68,4 @@ python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards
 
 python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/ --outputDIR computeLikelihoodScan --batchMode --queque 1nh --channel EUmm --rMin -1 --rMax 3 --inputVariableList cfg/DataCardCfg/PolarizedCards/Variables2D.txt --injectSignal 1 --is2Dcard --nToys -1 
 
-python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/ --outputDIR computeLikelihoodScan --batchMode --queque 1nh --channel UEmm --rMin -1 --rMax 3 --inputVariableList cfg/DataCardCfg/PolarizedCards/Variables2D.txt --injectSignal 1 --is2Dcard --nToys -1 
-
 python python/runCombine.py  --makeLikelihoodScan --datacardDIR output/DataCards_WW_SS_Polarized_v2/Card2D/ --outputDIR computeLikelihoodScan --batchMode --queque 1nh --channel COMB --rMin -1 --rMax 3 --inputVariableList cfg/DataCardCfg/PolarizedCards/Variables2D.txt --injectSignal 1 --is2Dcard --nToys -1  --noCombineCards
