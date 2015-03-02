@@ -36,7 +36,7 @@ parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int", 
 
 (options, args) = parser.parse_args()
 
-luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000];
+fakeRateScaleFactor     = [0.1,0.2,0.5,0.7,0.8,1.2,1.5,2,2.5,3,5];
 
 ########################################
 ###### Make Asymptotic Limit Plot ######
@@ -339,9 +339,9 @@ def makeAsymptoticLimitPlot(filelist):
     limitExp2sDw.Sumw2();
 
 
-    for lumi in luminosity :
+    for fake in fakeRateScaleFactor :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(lumi)) != -1 :
+            if filelist[ifile].find("_%d"%(fake)) != -1 :
 
                 limitExp.Reset("ICES");
                 limitExp1sUp.Reset("ICES");
@@ -351,22 +351,9 @@ def makeAsymptoticLimitPlot(filelist):
 
                 getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);
      
-                xbins.append(lumi);
-                if lumi < 50 :
-                    xbins_err_up.append(10);
-                    xbins_err_dw.append(10);
-                elif lumi < 100 :
-                    xbins_err_up.append(15);
-                    xbins_err_dw.append(15);
-                elif lumi < 500 :
-                    xbins_err_up.append(40);
-                    xbins_err_dw.append(40);
-                elif lumi < 1500 :
-                    xbins_err_up.append(100);
-                    xbins_err_dw.append(100);
-                else :
-                    xbins_err_up.append(200);
-                    xbins_err_dw.append(200);
+                xbins.append(fake);
+                xbins_err_up.append(0.1);
+                xbins_err_dw.append(0.1);
 
                 ybins_exp.append(limitExp.GetMean());
                 ybins_2s_dw.append(limitExp2sDw.GetMean());
@@ -380,9 +367,9 @@ def makeAsymptoticLimitPlot(filelist):
 
 
     ## make the plot and setting the style                               
-    curGraph_exp = ROOT.TGraphAsymmErrors(len(luminosity),xbins,ybins_exp);
-    curGraph_1s  = ROOT.TGraphAsymmErrors(len(luminosity),xbins,ybins_exp,xbins_err_dw,xbins_err_up,ybins_1s_dw,ybins_1s_up);
-    curGraph_2s  = ROOT.TGraphAsymmErrors(len(luminosity),xbins,ybins_exp,xbins_err_dw,xbins_err_up,ybins_2s_dw,ybins_2s_up);
+    curGraph_exp = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins,ybins_exp);
+    curGraph_1s  = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins,ybins_exp,xbins_err_dw,xbins_err_up,ybins_1s_dw,ybins_1s_up);
+    curGraph_2s  = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins,ybins_exp,xbins_err_dw,xbins_err_up,ybins_2s_dw,ybins_2s_up);
 
 
     curGraph_exp.SetMarkerStyle(20);
@@ -402,7 +389,7 @@ def makeAsymptoticLimitPlot(filelist):
     curGraph_2s.SetLineStyle(ROOT.kDashed);
     curGraph_2s.SetLineWidth(3);
                                
-    oneLine = ROOT.TF1("oneLine","1",0,luminosity[len(luminosity)-1]+500);
+    oneLine = ROOT.TF1("oneLine","1",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]);
     oneLine.SetLineColor(ROOT.kRed);
     oneLine.SetLineWidth(3);
     
@@ -416,7 +403,7 @@ def makeAsymptoticLimitPlot(filelist):
 
     curGraph_2s.GetXaxis().SetTitleSize(0.045);
     curGraph_2s.GetXaxis().SetTitleFont(42);
-    curGraph_2s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    curGraph_2s.GetXaxis().SetTitle("fake rate scale factor");
 
     curGraph_2s.GetYaxis().SetNdivisions(505);
                    
@@ -489,11 +476,11 @@ def makeProfileLikelihoodPlot(filelist):
     signifExp = ROOT.TH1F("signifExp","",10000,0,150);
     signifExp.Sumw2();
 
-    for lumi in luminosity :
+    for fake in fakenosity :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(lumi)) != -1 :
+            if filelist[ifile].find("_%d"%(fake)) != -1 :
 
-                xbins_exp.append(lumi); 
+                xbins_exp.append(fake); 
                 xbins_err.append(0.); 
 
                 signifExp.Reset("ICES");
@@ -505,7 +492,7 @@ def makeProfileLikelihoodPlot(filelist):
                 break;
 
 
-    gr_exp = ROOT.TGraphAsymmErrors(len(luminosity),xbins_exp,ybins_exp,xbins_err,xbins_err,ybins_err,ybins_err);
+    gr_exp = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins_exp,ybins_exp,xbins_err,xbins_err,ybins_err,ybins_err);
                          
     gr_exp.SetLineColor(1); 
     gr_exp.SetMarkerColor(1); 
@@ -514,15 +501,15 @@ def makeProfileLikelihoodPlot(filelist):
     gr_exp.SetMarkerSize(1.6);
     gr_exp.SetLineStyle(8);
 
-    oneSLine = ROOT.TF1("oneSLine","1",0,luminosity[len(luminosity)-1]+500);
+    oneSLine = ROOT.TF1("oneSLine","1",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]+1);
     oneSLine.SetLineColor(ROOT.kRed); oneSLine.SetLineWidth(2); oneSLine.SetLineStyle(2);
-    twoSLine = ROOT.TF1("twoSLine","2",0,luminosity[len(luminosity)-1]+500);
+    twoSLine = ROOT.TF1("twoSLine","2",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]+1);
     twoSLine.SetLineColor(ROOT.kRed); twoSLine.SetLineWidth(2); twoSLine.SetLineStyle(2);
-    threeSLine = ROOT.TF1("threeSLine","3",0,luminosity[len(luminosity)-1]+500);
+    threeSLine = ROOT.TF1("threeSLine","3",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]+1);
     threeSLine.SetLineColor(ROOT.kRed); threeSLine.SetLineWidth(2); threeSLine.SetLineStyle(2);
-    fourSLine = ROOT.TF1("fourSLine","4",0,luminosity[len(luminosity)-1]+500);
+    fourSLine = ROOT.TF1("fourSLine","4",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]+1);
     fourSLine.SetLineColor(ROOT.kRed); fourSLine.SetLineWidth(2); fourSLine.SetLineStyle(2);
-    fiveSLine = ROOT.TF1("fiveSLine","5",0,luminosity[len(luminosity)-1]+500);
+    fiveSLine = ROOT.TF1("fiveSLine","5",0,fakeRateScaleFactor[len(fakeRateScaleFactor)-1]+1);
     fiveSLine.SetLineColor(ROOT.kRed); fiveSLine.SetLineWidth(2); fiveSLine.SetLineStyle(2);
     
     can = ROOT.TCanvas("can","can",800,650);
@@ -530,7 +517,7 @@ def makeProfileLikelihoodPlot(filelist):
     gr_exp.GetYaxis().SetTitleOffset(0.95);
     gr_exp.GetYaxis().SetTitle("significance (#sigma)");
 
-    gr_exp.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    gr_exp.GetXaxis().SetTitle("fake rate scale factor");
 
     can.SetGrid();
 
@@ -602,9 +589,9 @@ def makeMaxLikelihoodFitPlot(filelist):
     muErrDownTwoSigma.Sumw2();
 
         
-    for lumi in luminosity :
+    for fake in fakeRateScaleFactor :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(lumi)) != -1 :
+            if filelist[ifile].find("_%d"%(fake)) != -1 :
 
                 muValue.Reset("ICES");
                 muErrUpOneSigma.Reset("ICES");
@@ -614,7 +601,7 @@ def makeMaxLikelihoodFitPlot(filelist):
 
                 getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
      
-                xbins_mu.append(lumi); 
+                xbins_mu.append(fake); 
                 xbins_mu_err_up.append(0); 
                 xbins_mu_err_dn.append(0); 
 
@@ -629,10 +616,10 @@ def makeMaxLikelihoodFitPlot(filelist):
 
             
 
-    gr_mu_1s = ROOT.TGraphAsymmErrors(len(luminosity),xbins_mu,ybins_mu,xbins_mu_err_dn,xbins_mu_err_up,ybins_mu_err_dn,ybins_mu_err_up);
+    gr_mu_1s = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins_mu,ybins_mu,xbins_mu_err_dn,xbins_mu_err_up,ybins_mu_err_dn,ybins_mu_err_up);
     gr_mu_1s.SetLineColor(1); gr_mu_1s.SetMarkerColor(1); gr_mu_1s.SetMarkerStyle(20); gr_mu_1s.SetLineWidth(5); gr_mu_1s.SetMarkerSize(1.6);
 
-    gr_mu_2s = ROOT.TGraphAsymmErrors(len(luminosity),xbins_mu,ybins_mu,xbins_mu_err_dn,xbins_mu_err_up,ybins_mu_err_dn_2s,ybins_mu_err_up_2s);
+    gr_mu_2s = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins_mu,ybins_mu,xbins_mu_err_dn,xbins_mu_err_up,ybins_mu_err_dn_2s,ybins_mu_err_up_2s);
     gr_mu_2s.SetLineColor(ROOT.kBlue); gr_mu_2s.SetMarkerColor(ROOT.kBlue); gr_mu_2s.SetMarkerStyle(20); gr_mu_2s.SetLineWidth(3); gr_mu_2s.SetMarkerSize(1.6);
 
     ban1s = TLatex(950,1.,("#mu SM injected"));
@@ -644,7 +631,7 @@ def makeMaxLikelihoodFitPlot(filelist):
     gr_mu_2s.GetYaxis().SetTitle("signal strenght");
     gr_mu_2s.GetYaxis().SetTitleOffset(0.95)
 
-    gr_mu_2s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    gr_mu_2s.GetXaxis().SetTitle("fake scale factor");
 
     can.SetGrid();
    
