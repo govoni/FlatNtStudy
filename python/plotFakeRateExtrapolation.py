@@ -341,7 +341,7 @@ def makeAsymptoticLimitPlot(filelist):
 
     for fake in fakeRateScaleFactor :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(fake)) != -1 :
+            if filelist[ifile].find("_%d"%(fake*10)) != -1 :
 
                 limitExp.Reset("ICES");
                 limitExp1sUp.Reset("ICES");
@@ -352,8 +352,12 @@ def makeAsymptoticLimitPlot(filelist):
                 getAsymptoticLimit(filelist[ifile],limitExp,limitExp1sUp,limitExp1sDw,limitExp2sUp,limitExp2sDw);
      
                 xbins.append(fake);
-                xbins_err_up.append(0.1);
-                xbins_err_dw.append(0.1);
+                if fake < 0.5 :
+                    xbins_err_up.append(0.05);
+                    xbins_err_dw.append(0.05);
+                else :
+                    xbins_err_up.append(0.01);
+                    xbins_err_dw.append(0.01);
 
                 ybins_exp.append(limitExp.GetMean());
                 ybins_2s_dw.append(limitExp2sDw.GetMean());
@@ -476,9 +480,9 @@ def makeProfileLikelihoodPlot(filelist):
     signifExp = ROOT.TH1F("signifExp","",10000,0,150);
     signifExp.Sumw2();
 
-    for fake in fakenosity :
+    for fake in fakeRateScaleFactor  :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(fake)) != -1 :
+            if filelist[ifile].find("_%d"%(fake*10)) != -1 :
 
                 xbins_exp.append(fake); 
                 xbins_err.append(0.); 
@@ -591,7 +595,7 @@ def makeMaxLikelihoodFitPlot(filelist):
         
     for fake in fakeRateScaleFactor :
         for ifile in range(len(filelist)):
-            if filelist[ifile].find("_%d"%(fake)) != -1 :
+            if filelist[ifile].find("_%d"%(fake*10)) != -1 :
 
                 muValue.Reset("ICES");
                 muErrUpOneSigma.Reset("ICES");
