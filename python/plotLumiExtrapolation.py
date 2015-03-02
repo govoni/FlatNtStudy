@@ -295,7 +295,7 @@ def setStyle():
 
   gStyle.SetOptStat(0);
   gStyle.SetOptTitle(0)
-  gStyle.SetOptFit(1)
+  gStyle.SetOptFit(0)
 
   NRGBs = 5
   NCont = 255
@@ -571,6 +571,38 @@ def makeProfileLikelihoodPlot(filelist):
 
     can.SaveAs("%s/ProfileLikelihood_%s_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_log.pdf"%(options.outputPlotDIR,options.channel));
+
+    ## make the fi
+    can.SetLogy(0);
+    
+    evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1] *[1]/x)", 0, 10000) ;
+    evolution.SetParameter (0, gr_exp.GetMaximum()) ;
+    evolution.SetParameter (1, 1) ;
+    evolution.SetParameter (2, 0.5) ;
+    gr_exp.Fit ("evolution","RMEQEX0") ;
+
+    can.cd();
+    can.SetGrid();
+
+    evolution.SetLineColor(ROOT.kRed);
+    evolution.SetLineWidth(2);
+
+    evolution.Draw();
+    evolution.GetYaxis().SetTitleOffset(0.95);
+    evolution.GetYaxis().SetTitle("significance (#sigma)");
+
+    evolution.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    gr_exp.Draw("P");
+    evolution.Draw("same");
+
+    can.SaveAs("%s/ProfileLikelihood_%s_vsLumi.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/ProfileLikelihood_%s_vsLumi.pdf"%(options.outputPlotDIR,options.channel));
+
+    can.SetLogy();
+
+    can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.pdf"%(options.outputPlotDIR,options.channel));
+
 
 
 
