@@ -1461,7 +1461,6 @@ void loopOnEvents (plotter & analysisPlots,
   }
 }
 
-
 void fillHisto( plotter & analysisPlots,
 		const string & sampleName,
 		const int    & samplePosition,

@@ -157,24 +157,32 @@ class variableContainer {
 
 };
 
-class variableContainerDynamic {
+class variableContainerDynamic : public variableContainer {
 
  public :
-
+  
   variableContainerDynamic(){};
   ~variableContainerDynamic(){};
 
- variableContainerDynamic(string variableName, int Nbin, vector<float> binning, string label):
-  variableName(variableName),
-    Nbin(Nbin),
-    binning(binning),
-    label(label){}; 
+ variableContainerDynamic(string variableName, int Nbin, vector<float> binning, string label){
+   (*this).variableName = variableName ;
+   (*this).Nbin         = Nbin;
+   (*this).binning      = binning;
 
-  string variableName ;
-  int Nbin ;
-  vector<float> binning;
-  string label;
+   if(not binning.empty()){
+     min          = binning.at(0);
+     max          = binning.back();
+   }
+   
+   (*this).label = label;	
+ }
 
+ variableContainer getVariableContainer(){
+   return variableContainer(variableName,Nbin,min,max,label);
+ }
+
+ vector<float> binning;
+  
 };
 
 class variableContainer2D {
@@ -212,7 +220,7 @@ class variableContainer2D {
 };
 
 
-class variableContainerDynamic2D {
+class variableContainerDynamic2D : public variableContainer2D {
 
  public :
 
@@ -220,25 +228,34 @@ class variableContainerDynamic2D {
   ~variableContainerDynamic2D(){};
 
  variableContainerDynamic2D(string variableNameX, int NbinX, vector<float> binningX, string labelX,
-			    string variableNameY, int NbinY, vector<float> binningY, string labelY):
-  variableNameX(variableNameX),
-    NbinX(NbinX),
-    binningX(binningX),
-    labelX(labelX),
-    variableNameY(variableNameY),
-    NbinY(NbinY),
-    binningY(binningY),
-    labelY(labelY){}; 
+			    string variableNameY, int NbinY, vector<float> binningY, string labelY){
+   (*this).variableNameX = variableNameX;
+   (*this).NbinX = NbinX;
+   (*this).binningX = binningX;
+   if(not binningX.empty()){
+     minX = binningX.front();
+     maxX  = binningX.back();
+   }
 
-  string variableNameX ;
-  int NbinX ;
-  vector<float> binningX ;
-  string labelX;
+   (*this).labelX = labelX;
+   (*this).variableNameY = variableNameY;
+   (*this).NbinY = NbinY ;
+   (*this).binningY = binningY;
+   if(not binningY.empty()){
+     minY = binningY.front();
+     maxY = binningY.back();
+   }
 
-  string variableNameY ;
-  int NbinY ;
-  vector<float> binningY ;
-  string labelY;
+   (*this).labelY = labelY;
+ } 
+
+ variableContainer2D getVariableContainer2D(){
+   return variableContainer2D(variableNameX,NbinX,minX,maxX,labelX,
+			      variableNameY,NbinY,minY,maxY,labelY);
+ }
+
+ vector<float> binningX ;
+ vector<float> binningY ;
 
 };
 
@@ -423,10 +440,8 @@ int ReadInputTrainingFile (const string & , vector<trainingContainer> & );
 int ReadInputCutFile      (const string & , vector<cutContainer> &);
 
 // dynamic bin
-int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainer> & );
+int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainerDynamic> & );
 
-int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainer2D> & );
-
-int ReadInputVariableFileDynamicBinning (const string & , vector<string> & );
+int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainerDynamic2D> & );
 
 #endif

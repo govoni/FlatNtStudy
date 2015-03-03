@@ -14,7 +14,7 @@
 
 using namespace std ;
 
-#define pdgWMass 80.385
+#define pdgWMass   80.385
 #define pdgTopMass 173.21
 #define softMuonPt 3.
 
@@ -28,7 +28,7 @@ class leptonContainer {
 
   leptonContainer(TLorentzVector lepton4V, 
 		  float charge, 
-		  int flavour, 
+		  int   flavour, 
 		  float iso):
    lepton4V_(lepton4V),
    charge_(charge),
@@ -200,14 +200,13 @@ vector<leptonContainer> dumpSoftMuons (vector<leptonContainer> & leptonAll,
                                        float minptcut,
                                        float deltaR);
 
-// method to loop on events
-                                                                                                                                            
+// method to loop on events 
 void loopOnEvents (plotter & analysisPlots,
 		   const string & sampleName,     
 		   const int    & samplePostion,     
 		   readTree* reader,
 		   vector<cutContainer> & CutList,
-		   vector<variableContainer> & VariableList,
+		   vector<variableContainer>  & VariableList,
 		   const bool & usePuppiAsDefault,
 		   const float & minPtLeptonCut, 
 		   const float & minPtLeptonCutCleaning,
@@ -220,6 +219,8 @@ void loopOnEvents (plotter & analysisPlots,
 		   const string & finalStateString = "",
 		   const string & scenarioString = "",
 		   const string & fakeRateFile = "");
+
+
 
 void loopOnEvents (plotter & analysisPlots,
 		   const string & sampleName,     
@@ -242,7 +243,6 @@ void loopOnEvents (plotter & analysisPlots,
 		   const string & fakeRateFile = "");
 
 //method to fill histograms
-
 void fillHisto( plotter & analysisPlot,
                 const string & sampleName,
                 const int    & samplePosition,
@@ -257,7 +257,6 @@ void fillHisto( plotter & analysisPlot,
                 const string & systematicName = "",
 		const float  & eventFakeWeight = 1.
                 );
-
 
 void fillHisto2D( plotter & analysisPlot,
 		  const string & sampleName,
