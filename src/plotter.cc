@@ -392,6 +392,44 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
 
 
 
+// add a plot to a layer of a given sample
+void plotter::addPlotToLayer (string sampleName,   // name of the sample
+			      string layerName,   // name of the layer
+                              string plotName,    // name of the plot
+			      int nBins, vector<float> binningX, string labelName, // histo definition
+			      bool sumW2){
+
+  if (labelName == "") 
+    labelName = plotName ;
+
+  vector<sample>::iterator itSample = m_samples[sampleName].begin();
+  int iSample = 0;
+  for( ; itSample != m_samples[sampleName].end(); itSample++){
+    string h_name = sampleName + "_" + layerName + "_" + plotName + "_" + to_string(iSample) ;  
+    iSample++;
+    TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, &binningX[0]) ;
+    dummy->GetXaxis()->SetTitle(labelName.c_str()); 
+    if(sumW2)
+      dummy->Sumw2 () ;
+
+    itSample->m_sampleContent[layerName].m_histos[plotName] = dummy ;
+
+    if(m_includeSystematics){
+
+      itSample->m_sampleContent[layerName].m_histos_lepScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_lepScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
+
+      itSample->m_sampleContent[layerName].m_histos_jetScaleUp[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_jetScaleDown[plotName] = (TH1F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
+
+      itSample->m_sampleContent[layerName].m_histos_lepRes[plotName] = (TH1F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
+      itSample->m_sampleContent[layerName].m_histos_jetRes[plotName] = (TH1F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
+    }
+  }
+}
+
+
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
@@ -419,6 +457,54 @@ void plotter::add2DPlotToLayer (string sampleName,
     TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
                            nBinsX, xMinX, xMaxX,
                            nBinsY, xMinY, xMaxY) ;
+    dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
+    dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
+
+    if(sumW2)
+      dummy->Sumw2 () ;
+    
+    itSample->m_sampleContent[layerName].m_2Dhistos[plotName] = dummy ;
+
+    if(m_includeSystematics){
+
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_lepScaleDown").c_str()) ;
+
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetScaleUp[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleUp").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetScaleDown[plotName] = (TH2F*) dummy->Clone((plotName+"_jetScaleDown").c_str()) ;
+
+      itSample->m_sampleContent[layerName].m_2Dhistos_lepRes[plotName] = (TH2F*) dummy->Clone((plotName+"_lepRes").c_str()) ;
+      itSample->m_sampleContent[layerName].m_2Dhistos_jetRes[plotName] = (TH2F*) dummy->Clone((plotName+"_jetRes").c_str()) ;
+      
+    }
+  }
+}
+
+
+// add a plot to a layer of a given sample
+void plotter::add2DPlotToLayer (string sampleName, 
+				string layerName, 
+				string plotName, 
+				int nBinsX, vector<float> binningX,
+				int nBinsY, vector<float> binningY,
+				string labelNameX, string labelNameY,
+                                bool sumW2){
+
+
+  
+
+  if (labelNameX == "") labelNameX = plotName + "_x" ;
+  if (labelNameY == "") labelNameY = plotName + "_y" ;
+
+  vector<sample>::iterator itSample = m_samples[sampleName].begin();
+  int iSample = 0;
+
+  for( ; itSample != m_samples[sampleName].end(); itSample++){
+    string h_name = sampleName + "_" + layerName + "_" + plotName + "_" + to_string(iSample);
+    iSample++;
+    TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
+                           nBinsX, &binningX[0],
+                           nBinsY, &binningY[0]) ;
     dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
     dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
 

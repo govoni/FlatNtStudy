@@ -2,9 +2,12 @@
 
 using namespace std;
 
+// take the fake rate 2D map + interpolation
+
 #define upperPtBound  1000
 #define upperEtaBound 3
 
+// de-constructor
 fakeRateContainer::~fakeRateContainer(){
 
   if(eeDenominator != 0)
@@ -61,6 +64,7 @@ fakeRateContainer::~fakeRateContainer(){
 
 }
 
+// default contructor
 fakeRateContainer::fakeRateContainer(const string & fileName){
 
   if (fileName == "")
@@ -71,7 +75,6 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
   cout<<"start to build the fake rate container"<<endl;
 
   // electron case
-
   eeDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_e");
   meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_e");
   eDenominator  = (TH2F*) eeDenominator->Clone("eDenominator");
@@ -170,7 +173,6 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
 
   
   // muon sector
-  
   mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_mu");
   emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_mu");
   mDenominator  = (TH2F*) mmDenominator->Clone("mDenominator");
@@ -270,7 +272,6 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
 }
 
 float fakeRateContainer::getFakeRate (const int & PID, const float & pt, const float & eta){
-
   if(fabs(PID) == 11){ // electron case                                                                                                                                        
     return electronFakeRate->Interpolate(fabs(eta),pt);
   }
@@ -293,6 +294,7 @@ float fakeRateContainer::getFakeRateUncertainty (const int & PID, const float & 
 
 }
 
+// fake rate Migration
 fakeMigrationContainer::~fakeMigrationContainer(){
 
   if(eeBarrel !=0)
@@ -447,66 +449,9 @@ float fakeMigrationContainer::getMigration (const int & PID, const float & pt, c
 
 }
 
+
+// Input Sample normal parser (bin,min,max)
 int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sampleContainer> > & SampleContainer){
-
-
-  ifstream inputFile (InputSampleList.c_str());
-  string buffer;
-
-  if(inputFile.fail()) return -1; 
-
-  vector<string> NameSample;
-  vector<string> NameReducedSample;
-  vector<int>         ColorSample;
-  vector<float>       SampleCrossSection;
-  vector<int>         NumEntriesBefore;
-  vector<int>         isSignal;
-
-  while(!inputFile.eof()){
-  
-    getline(inputFile,buffer);
-
-    if(buffer.empty() || !buffer.find("#") || buffer==" " ) continue ;
-    stringstream line(buffer);
-
-    string  NameSampleTemp;
-    string  NameReducedSampleTemp;
-    string  ColorSampleTemp;
-    string  SampleCrossSectionTemp;
-    string  NumEntresBeforeTemp;
-    string  isSignalTemp;
-
-    line >> NameSampleTemp >> NameReducedSampleTemp >> ColorSampleTemp >> SampleCrossSectionTemp >> NumEntresBeforeTemp >> isSignalTemp;
-
-    NameSample.push_back(NameSampleTemp);   
-    NameReducedSample.push_back(NameReducedSampleTemp);
-    ColorSample.push_back(stoi(ColorSampleTemp)); 
-    SampleCrossSection.push_back(stof(SampleCrossSectionTemp)); 
-    NumEntriesBefore.push_back(stoi(NumEntresBeforeTemp));  
-    isSignal.push_back(stoi(isSignalTemp));
-  }
-
-  
-  for(size_t iSample = 0; iSample < NameReducedSample.size(); iSample++){
-    SampleContainer[NameReducedSample.at(iSample)].push_back(
-           sampleContainer(NameSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
-  }
-
-
-  NameSample.clear();
-  NameReducedSample.clear();
-  ColorSample.clear();
-  SampleCrossSection.clear();
-  NumEntriesBefore.clear();
-  isSignal.clear();
-
-  return SampleContainer.size() ;
-
-}
-
-
-int ReadInputSampleFile(const string & InputSampleList, unordered_map<string,vector<sampleContainer> > & SampleContainer){
-
 
   ifstream inputFile (InputSampleList.c_str());
   string buffer;
@@ -563,6 +508,63 @@ int ReadInputSampleFile(const string & InputSampleList, unordered_map<string,vec
 }
 
 
+int ReadInputSampleFile(const string & InputSampleList, unordered_map<string,vector<sampleContainer> > & SampleContainer){
+
+  ifstream inputFile (InputSampleList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+
+  vector<string> NameSample;
+  vector<string> NameReducedSample;
+  vector<int>    ColorSample;
+  vector<float>  SampleCrossSection;
+  vector<int>    NumEntriesBefore;
+  vector<int>    isSignal;
+
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" " ) continue ;
+    stringstream line(buffer);
+
+    string  NameSampleTemp;
+    string  NameReducedSampleTemp;
+    string  ColorSampleTemp;
+    string  SampleCrossSectionTemp;
+    string  NumEntresBeforeTemp;
+    string  isSignalTemp;
+
+    line >> NameSampleTemp >> NameReducedSampleTemp >> ColorSampleTemp >> SampleCrossSectionTemp >> NumEntresBeforeTemp >> isSignalTemp;
+
+    NameSample.push_back(NameSampleTemp);   
+    NameReducedSample.push_back(NameReducedSampleTemp);
+    ColorSample.push_back(stoi(ColorSampleTemp)); 
+    SampleCrossSection.push_back(stof(SampleCrossSectionTemp)); 
+    NumEntriesBefore.push_back(stoi(NumEntresBeforeTemp));  
+    isSignal.push_back(stoi(isSignalTemp));
+  }
+
+  
+  for(size_t iSample = 0; iSample < NameReducedSample.size(); iSample++){
+    SampleContainer[NameReducedSample.at(iSample)].push_back(
+           sampleContainer(NameSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
+  }
+
+
+  NameSample.clear();
+  NameReducedSample.clear();
+  ColorSample.clear();
+  SampleCrossSection.clear();
+  NumEntriesBefore.clear();
+  isSignal.clear();
+
+  return SampleContainer.size() ;
+
+}
+
+// Variable file
 int ReadInputVariableFile( const string & InputVariableList , vector<variableContainer> & varContainer){
 
 
@@ -602,7 +604,6 @@ int ReadInputVariableFile( const string & InputVariableList , vector<variableCon
 }
 
 int ReadInputVariableFile( const string & InputVariableList , vector<variableContainer2D> & varContainer2D){
-
 
   ifstream inputFile (InputVariableList.c_str());
   string buffer;
@@ -681,6 +682,120 @@ int ReadInputVariableFile( const string & InputVariableList , vector<string> & v
 
 }
 
+
+
+// dynamic binning
+int ReadInputVariableFileDynamicBinning ( const string & InputVariableList , vector<variableContainerDynamic> & varContainer){
+
+
+  ifstream inputFile (InputVariableList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+    stringstream line(buffer);
+
+    string  VariablesTemp;
+    string  VariablesNbinTemp;
+    string  VariablesBinningTemp;
+    string  VariablesTitleTemp;
+    
+    line >> VariablesTemp >> VariablesNbinTemp >> VariablesBinningTemp >> VariablesTitleTemp ;
+    for(size_t ifound = 0 ; ifound < VariablesTitleTemp.size() ; ifound++) {
+      if(VariablesTitleTemp.at(ifound)=='_' && VariablesTitleTemp.at(ifound+1)!='{') VariablesTitleTemp.at(ifound)=' '; 
+    }
+
+    stringstream binning(VariablesBinningTemp);
+    string segment;
+    vector<float> seglist;
+
+    while(getline(binning, segment, ',')){
+      seglist.push_back(stof(segment));
+    }
+    
+    variableContainerDynamic dummy (VariablesTemp,
+				    stoi(VariablesNbinTemp),
+				    seglist,
+				    VariablesTitleTemp);
+
+    varContainer.push_back(dummy);                                  
+  }
+
+  return varContainer.size() ;
+
+}
+
+int ReadInputVariableFileDynamicBinning( const string & InputVariableList , vector<variableContainerDynamic2D> & varContainer2D){
+
+
+  ifstream inputFile (InputVariableList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1; 
+  while(!inputFile.eof()){
+  
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+    stringstream line(buffer);
+
+    string  VariablesTempX;
+    string  VariablesNbinTempX;
+    string  VariablesBinningTempX;
+    string  VariablesTitleTempX;
+
+    string  VariablesTempY;
+    string  VariablesNbinTempY;
+    string  VariablesBinningTempY;
+    string  VariablesTitleTempY;
+    
+    line >> VariablesTempX >> VariablesNbinTempX >> VariablesBinningTempX >> VariablesTitleTempX >> VariablesTempY >> VariablesNbinTempY >> VariablesBinningTempY >> VariablesTitleTempY ;
+
+    for(size_t ifound = 0 ; ifound < VariablesTitleTempX.size() ; ifound++) {
+      if(VariablesTitleTempX.at(ifound)=='_' && VariablesTitleTempX.at(ifound+1)!='{') VariablesTitleTempX.at(ifound)=' '; 
+    }
+
+    for(size_t ifound = 0 ; ifound < VariablesTitleTempY.size() ; ifound++) {
+      if(VariablesTitleTempY.at(ifound)=='_' && VariablesTitleTempY.at(ifound+1)!='{') VariablesTitleTempY.at(ifound)=' '; 
+    }
+
+    stringstream binningX(VariablesBinningTempX);
+    stringstream binningY(VariablesBinningTempY);
+    string segment;
+    vector<float> seglistX;
+    vector<float> seglistY;
+
+    while(getline(binningX, segment, ',')){
+      seglistX.push_back(stof(segment));
+    }
+
+    while(getline(binningY, segment, ',')){
+      seglistY.push_back(stof(segment));
+    }
+    
+    variableContainerDynamic2D dummy (VariablesTempX,
+				      stoi(VariablesNbinTempX),
+				      seglistX,
+				      VariablesTitleTempX,
+				      VariablesTempY,
+				      stoi(VariablesNbinTempY),
+				      seglistY,
+				      VariablesTitleTempY);
+
+    varContainer2D.push_back(dummy);                                  
+  }
+
+  return varContainer2D.size() ;
+
+}
+
+
+
+// cut list
 int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutContainer){
 
 

@@ -53,6 +53,7 @@ class sampleContainer {
 
 };
 
+// ---------------
 class cutContainer {
 
  public :
@@ -132,6 +133,8 @@ class cutContainer {
 
 };
 
+// ---------------
+
 class variableContainer {
 
  public :
@@ -150,6 +153,26 @@ class variableContainer {
   int Nbin ;
   float min;
   float max;
+  string label;
+
+};
+
+class variableContainerDynamic {
+
+ public :
+
+  variableContainerDynamic(){};
+  ~variableContainerDynamic(){};
+
+ variableContainerDynamic(string variableName, int Nbin, vector<float> binning, string label):
+  variableName(variableName),
+    Nbin(Nbin),
+    binning(binning),
+    label(label){}; 
+
+  string variableName ;
+  int Nbin ;
+  vector<float> binning;
   string label;
 
 };
@@ -188,6 +211,41 @@ class variableContainer2D {
 
 };
 
+
+class variableContainerDynamic2D {
+
+ public :
+
+  variableContainerDynamic2D(){};
+  ~variableContainerDynamic2D(){};
+
+ variableContainerDynamic2D(string variableNameX, int NbinX, vector<float> binningX, string labelX,
+			    string variableNameY, int NbinY, vector<float> binningY, string labelY):
+  variableNameX(variableNameX),
+    NbinX(NbinX),
+    binningX(binningX),
+    labelX(labelX),
+    variableNameY(variableNameY),
+    NbinY(NbinY),
+    binningY(binningY),
+    labelY(labelY){}; 
+
+  string variableNameX ;
+  int NbinX ;
+  vector<float> binningX ;
+  string labelX;
+
+  string variableNameY ;
+  int NbinY ;
+  vector<float> binningY ;
+  string labelY;
+
+};
+
+
+
+// ---------------
+
 class trainingContainer {
 
  public: 
@@ -208,6 +266,8 @@ class trainingContainer {
   vector<string> methodName;
 
 };
+
+// ---------------
 
 // class in order to make plots                                                                                                                                               
 
@@ -245,6 +305,8 @@ class histoContainer {
   TH1F* histogram;
 
 };
+
+// ---------------
 
 class fakeRateContainer {
 
@@ -293,6 +355,8 @@ class fakeRateContainer {
   TH2F* ePtCentre;
 
 };
+
+// ---------------
 
 class fakeMigrationContainer {
 
@@ -346,7 +410,7 @@ class fakeMigrationContainer {
 
 int ReadInputSampleFile   (const string & , map<string, vector<sampleContainer> > & );
 
-int ReadInputSampleFile   (const string & , unordered_map<string, vector<sampleContainer> > & );
+int ReadInputSampleFile   (const string & , unordered_map<string, vector< sampleContainer> > & );
 
 int ReadInputVariableFile (const string & , vector<variableContainer> & );
 
@@ -357,5 +421,12 @@ int ReadInputVariableFile (const string & , vector<string> & );
 int ReadInputTrainingFile (const string & , vector<trainingContainer> & );
 
 int ReadInputCutFile      (const string & , vector<cutContainer> &);
+
+// dynamic bin
+int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainer> & );
+
+int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainer2D> & );
+
+int ReadInputVariableFileDynamicBinning (const string & , vector<string> & );
 
 #endif

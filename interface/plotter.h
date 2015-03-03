@@ -180,9 +180,18 @@ class plotter { // generic plotter class
   void addPlotToLayer   (string sampleName, string layerName, string plotName, 
                          int nBins, float xMin, float xMax, string labelName = "", bool sumW2 = false) ;
 
+  void addPlotToLayer   (string sampleName, string layerName, string plotName, 
+                         int nBins, vector<float> binningX, string labelName = "", bool sumW2 = false) ;
+
   void add2DPlotToLayer (string sampleName, string layerName, string plotName, 
                          int nBinsX, float xMinX, float xMaxX,
                          int nBinsY, float xMinY, float xMaxY,
+                         string labelNameX = "", string labelNameY = "",
+			 bool sumW2 = false) ;
+
+  void add2DPlotToLayer (string sampleName, string layerName, string plotName, 
+                         int nBinsX, vector<float> binningX,
+                         int nBinsY, vector<float> binningY,
                          string labelNameX = "", string labelNameY = "",
 			 bool sumW2 = false) ;
 
