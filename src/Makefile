@@ -86,7 +86,6 @@ $(OBJ)%$(ObjSuf): %$(SrcSuf) $(HDRS)
 
 $(OBJ)mydict.cc: $(DICTHDRS)
 	@echo "Generating dictionary for  ..."
-	@echo $(DICTHDRS)
 	rootcling -f $(OBJ)mydict.cc -c -p ${CXXFLAGS} $(DICTHDRS)
 
 $(LIB)$(SONAME): $(OBJS) $(OBJ)mydict.o
