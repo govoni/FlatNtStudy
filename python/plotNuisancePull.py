@@ -14,6 +14,8 @@ from ROOT import gROOT, gStyle, gSystem, TLatex, TGaxis, TPaveText, TH2D, TColor
 
 from collections import defaultdict
 
+# example : python python/plotNuisancePull.py --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card1D/computePostFitAnalysis/  --channel UUpp --outputPlotDIR plotNuisance --inputVariable mjj --nToys 100 --expectSignal 1 -b
+
 ############################################
 #            Job steering                  #
 ############################################
@@ -230,23 +232,6 @@ if __name__ == '__main__':
           pullNormS[normalizationArgList_S.at(ilist).GetName()].append(variable.getVal()-ROOT.RooRealVar(normalizationArgList.at(ilist)).getVal());
 
           
-        ## take the output normalization B and S fit
-        normalizationArgList_B = ROOT.RooArgList(tfile.Get("norm_fit_b_%d"%itoy));
-
-        for ilist in range(normalizationArgList_B.getSize()) :
-
-          if ifile == 1 :
-            normalizationHistoError_B[normalizationArgList.at(ilist).GetName()] = ROOT.TH1F("normalizationHistoError_B_"+normalizationArgList.at(ilist).GetName()+"_"+str(itoy),"",1000,0,10000);
-            normalizationHisto_B[normalizationArgList_B.at(ilist).GetName()] = [];
-            pullNormB[normalizationArgList_B.at(ilist).GetName()] = [];
-
-          variable = ROOT.RooRealVar(normalizationArgList_B.at(ilist));
-          normalizationHisto_B[normalizationArgList_B.at(ilist).GetName()].append(variable.getVal());
-          normalizationHistoError_B[normalizationArgList_B.at(ilist).GetName()].Fill(variable.getError());
-          pullNormB[normalizationArgList_B.at(ilist).GetName()].append(variable.getVal()-ROOT.RooRealVar(normalizationArgList.at(ilist)).getVal());
-
-
-
         ## take the output fitted nuisances
         result_S = tfile.Get("fit_s_%d"%itoy)
         nuisanceArgList_S = result_S.floatParsFinal();
@@ -264,24 +249,6 @@ if __name__ == '__main__':
            pullNuisS[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal()-ROOT.RooRealVar(nuisanceArgList.at(ilist)).getVal());
          else:
            pullNuisS[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal()-options.expectSignal);
-
-        ## take the output fitted nuisances
-        result_B = tfile.Get("fit_s_%d"%itoy)
-        nuisanceArgList_B = result_B.floatParsFinal();
-
-        for ilist in range(nuisanceArgList_B.getSize()):
-         if ifile ==  1 :
-           nuisanceHisto_B[nuisanceArgList_B.at(ilist).GetName()] = [];
-           nuisanceHistoError_B[nuisanceArgList_B.at(ilist).GetName()] = ROOT.TH1F("nuisanceHistoError_B_"+nuisanceArgList_B.at(ilist).GetName()+"_"+str(itoy),"",1000,0,10000);
-           pullNuisB[nuisanceArgList_B.at(ilist).GetName()] = [];
-
-         variable = ROOT.RooRealVar(nuisanceArgList_B.at(ilist));
-         nuisanceHisto_B[nuisanceArgList_B.at(ilist).GetName()].append(variable.getVal());
-         nuisanceHistoError_B[nuisanceArgList_B.at(ilist).GetName()].Fill(variable.getError());
-         if nuisanceArgList_B.at(ilist).GetName() != "r" :
-           pullNuisB[nuisanceArgList_B.at(ilist).GetName()].append(variable.getVal()-ROOT.RooRealVar(nuisanceArgList.at(ilist)).getVal());
-         else:
-           pullNuisB[nuisanceArgList_B.at(ilist).GetName()].append(variable.getVal()-options.expectSignal);
 
 
 
@@ -302,18 +269,6 @@ if __name__ == '__main__':
       pullPlotNormSFit.SetBinError(ibin+1,normalizationHistoError_S[key].GetMean()/normalizationHistoError_In[key].GetMean())
       ibin = ibin+1;
 
-    pullPlotNormBFit = ROOT.TH1F("pullPlotNormBFit","",len(pullNormB),0,len(pullNormB));
-    ibin = 0;
-    for key, value in pullNormB.iteritems() :
-      pullPlotNormBFit.GetXaxis().SetBinLabel(ibin+1,key.split("/")[1])
-      pullValue.Reset("ICES");
-      for val in range(len(value)):
-        pullValue.Fill(value[val]/normalizationHistoError_B[key].GetMean());
-
-      pullPlotNormBFit.SetBinContent(ibin+1,pullValue.GetMean());
-      pullPlotNormBFit.SetBinError(ibin+1,normalizationHistoError_B[key].GetMean()/normalizationHistoError_In[key].GetMean());
-      ibin = ibin+1;
-
     pullPlotNuisSFit = ROOT.TH1F("pullPlotNuisSFit","",len(pullNuisS),0,len(pullNuisS));
     ibin = 0;
     for key, value in pullNuisS.iteritems() :
@@ -327,21 +282,6 @@ if __name__ == '__main__':
         pullPlotNuisSFit.SetBinError(ibin+1,nuisanceHistoError_S[key].GetMean()/nuisanceHistoError_In[key].GetMean());        
       else :
         pullPlotNuisSFit.SetBinError(ibin+1,nuisanceHistoError_S[key].GetMean()/1.);        
-      ibin = ibin+1;
-
-    pullPlotNuisBFit = ROOT.TH1F("pullPlotNuisBFit","",len(pullNuisB),0,len(pullNuisB));
-    ibin = 0;
-    for key, value in pullNuisB.iteritems() :
-      pullPlotNuisBFit.GetXaxis().SetBinLabel(ibin+1,key.split("/")[0])
-      pullValue.Reset("ICES");
-      for val in range(len(value)):
-        pullValue.Fill(value[val]/nuisanceHistoError_B[key].GetMean());
-
-      pullPlotNuisBFit.SetBinContent(ibin+1,pullValue.GetMean());
-      if key != "r" :
-        pullPlotNuisBFit.SetBinError(ibin+1,nuisanceHistoError_B[key].GetMean()/nuisanceHistoError_In[key].GetMean());
-      else :
-        pullPlotNuisBFit.SetBinError(ibin+1,nuisanceHistoError_B[key].GetMean()/1.);
       ibin = ibin+1;
  
     
@@ -420,8 +360,8 @@ if __name__ == '__main__':
     canSNorm.RedrawAxis("g");
     canSNorm.Update();
 
-    canSNorm.SaveAs("normS_%s_%s.png"%(options.inputVariable,options.channel),"png");
-    canSNorm.SaveAs("normS_%s_%s.pdf"%(options.inputVariable,options.channel),"pdf");
+    canSNorm.SaveAs("%s/normS_%s_%s.png"%(options.outputPlotDIR,options.inputVariable,options.channel),"png");
+    canSNorm.SaveAs("%s/normS_%s_%s.pdf"%(options.outputPlotDIR,options.inputVariable,options.channel),"pdf");
  
     ########
     canSNuis = ROOT.TCanvas("canSNuis","canSNuis",1150,650);    
@@ -474,5 +414,5 @@ if __name__ == '__main__':
     canSNuis.RedrawAxis("g");
     canSNuis.Update();
 
-    canSNuis.SaveAs("nuisS_%s_%s.png"%(options.inputVariable,options.channel),"png");
-    canSNuis.SaveAs("nuisS_%s_%s.pdf"%(options.inputVariable,options.channel),"pdf");
+    canSNuis.SaveAs("%s/nuisS_%s_%s.png"%(options.outputPlotDIR,options.inputVariable,options.channel),"png");
+    canSNuis.SaveAs("%s/nuisS_%s_%s.pdf"%(options.outputPlotDIR,options.inputVariable,options.channel),"pdf");

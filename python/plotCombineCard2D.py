@@ -897,11 +897,19 @@ if __name__ == '__main__':
     for columns in ( raw.strip().split() for raw in fileVar ):
         if columns[0].find('#')!=-1 or columns[0] == ' ': continue;
 
-        if not columns[0] in variableName :
-            variableName.append(columns[0]);
+        if ROOT.TString(options.inputVariableList).Contains("Dynamic"):
+            if not columns[0] in variableName :
+                variableName.append(columns[0]);
 
-        if not columns[4] in variableLabel :
-            variableLabel.append(columns[4]);
+            if not columns[3] in variableLabel :
+                variableLabel.append(columns[3]);
+        else:
+
+            if not columns[0] in variableName :
+                variableName.append(columns[0]);
+
+            if not columns[4] in variableLabel :
+                variableLabel.append(columns[4]);
 
     ## fix the chdir
     os.chdir(options.fileDIR);

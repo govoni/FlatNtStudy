@@ -224,7 +224,11 @@ if __name__ == '__main__':
         iline = 0;
         for columns in ( raw.strip().split() for raw in file ):
             if columns[0].find('#')!=-1 or columns[0] == ' ': continue;               
-            linestring = columns[0]+"_"+columns[5];
+            if ROOT.TString(options.inputVariableList).Contains("Dynamic"):
+                linestring = columns[0]+"_"+columns[4];
+            else:
+                linestring = columns[0]+"_"+columns[5];
+
             linestring = linestring.replace("\n","");
             linestring = linestring.replace("\t","");
             variable.append(linestring);
@@ -370,7 +374,7 @@ if __name__ == '__main__':
           #################################################
                         
            if options.nToys == 0 : 
-               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 --toysNoSystematics"%(rMin,rMax,outname,card,rMin,rMax);
+               runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --saveShapes --do95=1 -s -1 --toysNoSystematics --skipBOnlyFit"%(rMin,rMax,outname,card,rMin,rMax);
                print "runCmmd ",runCmmd;
                if options.batchMode:
                    fn = "combineScript_MaxLikelihoodFit_%s"%(outname);
@@ -390,7 +394,7 @@ if __name__ == '__main__':
 
                if not options.submitSingleJobs :
 
-                   runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  --toysNoSystematics --saveToys -s -1 -n %s -m 100 -d %s  -t %d --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.nToys,options.injectSignal);
+                   runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  --toysNoSystematics --saveShapes --saveToys -s -1 -n %s -m 100 -d %s  -t %d --expectSignal=%d --robustFit=1 --do95=1 --skipBOnlyFit"%(rMin,rMax,outname,card,options.nToys,options.injectSignal);
                    print "runCmmd ",runCmmd;
                    if options.batchMode:
                        fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
@@ -406,7 +410,7 @@ if __name__ == '__main__':
 
                    for itoy in range(options.nToys):
                        outname += "itoy_%d"%(itoy);
-                       runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  --toysNoSystematics --saveToys -s -1 -n %s -m 100 -d %s  -t 1 --expectSignal=%d --robustFit=1 --do95=1"%(rMin,rMax,outname,card,options.injectSignal);
+                       runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  --saveShapes -toysNoSystematics --saveToys -s -1 -n %s -m 100 -d %s  -t 1 --expectSignal=%d --robustFit=1 --do95=1 --skipBOnlyFit"%(rMin,rMax,outname,card,options.injectSignal);
                        print "runCmmd ",runCmmd;
                        if options.batchMode:
                            fn = "combineScript_MaxLikelihoodFit_%s"%(outname);

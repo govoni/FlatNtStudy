@@ -770,8 +770,12 @@ if __name__ == '__main__':
     fileVar = open('%s'%(options.inputVariableList), 'r');
     for columns in ( raw.strip().split() for raw in fileVar ):
         if columns[0].find('#')!=-1 or columns[0] == ' ': continue;
-        variableLabel.append(columns[4]);
-        variableName.append(columns[0]);
+        if ROOT.TString(options.inputVariableList).Contains("Dynamic"):
+            variableLabel.append(columns[3]);
+            variableName.append(columns[0]);
+        else:
+            variableLabel.append(columns[4]);
+            variableName.append(columns[0]);
 
     ## fix the chdir
     os.chdir(options.fileDIR);
