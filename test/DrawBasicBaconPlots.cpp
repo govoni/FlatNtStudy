@@ -173,9 +173,9 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotResponse_PhaseIAged;
   vector<histoContainer> plotResponse_PhaseIIShashlik;
 
-  histoCutEff_PhaseIAged["PhaseIAged"]           = new TH1F("PhaseIAged","",12,0,12);
-  histoCutEff_PhaseIIShashlik["PhaseIIShashlik"] = new TH1F("PhaseIIShashlik","",12,0,12);
-  histoCutEff_Gen["Gen"]                         = new TH1F("Gen","",12,0,12);
+  histoCutEff_PhaseIAged["PhaseIAged"]           = new TH1F("PhaseIAged","",11,0,11);
+  histoCutEff_PhaseIIShashlik["PhaseIIShashlik"] = new TH1F("PhaseIIShashlik","",11,0,11);
+  histoCutEff_Gen["Gen"]                         = new TH1F("Gen","",11,0,11);
 
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
     plotVector_PhaseIAged.push_back(histoContainer("PhaseIAged",variableList.at(iVar)));
@@ -872,7 +872,7 @@ int main (int argc, char ** argv) {
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm.png").c_str(),"png");
     cCanvas->SetLogy(1);
 
-    itVec_PhaseIAged->histogram->GetYaxis()->SetRangeUser(0.001,max(itVec_PhaseIAged->histogram->GetMaximum(),itVec_PhaseIIShashlik->histogram->GetMaximum())*1.3);
+    itVec_PhaseIAged->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_PhaseIAged->histogram->GetMaximum(),itVec_PhaseIIShashlik->histogram->GetMaximum())*100);
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.png").c_str(),"png");
@@ -980,7 +980,7 @@ int main (int argc, char ** argv) {
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm.png").c_str(),"png");
     cCanvas->SetLogy(1);
 
-    itVec_PhaseIAged->histogram->GetYaxis()->SetRangeUser(0.001,max(itVec_PhaseIAged->histogram->GetMaximum(),itVec_PhaseIIShashlik->histogram->GetMaximum())*1.3);
+    itVec_PhaseIAged->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_PhaseIAged->histogram->GetMaximum(),itVec_PhaseIIShashlik->histogram->GetMaximum())*100);
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.png").c_str(),"png");

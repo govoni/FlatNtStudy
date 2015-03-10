@@ -95,13 +95,14 @@ void findGenNeutrinoFromW(TClonesArray* genParticles,
     if( genP->parent!=-1 and genP->status ==1){
       if( abs(genP->pdgId) == 12 or abs(genP->pdgId) == 14 or abs(genP->pdgId) == 16 ) {
         bool foundW = false, stuck = false;
+	TGenParticle *genP2 = (TGenParticle*)((*genParticles)[iGen]);
         do {
-          if(genP->parent!=-1) {
-            TGenParticle *genTemp = (TGenParticle*)((*genParticles)[genP->parent]);
-            genP = genTemp;
+          if(genP2->parent!=-1) {
+            TGenParticle *genTemp = (TGenParticle*)((*genParticles)[genP2->parent]);
+            genP2 = genTemp;
           }
           else stuck = true;
-          if( abs(genP->pdgId) == parentId) {
+          if( abs(genP2->pdgId) == parentId) {
             foundW = true;
           }
         } while( !stuck && !foundW );
