@@ -164,7 +164,6 @@ int main (int argc, char ** argv) {
   // Efficiency histograms
   map<string,TH1F*> histoCutEff_PhaseIAged ;
   map<string,TH1F*> histoCutEff_PhaseIIShashlik ;
-  map<string,TH1F*> histoCutEff_Gen ;
 
   vector<histoContainer> plotVector_PhaseIAged;
   vector<histoContainer> plotVector_PhaseIIShashlik;
@@ -173,9 +172,8 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotResponse_PhaseIAged;
   vector<histoContainer> plotResponse_PhaseIIShashlik;
 
-  histoCutEff_PhaseIAged["PhaseIAged"]           = new TH1F("PhaseIAged","",11,0,11);
-  histoCutEff_PhaseIIShashlik["PhaseIIShashlik"] = new TH1F("PhaseIIShashlik","",11,0,11);
-  histoCutEff_Gen["Gen"]                         = new TH1F("Gen","",11,0,11);
+  histoCutEff_PhaseIAged["PhaseIAged"]           = new TH1F("PhaseIAged","",9,0,9);
+  histoCutEff_PhaseIIShashlik["PhaseIIShashlik"] = new TH1F("PhaseIIShashlik","",9,0,9);
 
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
     plotVector_PhaseIAged.push_back(histoContainer("PhaseIAged",variableList.at(iVar)));
@@ -209,22 +207,8 @@ int main (int argc, char ** argv) {
     vector<TMuon> goodTightMuons ;
     vector<TElectron> goodTightElectrons ;
 
-    int iBin = 1;
-    if(histoCutEff_PhaseIAged.size()!=0){
-      histoCutEff_PhaseIAged[name]->SetBinContent(iBin,histoCutEff_PhaseIAged[name]->GetBinContent(iBin)+1);
-      histoCutEff_PhaseIAged[name]->GetXaxis()->SetBinLabel(iBin,"all events");
-      iBin++;
-    }
-
     if((fMuon_PhaseIAged->GetEntriesFast()+fElectron_PhaseIAged->GetEntriesFast()) < nLeptons) continue;
     if((fJet_PhaseIAged->GetEntriesFast()) < 2) continue;
-
-    if(histoCutEff_PhaseIAged.size()!=0){
-      histoCutEff_PhaseIAged[name]->SetBinContent(iBin,histoCutEff_PhaseIAged[name]->GetBinContent(iBin)+1);
-      histoCutEff_PhaseIAged[name]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
-      iBin++;
-    }
-
 
     // look for tight muons and electrons in the event
 
@@ -245,13 +229,13 @@ int main (int argc, char ** argv) {
     }
 
     // sort in pt
-
     sort(goodTightMuons.rbegin(),goodTightMuons.rend());
     sort(goodTightElectrons.rbegin(),goodTightElectrons.rend());
 
     // apply a cut on the number of tight leptons and final state topology
     if(int(goodTightElectrons.size()+goodTightMuons.size()) < nLeptons) continue;
 
+    int iBin = 1;
     if(histoCutEff_PhaseIAged.size()!=0){
       histoCutEff_PhaseIAged[name]->SetBinContent(iBin,histoCutEff_PhaseIAged[name]->GetBinContent(iBin)+1);
       histoCutEff_PhaseIAged[name]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
@@ -449,21 +433,8 @@ int main (int argc, char ** argv) {
     vector<TMuon> goodTightMuons ;
     vector<TElectron> goodTightElectrons ;
 
-    int iBin = 1;
-    if(histoCutEff_PhaseIIShashlik.size()!=0){
-      histoCutEff_PhaseIIShashlik[name]->SetBinContent(iBin,histoCutEff_PhaseIIShashlik[name]->GetBinContent(iBin)+1);
-      histoCutEff_PhaseIIShashlik[name]->GetXaxis()->SetBinLabel(iBin,"all events");
-      iBin++;
-    }
-
     if((fMuon_PhaseIIShashlik->GetEntriesFast()+fElectron_PhaseIIShashlik->GetEntriesFast()) < nLeptons) continue;
     if((fJet_PhaseIIShashlik->GetEntriesFast()) < 2) continue;
-
-    if(histoCutEff_PhaseIIShashlik.size()!=0){
-      histoCutEff_PhaseIIShashlik[name]->SetBinContent(iBin,histoCutEff_PhaseIIShashlik[name]->GetBinContent(iBin)+1);
-      histoCutEff_PhaseIIShashlik[name]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
-      iBin++;
-    }
 
     for(int iEle = 0; iEle < fElectron_PhaseIIShashlik->GetEntriesFast(); iEle++){
       TElectron *ele = (TElectron*)((*fElectron_PhaseIIShashlik)[iEle]);
@@ -486,6 +457,8 @@ int main (int argc, char ** argv) {
 
     // apply a cut on the number of tight leptons and final state topology
     if(int(goodTightElectrons.size()+goodTightMuons.size()) < nLeptons) continue;
+
+    int iBin = 1;
 
     if(histoCutEff_PhaseIIShashlik.size()!=0){
       histoCutEff_PhaseIIShashlik[name]->SetBinContent(iBin,histoCutEff_PhaseIIShashlik[name]->GetBinContent(iBin)+1);
@@ -722,6 +695,7 @@ int main (int argc, char ** argv) {
 
   for(map<string,TH1F*>::const_iterator itMap = histoCutEff_PhaseIAged.begin(); itMap !=  histoCutEff_PhaseIAged.end(); itMap++){
     itMap->second->Scale(1./(maximumEvents_PhaseIAged));
+    itMap->second->GetYaxis()->SetRangeUser(0.,itMap->second->GetMaximum()*1.3);
     itMap->second->Draw("hist");    
     itMap->second->SetLineColor(kBlue);
     itMap->second->SetLineWidth(2);

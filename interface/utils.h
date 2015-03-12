@@ -70,15 +70,18 @@ class jetContainer {
 
   jetContainer(TLorentzVector jet4V, 
 	       float jetPUID, 
-	       float btag):
+	       float btag,
+	       int jetflavour):
    jet4V_(jet4V),
    jetPUID_(jetPUID),
-   btag_(btag){};  
+   btag_(btag),
+   jetflavour_(jetflavour) {};  
 
    jetContainer(TLorentzVector jet4V):
    jet4V_(jet4V),
    jetPUID_(-999),
-   btag_(-999){};  
+   btag_(-999),
+   jetflavour_(-999){};  
 
    bool operator < ( const jetContainer & jet2){
      if(jet4V_.Pt() < jet2.jet4V_.Pt()) return true;
@@ -86,7 +89,7 @@ class jetContainer {
    };
 
    bool operator == ( const jetContainer & jet2){
-     if(jet4V_ == jet2.jet4V_ and jetPUID_ == jet2.jetPUID_ and btag_ == jet2.btag_ ) return true;
+     if(jet4V_ == jet2.jet4V_ and jetPUID_ == jet2.jetPUID_ and btag_ == jet2.btag_ and jetflavour_ == jet2.jetflavour_ ) return true;
      else return false;
    };
 
@@ -94,7 +97,7 @@ class jetContainer {
    TLorentzVector jet4V_ ;
    float jetPUID_ ;
    float btag_ ;
-
+   int   jetflavour_;
 };
 
 

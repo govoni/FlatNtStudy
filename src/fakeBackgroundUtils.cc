@@ -50,20 +50,22 @@ float getFakeWeight(  jetContainer inputJet,
 
   float weight = 1. ;
 
-  if(leptonFlavour == "U"){
-    weight *= fakeRate.getFakeRate(int(13),inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()) ;
+
+  if(leptonFlavour == "U"){    
+    weight *= fakeRate.getFakeRate(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()) ;
+    
     for(size_t iJet = 0; iJet < jetCollection.size(); iJet++){
       if(inputJet.jet4V_ == jetCollection.at(iJet).jet4V_)
         continue ;
-      weight *= (1-fakeRate.getFakeRate(int(13),jetCollection.at(iJet).jet4V_.Pt(),jetCollection.at(iJet).jet4V_.Eta()));
+      weight *= (1-fakeRate.getFakeRate(int(13),jetCollection.at(iJet).jetflavour_,jetCollection.at(iJet).jet4V_.Pt(),jetCollection.at(iJet).jet4V_.Eta()));
     }
   }
   else {
-    weight *= fakeRate.getFakeRate(int(11),inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()) ;
+    weight *= fakeRate.getFakeRate(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()) ;
     for(size_t iJet = 0; iJet < jetCollection.size(); iJet++){
       if(inputJet.jet4V_ == jetCollection.at(iJet).jet4V_)
         continue ;
-      weight *= (1-fakeRate.getFakeRate(int(11),jetCollection.at(iJet).jet4V_.Pt(),jetCollection.at(iJet).jet4V_.Eta()));
+      weight *= (1-fakeRate.getFakeRate(int(11),jetCollection.at(iJet).jetflavour_,jetCollection.at(iJet).jet4V_.Pt(),jetCollection.at(iJet).jet4V_.Eta()));
     }
   }
 
@@ -80,8 +82,8 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
   if(TString(scenarioString).Contains("UU") and fabs(inputLepton.flavour_) == 13){ // if UU final state and input lepton is a muon
 
-    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
                             0.);
@@ -97,8 +99,8 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55)  // remove endcap barrel gap
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
 			    0.);
@@ -113,8 +115,8 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) // create an electron removing the gap
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
                             0.);
@@ -130,8 +132,8 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
   else if(TString(scenarioString).Contains("UE") and fabs(inputLepton.flavour_) == 11){
 
-    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),
                             0.);
@@ -146,9 +148,9 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   }
 
   else if(TString(scenarioString).Contains("EU") and fabs(inputLepton.flavour_) == 11){
-    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
 
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(13,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),0.);
     else
@@ -165,9 +167,9 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     if(fabs(inputJet.jet4V_.Eta()) > 1.45 and fabs(inputJet.jet4V_.Eta()) < 1.55) 
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
+    else if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0)
 
-      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(11,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
                             inputJet.jet4V_.Eta(),
                             inputJet.jet4V_.Phi(),0.);
     else

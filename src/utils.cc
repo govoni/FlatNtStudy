@@ -45,6 +45,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt1,reader.jeteta1,reader.jetphi1,reader.jetmass1);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased1 ;
     dummy.btag_     = reader.jetBTagPhysics1 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics1;
     jetVector.push_back(dummy);
   }
 
@@ -52,6 +53,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt2,reader.jeteta2,reader.jetphi2,reader.jetmass2);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased2 ;
     dummy.btag_     = reader.jetBTagPhysics2 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics2;
     jetVector.push_back(dummy);
   }
       
@@ -59,6 +61,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt3,reader.jeteta3,reader.jetphi3,reader.jetmass3);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased3 ;
     dummy.btag_     = reader.jetBTagPhysics3 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics3;
     jetVector.push_back(dummy);
   }
 
@@ -67,6 +70,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt4,reader.jeteta4,reader.jetphi4,reader.jetmass4);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased4 ;
     dummy.btag_     = reader.jetBTagPhysics4 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics4;
     jetVector.push_back(dummy);
   }
   
@@ -74,6 +78,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt5,reader.jeteta5,reader.jetphi5,reader.jetmass5);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased5 ;
     dummy.btag_     = reader.jetBTagPhysics5 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics5;
     jetVector.push_back(dummy);
   }
 
@@ -81,6 +86,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt6,reader.jeteta6,reader.jetphi6,reader.jetmass6);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased6 ;
     dummy.btag_     = reader.jetBTagPhysics6 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics6;
     jetVector.push_back(dummy);
   }
 
@@ -88,6 +94,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt7,reader.jeteta7,reader.jetphi7,reader.jetmass7);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased7 ;
     dummy.btag_     = reader.jetBTagPhysics7 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics7;
     jetVector.push_back(dummy);
   }
 
@@ -95,6 +102,7 @@ void fillRecoJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt8,reader.jeteta8,reader.jetphi8,reader.jetmass8);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased8 ;
     dummy.btag_     = reader.jetBTagPhysics8 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics8;
     jetVector.push_back(dummy);
   }
     
@@ -111,6 +119,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi1,reader.jeteta_puppi1,reader.jetphi_puppi1,reader.jetmass_puppi1);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi1 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi1 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi1;
     jetVector.push_back(dummy);
   }
 
@@ -118,6 +127,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi2,reader.jeteta_puppi2,reader.jetphi_puppi2,reader.jetmass_puppi2);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi2 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi2 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi2;
     jetVector.push_back(dummy);
   }
 
@@ -125,6 +135,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi3,reader.jeteta_puppi3,reader.jetphi_puppi3,reader.jetmass_puppi3);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi3 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi3 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi3;
     jetVector.push_back(dummy);
   }
 
@@ -132,6 +143,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi4,reader.jeteta_puppi4,reader.jetphi_puppi4,reader.jetmass_puppi4);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi4 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi4 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi4;
     jetVector.push_back(dummy);
   }
 
@@ -139,6 +151,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi5,reader.jeteta_puppi5,reader.jetphi_puppi5,reader.jetmass_puppi5);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi5 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi5 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi5;
     jetVector.push_back(dummy);
   }
 
@@ -146,6 +159,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi6,reader.jeteta_puppi6,reader.jetphi_puppi6,reader.jetmass_puppi6);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi6 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi6 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi6;
     jetVector.push_back(dummy);
   }
 
@@ -153,6 +167,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi7,reader.jeteta_puppi7,reader.jetphi_puppi7,reader.jetmass_puppi7);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi7 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi7 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi7;
     jetVector.push_back(dummy);
   }
 
@@ -160,6 +175,7 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetpt_puppi8,reader.jeteta_puppi8,reader.jetphi_puppi8,reader.jetmass_puppi8);
     dummy.jetPUID_  = reader.jetpileupIDFlagCutBased_puppi8 ;
     dummy.btag_     = reader.jetBTagPhysics_puppi8 ;
+    dummy.jetflavour_ = reader.jetFlavourPhysics_puppi8;
     jetVector.push_back(dummy);
   }
     
@@ -173,6 +189,7 @@ void fillGenJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt1,reader.jetGeneta1,reader.jetGenphi1,reader.jetGenm1);
     dummy.jetPUID_  = -999 ;
     dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
   }
 
@@ -180,6 +197,7 @@ void fillGenJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt2,reader.jetGeneta2,reader.jetGenphi2,reader.jetGenm2);
     dummy.jetPUID_  = -999 ;
     dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
   }
 
@@ -187,6 +205,7 @@ void fillGenJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt3,reader.jetGeneta3,reader.jetGenphi3,reader.jetGenm3);
     dummy.jetPUID_  = -999 ;
     dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
   }
 
@@ -194,6 +213,7 @@ void fillGenJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt4,reader.jetGeneta4,reader.jetGenphi4,reader.jetGenm4);
     dummy.jetPUID_  = -999 ;
     dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
   }
 
@@ -209,6 +229,7 @@ void fillTrackJetArray (vector<jetContainer> & jetVector, readTree & reader){
     dummy.jet4V_.SetPxPyPzE(reader.TrackJet_V4_fP_fX[iJet],reader.TrackJet_V4_fP_fY[iJet],reader.TrackJet_V4_fP_fZ[iJet],reader.TrackJet_V4_fE[iJet]);
     dummy.btag_    = -999 ;
     dummy.jetPUID_ = -999;     
+    dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
     
   }

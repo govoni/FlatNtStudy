@@ -8,61 +8,7 @@ using namespace std;
 #define upperEtaBound 3
 
 // de-constructor
-fakeRateContainer::~fakeRateContainer(){
-
-  if(eeDenominator != 0)
-    eeDenominator->Delete() ;
-  if(meDenominator != 0)
-    meDenominator->Delete() ;
-  if(eDenominator != 0)
-    eDenominator->Delete() ;
-
-  if(eeNumerator != 0)
-    eeNumerator->Delete() ;
-  if(meNumerator != 0)
-    meNumerator->Delete() ;
-  if(eNumerator != 0)
-    eNumerator->Delete() ;
-
-  if(mmDenominator != 0)
-    mmDenominator->Delete() ;
-  if(emDenominator != 0)
-    emDenominator->Delete() ;
-  if(mDenominator != 0)
-    mDenominator->Delete() ;
-
-  if(mmNumerator != 0)
-    mmNumerator->Delete() ;
-  if(emNumerator != 0)
-    emNumerator->Delete() ;
-  if(mNumerator != 0)
-    mNumerator->Delete() ;
-
-  if(mFakeRate!=0)
-    mFakeRate->Delete() ;
-  if(eFakeRate!=0)
-    eFakeRate->Delete() ;
-
-  if(muonFakeRate!=0)
-    muonFakeRate->Delete() ;
-  if(electronFakeRate!=0)
-    electronFakeRate->Delete() ;
-
-  if(mmPtCentre!=0)
-    mmPtCentre->Delete();
-  if(mePtCentre!=0)
-    mePtCentre->Delete();
-  if(emPtCentre!=0)
-    emPtCentre->Delete();
-  if(eePtCentre!=0)
-    eePtCentre->Delete();
-
-  if(mPtCentre!=0)
-    mPtCentre->Delete();
-  if(ePtCentre!=0)
-    ePtCentre->Delete();
-
-}
+fakeRateContainer::~fakeRateContainer(){}
 
 // default contructor
 fakeRateContainer::fakeRateContainer(const string & fileName){
@@ -75,39 +21,65 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
   cout<<"start to build the fake rate container"<<endl;
 
   // electron case
-  eeDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_e");
-  meDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_e");
-  eDenominator  = (TH2F*) eeDenominator->Clone("eDenominator");
-  eDenominator->Add(meDenominator);
+  TH2F* Denominator_bjet_to_e = (TH2F*) inputFile->Get("Denominator_b_jet_to_e") ;
+  TH2F* Denominator_jet_to_e  = (TH2F*) inputFile->Get("Denominator_jet_to_e");
 
-  eeNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_e");
-  meNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_mu_jet_to_e");
-  eNumerator  = (TH2F*) eeNumerator->Clone("eNumerator");
-  eNumerator->Add(meNumerator);
+  TH2F* Numerator_bjet_to_e = (TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_e") ;
+  TH2F* Numerator_jet_to_e  = (TH2F*) inputFile->Get("Jet_Numerator_jet_to_e");
 
-  eFakeRate = (TH2F*) eNumerator->Clone("eFakeRate");
-  eFakeRate->Divide(eDenominator);
-  eFakeRate->Smooth();
+  eFakeRate_bjet = (TH2F*) Numerator_bjet_to_e->Clone("eFakeRate_bjet");
+  eFakeRate_bjet->Divide(Denominator_bjet_to_e);
+  eFakeRate_bjet->Smooth();
+
+  eFakeRate_jet = (TH2F*) Numerator_jet_to_e->Clone("eFakeRate_jet");
+  eFakeRate_jet->Divide(Denominator_jet_to_e);
+  eFakeRate_jet->Smooth();
+
+  // center bin histo
+  PtCentre_bjet_to_e = (TH2F*) inputFile->Get("Pt_centre_b_jet_to_e");
+  PtCentre_jet_to_e = (TH2F*) inputFile->Get("Pt_centre_jet_to_e");
+
+  electronFakeRate_bjet = new TGraph2D();
+  electronFakeRate_jet = new TGraph2D();
+
+  // get the correct map
+  getFakeRateInterpolation(electronFakeRate_bjet,eFakeRate_bjet,PtCentre_bjet_to_e);
+  getFakeRateInterpolation(electronFakeRate_jet,eFakeRate_jet,PtCentre_jet_to_e);
+
+  // muon case
+  TH2F* Denominator_bjet_to_mu = (TH2F*) inputFile->Get("Denominator_b_jet_to_mu") ;
+  TH2F* Denominator_jet_to_mu  = (TH2F*) inputFile->Get("Denominator_jet_to_mu");
+
+  TH2F* Numerator_bjet_to_mu = (TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_mu") ;
+  TH2F* Numerator_jet_to_mu  = (TH2F*) inputFile->Get("Jet_Numerator_jet_to_mu");
+
+  mFakeRate_bjet = (TH2F*) Numerator_bjet_to_mu->Clone("mFakeRate_bjet");
+  mFakeRate_bjet->Divide(Denominator_bjet_to_mu);
+  mFakeRate_bjet->Smooth();
+
+  mFakeRate_jet = (TH2F*) Numerator_jet_to_mu->Clone("mFakeRate_jet");
+  mFakeRate_jet->Divide(Denominator_jet_to_mu);
+  mFakeRate_jet->Smooth();
   
   // center bin histo
-  eePtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_e_jet_to_e");
-  mePtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_mu_jet_to_e");
-
-  ePtCentre  = (TH2F*) eePtCentre->Clone("ePtCentre");
-  ePtCentre->Reset("ICES");
-
-  for(int iBinX = 0; iBinX < eePtCentre->GetNbinsX()+1; iBinX++){  
-    for(int iBinY = 0; iBinY < eePtCentre->GetNbinsY()+1; iBinY++){  
-      ePtCentre->SetBinContent(iBinX,iBinY,(eePtCentre->GetBinContent(iBinX,iBinY)+mePtCentre->GetBinContent(iBinX,iBinY))/2);
-    }
-  }
+  PtCentre_bjet_to_mu = (TH2F*) inputFile->Get("Pt_centre_b_jet_to_mu");
+  PtCentre_jet_to_mu = (TH2F*) inputFile->Get("Pt_centre_jet_to_mu");
   
-  electronFakeRate = new TGraph2D();
+  muonFakeRate_bjet = new TGraph2D();
+  muonFakeRate_jet = new TGraph2D();
+
+  // get the correct map
+  getFakeRateInterpolation(muonFakeRate_bjet,mFakeRate_bjet,PtCentre_bjet_to_mu);
+  getFakeRateInterpolation(muonFakeRate_jet,mFakeRate_jet,PtCentre_jet_to_mu);
+}
+
+
+void fakeRateContainer::getFakeRateInterpolation( TGraph2D* fakeRate, TH2F* fakeMap, TH2F* ptCentre){
 
   int nPoint = 0;
 
-  for(int iBinX = 0; iBinX <= ePtCentre->GetNbinsX()+1; iBinX++){
-    for(int iBinY = 0; iBinY <= ePtCentre->GetNbinsY()+1; iBinY++){
+  for(int iBinX = 0; iBinX <= ptCentre->GetNbinsX()+1; iBinX++){
+    for(int iBinY = 0; iBinY <= ptCentre->GetNbinsY()+1; iBinY++){
 
       float etaPoint = 0;
       float ptPoint  = 0;
@@ -117,237 +89,99 @@ fakeRateContainer::fakeRateContainer(const string & fileName){
 
       if(iBinX == 0)
 	etaPoint = -0.1 ;
-      if(iBinX == ePtCentre->GetNbinsX()+1)
+      if(iBinX == ptCentre->GetNbinsX()+1)
 	etaPoint = upperEtaBound ;
       else
-	etaPoint = eFakeRate->GetXaxis()->GetBinCenter(iBinX);
+	etaPoint = fakeMap->GetXaxis()->GetBinCenter(iBinX);
 
       if(iBinY == 0)
 	ptPoint = 0 ;
-      if(iBinY == ePtCentre->GetNbinsY()+1)
+      if(iBinY == ptCentre->GetNbinsY()+1)
 	ptPoint = upperPtBound ;
       else{
 	if(iBinX == 0)
-	  ptPoint = ePtCentre->GetBinContent(iBinX+1,iBinY);
-	else if(iBinX == ePtCentre->GetNbinsX()+1)
-	  ptPoint = ePtCentre->GetBinContent(iBinX-1,iBinY);
+	  ptPoint = ptCentre->GetBinContent(iBinX+1,iBinY);
+	else if(iBinX == ptCentre->GetNbinsX()+1)
+	  ptPoint = ptCentre->GetBinContent(iBinX-1,iBinY);
 	else
-	  ptPoint = ePtCentre->GetBinContent(iBinX,iBinY);
+	  ptPoint = ptCentre->GetBinContent(iBinX,iBinY);
       }
 
      
       if(iBinX == 0 and iBinY == 0){
-	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY+1);
+	valuePoint = fakeMap->GetBinContent(iBinX+1,iBinY+1);
       }
-      else if(iBinY == ePtCentre->GetNbinsY()+1 and iBinX == ePtCentre->GetNbinsX()+1 ){
-	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY-1);
+      else if(iBinY == ptCentre->GetNbinsY()+1 and iBinX == ptCentre->GetNbinsX()+1 ){
+	valuePoint = fakeMap->GetBinContent(iBinX-1,iBinY-1);
       }
-      else if(iBinX == 0 and iBinY == ePtCentre->GetNbinsY()+1){
-	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY-1);
+      else if(iBinX == 0 and iBinY == ptCentre->GetNbinsY()+1){
+	valuePoint = fakeMap->GetBinContent(iBinX+1,iBinY-1);
       }
-     else if(iBinY == 0 and iBinX == ePtCentre->GetNbinsX()+1){
-	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY+1);
-      }
-
-      else if(iBinX == 0){
-	valuePoint = eFakeRate->GetBinContent(iBinX+1,iBinY);
-      }
-      else if(iBinY == 0){
-	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY+1);
-      }
-      else if(iBinX == ePtCentre->GetNbinsX()+1 ){
-	valuePoint = eFakeRate->GetBinContent(iBinX-1,iBinY);
-      }
-      else if(iBinY == ePtCentre->GetNbinsY()+1){
-	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY-1);
-      }
-      
-      else {
-	valuePoint = eFakeRate->GetBinContent(iBinX,iBinY);
-      }
-
-      electronFakeRate->SetPoint(nPoint,etaPoint,ptPoint,valuePoint);
-
-    }
-  }
-
-  
-  // muon sector
-  mmDenominator = (TH2F*) inputFile->Get("Denominator_W_to_mu_jet_to_mu");
-  emDenominator = (TH2F*) inputFile->Get("Denominator_W_to_e_jet_to_mu");
-  mDenominator  = (TH2F*) mmDenominator->Clone("mDenominator");
-  mDenominator->Add(emDenominator);
-
-  mmNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_mu_jet_to_mu");
-  emNumerator = (TH2F*) inputFile->Get("Jet_Numerator_W_to_e_jet_to_mu");
-  mNumerator  = (TH2F*) mmNumerator->Clone("mNumerator");
-  mNumerator->Add(emNumerator);
-  
-  mFakeRate = (TH2F*) mNumerator->Clone("mFakeRate");
-  mFakeRate->Divide(mDenominator);
-  mFakeRate->Smooth();
-
-  // take the pt center for each bin
-  emPtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_e_jet_to_mu");
-  mmPtCentre  = (TH2F*) inputFile->Get("Pt_centre_W_to_mu_jet_to_mu");
-
-  mPtCentre   = (TH2F*) mmPtCentre->Clone("mPtCentre");
-  mPtCentre->Reset("ICES");
-  
-  for(int iBinX = 0; iBinX < mmPtCentre->GetNbinsX()+1; iBinX++){  
-    for(int iBinY = 0; iBinY < mmPtCentre->GetNbinsY()+1; iBinY++){  
-      mPtCentre->SetBinContent(iBinX,iBinY,(mmPtCentre->GetBinContent(iBinX,iBinY)+emPtCentre->GetBinContent(iBinX,iBinY))/2);
-    }
-  }
-
-
-  muonFakeRate = new TGraph2D();
-
-  nPoint = 0;
-
-  for(int iBinX = 0; iBinX <= mPtCentre->GetNbinsX()+1; iBinX++){
-    for(int iBinY = 0; iBinY <= mPtCentre->GetNbinsY()+1; iBinY++){
-
-      float etaPoint = 0;
-      float ptPoint  = 0;
-      float valuePoint = 0;
-
-      nPoint++;
-
-      if(iBinX == 0)
-	etaPoint = -0.1 ;
-      if(iBinX == mPtCentre->GetNbinsX()+1)
-	etaPoint = upperEtaBound ;
-      else
-	etaPoint = mFakeRate->GetXaxis()->GetBinCenter(iBinX);
-
-      if(iBinY == 0)
-	ptPoint = 0 ;
-      if(iBinY == mPtCentre->GetNbinsY()+1)
-	ptPoint = upperPtBound ;
-      else{
-	if(iBinX == 0)
-	  ptPoint = mPtCentre->GetBinContent(iBinX+1,iBinY);
-	else if(iBinX == mPtCentre->GetNbinsX()+1)
-	  ptPoint = mPtCentre->GetBinContent(iBinX-1,iBinY);
-	else
-	  ptPoint = mPtCentre->GetBinContent(iBinX,iBinY);
-      }
-
-      if(iBinX == 0 and iBinY == 0){
-	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY+1);
-      }
-      else if(iBinY == mPtCentre->GetNbinsY()+1 and iBinX == mPtCentre->GetNbinsX()+1 ){
-	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY-1);
-      }
-      else if(iBinX == 0 and iBinY == mPtCentre->GetNbinsY()+1){
-	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY-1);
-      }
-     else if(iBinY == 0 and iBinX == mPtCentre->GetNbinsX()+1){
-	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY+1);
+     else if(iBinY == 0 and iBinX == ptCentre->GetNbinsX()+1){
+	valuePoint = fakeMap->GetBinContent(iBinX-1,iBinY+1);
       }
 
       else if(iBinX == 0){
-	valuePoint = mFakeRate->GetBinContent(iBinX+1,iBinY);
+	valuePoint = fakeMap->GetBinContent(iBinX+1,iBinY);
       }
       else if(iBinY == 0){
-	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY+1);
+	valuePoint = fakeMap->GetBinContent(iBinX,iBinY+1);
       }
-      else if(iBinX == mPtCentre->GetNbinsX()+1 ){
-	valuePoint = mFakeRate->GetBinContent(iBinX-1,iBinY);
+      else if(iBinX == ptCentre->GetNbinsX()+1 ){
+	valuePoint = fakeMap->GetBinContent(iBinX-1,iBinY);
       }
-      else if(iBinY == mPtCentre->GetNbinsY()+1){
-	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY-1);
+      else if(iBinY == ptCentre->GetNbinsY()+1){
+	valuePoint = fakeMap->GetBinContent(iBinX,iBinY-1);
       }
       
       else {
-	valuePoint = mFakeRate->GetBinContent(iBinX,iBinY);
+	valuePoint = fakeMap->GetBinContent(iBinX,iBinY);
       }
 
-      muonFakeRate->SetPoint(nPoint,etaPoint,ptPoint,valuePoint);
+      fakeRate->SetPoint(nPoint,etaPoint,ptPoint,valuePoint);
 
     }
   }
-  
 }
 
-float fakeRateContainer::getFakeRate (const int & PID, const float & pt, const float & eta){
-  if(fabs(PID) == 11){ // electron case                                                                                                                                        
-    return electronFakeRate->Interpolate(fabs(eta),pt);
+
+float fakeRateContainer::getFakeRate (const int & leptonPID, const int & jetflavour, const float & pt, const float & eta){
+  if(fabs(leptonPID) == 11){ // electron case                                                                                                                                
+    if(fabs(jetflavour) == 5 or jetflavour == 4)
+      return electronFakeRate_bjet->Interpolate(fabs(eta),pt);
+    else
+      return electronFakeRate_jet->Interpolate(fabs(eta),pt);
   }
-  else if (fabs(PID) == 13){ // electron case                                                                                                                                  
-    return muonFakeRate->Interpolate(fabs(eta),pt);
+  else if (fabs(leptonPID) == 13){ // muon case                                                                                                                               
+    if(fabs(jetflavour) == 5 or jetflavour == 4)
+      return muonFakeRate_bjet->Interpolate(fabs(eta),pt);
+    else
+      return muonFakeRate_jet->Interpolate(fabs(eta),pt);
   }
   else return 1 ;
 
 }
 
-float fakeRateContainer::getFakeRateUncertainty (const int & PID, const float & pt, const float & eta){
+float fakeRateContainer::getFakeRateUncertainty (const int & pdgId_lepton, const int & jetflavour, const float & pt, const float & eta){
 
-  if(fabs(PID) == 11){ // electron case                                                                                                                                        
-    return mFakeRate->GetBinError(eFakeRate->GetXaxis()->FindBin(fabs(eta)),eFakeRate->GetYaxis()->FindBin(pt));
-  }
-  else if (fabs(PID) == 13){ // electron case                                                                                                                                  
-    return mFakeRate->GetBinError(mFakeRate->GetXaxis()->FindBin(fabs(eta)),mFakeRate->GetYaxis()->FindBin(pt));
+  if(fabs(pdgId_lepton) == 11){ // electron case                                                                                                                     
+    if(fabs(jetflavour) == 5 or jetflavour == 4)
+      return eFakeRate_bjet->GetBinError(eFakeRate_bjet->GetXaxis()->FindBin(fabs(eta)),eFakeRate_bjet->GetYaxis()->FindBin(pt));
+    else
+      return eFakeRate_jet->GetBinError(eFakeRate_jet->GetXaxis()->FindBin(fabs(eta)),eFakeRate_jet->GetYaxis()->FindBin(pt));
+  }  
+  else if (fabs(pdgId_lepton) == 13){ // electron case                                                                                                                        
+    if(fabs(jetflavour) == 5 or jetflavour == 4)
+      return mFakeRate_bjet->GetBinError(mFakeRate_bjet->GetXaxis()->FindBin(fabs(eta)),mFakeRate_bjet->GetYaxis()->FindBin(pt));
+    else
+      return mFakeRate_jet->GetBinError(mFakeRate_jet->GetXaxis()->FindBin(fabs(eta)),mFakeRate_jet->GetYaxis()->FindBin(pt));
   }
   else return 1 ;
 
 }
 
 // fake rate Migration
-fakeMigrationContainer::~fakeMigrationContainer(){
-
-  if(eeBarrel !=0)
-    eeBarrel->Delete();
-  if(meBarrel !=0)
-    meBarrel->Delete();
-  if(eBarrel !=0)
-    eBarrel->Delete();
-  if(eBarrelProfile !=0)
-    eBarrelProfile->Delete();
-
-  if(eeEndcap !=0)
-    eeEndcap->Delete();
-  if(meEndcap !=0)
-    meEndcap->Delete();
-  if(eEndcap !=0)
-    eEndcap->Delete();
-  if(eEndcapProfile !=0)
-    eEndcapProfile->Delete();
-
-  if(mmBarrel !=0)
-    mmBarrel->Delete();
-  if(emBarrel !=0)
-    emBarrel->Delete();
-  if(mBarrel !=0)
-    mBarrel->Delete();
-  if(mBarrelProfile !=0)
-    mBarrelProfile->Delete();
-
-  if(mmEndcap !=0)
-    mmEndcap->Delete();
-  if(emEndcap !=0)
-    emEndcap->Delete();
-  if(mEndcap !=0)
-    mEndcap->Delete();
-  if(mEndcapProfile !=0)
-    mEndcapProfile->Delete();
-
-  if(mePtMigrationCentre!=0)
-    mePtMigrationCentre->Delete();
-  if(mmPtMigrationCentre!=0)
-    mmPtMigrationCentre->Delete();
-  if(emPtMigrationCentre!=0)
-    emPtMigrationCentre->Delete();
-  if(eePtMigrationCentre!=0)
-    eePtMigrationCentre->Delete();
-
-  if(ePtMigrationCentre!=0)
-    ePtMigrationCentre->Delete();
-  if(mPtMigrationCentre!=0)
-    mPtMigrationCentre->Delete();
-
-}
+fakeMigrationContainer::~fakeMigrationContainer(){}
 
 fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
 
@@ -358,93 +192,67 @@ fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
 
   cout<<"start to build the fake rate migration container"<<endl;
 
-  eeBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_e");
-  meBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_e");
-  eBarrel  = (TH2F*) eeBarrel->Clone("eBarrel");
-  eBarrel->Add(meBarrel);
-  eBarrel->Smooth();
-  eBarrelProfile = eBarrel->ProfileX("_fX");
+  Pt_migration_centre_jet_to_mu = (TH1F*) inputFile->Get("Pt_migration_centre_jet_to_mu");
+  Pt_migration_centre_jet_to_e = (TH1F*) inputFile->Get("Pt_migration_centre_jet_to_e");
 
-  eeEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_e");
-  meEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_e");
-  eEndcap  = (TH2F*) eeEndcap->Clone("eEndcap");
-  eEndcap->Add(meEndcap);
-  eEndcap->Smooth();
-  eEndcapProfile = eEndcap->ProfileX("_fX");
+  Pt_migration_centre_bjet_to_mu = (TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_mu");
+  Pt_migration_centre_bjet_to_e = (TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_e");
 
-  mePtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_mu_jet_to_e");
-  eePtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_e_jet_to_e");
+  Pt_migration_jet_to_mu = (TH2F*) inputFile->Get("Pt_migration_jet_to_mu");
+  Pt_migration_jet_to_e = (TH2F*) inputFile->Get("Pt_migration_jet_to_e");
 
-  ePtMigrationCentre   = (TH1F*) eePtMigrationCentre->Clone("ePtMigrationCentre");
-  ePtMigrationCentre->Reset("ICES");
+  Pt_migration_bjet_to_mu = (TH2F*) inputFile->Get("Pt_migration_b_jet_to_mu");
+  Pt_migration_bjet_to_e = (TH2F*) inputFile->Get("Pt_migration_b_jet_to_e");
 
-  for(int iBinX = 0; iBinX <= eePtMigrationCentre->GetNbinsX()+1; iBinX++){  
-      ePtMigrationCentre->SetBinContent(iBinX,(eePtMigrationCentre->GetBinContent(iBinX)+mePtMigrationCentre->GetBinContent(iBinX))/2);    
+
+  profile_jet_to_e = Pt_migration_jet_to_e->ProfileX("profile_jet_to_e_fX");
+  profile_jet_to_mu = Pt_migration_jet_to_mu->ProfileX("profile_jet_to_mu_fX");
+
+  profile_bjet_to_e = Pt_migration_bjet_to_e->ProfileX("profile_bjet_to_e_fX");
+  profile_bjet_to_mu = Pt_migration_bjet_to_mu->ProfileX("profile_bjet_to_mu_fX");
+
+  migration_jet_to_mu = new TGraph();
+  migration_jet_to_e  = new TGraph();
+
+  migration_bjet_to_mu = new TGraph();
+  migration_bjet_to_e  = new TGraph();
+
+  for(int iBin = 0; iBin < profile_jet_to_e->GetNbinsX(); iBin++){
+    migration_jet_to_e->SetPoint(iBin+1,Pt_migration_centre_jet_to_e->GetBinContent(iBin+1),profile_jet_to_e->GetBinContent(iBin+1));
   }
 
-  electronBarrel = new TGraph();
-  electronEndcap = new TGraph();
-
-  for(int iBin = 0; iBin < eBarrelProfile->GetNbinsX(); iBin++){
-    electronBarrel->SetPoint(iBin+1,ePtMigrationCentre->GetBinContent(iBin+1),eBarrelProfile->GetBinContent(iBin+1));
+  for(int iBin = 0; iBin < profile_jet_to_mu->GetNbinsX(); iBin++){
+    migration_jet_to_mu->SetPoint(iBin+1,Pt_migration_centre_jet_to_mu->GetBinContent(iBin+1),profile_jet_to_mu->GetBinContent(iBin+1));
   }
 
-  for(int iBin = 0; iBin < eEndcapProfile->GetNbinsX(); iBin++){
-    electronEndcap->SetPoint(iBin+1,ePtMigrationCentre->GetBinContent(iBin+1),eEndcapProfile->GetBinContent(iBin+1));
+  for(int iBin = 0; iBin < profile_bjet_to_e->GetNbinsX(); iBin++){
+    migration_bjet_to_e->SetPoint(iBin+1,Pt_migration_centre_bjet_to_e->GetBinContent(iBin+1),profile_bjet_to_e->GetBinContent(iBin+1));
   }
 
-  mmBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_mu_jet_to_mu");
-  emBarrel = (TH2F*) inputFile->Get("Pt_migration_barrel_W_to_e_jet_to_mu");
-  mBarrel  = (TH2F*) mmBarrel->Clone("mBarrel");
-  mBarrel->Add(emBarrel);
-  mBarrel->Smooth();
-  mBarrelProfile = mBarrel->ProfileX("_fX");
-
-  mmEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_mu_jet_to_mu");
-  emEndcap = (TH2F*) inputFile->Get("Pt_migration_endcap_W_to_e_jet_to_mu");
-  mEndcap  = (TH2F*) mmEndcap->Clone("mEndcap");
-  mEndcap->Add(emEndcap);
-  mEndcap->Smooth();
-  mEndcapProfile = mEndcap->ProfileX("_fX");
-
-
-  mmPtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_mu_jet_to_mu");
-  emPtMigrationCentre = (TH1F*) inputFile->Get("Pt_migration_centre_W_to_e_jet_to_mu");
-
-  mPtMigrationCentre  = (TH1F*) mmPtMigrationCentre->Clone("muPtMigrationCentre");
-  mPtMigrationCentre->Reset("ICES");
-
-  for(int iBinX = 0; iBinX < mmPtMigrationCentre->GetNbinsX()+1; iBinX++){  
-    mPtMigrationCentre->SetBinContent(iBinX,(mmPtMigrationCentre->GetBinContent(iBinX)+emPtMigrationCentre->GetBinContent(iBinX))/2);
+  for(int iBin = 0; iBin < profile_bjet_to_mu->GetNbinsX(); iBin++){
+    migration_bjet_to_mu->SetPoint(iBin+1,Pt_migration_centre_bjet_to_mu->GetBinContent(iBin+1),profile_bjet_to_mu->GetBinContent(iBin+1));
   }
 
-  muonBarrel = new TGraph();
-  muonEndcap = new TGraph();
-
-  for(int iBin = 0; iBin < mBarrelProfile->GetNbinsX(); iBin++){
-    muonBarrel->SetPoint(iBin+1,mPtMigrationCentre->GetBinContent(iBin+1),mBarrelProfile->GetBinContent(iBin+1));
-  }
-
-  for(int iBin = 0; iBin < mEndcapProfile->GetNbinsX(); iBin++){
-    muonEndcap->SetPoint(iBin+1,mPtMigrationCentre->GetBinContent(iBin+1),mEndcapProfile->GetBinContent(iBin+1));
-  }
 }
 
-float fakeMigrationContainer::getMigration (const int & PID, const float & pt, const float & eta){
+float fakeMigrationContainer::getMigration (const int & leptonPID, const int & jetflavour, const float & pt, const float & eta){
 
-  if(fabs(PID) == 11 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
-    return electronBarrel->Eval(pt);
-  }
-  if(fabs(PID) == 11 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
-    return electronBarrel->Eval(pt);
+  if(fabs(leptonPID) == 11 ){
+    if(fabs(jetflavour) == 5 or fabs(jetflavour) == 4)
+      return migration_bjet_to_e->Eval(pt);
+    else
+      return migration_jet_to_e->Eval(pt);
+
   }
 
-  if(fabs(PID) == 13 and fabs(eta) < 1.5 ){ // electron case                                                                                                                   
-    return muonBarrel->Eval(pt);
+  if(fabs(leptonPID) == 13 ){
+    if(fabs(jetflavour) == 5 or fabs(jetflavour) == 4)
+      return migration_bjet_to_mu->Eval(pt);
+    else
+      return migration_jet_to_mu->Eval(pt);
+
   }
-  if(fabs(PID) == 13 and fabs(eta) >= 1.5 ){ // electron case                                                                                                                  
-    return muonEndcap->Eval(pt);
-  }
+
   else return 0;
 
 }

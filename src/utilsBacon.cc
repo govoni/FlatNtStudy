@@ -8,14 +8,14 @@ bool passEleID(TElectron* ele, float rho){
        fabs(ele->d0) < 0.003 and
        ele->nMissingHits <= 1 and
        ele->isConv == 0 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.55 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
   }
   else {
     if(fabs(ele->dz) < 0.15 and
        fabs(ele->d0) < 0.03 and
        ele->nMissingHits <= 1 and
        ele->isConv == 0 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.60 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
   }
 
   return false;
@@ -36,7 +36,7 @@ bool passMuonID(TMuon* mu, float rho){
 	  fabs(mu->dz) < 0.5 and
            mu->nPixHits > 0 and
            mu->nTkLayers > 5 and
-	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.55);
+	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.65);
 
 }
 

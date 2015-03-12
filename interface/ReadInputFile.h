@@ -335,41 +335,43 @@ class fakeRateContainer {
 
   fakeRateContainer(const string & fileName);
 
-  float getFakeRate (const int & PID, const float & pt, const float & eta);
-  float getFakeRateUncertainty(const int&, const float&, const float&);
+  float getFakeRate (const int & , const int &, const float &, const float &);
+  float getFakeRateUncertainty(const int&, const int &, const float&, const float&);
+  void  getFakeRateInterpolation( TGraph2D* fakeRate, TH2F* fakeMap, TH2F* ptCentre);
 
   TFile *inputFile ;
 
-  TH2F* eeDenominator ;
-  TH2F* meDenominator ;
-  TH2F* eDenominator ;
+  TH2F* Denominator_bjet_to_mu ;
+  TH2F* Denominator_jet_to_mu ;
 
-  TH2F* eeNumerator ;
-  TH2F* meNumerator ;
-  TH2F* eNumerator ;
+  TH2F* Denominator_bjet_to_e ;
+  TH2F* Denominator_jet_to_e ;
 
-  TH2F* emDenominator ;
-  TH2F* mmDenominator ;
-  TH2F* mDenominator ;
+  TH2F* Numerator_bjet_to_mu ;
+  TH2F* Numerator_jet_to_mu ;
 
-  TH2F* emNumerator ;
-  TH2F* mmNumerator ;
-  TH2F* mNumerator ;
+  TH2F* Numerator_bjet_to_e ;
+  TH2F* Numerator_jet_to_e ;
 
-  TH2F* mFakeRate ;
-  TGraph2D* muonFakeRate;
+
+  TH2F*     mFakeRate_bjet ;
+  TH2F*     mFakeRate_jet ;
+
+  TGraph2D* muonFakeRate_bjet;
+  TGraph2D* muonFakeRate_jet;
  
-  TH2F* eFakeRate ;
-  TGraph2D* electronFakeRate;
+  TH2F*     eFakeRate_bjet ;
+  TH2F*     eFakeRate_jet ;
+
+  TGraph2D* electronFakeRate_jet;
+  TGraph2D* electronFakeRate_bjet;
 
   //bin center
-  TH2F* mmPtCentre;
-  TH2F* emPtCentre;
-  TH2F* mePtCentre;
-  TH2F* eePtCentre;
+  TH2F* PtCentre_jet_to_mu;
+  TH2F* PtCentre_jet_to_e;
 
-  TH2F* mPtCentre;
-  TH2F* ePtCentre;
+  TH2F* PtCentre_bjet_to_mu;
+  TH2F* PtCentre_bjet_to_e;
 
 };
 
@@ -385,41 +387,33 @@ class fakeMigrationContainer {
 
   fakeMigrationContainer(const string & fileName);
 
-  float getMigration (const int & PID, const float & pt, const float & eta);
+  float getMigration (const int & leptonPID, const int & jetflavour, const float & pt, const float & eta);
 
   TFile* inputFile;
 
-  TH2F* eeBarrel ;
-  TH2F* meBarrel ;
-  TH2F* eBarrel ;
-  TProfile* eBarrelProfile ;
-  TGraph* electronBarrel ;
+  TH2F* Pt_migration_jet_to_mu ;
+  TH2F* Pt_migration_jet_to_e ;
 
-  TH2F* eeEndcap ;
-  TH2F* meEndcap ;
-  TH2F* eEndcap ;
-  TProfile* eEndcapProfile ;
-  TGraph* electronEndcap ;
+  TH1F* Pt_migration_centre_jet_to_mu ;
+  TH1F* Pt_migration_centre_jet_to_e ;
 
-  TH2F* mmBarrel ;
-  TH2F* emBarrel ;
-  TH2F* mBarrel ;
-  TProfile* mBarrelProfile ;
-  TGraph *muonBarrel ;
+  TProfile* profile_jet_to_mu ;
+  TProfile* profile_jet_to_e ;
 
-  TH2F* mmEndcap ;
-  TH2F* emEndcap ;
-  TH2F* mEndcap ;
-  TProfile* mEndcapProfile ;
-  TGraph *muonEndcap ;
+  TGraph* migration_jet_to_mu ;
+  TGraph* migration_jet_to_e ;
 
-  TH1F* mmPtMigrationCentre;
-  TH1F* emPtMigrationCentre;
-  TH1F* mePtMigrationCentre;
-  TH1F* eePtMigrationCentre;
+  TH2F* Pt_migration_bjet_to_mu ;
+  TH2F* Pt_migration_bjet_to_e ;
 
-  TH1F* mPtMigrationCentre;
-  TH1F* ePtMigrationCentre;
+  TH1F* Pt_migration_centre_bjet_to_mu ;
+  TH1F* Pt_migration_centre_bjet_to_e ;
+
+  TProfile* profile_bjet_to_mu ;
+  TProfile* profile_bjet_to_e ;
+
+  TGraph* migration_bjet_to_mu ;
+  TGraph* migration_bjet_to_e ;
 
 };
 
