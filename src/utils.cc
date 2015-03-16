@@ -522,45 +522,47 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-    if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
-      if(TString(finalStateString).Contains("UU")){
-	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
-	  continue;
-      }
-      else if(TString(finalStateString).Contains("EE")){
-	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
-	  continue;
-      }
-      else if(TString(finalStateString).Contains("EU")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
-	  continue ;
-	if(fabs(reader->leptonLHEpid1) != 11) 
-	  continue;
-	if(fabs(reader->leptonLHEpid2) != 13) 
-	  continue ;
-      }
-      else if(TString(finalStateString).Contains("UE")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
-	  continue ;
-	if(fabs(reader->leptonLHEpid1) != 13) 
-	  continue;
-	if(fabs(reader->leptonLHEpid2) != 11) 
-	  continue ;
-      }
+    if(not applyFake){
+      if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
+	if(TString(finalStateString).Contains("UU")){
+	  if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
+	    continue;
+	}
+	else if(TString(finalStateString).Contains("EE")){
+	  if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
+	    continue;
+	}
+	else if(TString(finalStateString).Contains("EU")){
+	  if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	    continue ;
+	  if(fabs(reader->leptonLHEpid1) != 11) 
+	    continue;
+	  if(fabs(reader->leptonLHEpid2) != 13) 
+	    continue ;
+	}
+	else if(TString(finalStateString).Contains("UE")){
+	  if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	    continue ;
+	  if(fabs(reader->leptonLHEpid1) != 13) 
+	    continue;
+	  if(fabs(reader->leptonLHEpid2) != 11) 
+	    continue ;
+	}
     
-      // if an event pass the cut, fill the associated map                                                                                                                 
-      TLorentzVector L_lepton1, L_lepton2, L_parton1, L_parton2 ;
+	// if an event pass the cut, fill the associated map                                                                                                                 
+	TLorentzVector L_lepton1, L_lepton2, L_parton1, L_parton2 ;
 
-      L_lepton1.SetPtEtaPhiM(reader->leptonLHEpt1,reader->leptonLHEeta1,reader->leptonLHEphi1,reader->leptonLHEm1);
-      L_lepton2.SetPtEtaPhiM(reader->leptonLHEpt2,reader->leptonLHEeta2,reader->leptonLHEphi2,reader->leptonLHEm2);
+	L_lepton1.SetPtEtaPhiM(reader->leptonLHEpt1,reader->leptonLHEeta1,reader->leptonLHEphi1,reader->leptonLHEm1);
+	L_lepton2.SetPtEtaPhiM(reader->leptonLHEpt2,reader->leptonLHEeta2,reader->leptonLHEphi2,reader->leptonLHEm2);
       
-      L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
-      L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
+	L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
+	L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
 
-      if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) 
-	continue;
-    }    
-
+	if(L_lepton1.Pt() < minPtLeptonCut or L_lepton2.Pt() < minPtLeptonCut) 
+	  continue;
+      } 
+    }   
+      
     // loop on the cut list
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
@@ -981,30 +983,32 @@ void loopOnEvents (plotter & analysisPlots,
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;                                                                                                  
 
     // filter LHE level leptons for madgraph polarized events /////////
-    if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
-      if(TString(finalStateString).Contains("UU")){
-	if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
-	  continue;
-      }
-      else if(TString(finalStateString).Contains("EE")){
-	if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
-	  continue;
-      }
-      else if(TString(finalStateString).Contains("EU")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
-	  continue ;
-	if(fabs(reader->leptonLHEpid1) != 11) 
-	  continue;
-	if(fabs(reader->leptonLHEpid2) != 13) 
-	  continue ;
-      }
-      else if(TString(finalStateString).Contains("UE")){
-	if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
-	  continue ;
-	if(fabs(reader->leptonLHEpid1) != 13) 
-	  continue;
-	if(fabs(reader->leptonLHEpid2) != 11) 
-	  continue ;
+    if(not applyFake){
+      if(TString(sampleName).Contains("Madgraph") or TString(sampleName).Contains("WW_EWK") or TString(sampleName).Contains("WW_QCD")){
+	if(TString(finalStateString).Contains("UU")){
+	  if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
+	    continue;
+	}
+	else if(TString(finalStateString).Contains("EE")){
+	  if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) 
+	    continue;
+	}
+	else if(TString(finalStateString).Contains("EU")){
+	  if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	    continue ;
+	  if(fabs(reader->leptonLHEpid1) != 11) 
+	    continue;
+	  if(fabs(reader->leptonLHEpid2) != 13) 
+	    continue ;
+	}
+	else if(TString(finalStateString).Contains("UE")){
+	  if(fabs(reader->leptonLHEpid1) == fabs(reader->leptonLHEpid2)) 
+	    continue ;
+	  if(fabs(reader->leptonLHEpid1) != 13) 
+	    continue;
+	  if(fabs(reader->leptonLHEpid2) != 11) 
+	    continue ;
+	}
       }
 
       // if an event pass the cut, fill the associated map                                                                                                                 

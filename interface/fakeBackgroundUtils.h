@@ -13,8 +13,8 @@
 #include "utils.h"
 
 #define muonChargeMisID           1E-6
-#define electronChargeMisIDBarrel 5E-4
-#define electronChargeMisIDEndcap 3E-3
+#define electronChargeMisIDBarrel 3E-4
+#define electronChargeMisIDEndcap 5E-4
 
 using namespace std ;
 
