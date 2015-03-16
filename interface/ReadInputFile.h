@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <map>
 #include <unordered_map>
+#include <memory>
 
 #include "TString.h"
 #include "TH1F.h"
@@ -333,45 +334,43 @@ class fakeRateContainer {
 
   ~fakeRateContainer();
 
-  fakeRateContainer(const string & fileName);
+  fakeRateContainer(TFile* inputFile);
 
   float getFakeRate (const int & , const int &, const float &, const float &);
   float getFakeRateUncertainty(const int&, const int &, const float&, const float&);
   void  getFakeRateInterpolation( TGraph2D* fakeRate, TH2F* fakeMap, TH2F* ptCentre);
 
-  TFile *inputFile ;
+  shared_ptr<TH2F> Denominator_bjet_to_mu ;
+  shared_ptr<TH2F> Denominator_jet_to_mu ;
 
-  TH2F* Denominator_bjet_to_mu ;
-  TH2F* Denominator_jet_to_mu ;
+  shared_ptr<TH2F> Denominator_bjet_to_e ;
+  shared_ptr<TH2F> Denominator_jet_to_e ;
 
-  TH2F* Denominator_bjet_to_e ;
-  TH2F* Denominator_jet_to_e ;
+  shared_ptr<TH2F> Numerator_bjet_to_mu ;
+  shared_ptr<TH2F> Numerator_jet_to_mu ;
 
-  TH2F* Numerator_bjet_to_mu ;
-  TH2F* Numerator_jet_to_mu ;
-
-  TH2F* Numerator_bjet_to_e ;
-  TH2F* Numerator_jet_to_e ;
+  shared_ptr<TH2F> Numerator_bjet_to_e ;
+  shared_ptr<TH2F> Numerator_jet_to_e ;
 
 
-  TH2F*     mFakeRate_bjet ;
-  TH2F*     mFakeRate_jet ;
+  shared_ptr<TH2F>     mFakeRate_bjet ;
+  shared_ptr<TH2F>     mFakeRate_jet ;
 
-  TGraph2D* muonFakeRate_bjet;
-  TGraph2D* muonFakeRate_jet;
+  shared_ptr<TGraph2D> muonFakeRate_bjet;
+  shared_ptr<TGraph2D> muonFakeRate_jet;
  
-  TH2F*     eFakeRate_bjet ;
-  TH2F*     eFakeRate_jet ;
+  shared_ptr<TH2F>     eFakeRate_bjet ;
+  shared_ptr<TH2F>     eFakeRate_jet ;
 
-  TGraph2D* electronFakeRate_jet;
-  TGraph2D* electronFakeRate_bjet;
+  shared_ptr<TGraph2D> electronFakeRate_jet;
+  shared_ptr<TGraph2D> electronFakeRate_bjet;
 
   //bin center
-  TH2F* PtCentre_jet_to_mu;
-  TH2F* PtCentre_jet_to_e;
+  shared_ptr<TH2F> PtCentre_jet_to_mu;
+  shared_ptr<TH2F> PtCentre_jet_to_e;
 
-  TH2F* PtCentre_bjet_to_mu;
-  TH2F* PtCentre_bjet_to_e;
+  shared_ptr<TH2F> PtCentre_bjet_to_mu;
+  shared_ptr<TH2F> PtCentre_bjet_to_e;
 
 };
 
@@ -385,35 +384,33 @@ class fakeMigrationContainer {
   
   ~fakeMigrationContainer();
 
-  fakeMigrationContainer(const string & fileName);
+  fakeMigrationContainer(TFile* inputFile);
 
   float getMigration (const int & leptonPID, const int & jetflavour, const float & pt, const float & eta);
 
-  TFile* inputFile;
+  shared_ptr<TH2F> Pt_migration_jet_to_mu ;
+  shared_ptr<TH2F> Pt_migration_jet_to_e ;
 
-  TH2F* Pt_migration_jet_to_mu ;
-  TH2F* Pt_migration_jet_to_e ;
+  shared_ptr<TH1F> Pt_migration_centre_jet_to_mu ;
+  shared_ptr<TH1F> Pt_migration_centre_jet_to_e ;
 
-  TH1F* Pt_migration_centre_jet_to_mu ;
-  TH1F* Pt_migration_centre_jet_to_e ;
+  shared_ptr<TProfile> profile_jet_to_mu ;
+  shared_ptr<TProfile> profile_jet_to_e ;
 
-  TProfile* profile_jet_to_mu ;
-  TProfile* profile_jet_to_e ;
+  shared_ptr<TGraph> migration_jet_to_mu ;
+  shared_ptr<TGraph> migration_jet_to_e ;
 
-  TGraph* migration_jet_to_mu ;
-  TGraph* migration_jet_to_e ;
+  shared_ptr<TH2F> Pt_migration_bjet_to_mu ;
+  shared_ptr<TH2F> Pt_migration_bjet_to_e ;
 
-  TH2F* Pt_migration_bjet_to_mu ;
-  TH2F* Pt_migration_bjet_to_e ;
+  shared_ptr<TH1F> Pt_migration_centre_bjet_to_mu ;
+  shared_ptr<TH1F> Pt_migration_centre_bjet_to_e ;
 
-  TH1F* Pt_migration_centre_bjet_to_mu ;
-  TH1F* Pt_migration_centre_bjet_to_e ;
+  shared_ptr<TProfile> profile_bjet_to_mu ;
+  shared_ptr<TProfile> profile_bjet_to_e ;
 
-  TProfile* profile_bjet_to_mu ;
-  TProfile* profile_bjet_to_e ;
-
-  TGraph* migration_bjet_to_mu ;
-  TGraph* migration_bjet_to_e ;
+  shared_ptr<TGraph> migration_bjet_to_mu ;
+  shared_ptr<TGraph> migration_bjet_to_e ;
 
 };
 

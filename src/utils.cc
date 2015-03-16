@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "fakeBackgroundUtils.h"
+#include <memory>
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -
 float deltaPhi (float phi1, float phi2){
@@ -490,8 +491,9 @@ void loopOnEvents (plotter & analysisPlots,
   objectFormula scenarioFormula (scenarioString); 
 
   // define fake rate and migration matrix  
-  fakeRateContainer       fakeRate(fakeRateFile); 
-  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(fakeRateFile);
+  shared_ptr<TFile> inputFile(new TFile(fakeRateFile.c_str(),"READ"));
+  fakeRateContainer       fakeRate(inputFile.get()); 
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(inputFile.get());
 
   // fake rate application --> check if the fake method has to be applied
   vector<sample> vecSample = analysisPlots.getSamples();
@@ -948,8 +950,9 @@ void loopOnEvents (plotter & analysisPlots,
   objectFormula scenarioFormula (scenarioString); 
 
   // define fake rate and migration matrix
-  fakeRateContainer fakeRate(fakeRateFile); 
-  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(fakeRateFile);
+  shared_ptr<TFile> inputFile(new TFile(fakeRateFile.c_str(),"READ"));
+  fakeRateContainer       fakeRate(inputFile.get()); 
+  fakeMigrationContainer* fakeMigration = new fakeMigrationContainer(inputFile.get());
 
 
   // fake rate application --> check if the fake method has to be applied

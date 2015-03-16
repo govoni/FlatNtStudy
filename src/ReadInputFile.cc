@@ -11,66 +11,61 @@ using namespace std;
 fakeRateContainer::~fakeRateContainer(){}
 
 // default contructor
-fakeRateContainer::fakeRateContainer(const string & fileName){
-
-  if (fileName == "")
-    inputFile = TFile::Open("input/FakeRate.root","READ");
-  else
-    inputFile = TFile::Open(fileName.c_str(),"READ");
+fakeRateContainer::fakeRateContainer(TFile* inputFile){
 
   cout<<"start to build the fake rate container"<<endl;
 
   // electron case
-  TH2F* Denominator_bjet_to_e = (TH2F*) inputFile->Get("Denominator_b_jet_to_e") ;
-  TH2F* Denominator_jet_to_e  = (TH2F*) inputFile->Get("Denominator_jet_to_e");
+  shared_ptr<TH2F> Denominator_bjet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Denominator_b_jet_to_e")) ;
+  shared_ptr<TH2F> Denominator_jet_to_e  = shared_ptr<TH2F>((TH2F*) inputFile->Get("Denominator_jet_to_e"));
 
-  TH2F* Numerator_bjet_to_e = (TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_e") ;
-  TH2F* Numerator_jet_to_e  = (TH2F*) inputFile->Get("Jet_Numerator_jet_to_e");
+  shared_ptr<TH2F> Numerator_bjet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_e")) ;
+  shared_ptr<TH2F> Numerator_jet_to_e  = shared_ptr<TH2F>((TH2F*) inputFile->Get("Jet_Numerator_jet_to_e"));
 
-  eFakeRate_bjet = (TH2F*) Numerator_bjet_to_e->Clone("eFakeRate_bjet");
-  eFakeRate_bjet->Divide(Denominator_bjet_to_e);
+  eFakeRate_bjet = shared_ptr<TH2F>((TH2F*) Numerator_bjet_to_e->Clone("eFakeRate_bjet"));
+  eFakeRate_bjet->Divide(Denominator_bjet_to_e.get());
   eFakeRate_bjet->Smooth();
 
-  eFakeRate_jet = (TH2F*) Numerator_jet_to_e->Clone("eFakeRate_jet");
-  eFakeRate_jet->Divide(Denominator_jet_to_e);
+  eFakeRate_jet = shared_ptr<TH2F>((TH2F*) Numerator_jet_to_e->Clone("eFakeRate_jet"));
+  eFakeRate_jet->Divide(Denominator_jet_to_e.get());
   eFakeRate_jet->Smooth();
 
   // center bin histo
-  PtCentre_bjet_to_e = (TH2F*) inputFile->Get("Pt_centre_b_jet_to_e");
-  PtCentre_jet_to_e = (TH2F*) inputFile->Get("Pt_centre_jet_to_e");
+  PtCentre_bjet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_centre_b_jet_to_e"));
+  PtCentre_jet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_centre_jet_to_e"));
 
-  electronFakeRate_bjet = new TGraph2D();
-  electronFakeRate_jet = new TGraph2D();
+  electronFakeRate_bjet = shared_ptr<TGraph2D>(new TGraph2D());
+  electronFakeRate_jet  = shared_ptr<TGraph2D>(new TGraph2D());
 
   // get the correct map
-  getFakeRateInterpolation(electronFakeRate_bjet,eFakeRate_bjet,PtCentre_bjet_to_e);
-  getFakeRateInterpolation(electronFakeRate_jet,eFakeRate_jet,PtCentre_jet_to_e);
+  getFakeRateInterpolation(electronFakeRate_bjet.get(),eFakeRate_bjet.get(),PtCentre_bjet_to_e.get());
+  getFakeRateInterpolation(electronFakeRate_jet.get(),eFakeRate_jet.get(),PtCentre_jet_to_e.get());
 
   // muon case
-  TH2F* Denominator_bjet_to_mu = (TH2F*) inputFile->Get("Denominator_b_jet_to_mu") ;
-  TH2F* Denominator_jet_to_mu  = (TH2F*) inputFile->Get("Denominator_jet_to_mu");
+  shared_ptr<TH2F> Denominator_bjet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Denominator_b_jet_to_mu")) ;
+  shared_ptr<TH2F> Denominator_jet_to_mu  = shared_ptr<TH2F>((TH2F*) inputFile->Get("Denominator_jet_to_mu"));
 
-  TH2F* Numerator_bjet_to_mu = (TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_mu") ;
-  TH2F* Numerator_jet_to_mu  = (TH2F*) inputFile->Get("Jet_Numerator_jet_to_mu");
+  shared_ptr<TH2F> Numerator_bjet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Jet_Numerator_b_jet_to_mu")) ;
+  shared_ptr<TH2F> Numerator_jet_to_mu  = shared_ptr<TH2F>((TH2F*) inputFile->Get("Jet_Numerator_jet_to_mu"));
 
-  mFakeRate_bjet = (TH2F*) Numerator_bjet_to_mu->Clone("mFakeRate_bjet");
-  mFakeRate_bjet->Divide(Denominator_bjet_to_mu);
+  mFakeRate_bjet = shared_ptr<TH2F>((TH2F*) Numerator_bjet_to_mu->Clone("mFakeRate_bjet"));
+  mFakeRate_bjet->Divide(Denominator_bjet_to_mu.get());
   mFakeRate_bjet->Smooth();
 
-  mFakeRate_jet = (TH2F*) Numerator_jet_to_mu->Clone("mFakeRate_jet");
-  mFakeRate_jet->Divide(Denominator_jet_to_mu);
+  mFakeRate_jet = shared_ptr<TH2F>((TH2F*) Numerator_jet_to_mu->Clone("mFakeRate_jet"));
+  mFakeRate_jet->Divide(Denominator_jet_to_mu.get());
   mFakeRate_jet->Smooth();
   
   // center bin histo
-  PtCentre_bjet_to_mu = (TH2F*) inputFile->Get("Pt_centre_b_jet_to_mu");
-  PtCentre_jet_to_mu = (TH2F*) inputFile->Get("Pt_centre_jet_to_mu");
+  PtCentre_bjet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_centre_b_jet_to_mu"));
+  PtCentre_jet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_centre_jet_to_mu"));
   
-  muonFakeRate_bjet = new TGraph2D();
-  muonFakeRate_jet = new TGraph2D();
+  muonFakeRate_bjet = shared_ptr<TGraph2D>(new TGraph2D());
+  muonFakeRate_jet  = shared_ptr<TGraph2D>(new TGraph2D());
 
   // get the correct map
-  getFakeRateInterpolation(muonFakeRate_bjet,mFakeRate_bjet,PtCentre_bjet_to_mu);
-  getFakeRateInterpolation(muonFakeRate_jet,mFakeRate_jet,PtCentre_jet_to_mu);
+  getFakeRateInterpolation(muonFakeRate_bjet.get(),mFakeRate_bjet.get(),PtCentre_bjet_to_mu.get());
+  getFakeRateInterpolation(muonFakeRate_jet.get(),mFakeRate_jet.get(),PtCentre_jet_to_mu.get());
 }
 
 
@@ -183,39 +178,33 @@ float fakeRateContainer::getFakeRateUncertainty (const int & pdgId_lepton, const
 // fake rate Migration
 fakeMigrationContainer::~fakeMigrationContainer(){}
 
-fakeMigrationContainer::fakeMigrationContainer(const string & fileName){
-
-  if (fileName == "")
-    inputFile = TFile::Open("input/FakeRate.root","READ");
-  else
-    inputFile = TFile::Open(fileName.c_str(),"READ");
+fakeMigrationContainer::fakeMigrationContainer(TFile* inputFile){
 
   cout<<"start to build the fake rate migration container"<<endl;
 
-  Pt_migration_centre_jet_to_mu = (TH1F*) inputFile->Get("Pt_migration_centre_jet_to_mu");
-  Pt_migration_centre_jet_to_e = (TH1F*) inputFile->Get("Pt_migration_centre_jet_to_e");
+  Pt_migration_centre_jet_to_mu = shared_ptr<TH1F>((TH1F*) inputFile->Get("Pt_migration_centre_jet_to_mu"));
+  Pt_migration_centre_jet_to_e = shared_ptr<TH1F>((TH1F*) inputFile->Get("Pt_migration_centre_jet_to_e"));
 
-  Pt_migration_centre_bjet_to_mu = (TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_mu");
-  Pt_migration_centre_bjet_to_e = (TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_e");
+  Pt_migration_centre_bjet_to_mu = shared_ptr<TH1F>((TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_mu"));
+  Pt_migration_centre_bjet_to_e = shared_ptr<TH1F>((TH1F*) inputFile->Get("Pt_migration_b_centre_jet_to_e"));
 
-  Pt_migration_jet_to_mu = (TH2F*) inputFile->Get("Pt_migration_jet_to_mu");
-  Pt_migration_jet_to_e = (TH2F*) inputFile->Get("Pt_migration_jet_to_e");
+  Pt_migration_jet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_migration_jet_to_mu"));
+  Pt_migration_jet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_migration_jet_to_e"));
 
-  Pt_migration_bjet_to_mu = (TH2F*) inputFile->Get("Pt_migration_b_jet_to_mu");
-  Pt_migration_bjet_to_e = (TH2F*) inputFile->Get("Pt_migration_b_jet_to_e");
+  Pt_migration_bjet_to_mu = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_migration_b_jet_to_mu"));
+  Pt_migration_bjet_to_e = shared_ptr<TH2F>((TH2F*) inputFile->Get("Pt_migration_b_jet_to_e"));
 
+  profile_jet_to_e  = shared_ptr<TProfile>(Pt_migration_jet_to_e->ProfileX("profile_jet_to_e_fX"));
+  profile_jet_to_mu = shared_ptr<TProfile>(Pt_migration_jet_to_mu->ProfileX("profile_jet_to_mu_fX"));
 
-  profile_jet_to_e = Pt_migration_jet_to_e->ProfileX("profile_jet_to_e_fX");
-  profile_jet_to_mu = Pt_migration_jet_to_mu->ProfileX("profile_jet_to_mu_fX");
+  profile_bjet_to_e  = shared_ptr<TProfile>(Pt_migration_bjet_to_e->ProfileX("profile_bjet_to_e_fX"));
+  profile_bjet_to_mu = shared_ptr<TProfile>(Pt_migration_bjet_to_mu->ProfileX("profile_bjet_to_mu_fX"));
 
-  profile_bjet_to_e = Pt_migration_bjet_to_e->ProfileX("profile_bjet_to_e_fX");
-  profile_bjet_to_mu = Pt_migration_bjet_to_mu->ProfileX("profile_bjet_to_mu_fX");
+  migration_jet_to_mu = shared_ptr<TGraph>(new TGraph());
+  migration_jet_to_e  = shared_ptr<TGraph>(new TGraph());
 
-  migration_jet_to_mu = new TGraph();
-  migration_jet_to_e  = new TGraph();
-
-  migration_bjet_to_mu = new TGraph();
-  migration_bjet_to_e  = new TGraph();
+  migration_bjet_to_mu = shared_ptr<TGraph>(new TGraph());
+  migration_bjet_to_e  = shared_ptr<TGraph>(new TGraph());
 
   for(int iBin = 0; iBin < profile_jet_to_e->GetNbinsX(); iBin++){
     migration_jet_to_e->SetPoint(iBin+1,Pt_migration_centre_jet_to_e->GetBinContent(iBin+1),profile_jet_to_e->GetBinContent(iBin+1));

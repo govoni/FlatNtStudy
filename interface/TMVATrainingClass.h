@@ -40,16 +40,12 @@ class TMVATrainingClass {
 
  public :
 
-  void copyFile(TDirectory*, TFile*); 
-  void copyDir(TDirectory *source);
-  
-
   // default constructor
   TMVATrainingClass(){};
 
   // constructor from list of files
-  TMVATrainingClass(const map<sampleContainer,vector<TFile*> > & signalFileList,  // list of TFile for the signal
-                    const map<sampleContainer,vector<TFile*> > & backgroundFileList, // list of TFile for background
+  TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TFile>> > & signalFileList,  // list of TFile for the signal
+                    const map<sampleContainer,vector<shared_ptr<TFile>> > & backgroundFileList, // list of TFile for background
                     const string & TreeName,                // string name for signal tree
                     const string & outputFilePath ,         // output path for the TMVA files
 		    const string & outputFileName,          // output file name
@@ -57,8 +53,8 @@ class TMVATrainingClass {
 		    const string & transformation = "");    // transformation to be applied on the input variables
 
   // constructor from list of trees
-  TMVATrainingClass(const map<sampleContainer,vector<TTree*> > & signalTreeList,     // signal tree list
-		    const map<sampleContainer,vector<TTree*> > & backgroundTreeList, // background tree list
+  TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TTree>> > & signalTreeList,     // signal tree list
+		    const map<sampleContainer,vector<shared_ptr<TTree>> > & backgroundTreeList, // background tree list
 		    const string & TreeName,                   // tree name
 		    const string & outputFilePath ,            // output path for storing TMVA files
 		    const string & outputFileName,             // output file name
@@ -66,8 +62,8 @@ class TMVATrainingClass {
 		    const string & transformation = "");       // transformation to be applied on the input variables
 
   // constructor from list of trees
-  TMVATrainingClass(const map<sampleContainer,vector<TChain*> > & signalChainList,     // signal tree list
-		    const map<sampleContainer,vector<TChain*> > & backgroundChainList, // background tree list
+  TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TChain>> > & signalChainList,     // signal tree list
+		    const map<sampleContainer,vector<shared_ptr<TChain>> > & backgroundChainList, // background tree list
 		    const string & TreeName,                   // tree name
 		    const string & outputFilePath ,            // output path for storing TMVA files
 		    const string & outputFileName,             // output file name
@@ -162,28 +158,23 @@ class TMVATrainingClass {
 			   std::vector<leptonContainer> &,
 			   std::vector<jetContainer> &,
 			   TLorentzVector &,
-			   readTree*);
-
-  // Close the output file
-  void CloseTrainingAndTesting (){ 
-    for(size_t iFile = 0; iFile < outputFile_.size(); iFile++)
-      outputFile_.at(iFile)->Close();
-  }
+			   readTree *,
+			   const float & eventWeight = 1.);
 
   // Set Signal Tree giving file
-  void SetSignalTree (const map<sampleContainer,vector<TFile*> > & signalFileList,  
+  void SetSignalTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & signalFileList,  
                       const string & TreeName = "easyDelphes");
   // Set Signal Tree giving tree
-  void SetSignalTree (const map<sampleContainer,vector<TTree*> >  & signalTreeList);
-  void SetSignalTree (const map<sampleContainer,vector<TChain*> > & signalChainList);
+  void SetSignalTree (const map<sampleContainer,vector<shared_ptr<TTree>> >  & signalTreeList);
+  void SetSignalTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & signalChainList);
 
   // Set Background Tree giving file
-  void SetBackgroundTree (const map<sampleContainer,vector<TFile*> > & backgroundFileList, 
+  void SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & backgroundFileList, 
                           const string & TreeName = "easyDelphes");
 
   // Set Background Tree giving tree
-  void SetBackgroundTree (const map<sampleContainer,vector<TTree*> > & backgroundTreeList);
-  void SetBackgroundTree (const map<sampleContainer,vector<TChain*> > & backgroundChainList);
+  void SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TTree>> > & backgroundTreeList);
+  void SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & backgroundChainList);
 
   // Set the training variables name
   void SetTrainingVariables  (const vector<string > & trainingVariables);
@@ -241,12 +232,12 @@ class TMVATrainingClass {
   pair<float,float> npuRange_ ;
 
   // list of trees for signal and background
-  map<sampleContainer,vector<TTree*> > signalTreeList_ ;
-  map<sampleContainer,vector<TTree*> > backgroundTreeList_ ;
+  map<sampleContainer,vector<shared_ptr<TTree>> > signalTreeList_ ;
+  map<sampleContainer,vector<shared_ptr<TTree>> > backgroundTreeList_ ;
 
   // list of trees for signal and background after cut
-  map<string,vector<TNtuple*> > signalTNtuplaForTraining_ ;
-  map<string,vector<TNtuple*> > backgroundTNtuplaForTraining_ ;
+  map<string,vector<shared_ptr<TNtuple>>> signalTNtuplaForTraining_ ;
+  map<string,vector<shared_ptr<TNtuple>>> backgroundTNtuplaForTraining_ ;
 
   //cut container
   cutContainer cutEvent_;
@@ -281,13 +272,18 @@ class TMVATrainingClass {
   map<string,string> outputFileWeightName_ ;
 
   // output file
-  vector<TFile*> outputFile_ ;
+  vector<shared_ptr<TFile>> outputFile_ ;
 
   // factory object
-  vector<TMVA::Factory*> factory_ ; 
+  vector<shared_ptr<TMVA::Factory>> factory_ ; 
 
   // readTree
   readTree* reader_;
+
+  shared_ptr<TFile> inputFileFakeRate_ ;
+  shared_ptr<fakeRateContainer> fakeRate_ ;
+  shared_ptr<fakeMigrationContainer> fakeMigration_;
+
 
 };
 
