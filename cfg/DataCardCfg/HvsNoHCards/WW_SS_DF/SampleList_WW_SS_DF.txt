@@ -4,7 +4,7 @@
 PHANTOM_SS_EWK_DF_126_2p5                                   WW_EWK_SS_126          2        4.13649215685881443E-003         1               1
 PHANTOM_SS_EWK_DF_noH_2p5                                   WW_EWK_SS_noH          4        4.49200073018412010E-003         1               1
 PHANTOM_WZ_EWK_DF_126_2p5_EU                                WZ_EWK                12        1.96E-003                        1               0
-#PHANTOM_WZ_EWK_DF_126_2p5_UE   				    WZ_EWK                12        1.96E-003                        1               0
+#PHANTOM_WZ_EWK_DF_126_2p5_UE   		             WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_OS_QCDwg_DF_2p5                                     wrongCharge          417        0.708                            1              -2
 PHANTOM_SS_QCD_DF_126_2p5                                   WW_QCD               801        1.06691296353271774E-003         1               0
 PHANTOM_WZ_QCDwg_DF_2p5_EU				    WZ_QCD               801        8.1326E-003                      1               0 

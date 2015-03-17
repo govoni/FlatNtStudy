@@ -306,6 +306,15 @@ class histoContainer {
     histogram->Sumw2();
   }
 
+ histoContainer(string cutName, variableContainerDynamic container):
+  cutName(cutName),
+    varName(container.variableName){
+    histogram = new TH1F((cutName+"_"+varName).c_str(),"",container.Nbin,&container.binning[0]);
+    histogram->GetXaxis()->SetTitle(container.label.c_str());
+    histogram->StatOverflows(1);
+    histogram->Sumw2();
+  }
+
   bool operator == (const histoContainer & plot2) const {
     if(plot2.cutName == cutName and plot2.varName == varName ) return true;
     else return false;
@@ -323,6 +332,11 @@ class histoContainer {
   TH1F* histogram;
 
 };
+
+
+
+
+
 
 // ---------------
 

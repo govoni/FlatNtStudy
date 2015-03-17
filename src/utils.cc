@@ -3099,7 +3099,6 @@ bool passCutContainerSelection (readTree* reader,
     iBin++;   
   }
 
-   
   // identify tight leptons and require exactly nLep                                                                                                                       
   if (int(leptonsIsoTight.size()) != Cut.nLep ) return false;                                                                                                    
 
@@ -3392,7 +3391,6 @@ bool passCutContainerSelection (readTree* reader,
     }
   } 
   
-
   return true;
 
 }

@@ -6,11 +6,11 @@ Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_LT      2 
 Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_4p0                       WW_EWK_SS_TT      3          0.01022537637                    1               0
 PHANTOM_WZ_EWK_SF_126_4p0_UU                                WZ_EWK                12        1.96E-003                        1               0
 #PHANTOM_WZ_EWK_DF_126_4p0_UE                                WZ_EWK                12        1.96E-003                        1               0
-PHANTOM_OS_QCDwg_UU_4p0                                     wrongCharge           417       0.35527                          1              -2
+#PHANTOM_OS_QCDwg_UU_4p0                                     wrongCharge           417       0.35527                          1              -2
 PHANTOM_SS_QCD_UU_126_4p0                                   WW_QCD                801       0.533455E-003                    1               0
 PHANTOM_WZ_QCDwg_SF_4p0_UU                                  WZ_QCD                801       8.1326E-003                      1               0
 #PHANTOM_WZ_QCDwg_DF_4p0_UE                                  WZ_QCD                801       8.1326E-003                      1               0
 TTbar_4p0                                                   fakeLepton            861       242.5                            1              -1
-DY2J_ll_4p0                                                 wrongCharge           417       5.5                              1              -2
+#DY2J_ll_4p0                                                 wrongCharge           417       5.5                              1              -2
 W3J_lv_4p0                                                  fakeLepton            861       6.34                             1              -1
 
