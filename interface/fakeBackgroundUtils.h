@@ -12,11 +12,9 @@
 #include "ReadInputFile.h"
 #include "utils.h"
 
-#define muonChargeMisID           1E-6
-#define electronChargeMisIDBarrel 3E-4
-#define electronChargeMisIDEndcap 5E-4
-
 using namespace std ;
+
+float getElectronMisChargeProbability (const float & pt, const float & eta);
 
 vector<jetContainer> dumpJetsForFake (vector<jetContainer> & RecoJets,
                                       vector<jetContainer> & GenJets,

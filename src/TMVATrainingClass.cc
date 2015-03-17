@@ -874,13 +874,12 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	      vector<leptonContainer> newLeptonsAll;
 	      vector<leptonContainer> newLeptonsIsoTight;
 
-	      if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
-		  
-		if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-		  eventFakeWeight = electronChargeMisIDBarrel;
-		else
-		  eventFakeWeight = electronChargeMisIDEndcap;
+	      if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13) continue;
 
+	      if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
+
+		eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
+		  
 		leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 		newLeptonsIsoTight.push_back(misIDLepton);
 		newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
@@ -890,37 +889,19 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	      }
 	      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 1){
 
-		if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-		  eventFakeWeight = electronChargeMisIDBarrel;
-		else
-		  eventFakeWeight = electronChargeMisIDEndcap;
-		
+		eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
+
 		leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 		newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
 		newLeptonsIsoTight.push_back(misIDLepton);		
 		newLeptonsAll = newLeptonsIsoTight ;
 
 	      }
-	      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 0){
-		eventFakeWeight = muonChargeMisID;
-		leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-		newLeptonsIsoTight.push_back(misIDLepton);
-		newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
-		newLeptonsAll = newLeptonsIsoTight ;
 
-		}
-		else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 1){
-		  eventFakeWeight = muonChargeMisID;
-		  leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-		  newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
-		  newLeptonsIsoTight.push_back(misIDLepton);
-		  newLeptonsAll = newLeptonsIsoTight ;
-		  
-		}
-		else {
+	      else {
 		  cerr<<" problem with mis charge ID evaluation --> catogry problem --> fix it "<<endl;
 		  continue ;
-		}
+	      }
 	      
 	      for(size_t iLepton = 0 ; iLepton < LeptonsAll.size(); iLepton++){
 		for(size_t jLepton = 0 ; jLepton <  newLeptonsAll.size(); jLepton++){

@@ -1,5 +1,21 @@
 #include "fakeBackgroundUtils.h"
 
+float getElectronMisChargeProbability (const float & pt, const float & eta){
+
+  if(fabs(eta) < 1.5){ //Barrel                                                                                                                                                 
+    if(pt < 20) return 3E-4 ;
+    else if(pt > 20 and pt < 50) return 2E-4;
+    else if(pt > 50) return 2E-4;
+  }
+  else if(fabs(eta) > 1.5){ //endcap                                                                                                                                           
+    if(pt < 20) return 6E-4;
+    else if(pt > 20 and pt < 50) return 1E-3;
+    else if(pt > 50) return 2E-3;
+  }
+
+  return 0;
+}
+
 vector<jetContainer> dumpJetsForFake (vector<jetContainer> & RecoJets,
 				      vector<jetContainer> & GenJets,
 				      vector<leptonContainer> & leptonsIsoTight,
@@ -568,6 +584,8 @@ void makeFakeChargeBackground(const string & sampleName,
     for (size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
 
       eventFakeWeight = 1.;
+
+      if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13) continue;
       
       // mischarge ID                                                                                                                                                      
       vector<leptonContainer> newLeptonsAll;
@@ -575,10 +593,7 @@ void makeFakeChargeBackground(const string & sampleName,
       
       if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
 
-	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-	  eventFakeWeight = electronChargeMisIDBarrel;
-	else
-	  eventFakeWeight = electronChargeMisIDEndcap;
+	eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
 
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(misIDLepton);
@@ -589,29 +604,8 @@ void makeFakeChargeBackground(const string & sampleName,
       }
       else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 1){
 
-	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-	  eventFakeWeight = electronChargeMisIDBarrel;
-	else
-	  eventFakeWeight = electronChargeMisIDEndcap;
+	eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
 
-	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
-	newLeptonsIsoTight.push_back(misIDLepton);
-
-	newLeptonsAll = newLeptonsIsoTight ;
-
-      }
-      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 0){
-	eventFakeWeight = muonChargeMisID;
-	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-	newLeptonsIsoTight.push_back(misIDLepton);
-	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
-
-	newLeptonsAll = newLeptonsIsoTight ;
-
-      }
-      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 1){
-	eventFakeWeight = muonChargeMisID;
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
 	newLeptonsIsoTight.push_back(misIDLepton);
@@ -774,6 +768,8 @@ void makeFakeChargeBackground(const string & sampleName,
     for (size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
 
       eventFakeWeight = 1.;
+
+      if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13) continue;
       
       // mischarge ID                                                                                                                                                      
       vector<leptonContainer> newLeptonsAll;
@@ -781,10 +777,7 @@ void makeFakeChargeBackground(const string & sampleName,
       
       if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 0){
 
-	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-	  eventFakeWeight = electronChargeMisIDBarrel;
-	else
-	  eventFakeWeight = electronChargeMisIDEndcap;
+	eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
 
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(misIDLepton);
@@ -795,29 +788,8 @@ void makeFakeChargeBackground(const string & sampleName,
       }
       else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 11 and iLep == 1){
 
-	if(fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) < 1.5)
-	  eventFakeWeight = electronChargeMisIDBarrel;
-	else
-	  eventFakeWeight = electronChargeMisIDEndcap;
+	eventFakeWeight = getElectronMisChargeProbability(leptonsIsoTight.at(iLep).lepton4V_.Pt(),leptonsIsoTight.at(iLep).lepton4V_.Eta());
 
-	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
-	newLeptonsIsoTight.push_back(misIDLepton);
-
-	newLeptonsAll = newLeptonsIsoTight ;
-
-      }
-      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 0){
-	eventFakeWeight = muonChargeMisID;
-	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep+1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
-	newLeptonsIsoTight.push_back(misIDLepton);
-	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep+1));
-
-	newLeptonsAll = newLeptonsIsoTight ;
-
-      }
-      else if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13 and iLep == 1){
-	eventFakeWeight = muonChargeMisID;
 	leptonContainer misIDLepton (leptonsIsoTight.at(iLep).lepton4V_,leptonsIsoTight.at(iLep-1).charge_,leptonsIsoTight.at(iLep).flavour_,leptonsIsoTight.at(iLep).iso_) ;
 	newLeptonsIsoTight.push_back(leptonsIsoTight.at(iLep-1));
 	newLeptonsIsoTight.push_back(misIDLepton);

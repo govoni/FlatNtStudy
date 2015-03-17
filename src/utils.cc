@@ -2961,14 +2961,14 @@ bool passCutContainerSelection (cutContainer & Cut,
   float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
 
 
-  if(not TString(finalStateString).Contains("UU") and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
-  if(not TString(finalStateString).Contains("UU") and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+  if(L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
 
-  if(not TString(finalStateString).Contains("UU") and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+  if((L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
 
-  if(not TString(finalStateString).Contains("UU") and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
-  if(not TString(finalStateString).Contains("UU") and leadZep  > Cut.lZep) return false ;
-  if(not TString(finalStateString).Contains("UU") and trailZep > Cut.lZep) return false ;
+  if(trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(leadZep  > Cut.lZep) return false ;
+  if(trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
@@ -3326,16 +3326,16 @@ bool passCutContainerSelection (readTree* reader,
   float trailZep  = fabs((leptonsIsoTight.at(1).lepton4V_.Eta()-aveEta)/(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta())));
 
 
-  if(not TString(finalStateString).Contains("UU") and L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
-  if(not TString(finalStateString).Contains("UU") and RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
+  if(L_dijet.DeltaR(L_dilepton) > Cut.dRlJ) return false;
+  if(RecoJets.at(0).jet4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_) > Cut.dRlJ) return false;
   
   TLorentzVector L_met;
   L_met.SetPtEtaPhiM(reader->pfmet,0.,reader->pfmetphi,0.);
-  if(not TString(finalStateString).Contains("UU") and (L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
+  if((L_dilepton+L_dijet+L_met).Pt() > Cut.ptJJLLMet) return false;
 
-  if(not TString(finalStateString).Contains("UU") and trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
-  if(not TString(finalStateString).Contains("UU") and leadZep  > Cut.lZep) return false ;
-  if(not TString(finalStateString).Contains("UU") and trailZep > Cut.lZep) return false ;
+  if(trackEvent.HTTrack_ > Cut.HTTrackjet) return false;
+  if(leadZep  > Cut.lZep) return false ;
+  if(trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
