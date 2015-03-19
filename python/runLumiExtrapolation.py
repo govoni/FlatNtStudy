@@ -283,7 +283,7 @@ if __name__ == '__main__':
             continue ;
 
         if options.makeMaxLikelihoodFit :
-            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
+            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics --skipBOnlyFit"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
             print runCmmd ;
             if options.batchMode:
                 fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);

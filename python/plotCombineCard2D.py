@@ -635,8 +635,8 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
     tex2.Draw();
     tex3.Draw();
 
-    can.SaveAs("%s/ProfileLikelihood_err_%s.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/ProfileLikelihood_err_%s.pdf"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/ProfileLikelihood_err_%s.png"%(options.outputPlotDIR,options.channel));
+    #can.SaveAs("%s/ProfileLikelihood_err_%s.pdf"%(options.outputPlotDIR,options.channel));
 
 
 ####################################

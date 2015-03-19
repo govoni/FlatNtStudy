@@ -334,11 +334,11 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     binName = [];     
 
     ## histograms for the limit values
-    limitExp     = ROOT.TH1F("limitExp","",1000,-1,10);
-    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,10);
-    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,10);
-    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,10);
-    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,10);
+    limitExp     = ROOT.TH1F("limitExp","",1000,-1,30);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,30);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,30);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,30);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,30);
     limitExp.Sumw2();
     limitExp1sUp.Sumw2();
     limitExp2sUp.Sumw2();
@@ -497,7 +497,7 @@ def makeProfileLikelihoodPlot(filelist,variableName,variableLabel):
                 signifExp.Reset("ICES");
 
                 xbins_exp.append(ivar+0.5); 
-                xbins_err.append(0.5); 
+                xbins_err.append(0.); 
 
                 getExpectedQuantile(filelist[ifile],signifExp);
 
@@ -593,11 +593,11 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
     binName = [];
 
-    muValue         = ROOT.TH1F("muValue","",100,-5,5);
-    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-5,5);
-    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-5,5);
-    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-5,5);
-    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-5,5);
+    muValue         = ROOT.TH1F("muValue","",100,-10,10);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
 
     muValue.Sumw2();
     muErrUpOneSigma.Sumw2();

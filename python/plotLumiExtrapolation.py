@@ -621,11 +621,11 @@ def makeMaxLikelihoodFitPlot(filelist):
     ybins_mu_err_up_2s  = array('f', []);
     ybins_mu_err_dn_2s  = array('f', []);
 
-    muValue         = ROOT.TH1F("muValue","",100,-10,10);
-    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
-    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
-    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
-    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+    muValue         = ROOT.TH1F("muValue","",1000,-50,50);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",1000,-50,50);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",1000,-50,50);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",1000,-50,50);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",1000,-50,50);
 
     muValue.Sumw2();
     muErrUpOneSigma.Sumw2();

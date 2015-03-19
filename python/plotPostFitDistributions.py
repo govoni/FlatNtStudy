@@ -258,7 +258,7 @@ if __name__ == '__main__':
         leg.AddEntry(post,"postfit","pl");
         leg.Draw("same")
 
-        can.SaveAs("%s/plot_%s.png"%(options.outputPlotDIR,key+"_"+str(toy)),"png");
-        can.SaveAs("%s/plot_%s.pdf"%(options.outputPlotDIR,key+"_"+str(toy)),"png");
+        can.SaveAs("%s/plot_%s.png"%(options.outputPlotDIR,key+"_"+options.channel+"_"+str(toy)),"png");
+        can.SaveAs("%s/plot_%s.pdf"%(options.outputPlotDIR,key+"_"+options.channel+"_"+str(toy)),"png");
 
         

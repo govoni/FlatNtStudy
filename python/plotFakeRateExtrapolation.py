@@ -36,7 +36,7 @@ parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int", 
 
 (options, args) = parser.parse_args()
 
-fakeRateScaleFactor     = [0.1,0.2,0.5,0.7,0.8,1.2,1.5,2,2.5,3,5];
+fakeRateScaleFactor     = [0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0];
 
 ########################################
 ###### Make Asymptotic Limit Plot ######
@@ -295,7 +295,7 @@ def setStyle():
 
   gStyle.SetOptStat(0);
   gStyle.SetOptTitle(0)
-  gStyle.SetOptFit(1)
+  gStyle.SetOptFit(0)
 
   NRGBs = 5
   NCont = 255
@@ -562,6 +562,36 @@ def makeProfileLikelihoodPlot(filelist):
 
     can.SaveAs("%s/ProfileLikelihood_%s_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_log.pdf"%(options.outputPlotDIR,options.channel));
+
+    can.SetLogy(0);
+
+    evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 30) ;
+    evolution.SetParameter (0, gr_exp.GetMaximum()) ;
+    evolution.SetParameter (1, 0.5) ;
+    evolution.SetParameter (2, 0.5) ;
+    gr_exp.Fit ("evolution","RMEQEX0") ;
+
+    can.cd();
+    can.SetGrid();
+
+    evolution.SetLineColor(ROOT.kRed);
+    evolution.SetLineWidth(2);
+
+    evolution.Draw();
+    evolution.GetYaxis().SetTitleOffset(0.95);
+    evolution.GetYaxis().SetTitle("significance (#sigma)");
+
+    evolution.GetXaxis().SetTitle("fake rate scale factor");
+    gr_exp.Draw("P");
+    evolution.Draw("same");
+
+    can.SaveAs("%s/ProfileLikelihood_%s_vsFake.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/ProfileLikelihood_%s_vsFake.pdf"%(options.outputPlotDIR,options.channel));
+
+    can.SetLogy();
+
+    can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.pdf"%(options.outputPlotDIR,options.channel));
 
 
 

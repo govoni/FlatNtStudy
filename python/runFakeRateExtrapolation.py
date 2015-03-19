@@ -43,7 +43,7 @@ parser.add_option('--nToys',                 action="store", type="int",    dest
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
-fakeRateScaleFactor     = [0.1,0.2,0.5,0.7,0.8,1.2,1.5,2,2.5,3.0,5.0];
+fakeRateScaleFactor     = [0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0];
 
 (options, args) = parser.parse_args()
 
@@ -291,7 +291,7 @@ if __name__ == '__main__':
             continue ;
 
         if options.makeMaxLikelihoodFit :
-            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
+            runCmmd =  "combine -M MaxLikelihoodFit --minimizerAlgo Minuit2 --minimizerStrategy 1 --rMin %f --rMax %f --saveNormalizations --saveWithUncertainties  -n %s -m 100 -d  %s  --robustFit=1 --do95=1 -s -1 -t %d --expectSignal %d --toysNoSystematics --skipBOnlyFit"%(options.rMin,options.rMax,outname,card,options.nToys,options.injectSignal);
             print runCmmd ;
             if options.batchMode:
                 fn = "combineScript_MaxLikelihoodFit_%s_nToys_%d"%(outname,options.nToys);
