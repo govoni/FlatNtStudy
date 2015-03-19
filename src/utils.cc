@@ -3074,6 +3074,7 @@ bool passCutContainerSelection (readTree* reader,
   // skip event with less than two leptons by default                                                                                                                    
   TString nameTemp;
   string Name;
+
   if(TString(sampleName).Contains("Madgraph_")){
     nameTemp = sampleName + "_pos_"+to_string(samplePosition) ;
     nameTemp.ReplaceAll("Madgraph_","");
