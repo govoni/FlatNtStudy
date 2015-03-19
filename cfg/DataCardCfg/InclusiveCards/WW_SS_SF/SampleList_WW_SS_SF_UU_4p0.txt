@@ -2,7 +2,6 @@
 #  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
 ##############################################################################################################################################
 PHANTOM_SS_EWK_UU_126_4p0                                   WW_EWK_SS_126          4        2.0682E-003                      1               1
-PHANTOM_SS_EWK_UU_noH_4p0                                   WW_EWK_SS_noH          2        2.246E-003                       1               1
 PHANTOM_WZ_EWK_SF_126_4p0_UU                                WZ_EWK                12        1.96E-003                        1               0
 #PHANTOM_WZ_EWK_DF_126_4p0_UE                                WZ_EWK                12        1.96E-003                        1               0
 #PHANTOM_OS_QCDwg_UU_4p0                                     wrongCharge           417       0.35527                          1              -2
