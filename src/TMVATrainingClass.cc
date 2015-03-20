@@ -722,7 +722,9 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
 	    }
-
+	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
+	    }
 	    else {
 	      cerr<<" problem with fake rate evaluation --> catogry problem --> fix it "<<endl;
 	      continue ;
