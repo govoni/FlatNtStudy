@@ -169,6 +169,8 @@ int main (int argc, char** argv){
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*5.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*6.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*7.root").c_str()) ;
 
     
       TObjArray* fileElements = 0;

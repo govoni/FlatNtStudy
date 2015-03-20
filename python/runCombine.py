@@ -147,8 +147,8 @@ if __name__ == '__main__':
 
         for var in variable :
             if options.channel == "COMB" :
-                os.system("ls  | grep _"+var+"_UUpp | grep txt > list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_UUmm | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUpp | grep txt >  list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUmm | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EEpp | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EEmm | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_UEpp | grep txt >> list.txt"); # make a list of datacards            
@@ -241,8 +241,8 @@ if __name__ == '__main__':
 
         for var in variable :
             if options.channel == "COMB" :
-                os.system("ls  | grep _"+var+"_UUpp | grep txt > list.txt"); # make a list of datacards            
-                os.system("ls  | grep _"+var+"_UUmm | grep txt > list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUpp | grep txt >  list.txt"); # make a list of datacards            
+                os.system("ls  | grep _"+var+"_UUmm | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EEpp | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EEmm | grep txt >> list.txt"); # make a list of datacards            
                 os.system("ls  | grep _"+var+"_EUpp | grep txt >> list.txt"); # make a list of datacards            
