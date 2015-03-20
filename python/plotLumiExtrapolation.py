@@ -28,6 +28,7 @@ parser.add_option('--fileDIR',   action="store", type="string", dest="fileDIR", 
 parser.add_option('--channel',   action="store", type="string", dest="channel",     default="UUpp")
 parser.add_option('--outputPlotDIR',   action="store", type="string", dest="outputPlotDIR", default="")
 parser.add_option('--inputVariable',   action="store", type="string", dest="inputVariable", default="")
+parser.add_option('--modelType',   action="store", type="int", dest="modelType", default=0)
 
 ## make plots
 parser.add_option('--makeAsymptoticPlot',           action="store", type="int",    dest="makeAsymptoticLimitPlot",   default=0)
@@ -465,13 +466,11 @@ def makeAsymptoticLimitPlot(filelist):
 
     can_SM.SaveAs("%s/AsymptoticLimit_%s.png"%(options.outputPlotDIR,options.channel));
     can_SM.SaveAs("%s/AsymptoticLimit_%s.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_%s.root"%(options.outputPlotDIR,options.channel));
 
     can_SM.SetLogy();
 
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.png"%(options.outputPlotDIR,options.channel));
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.pdf"%(options.outputPlotDIR,options.channel));
-    can_SM.SaveAs("%s/AsymptoticLimit_%s_log.root"%(options.outputPlotDIR,options.channel));
 
 
 ##############################
@@ -574,12 +573,22 @@ def makeProfileLikelihoodPlot(filelist):
 
     ## make the fi
     can.SetLogy(0);
+
+    if options.modelType == 0 :
     
-    evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1] *[1]/x)", 0, 10000) ;
-    evolution.SetParameter (0, gr_exp.GetMaximum()) ;
-    evolution.SetParameter (1, 1) ;
-    evolution.SetParameter (2, 0.5) ;
-    gr_exp.Fit ("evolution","RMEQEX0") ;
+        evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]/x)", 0, 10000) ;
+        evolution.SetParameter (0, gr_exp.GetMaximum()*2) ;
+        evolution.SetParameter (1, 0.5) ;
+        evolution.SetParameter (2, 0.5) ;
+        gr_exp.Fit ("evolution","RMEQEX0") ;
+
+    else : 
+
+        evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([1]*[1]/x)", 0, 10000) ;
+        evolution.SetParameter (0, gr_exp.GetMaximum()*2) ;
+        evolution.SetParameter (1, 0.5) ;
+        gr_exp.Fit ("evolution","RMEQEX0") ;
+
 
     can.cd();
     can.SetGrid();
