@@ -495,12 +495,12 @@ int main (int argc, char ** argv) {
 
       // make systematics lnN lines
       string lumiSys        = "CMS_lumi         lnN";
-      string fakeLeptonSys  = "CMS_fakeLep      lnN";
       string wrongChargeSys = "CMS_wrongCharge  lnN";
       string QCDScaleSys    = "QCDScale     lnN";
       string PdfqqSys       = "Pdfqq        lnN";
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
+      string acceptSys      = "CMS_accept   lnN";
 
       
       // make systematics lines and shapes in the root file
@@ -508,10 +508,12 @@ int main (int argc, char ** argv) {
       string lepResShape   = "CMS_res_l    shapeN2";
       string jetScaleShape = "CMS_scale_j  shapeN2";
       string jetResShape   = "CMS_res_j    shapeN2";
+      string fakeRateShape = "CMS_fakeLep  shapeN2";
       string statShape     = "";
 
       // stat shapes ;
       TH1F* hStatUp       = 0, *hStatDown = 0;
+      TH1F* hfakeRateUp   = 0, *hfakeRateDown = 0;
       TH1F* hLepScaleUp   = 0, *hLepScaleDown = 0, *hLepResUp     = 0, *hLepResDown   = 0;
       TH1F* hJetScaleUp   = 0, *hJetScaleDown = 0, *hJetResUp     = 0, *hJetResDown   = 0;
       
@@ -524,11 +526,27 @@ int main (int argc, char ** argv) {
 	  PdfqqSys    = PdfqqSys    +"   -";
 	  btagSys     = btagSys     +"   -";
 	  lepEffSys   = lepEffSys   +"   -";
+	  acceptSys   = acceptSys   +"   -";
 	  
 	  if(SampleVector.at(iSample).m_isSignal != -1)
-	    fakeLeptonSys = fakeLeptonSys + "  -";	  
-	  else if(SampleVector.at(iSample).m_isSignal == -1)
-	    fakeLeptonSys = fakeLeptonSys + "  1.35";
+	    fakeRateShape = fakeRateShape + "  -";	  
+	  else if(SampleVector.at(iSample).m_isSignal == -1){
+	    fakeRateShape = fakeRateShape + "  1";
+
+	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
+            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
+
+            for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
+              hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
+              hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
+              if(hfakeRateDown->GetBinContent(iBin) < 0)
+                hfakeRateDown->SetBinContent(iBin,0);
+            }
+
+            hfakeRateUp->Write();
+            hfakeRateDown->Write();	    
+
+	  }
 
 	  if(SampleVector.at(iSample).m_isSignal != -2)
 	    wrongChargeSys = wrongChargeSys + "  -";	  
@@ -575,6 +593,16 @@ int main (int argc, char ** argv) {
 
 	  // mirroring for down histo
 	  hJetResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown",hNominal,hJetResUp);
+
+	  makePositiveDefine(hLepScaleUp);
+          makePositiveDefine(hLepScaleDown);
+          makePositiveDefine(hLepResUp);
+          makePositiveDefine(hLepResDown);
+
+          makePositiveDefine(hJetScaleUp);
+          makePositiveDefine(hJetScaleDown);
+          makePositiveDefine(hJetResUp);
+          makePositiveDefine(hJetResDown);
 
 	  // write the histograms in the file
 	  hLepScaleUp->Write();
@@ -633,15 +661,17 @@ int main (int argc, char ** argv) {
 	if(SampleVector.at(iSample).m_isSignal == 1){
 	  QCDScaleSys = QCDScaleSys +"   -";
 	  PdfqqSys    = PdfqqSys    +"   -";
+	  acceptSys   = acceptSys   +"   -";
 	}
 	else {
 	  QCDScaleSys = QCDScaleSys +"   1.030";
 	  PdfqqSys    = PdfqqSys    +"   1.070";
+	  acceptSys   = acceptSys   +"   1.020";
 	}
 
 	btagSys     = btagSys     +"   1.050";
 	lepEffSys   = lepEffSys   +"   1.020";	  
-	fakeLeptonSys = fakeLeptonSys +   "  -";	
+	fakeRateShape = fakeRateShape +   "  -";	
 	wrongChargeSys = wrongChargeSys + "  -";
 
 	// object systematics
@@ -681,13 +711,14 @@ int main (int argc, char ** argv) {
       datacard<< PdfqqSys +"\n";
       datacard<< btagSys +"\n";
       datacard<< lepEffSys +"\n";
-      datacard<< fakeLeptonSys +"\n";
+      datacard<< acceptSys +"\n";
       datacard<< wrongChargeSys +"\n";
 	  
       datacard<< lepScaleShape +"\n" ;
       datacard<< lepResShape +"\n" ;
       datacard<< jetScaleShape +"\n";
       datacard<< jetResShape +"\n";
+      datacard<< fakeRateShape +"\n";
 
       datacard<< statShape ;
 
@@ -850,22 +881,24 @@ int main (int argc, char ** argv) {
       TH1F* hLepScaleUp   = 0, *hLepScaleDown = 0, *hLepResUp     = 0, *hLepResDown   = 0;
       TH1F* hJetScaleUp   = 0, *hJetScaleDown = 0, *hJetResUp     = 0, *hJetResDown   = 0;
       TH1F* hStatUp       = 0, *hStatDown = 0;
+      TH1F* hfakeRateUp   = 0, *hfakeRateDown = 0;
 
 
       string lepScaleShape = "CMS_scale_l  shapeN2";
       string lepResShape   = "CMS_res_l    shapeN2";
       string jetScaleShape = "CMS_scale_j  shapeN2";
       string jetResShape   = "CMS_res_j    shapeN2";
+      string fakeRateShape = "CMS_fakeLep  shapeN2";
       string statShape     = "";
 
       // Make systematics lnN lines
       string lumiSys        = "CMS_lumi         lnN";
-      string fakeLeptonSys  = "CMS_fakeLep      lnN";
       string wrongChargeSys = "CMS_wrongCharge  lnN";
       string QCDScaleSys    = "QCDScale     lnN";
       string PdfqqSys       = "Pdfqq        lnN";
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
+      string acceptSys      = "CMS_accept   lnN";
 
       // loop on samples
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
@@ -941,6 +974,16 @@ int main (int argc, char ** argv) {
 	  hJetResUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jUp").c_str());        
 
 	  hJetResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown",hNominal,hJetResUp);
+
+	  makePositiveDefine(hLepScaleUp);
+          makePositiveDefine(hLepScaleDown);
+          makePositiveDefine(hLepResUp);
+          makePositiveDefine(hLepResDown);
+
+          makePositiveDefine(hJetScaleUp);
+          makePositiveDefine(hJetScaleDown);
+          makePositiveDefine(hJetResUp);
+          makePositiveDefine(hJetResDown);
 	  
 	  hLepScaleUp   ->Write();
 	  hLepScaleDown ->Write();
@@ -1012,15 +1055,17 @@ int main (int argc, char ** argv) {
 	  if(SampleVector.at(iSample).m_isSignal == 1){
 	    QCDScaleSys = QCDScaleSys +"   -";
 	    PdfqqSys    = PdfqqSys    +"   -";
+	    acceptSys   = acceptSys   +"   1.020";
 	  }
 	  else {
 	    QCDScaleSys = QCDScaleSys +"   1.030";
 	    PdfqqSys    = PdfqqSys    +"   1.070";
+	    acceptSys   = acceptSys    +"   -";
 	  }
 
 	  btagSys     = btagSys     +"   1.050";
 	  lepEffSys   = lepEffSys   +"   1.020";
-	  fakeLeptonSys = fakeLeptonSys +   "  -";
+	  fakeRateShape  = fakeRateShape +  "  -";
 	  wrongChargeSys = wrongChargeSys + "  -";
 
 	  // object systematics                                                                                                                                            
@@ -1059,11 +1104,27 @@ int main (int argc, char ** argv) {
 	  PdfqqSys    = PdfqqSys    +"   -";
 	  btagSys     = btagSys     +"   -";
 	  lepEffSys   = lepEffSys   +"   -";
+	  acceptSys   = acceptSys   +"   -";
 
 	  if(SampleVector.at(iSample).m_isSignal != -1)
-	    fakeLeptonSys = fakeLeptonSys + "  -";
-	  else if(SampleVector.at(iSample).m_isSignal == -1)
-	    fakeLeptonSys = fakeLeptonSys + "  1.35";
+	    fakeRateShape = fakeRateShape + "  -";
+	  else if(SampleVector.at(iSample).m_isSignal == -1){
+	    fakeRateShape = fakeRateShape + "  1";
+
+	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
+            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
+
+            for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
+              hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
+              hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
+              if(hfakeRateDown->GetBinContent(iBin) < 0)
+                hfakeRateDown->SetBinContent(iBin,0);
+            }
+
+            hfakeRateUp->Write();
+            hfakeRateDown->Write();	    
+
+	  }
 	  
 	  if(SampleVector.at(iSample).m_isSignal != -2)
 	    wrongChargeSys = wrongChargeSys + "  -";
@@ -1092,13 +1153,14 @@ int main (int argc, char ** argv) {
       datacard<< PdfqqSys +"\n";
       datacard<< btagSys +"\n";
       datacard<< lepEffSys +"\n";
-      datacard<< fakeLeptonSys +"\n";
+      datacard<< acceptSys +"\n";
       datacard<< wrongChargeSys +"\n";
 
       datacard<< lepScaleShape + "\n";
       datacard<< lepResShape + "\n";
       datacard<< jetScaleShape + "\n";
       datacard<< jetResShape + "\n";
+      datacard<< fakeRateShape + "\n";      
       datacard<< statShape ;
       
       datacard.close();

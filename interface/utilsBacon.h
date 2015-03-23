@@ -28,7 +28,7 @@ void findGenNeutrinoFromW(TClonesArray* genParticles,
 void cleanedJetsFromLeptons(vector<TJet> & cleanedJets,
                             TClonesArray & inputJets,
                             vector<TMuon> & goodTightMuons,
-                            vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone);
+                            vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone, float etaJetCut = 4.7);
 
 
 
