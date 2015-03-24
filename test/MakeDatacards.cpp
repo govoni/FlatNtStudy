@@ -501,7 +501,7 @@ int main (int argc, char ** argv) {
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
       string acceptSys      = "CMS_accept   lnN";
-
+      string fakeLepSys     = "CMS_fakeLep  lnN";
       
       // make systematics lines and shapes in the root file
       string lepScaleShape = "CMS_scale_l  shapeN2";
@@ -532,6 +532,7 @@ int main (int argc, char ** argv) {
 	    fakeRateShape = fakeRateShape + "  -";	  
 	  else if(SampleVector.at(iSample).m_isSignal == -1){
 	    fakeRateShape = fakeRateShape + "  1";
+	    fakeLepSys    = fakeLepSys    + "  1.30";
 
 	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
             hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
@@ -673,7 +674,7 @@ int main (int argc, char ** argv) {
 	lepEffSys   = lepEffSys   +"   1.020";	  
 	fakeRateShape = fakeRateShape +   "  -";	
 	wrongChargeSys = wrongChargeSys + "  -";
-
+        fakeLepSys     = fakeLepSys     + "  -";
 	// object systematics
 	lepScaleShape = lepScaleShape + "  1  ";
 	lepResShape   = lepResShape   + "  1  ";
@@ -713,6 +714,7 @@ int main (int argc, char ** argv) {
       datacard<< lepEffSys +"\n";
       datacard<< acceptSys +"\n";
       datacard<< wrongChargeSys +"\n";
+      datacard<< fakeLepSys +"\n";
 	  
       datacard<< lepScaleShape +"\n" ;
       datacard<< lepResShape +"\n" ;
@@ -899,6 +901,7 @@ int main (int argc, char ** argv) {
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
       string acceptSys      = "CMS_accept   lnN";
+      string fakeLepSys     = "CMS_fakeLep  lnN";
 
       // loop on samples
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
@@ -1067,6 +1070,7 @@ int main (int argc, char ** argv) {
 	  lepEffSys   = lepEffSys   +"   1.020";
 	  fakeRateShape  = fakeRateShape +  "  -";
 	  wrongChargeSys = wrongChargeSys + "  -";
+          fakeLepSys     = fakeLepSys+"   -";
 
 	  // object systematics                                                                                                                                            
 	  lepScaleShape = lepScaleShape + "  1  ";
@@ -1110,6 +1114,7 @@ int main (int argc, char ** argv) {
 	    fakeRateShape = fakeRateShape + "  -";
 	  else if(SampleVector.at(iSample).m_isSignal == -1){
 	    fakeRateShape = fakeRateShape + "  1";
+            fakeLepSys    = fakeLepSys + "  1.30";
 
 	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
             hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
@@ -1155,7 +1160,7 @@ int main (int argc, char ** argv) {
       datacard<< lepEffSys +"\n";
       datacard<< acceptSys +"\n";
       datacard<< wrongChargeSys +"\n";
-
+      datacard<< fakeLepSys+"\n";
       datacard<< lepScaleShape + "\n";
       datacard<< lepResShape + "\n";
       datacard<< jetScaleShape + "\n";

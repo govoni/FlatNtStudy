@@ -1,9 +1,9 @@
 ################################################################################################################
 # fileName                                                        reducedVarName    puMin    puMax     MethodList
 ################################################################################################################
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_MVA_DeltaEta_LL.root  DeltaEta_ll      0         2000     #Delta#eta_{ll}                                  
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_MVA_HTtkjets.root     HT_Track         0         2000     HT^{track}                                  
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_MVA_detajj.root       DeltaEta_jj      0         2000     #Delta#eta_{jj}                                  
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_MVA_mjj.root          mjj              0         2000     M_{jj}                                  
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_mjj_detajj.root       DeltaEtaMjj      0         2000     M_{jj}-#Delta#eta_{jj}
-output/outTrain_WW_SS_SF_EEpp_BKG/TMVAoutput_BDTG.root             MVA              0         2000     BDT
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_MVA_DeltaEta_LL.root  DeltaEta_ll      0         2000     #Delta#eta_{ll}                   
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_MVA_HTtkjets.root     HT_Track         0         2000     HT^{track}                    
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_MVA_detajj.root       DeltaEta_jj      0         2000     #Delta#eta_{jj}                       
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_MVA_mjj.root          mjj              0         2000     M_{jj}                                  
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_mjj_detajj.root       DeltaEtaMjj      0         2000     M_{jj}-#Delta#eta_{jj}
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_EEpp_BKG//TMVAoutput_BDT.root              MVA              0         2000     BDT

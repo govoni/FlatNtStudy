@@ -1,7 +1,7 @@
 ####################################################################
 # Variable                  Nbin    Min     Max        Label
 ####################################################################
-HTtkjets                    30      0      300         HT_{tkJets}
-DeltaEta_LL                 25      0      7           #Delta#eta_{LL}
+#HTtkjets                    30      0      300         HT_{tkJets}
+#DeltaEta_LL                 25      0      7           #Delta#eta_{LL}
 detajj                      30      0       7          #Delta#eta_{jj}
 mjj                         45      0      7000        M_{jj}   
