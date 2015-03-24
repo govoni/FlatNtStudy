@@ -14,6 +14,7 @@
 #include "readTreeLatino.h"
 #include "utilsLatino.h"
 #include "objectFormula.h"
+#include "kinematicUtils.h"
 
 using namespace std;
 

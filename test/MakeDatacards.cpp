@@ -528,8 +528,10 @@ int main (int argc, char ** argv) {
 	  lepEffSys   = lepEffSys   +"   -";
 	  acceptSys   = acceptSys   +"   -";
 	  
-	  if(SampleVector.at(iSample).m_isSignal != -1)
+	  if(SampleVector.at(iSample).m_isSignal != -1){
 	    fakeRateShape = fakeRateShape + "  -";	  
+	    fakeLepSys    = fakeLepSys    + "  -";
+	  }
 	  else if(SampleVector.at(iSample).m_isSignal == -1){
 	    fakeRateShape = fakeRateShape + "  1";
 	    fakeLepSys    = fakeLepSys    + "  1.30";
@@ -1112,8 +1114,10 @@ int main (int argc, char ** argv) {
 	  lepEffSys   = lepEffSys   +"   -";
 	  acceptSys   = acceptSys   +"   -";
 
-	  if(SampleVector.at(iSample).m_isSignal != -1)
+	  if(SampleVector.at(iSample).m_isSignal != -1){
 	    fakeRateShape = fakeRateShape + "  -";
+            fakeLepSys    = fakeLepSys + "  -";
+	  }
 	  else if(SampleVector.at(iSample).m_isSignal == -1){
 	    fakeRateShape = fakeRateShape + "  1";
             fakeLepSys    = fakeLepSys + "  1.30";

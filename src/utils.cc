@@ -3343,13 +3343,13 @@ bool passCutContainerSelection (readTree* reader,
     iBin++;   
   }
 
-
   // polarized cut
   if(Cut.polarization != 99 or TString(sampleName).Contains("Madgraph")){
 
     int polarizationFlag = 0;
 
     if(Cut.polarization != 99){
+
       if(fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) == 0) 
 	polarizationFlag = 0 ; //LL
       else if((fabs(reader->vbosonLHEspin1) == 1 and fabs(reader->vbosonLHEspin2) ==0) or (fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) ==1))
