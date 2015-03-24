@@ -86,24 +86,10 @@ int main (int argc, char **argv){
 
 
   // plotType option
-  int plotType ;
-  try{ 
-    plotType = gConfigParser->readIntOption("Input::plotType");
-  }
-  catch(char* excpetionString){
-    cout<<" plotType set to 0 "<<endl; 
-    plotType = 0; 
-  }
+  int plotType = gConfigParser->readIntOption("Input::plotType");
 
   // other option parameters : luminosity                                                                                                                                      
-  float lumi ;
-  try {
-    lumi  =  gConfigParser -> readFloatOption("Option::Lumi"); // fb^(-1)                                                                                                      
-  }
-  catch(char* excpetionString) {
-    lumi = 1000;
-    cerr<<" lumi set to default value : 1000 fb^{-1} "<<endl;
-  }
+  float lumi  =  gConfigParser -> readFloatOption("Option::Lumi"); // fb^(-1)                                                                                                
   lumi *= 1000. ;   // transform into pb^(-1)                                                                                                                                  
 
   // output directory                                                                                                                                                          
@@ -132,9 +118,14 @@ int main (int argc, char **argv){
   
   for(size_t iFile = 0 ; iFile < inputFiles.size(); iFile++){
 
-    TMVATrainingPlot->makeCorrelationMatrixPlot(inputFiles.at(iFile),
-						trainingList.at(iFile).varNameReduced,
-						outputPlotDirectory); // make correlation plots
+    if(TString(inputFiles.at(iFile)->GetName()).Contains("BDT") or
+       TString(inputFiles.at(iFile)->GetName()).Contains("Likelihood") or
+       TString(inputFiles.at(iFile)->GetName()).Contains("MLP") or
+       TString(inputFiles.at(iFile)->GetName()).Contains("Fisher"))
+
+      TMVATrainingPlot->makeCorrelationMatrixPlot(inputFiles.at(iFile),
+						  trainingList.at(iFile).varNameReduced,
+						  outputPlotDirectory); // make correlation plots
     
     // make MVA output plot
     TMVATrainingPlot->makeMVAsPlot(inputFiles.at(iFile),TMVATrainingPlot->MVAType,outputPlotDirectory);
@@ -160,12 +151,15 @@ int main (int argc, char **argv){
       else nBackgroundEvent += weight;
     }
 
+    cout<<" number of signal events "<<nSignalEvent<<endl;
+    cout<<" number of background events "<<nBackgroundEvent<<endl;
+
     // make the significance plot
     TMVATrainingPlot->makeSignificancePlot(inputFiles.at(iFile),
 					   trainingList.at(iFile).varNameReduced,
-					   TMVATrainingPlot->SoverSqrtSB, // significance type --> look at the convention in the header file
-					   nSignalEvent, // number of signal events from the testing tree
-					   nBackgroundEvent, // number of background events from the testing tree
+					   TMVATrainingPlot->Pvalue, // significance type --> look at the convention in the header file
+					   nSignalEvent*2, // number of signal events from the testing tree
+					   nBackgroundEvent*2, // number of background events from the testing tree
 					   false, // use signal efficiency instead of yield
 					   false, // use background efficiency instead of yield
 					   outputPlotDirectory);

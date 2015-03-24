@@ -4,17 +4,25 @@
 bool passEleID(TElectron* ele, float rho){
 
   if(fabs(ele->eta) < 1.5){
-    if(fabs(ele->dz) < 0.015 and
-       fabs(ele->d0) < 0.003 and
+    if(fabs(ele->dz) < 0.01   and
+       fabs(ele->d0) < 0.02   and
        ele->nMissingHits <= 1 and
-       ele->isConv == 0 and
+       ele->isConv == 0       and
+       fabs(ele->dEtaIn) < 0.004 and
+       fabs(ele->dPhiIn) < 0.06  and
+       fabs(ele->sieie)  < 0.01  and
+       ele->hovere < 0.12 and
        (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
   }
   else {
-    if(fabs(ele->dz) < 0.15 and
-       fabs(ele->d0) < 0.03 and
+    if(fabs(ele->dz) < 0.1    and
+       fabs(ele->d0) < 0.02   and
        ele->nMissingHits <= 1 and
-       ele->isConv == 0 and
+       ele->isConv == 0       and
+       fabs(ele->dEtaIn) < 0.007 and
+       fabs(ele->dPhiIn) < 0.03  and
+       fabs(ele->sieie)  < 0.03  and
+       ele->hovere < 0.10 and
        (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
   }
 
@@ -32,10 +40,11 @@ bool passMuonID(TMuon* mu, float rho){
            mu->tkNchi2 < 10 and
            mu->nValidHits > 0 and
            mu->nMatchStn > 1 and
-	  fabs(mu->d0) < 0.2 and
-	  fabs(mu->dz) < 0.5 and
-           mu->nPixHits > 0 and
+	   fabs(mu->d0) < 0.2 and
+	   fabs(mu->dz) < 0.5 and
+           mu->nPixHits  > 0 and
            mu->nTkLayers > 5 and
+	   mu->ptErr/mu->pt < 0.3 and 
 	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.65);
 
 }
@@ -121,13 +130,13 @@ void cleanedJetsFromLeptons(// look for jets cleaning leptons
                             vector<TJet> & cleanedJets,
                             TClonesArray & inputJets,
                             vector<TMuon> & goodTightMuons,
-                            vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone){
+                            vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone, float etaJetCut){
 
 
   for( int iJet = 0; iJet < inputJets.GetEntriesFast(); iJet++){
 
     TJet* jet = (TJet*)(inputJets.At(iJet));
-    if(jet->pt < minJetCutPt or fabs(jet->eta) > 4.7) continue;
+    if(jet->pt < minJetCutPt or fabs(jet->eta) > etaJetCut) continue;
     TLorentzVector jet4V;
     jet4V.SetPtEtaPhiM(jet->pt,jet->eta,jet->phi,jet->mass);
 

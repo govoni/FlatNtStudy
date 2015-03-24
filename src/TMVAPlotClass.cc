@@ -193,7 +193,7 @@ void TMVAPlotClass::CreateCanvasandFrameROC(const int & plotType,
   frameROC_->GetYaxis()->SetTitleOffset(1.25);
   frameROC_->Draw("");
 
-  banner4Plot(false,puMin,puMax,plotType); // make the banner for the ROC curve
+  //  banner4Plot(false,puMin,puMax,plotType); // make the banner for the ROC curve
 
   for_each(canvasLabel_.begin(),canvasLabel_.end(), default_delete<TLatex>());
   canvasLabel_.clear() ;
@@ -249,7 +249,7 @@ void TMVAPlotClass::CreateCanvasandFrameROC(const int & plotType,
   frameROCLog_->GetYaxis()->SetTitleOffset(1.25);
   frameROCLog_->Draw("");
 
-  banner4Plot(false,puMin,puMax,plotType);
+  //  banner4Plot(false,puMin,puMax,plotType);
 
   for(vector<TLatex*>::iterator itLabel = canvasLabel_.begin(); itLabel!=canvasLabel_.end(); itLabel++)  
     (*itLabel)->Draw();
@@ -1465,7 +1465,7 @@ void TMVAPlotClass::makeSignificancePlot (TFile* inputFile,
    (*itSignificanceBox)->efficiencyBackground_->GetYaxis()->SetTitleSize(0.035);
    (*itSignificanceBox)->efficiencyBackground_->GetYaxis()->SetLabelSize(0.035);
    (*itSignificanceBox)->efficiencyBackground_->GetYaxis()->SetTitleOffset(1.20);
-   (*itSignificanceBox)->efficiencyBackground_->GetYaxis()->SetRangeUser(0.,(*itSignificanceBox)->efficiencyBackground_->GetMaximum()*1.3);
+   (*itSignificanceBox)->efficiencyBackground_->GetYaxis()->SetRangeUser(0.,(*itSignificanceBox)->efficiencyBackground_->GetMaximum()*1.4);
    (*itSignificanceBox)->efficiencyBackground_->SetLineColor(kRed);
    (*itSignificanceBox)->efficiencyBackground_->SetLineWidth(2);
 
