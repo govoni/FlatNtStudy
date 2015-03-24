@@ -10,6 +10,7 @@
 #include "TSystem.h"
 #include "TLatex.h"
 #include "TPad.h"
+#include "TF1.h"
 
 #include "ConfigParser.h"
 #include "readTreeEFT.h"
@@ -257,7 +258,7 @@ int main (int argc, char ** argv) {
       }
     }
   }
-
+  
   TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 
   for(map<string,TH1F*>::const_iterator itMap = histoCutEff.begin(); itMap !=  histoCutEff.end(); itMap++){
@@ -278,6 +279,81 @@ int main (int argc, char ** argv) {
   }
 
   eftHistograms->Close();
+  
+  
+  // Read operator values
+  vector<vector<Float_t>> opValVec(9); //1, opVal2, opVal3, opVal4, opVal9, opVal10, opVal11, opVal12, opVal13;
+  Float_t opVal[9] = {0,0,0,0,0,0,0,0,0};
+  const int Noperators = 9;
+  int opNum[9] = {1,2,3,4,9,10,11,12,13};
+  TString opName[9] = {"S0","S1","M0","M1","M6","M7","T0","T1","T2"};
+  
+  TFile* file = new TFile((InputBaseDirectory + "/" + sampleMap.begin()->second.begin()->sampleName + "/outDumper_0.root").c_str(), "READ");
+  TTree* tree = (TTree*) file->Get("weightsInfo");
+  
+  for( int iOp = 0; iOp < Noperators; ++iOp ) {           
+    TString opStr = "operatorVal"; opStr += opNum[iOp];
+    tree->SetBranchAddress(opStr, &(opVal[iOp]));
+  }
+    
+  int nevents = tree->GetEntriesFast();
+  for( int iEvent=0; iEvent < nevents; ++iEvent ) {
+    tree->GetEntry(iEvent);
+    for( int iOp = 0; iOp < Noperators; ++iOp ) {
+      opValVec[iOp].push_back(opVal[iOp]);
+    }
+  } 
+  
+  // Fit TF1 for EFT framework
+  vector<double> x,y; // size depends on operator
+  for(size_t iHisto = 0; iHisto < plotVector.size(); iHisto++){
+    histoContainerEFT histoCont = plotVector.at(iHisto);
+    // Set SM hist
+    TH1F* hSM = histoCont.histogramEFT.at(1);
+    
+    // Check if it is correct
+//     cout << "Value operator 11:" << opValVec[6][1] << endl;
+//     cout << "Value operator 1:" << opValVec[0][1] << endl;
+//     cout << "Value operator 2:" << opValVec[1][1] << endl;
+//     cout << "# histo's: " << histoCont.histogramEFT.size() << endl;
+//     cout << "# events: " << nevents << endl;
 
+    // Loop over operators
+    for( int iOp = 0; iOp < Noperators; ++iOp ) {
+        TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+".root").Data(),"RECREATE");
+        eftFunctionFile->cd();
+        
+        // Loop over bins ( every bin is fitted as a function of the coupling parameters )
+        for( int iBin = 0; iBin < variableList[0].Nbin; ++iBin ) {
+            x.clear();
+            y.clear();
+            
+            // Loop over anomalous coupling grid
+            for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
+                TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
+                if( opValVec[iOp][iEFT] != 0 ) {
+                    // Skip 2D scan
+                    if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
+                    
+                    x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
+                    y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
+                }
+                x.push_back(0);
+                y.push_back(1);
+            }
+            
+            TCanvas *c = new TCanvas(TString::Format("c_%d",iBin),TString::Format("c_%d",iBin));
+            TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
+            graph->Draw("A*");
+            TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2");
+            graph->Fit(func);
+            c->Write();
+            func->Write();
+        }// End loop over bins
+        
+        eftFunctionFile->Close();
+    }// End loop over operators
+  }
+  
   return 0 ;
 }
