@@ -534,6 +534,8 @@ int main (int argc, char ** argv) {
 	    fakeRateShape = fakeRateShape + "  1";
 	    fakeLepSys    = fakeLepSys    + "  1.30";
 
+	    hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar). variableName];
+	    addOverAndUnderFlow(hNominal);
 	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
             hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
 

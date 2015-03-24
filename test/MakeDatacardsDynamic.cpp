@@ -147,7 +147,7 @@ int main (int argc, char ** argv) {
       int numBefore = 0;
 
       numBefore += itSubSample->numBefore;
-      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*_1.root").c_str()) ;
 
       int totEvent = chain->GetEntries();
 
@@ -460,7 +460,7 @@ int main (int argc, char ** argv) {
 	  lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	  lineProcess += SampleVector.at(iSample).m_sampleName+"   ";
 
-	  hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableListDynamic1D.at(iVar). variableName];
+	  hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableListDynamic1D.at(iVar).variableName];
 	  addOverAndUnderFlow(hNominal);
 	}
  
@@ -552,6 +552,10 @@ int main (int argc, char ** argv) {
 	  else if(SampleVector.at(iSample).m_isSignal == -1){
 	    fakeRateShape = fakeRateShape + "  1";
 	    fakeLepSys    = fakeLepSys+"  1.30";
+
+	    hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableListDynamic1D.at(iVar).variableName];
+	    addOverAndUnderFlow(hNominal);
+
 	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
 	    hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
 
