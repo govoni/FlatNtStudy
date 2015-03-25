@@ -310,49 +310,47 @@ int main (int argc, char ** argv) {
     histoContainerEFT histoCont = plotVector.at(iHisto);
     // Set SM hist
     TH1F* hSM = histoCont.histogramEFT.at(1);
-    
-    // Check if it is correct
-//     cout << "Value operator 11:" << opValVec[6][1] << endl;
-//     cout << "Value operator 1:" << opValVec[0][1] << endl;
-//     cout << "Value operator 2:" << opValVec[1][1] << endl;
-//     cout << "# histo's: " << histoCont.histogramEFT.size() << endl;
-//     cout << "# events: " << nevents << endl;
 
     // Loop over operators
     for( int iOp = 0; iOp < Noperators; ++iOp ) {
-        TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+".root").Data(),"RECREATE");
-        eftFunctionFile->cd();
-        
-        // Loop over bins ( every bin is fitted as a function of the coupling parameters )
-        for( int iBin = 0; iBin < variableList[0].Nbin; ++iBin ) {
-            x.clear();
-            y.clear();
+      TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+"_icut_"+to_string(iHisto)+".root").Data(),"RECREATE");
+      eftFunctionFile->cd();
+           
+      // Loop over bins ( every bin is fitted as a function of the coupling parameters )
+      for( int iBin = 0; iBin < variableList[0].Nbin; ++iBin ) {
+	x.clear();
+	y.clear();
             
-            // Loop over anomalous coupling grid
-            for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
-                TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
-                if( opValVec[iOp][iEFT] != 0 ) {
-                    // Skip 2D scan
-                    if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
-                    
-                    x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
-                    y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
-                }
-                x.push_back(0);
-                y.push_back(1);
-            }
+	// Loop over anomalous coupling grid
+	for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
+	  TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
+	  if( opValVec[iOp][iEFT] != 0 ) {	    
+	    // Skip 2D scan
+	    if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
             
-            TCanvas *c = new TCanvas(TString::Format("c_%d",iBin),TString::Format("c_%d",iBin));
-            TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
-            graph->Draw("A*");
-            TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2");
-            graph->Fit(func);
-            c->Write();
-            func->Write();
-        }// End loop over bins
-        
-        eftFunctionFile->Close();
-    }// End loop over operators
+	    x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
+	    y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
+	  }
+	  x.push_back(0);
+	  y.push_back(1);
+	}
+
+	TCanvas *c    = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
+	TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
+	graph->SetMarkerStyle(20);
+	graph->GetYaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
+	graph->GetYaxis()->SetTitleOffset(1.1);
+	graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-9})",opName[iOp].Data()));
+	graph->Draw("AP");
+	TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1,1);
+	func->SetLineWidth(2);
+	graph->Fit(func,"QRME");
+	c->Write();
+	func->Write();
+	c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+      }// End loop over bins      
+      //      eftFunctionFile->Close();
+    }// End loop over operators   
   }
   
   return 0 ;

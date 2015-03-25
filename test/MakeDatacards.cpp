@@ -508,7 +508,7 @@ int main (int argc, char ** argv) {
       string lepResShape   = "CMS_res_l    shapeN2";
       string jetScaleShape = "CMS_scale_j  shapeN2";
       string jetResShape   = "CMS_res_j    shapeN2";
-      string fakeRateShape = "CMS_fakeLep  shapeN2";
+      string fakeRateShape = "CMS_fakeLep_shape  shapeN2";
       string statShape     = "";
 
       // stat shapes ;
@@ -538,8 +538,8 @@ int main (int argc, char ** argv) {
 
 	    hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar). variableName];
 	    addOverAndUnderFlow(hNominal);
-	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
-            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
+	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLep_shapeUp").c_str());
+            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLep_shapeDown").c_str());
 
             for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
               hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
@@ -905,7 +905,7 @@ int main (int argc, char ** argv) {
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
       string acceptSys      = "CMS_accept   lnN";
-      string fakeLepSys     = "CMS_fakeLep  lnN";
+      string fakeLepSys     = "CMS_fakeLep_shape  lnN";
 
       // loop on samples
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
@@ -1122,8 +1122,8 @@ int main (int argc, char ** argv) {
 	    fakeRateShape = fakeRateShape + "  1";
             fakeLepSys    = fakeLepSys + "  1.30";
 
-	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepUp").c_str());
-            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLepDown").c_str());
+	    hfakeRateUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLep_shapeUp").c_str());
+            hfakeRateDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_fakeLep_shapeDown").c_str());
 
             for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
               hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));

@@ -116,7 +116,7 @@ int main (int argc, char ** argv) {
   map<string,TH1F*> histoCutEff ;
 
   TChain* chain = new TChain (treeName.c_str()) ;  
-  chain->Add ((InputBaseDirectory+"/*_1.root").c_str()) ;
+  chain->Add ((InputBaseDirectory+"/*.root").c_str()) ;
   int totEvent = chain->GetEntries();
 
   readTree* reader  = new readTree((TTree*)(chain));
@@ -274,42 +274,42 @@ int main (int argc, char ** argv) {
 
 
 	if(variableList.at(iVar).variableName == "costheta1"){
-          itVec->histogram->Fill(costheta1,1.*weight) ; 
+          itVec->histogram->Fill(fabs(costheta1),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "costheta2"){
-          itVec->histogram->Fill(costheta2,weight) ;
+          itVec->histogram->Fill(fabs(costheta2),weight) ;
         }
 	if(variableList.at(iVar).variableName == "costheta1_vbf"){
-          itVec->histogram->Fill(costheta1_vbf,1.*weight) ; 
+          itVec->histogram->Fill(fabs(costheta1_vbf),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "costheta2_vbf"){
-          itVec->histogram->Fill(costheta2_vbf,weight) ;
+          itVec->histogram->Fill(fabs(costheta2_vbf),weight) ;
         }
 
 	if(variableList.at(iVar).variableName == "Phi"){
-          itVec->histogram->Fill(Phi,1.*weight) ; 
+          itVec->histogram->Fill(fabs(Phi),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "Phi1"){
-          itVec->histogram->Fill(Phi1,weight) ;
+          itVec->histogram->Fill(fabs(Phi1),weight) ;
         }
 	if(variableList.at(iVar).variableName == "Phi_vbf"){
-          itVec->histogram->Fill(Phi_vbf,1.*weight) ; 
+          itVec->histogram->Fill(fabs(Phi_vbf),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(Phi1_vbf,weight) ;
+          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(Phi1_vbf,weight) ;
+          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(Phi1_vbf,weight) ;
+          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "costhetastar"){
-          itVec->histogram->Fill(costhetastar,weight) ;
+          itVec->histogram->Fill(fabs(costhetastar),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
-          itVec->histogram->Fill(costhetastar_vbf,weight) ;
+          itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
         }
 
 
