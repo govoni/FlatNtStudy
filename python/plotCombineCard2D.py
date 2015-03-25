@@ -911,6 +911,19 @@ if __name__ == '__main__':
             if not columns[4] in variableLabel :
                 variableLabel.append(columns[4]);
 
+    fileVar = open('%s'%(options.inputVariableList), 'r');
+    lines = fileVar.readlines()
+    if lines:
+        last_line  = lines[-1]
+        columns = last_line.strip().split()
+        if ROOT.TString(options.inputVariableList).Contains("Dynamic"):
+            variableName.append(columns[4]);
+            variableLabel.append(columns[7]);
+        else :    
+            variableName.append(columns[5]);
+            variableLabel.append(columns[9]);
+            
+
     ## fix the chdir
     os.chdir(options.fileDIR);
 
@@ -928,7 +941,7 @@ if __name__ == '__main__':
      filelist.append(line.split(" ")[0].replace("\n",""));
 
     setStyle();
-        
+
     if options.makeAsymptoticPlot :
         makeAsymptoticLimitPlot(filelist,variableName,variableLabel);
     elif options.makeProfileLikelihoodPlot :

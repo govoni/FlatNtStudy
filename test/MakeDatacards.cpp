@@ -894,7 +894,7 @@ int main (int argc, char ** argv) {
       string lepResShape   = "CMS_res_l    shapeN2";
       string jetScaleShape = "CMS_scale_j  shapeN2";
       string jetResShape   = "CMS_res_j    shapeN2";
-      string fakeRateShape = "CMS_fakeLep  shapeN2";
+      string fakeRateShape = "CMS_fakeLep_shape  shapeN2";
       string statShape     = "";
 
       // Make systematics lnN lines
@@ -905,7 +905,7 @@ int main (int argc, char ** argv) {
       string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys      = "CMS_lep_eff  lnN";
       string acceptSys      = "CMS_accept   lnN";
-      string fakeLepSys     = "CMS_fakeLep_shape  lnN";
+      string fakeLepSys     = "CMS_fakeLep  lnN";
 
       // loop on samples
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
