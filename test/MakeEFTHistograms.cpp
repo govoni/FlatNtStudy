@@ -1,7 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-// compare for a single variable the expected stats uncertainty to the difference between H and noH //
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include <iostream>
 #include <map>
 
@@ -10,7 +6,7 @@
 #include "TSystem.h"
 #include "TLatex.h"
 #include "TPad.h"
-#include "TF1.h"
+#include "TF2.h"
 
 #include "ConfigParser.h"
 #include "readTreeEFT.h"
@@ -283,10 +279,10 @@ int main (int argc, char ** argv) {
   
   // Read operator values
   vector<vector<Float_t>> opValVec(9); //1, opVal2, opVal3, opVal4, opVal9, opVal10, opVal11, opVal12, opVal13;
-  Float_t opVal[9] = {0,0,0,0,0,0,0,0,0};
   const int Noperators = 9;
-  int opNum[9] = {1,2,3,4,9,10,11,12,13};
-  TString opName[9] = {"S0","S1","M0","M1","M6","M7","T0","T1","T2"};
+  Float_t opVal[Noperators] = {0,0,0,0,0,0,0,0,0};
+  int opNum[Noperators] = {1,2,3,4,9,10,11,12,13};
+  TString opName[Noperators+1] = {"S0","S1","M0","M1","M6","M7","T0","T1","T2","S01"};
   
   TFile* file = new TFile((InputBaseDirectory + "/" + sampleMap.begin()->second.begin()->sampleName + "/outDumper_0.root").c_str(), "READ");
   TTree* tree = (TTree*) file->Get("weightsInfo");
@@ -305,52 +301,93 @@ int main (int argc, char ** argv) {
   } 
   
   // Fit TF1 for EFT framework
-  vector<double> x,y; // size depends on operator
+  vector<double> x,y,z; // size depends on operator
   for(size_t iHisto = 0; iHisto < plotVector.size(); iHisto++){
     histoContainerEFT histoCont = plotVector.at(iHisto);
     // Set SM hist
     TH1F* hSM = histoCont.histogramEFT.at(1);
 
     // Loop over operators
-    for( int iOp = 0; iOp < Noperators; ++iOp ) {
-      TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+"_icut_"+to_string(iHisto)+".root").Data(),"RECREATE");
-      eftFunctionFile->cd();
-           
-      // Loop over bins ( every bin is fitted as a function of the coupling parameters )
-      for( int iBin = 0; iBin < variableList[0].Nbin; ++iBin ) {
-	x.clear();
-	y.clear();
+    for( int iOp = 0; iOp < (Noperators+1); ++iOp ) {
+        TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+"_icut_"+to_string(iHisto)+".root").Data(),"RECREATE");
+        eftFunctionFile->cd();
+        
+        // Loop over bins ( every bin is fitted as a function of the coupling parameters )
+        for( int iBin = 0; iBin < variableList[0].Nbin+1; ++iBin ) { //Nbin+1: include overflow
             
-	// Loop over anomalous coupling grid
-	for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
-	  TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
-	  if( opValVec[iOp][iEFT] != 0 ) {	    
-	    // Skip 2D scan
-	    if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
+            // 1D scans
+            if( iOp != Noperators ) {
+                x.clear();
+                y.clear();
             
-	    x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
-	    y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
-	  }
-	  x.push_back(0);
-	  y.push_back(1);
-	}
-
-	TCanvas *c    = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
-	TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
-	graph->SetMarkerStyle(20);
-	graph->GetYaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
-	graph->GetYaxis()->SetTitleOffset(1.1);
-	graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-9})",opName[iOp].Data()));
-	graph->Draw("AP");
-	TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1,1);
-	func->SetLineWidth(2);
-	graph->Fit(func,"QRME");
-	c->Write();
-	func->Write();
-	c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
-      }// End loop over bins      
-      //      eftFunctionFile->Close();
-    }// End loop over operators   
+                // Loop over anomalous coupling grid
+                for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
+                    TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
+                    if( opValVec[iOp][iEFT] != 0 ) {
+                        // Skip 2D scan
+                        if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
+                        
+                        x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
+                        y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
+                    }
+                }
+                x.push_back(0);
+                y.push_back(1);
+            
+                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
+                TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
+                graph->SetMarkerStyle(20);
+                graph->GetYaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
+                graph->GetYaxis()->SetTitleOffset(1.3);
+                graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-9})",opName[iOp].Data()));
+                graph->Draw("AP");
+                TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1,1);
+                func->SetLineWidth(2);
+                graph->Fit(func,"QRME");
+                c->Write();
+                func->Write();
+                c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+            }
+            // 2D grid
+            else {
+                x.clear();
+                y.clear();
+                z.clear();
+                // Loop over anomalous coupling grid
+                for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
+                    TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
+                    if( opValVec[0][iEFT] != 0 || opValVec[1][iEFT] != 0 ) {                    
+                        x.push_back( opValVec[0][iEFT]*1e9 ); // factor 1e9 for fit convergence
+                        y.push_back( opValVec[1][iEFT]*1e9 );
+                        z.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
+                    }
+                }
+                x.push_back(0);
+                y.push_back(0);
+                z.push_back(1);
+                
+                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
+                TGraph2D *graph = new TGraph2D(x.size(), &x[0], &y[0], &z[0]);
+                graph->SetMarkerStyle(20);
+                graph->GetZaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
+                graph->GetZaxis()->SetTitleOffset(1.5);
+                graph->GetXaxis()->SetTitle("S0 operator (x 10^{-9})");
+                graph->GetXaxis()->SetTitleOffset(1.5);
+                graph->GetYaxis()->SetTitle("S1 operator (x 10^{-9})");
+                graph->GetYaxis()->SetTitleOffset(1.5);
+                graph->Draw("p0");
+                TF2* func = new TF2(TString::Format("bin_function_%d",iBin),"[0]+[1]*x+[2]*y+[3]*x*y+[4]*x*x+[5]*y*y", -0.07, 0.07, -0.15, 0.15);
+                func->SetParameter(0,1);
+                graph->Fit(func,"QRME");
+                func->Draw("surf1same");
+                c->Write();
+                func->Write();
+                c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+            }
+        }// End loop over bins
+        
+//         eftFunctionFile->Close();
+    }// End loop over operators
   }
   
   return 0 ;
