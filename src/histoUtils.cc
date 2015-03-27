@@ -1,5 +1,17 @@
 #include "histoUtils.h"
 
+void avoidEmptyBins(TH1F* input){
+
+  for (int iBin = 1 ; iBin < input->GetNbinsX () + 1 ; ++iBin){
+    if(input->GetBinContent(iBin) <= 0){
+      input->SetBinContent(iBin,1e-5);
+      input->SetBinError(iBin,0);      
+    }      
+    if(input->GetBinContent(iBin)-input->GetBinError(iBin) < 0)
+      input->SetBinError(iBin,input->GetBinContent(iBin)-1e-5);
+  }
+
+}
 
 // add the overflow bin to a histogram                                                                                                                                          
 void addOverFlow (TH1F * input) {
@@ -31,13 +43,18 @@ void addOverFlow (TH1F * input) {
 
 void addOverAndUnderFlow (TH1F* histo){
 
-  histo->SetBinContent(histo->GetNbinsX(),histo->GetBinContent(histo->GetNbinsX())+histo->GetBinContent(histo->GetNbinsX()+1));
+  // content
+  histo->SetBinContent(histo->GetNbinsX(),histo->GetBinContent(histo->GetNbinsX())+histo->GetBinContent(histo->GetNbinsX()+1));  
   histo->SetBinContent(1,histo->GetBinContent(1)+histo->GetBinContent(0));
-  if(!histo->GetDefaultSumw2()){
-    histo->SetBinError(histo->GetNbinsX(),sqrt(histo->GetBinError(histo->GetNbinsX())*histo->GetBinError(histo->GetNbinsX())+
-                                               histo->GetBinContent(histo->GetNbinsX()+1)));
-    histo->SetBinError(1,sqrt(histo->GetBinContent(1)*histo->GetBinError(1)+histo->GetBinContent(0)));
-  }
+  // errors
+  histo->SetBinError(histo->GetNbinsX(),sqrt(pow(histo->GetBinError(histo->GetNbinsX()),2)+pow(histo->GetBinError(histo->GetNbinsX()+1),2)));    
+  histo->SetBinError(1,sqrt(pow(histo->GetBinError(1),2)+pow(histo->GetBinError(0),2)));    
+  // unset
+  histo->SetBinContent(0,0);
+  histo->SetBinError(0,0);
+  histo->SetBinContent(histo->GetNbinsX()+1,0);
+  histo->SetBinError(histo->GetNbinsX()+1,0);
+
 }
 
 
@@ -164,18 +181,6 @@ THStack * stackMe (TH1F * histo){
   return dummy ;
 }
 
-// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                   
-void makePositiveDefine(TH1F* histo){
-
-  for(int iBin = 0; iBin <= histo->GetNbinsX()+1; iBin++){
-    if( histo->GetBinContent(iBin) < 0){
-      histo->SetBinContent(iBin,0);
-      histo->SetBinError(iBin,0);
-    }
-  }
-
-  return ;
-}
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                   
 TH1F* mirrorHistogram(string name, TH1F* h1, TH1F*h2){
@@ -196,10 +201,24 @@ void makePositiveDefine(TH2F* histo){
 
   for(int iBinX = 0; iBinX <= histo->GetNbinsX()+1; iBinX++){
     for(int iBinY = 0; iBinY <= histo->GetNbinsY()+1; iBinY++){
-      if( histo->GetBinContent(iBinX,iBinY) < 0)
+      if( histo->GetBinContent(iBinX,iBinY) < 0){
         histo->SetBinContent(iBinX,iBinY,0);
+        histo->SetBinError(iBinX,0);
+      }
     }
   }
 
+  return ;
+}
+
+// ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                  
+void makePositiveDefine(TH1F* histo){
+
+  for(int iBinX = 0; iBinX <= histo->GetNbinsX()+1; iBinX++){
+    if( histo->GetBinContent(iBinX) < 0){
+      histo->SetBinContent(iBinX,0);
+      histo->SetBinError(iBinX,0);
+    }
+  }
   return ;
 }
