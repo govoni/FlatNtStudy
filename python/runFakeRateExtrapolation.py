@@ -38,7 +38,8 @@ parser.add_option('--makeProfileLikelihood',  action="store_true", dest="makePro
 parser.add_option('--makeMaxLikelihoodFit',   action="store_true", dest="makeMaxLikelihoodFit",  default=0)
 
 parser.add_option('--injectSignal',          action="store", type=float,    dest="injectSignal",  default=0., help='inject a singal in the toy generation')
-parser.add_option('--nToys',                 action="store", type="int",    dest="nToys",                 default=0,  help="number of toys to generate")
+parser.add_option('--nToys',                 action="store", type="int",    dest="nToys",         default=0,  help="number of toys to generate")
+parser.add_option('--bruteForce',            action="store", type="int",    dest="bruteForce",    default=0,  help="use brute force for profile likelihood")
 
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
@@ -279,7 +280,11 @@ if __name__ == '__main__':
             continue ;
 
         if options.makeProfileLikelihood :
-            runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);     
+            if options.bruteForce == 0 :
+                runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);     
+            else:
+                runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics --bruteForce"%(outname,card,options.nToys,options.injectSignal);     
+
             print "runCmmd ",runCmmd;
             if options.batchMode:
                 fn = "combineScript_ProfileLikelihood_exp_%s_iToy_%d"%(outname,options.nToys);

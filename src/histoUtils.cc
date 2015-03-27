@@ -168,8 +168,10 @@ THStack * stackMe (TH1F * histo){
 void makePositiveDefine(TH1F* histo){
 
   for(int iBin = 0; iBin <= histo->GetNbinsX()+1; iBin++){
-    if( histo->GetBinContent(iBin) < 0)
+    if( histo->GetBinContent(iBin) < 0){
       histo->SetBinContent(iBin,0);
+      histo->SetBinError(iBin,0);
+    }
   }
 
   return ;

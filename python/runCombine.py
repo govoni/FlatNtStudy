@@ -45,6 +45,7 @@ parser.add_option('--submitSingleJobs',      action="store_true",               
 parser.add_option('--inputGeneratedDataset', action="store", type="string", dest="inputGeneratedDataset", default="", help="parse a dataset from generateOnly")
 parser.add_option('--injectSignal',          action="store", type=float,    dest="injectSignal",  default=0., help='inject a singal in the toy generation')
 parser.add_option('--noSystematics',         action="store", type=int,      dest="noSystematics", default=0,  help='avoid systematics')
+parser.add_option('--bruteForce',            action="store", type=int,      dest="bruteForce", default=0,  help='use brute force for profile likelihood')
 
 ###### input set of variables : 
 parser.add_option('--inputVariableList', action="store", type="string", dest="inputVariableList", default="list of variables to be considered")
@@ -430,7 +431,7 @@ if __name__ == '__main__':
            print "################################";
 
            if options.noSystematics == 1 :
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -S 0 -s -1  -t %d --toysNoSystematics -H ProfileLikelihood "%(outname,card,options.injectSignal,options.nToys);
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -S 0 -s -1  --expectSignal=%d -t %d --toysNoSystematics -H ProfileLikelihood "%(outname,card,options.injectSignal,options.nToys);
                print "runCmmd ",runCmmd ;
                if options.batchMode:
                    fn = "combineScript_Asymptotic_%s"%(outname);
@@ -442,7 +443,7 @@ if __name__ == '__main__':
 
            elif options.noSystematics == 0 :
 
-               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 -t %d --toysNoSystematics -H ProfileLikelihood"%(outname,card,options.injectSignal,options.nToys);                            
+               runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s -s -1 --expectSignal=%d  -t %d --toysNoSystematics -H ProfileLikelihood"%(outname,card,options.injectSignal,options.nToys);                            
                print "runCmmd ",runCmmd;
                    
                if options.batchMode:
@@ -460,8 +461,12 @@ if __name__ == '__main__':
            print "###### run the observed and expected pvalue  #####"
            print "##################################################" 
            
+           if options.bruteForce == 0:
 
-           runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);
+               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics"%(outname,card,options.nToys,options.injectSignal);
+           else:
+
+               runCmmd = "combine -M ProfileLikelihood --signif  -n %s -m 100 -d %s -t %d --expectSignal=%d -s -1 --toysNoSystematics --bruteForce"%(outname,card,options.nToys,options.injectSignal);
            print "runCmmd ",runCmmd;
                           
            if options.batchMode:

@@ -564,8 +564,10 @@ int main (int argc, char ** argv) {
 	    for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
 	      hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
 	      hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
-	      if(hfakeRateDown->GetBinContent(iBin) < 0) 
+	      if(hfakeRateDown->GetBinContent(iBin) < 0) {
 		hfakeRateDown->SetBinContent(iBin,0);
+		hfakeRateDown->SetBinError(iBin,0);
+	      }
 	    }
 
 	    hfakeRateUp->Write();
@@ -637,8 +639,10 @@ int main (int argc, char ** argv) {
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) < 0) 
+	    if(hStatDown->GetBinContent(iBin) < 0) {
 	      hStatDown->SetBinContent(iBin,0);
+	      hStatDown->SetBinError(iBin,0);
+	    }
 	  }
 
 	  hStatUp->Write();
@@ -654,8 +658,10 @@ int main (int argc, char ** argv) {
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) < 0) 
+	    if(hStatDown->GetBinContent(iBin) < 0) {
 	      hStatDown->SetBinContent(iBin,0);
+	      hStatDown->SetBinError(iBin,0);
+	    }
 	  }
 	
 	  HminusNoH_scale_lUp->Write();
@@ -1058,8 +1064,10 @@ int main (int argc, char ** argv) {
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) <0)
+	    if(hStatDown->GetBinContent(iBin) <0){
 	      hStatDown->SetBinContent(iBin,0);
+	      hStatDown->SetBinError(iBin,0);
+	    }
 	  }
    
 	  hStatUp->Write();
@@ -1141,8 +1149,10 @@ int main (int argc, char ** argv) {
 	    for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
 	      hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
 	      hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
-	      if(hfakeRateDown->GetBinContent(iBin) < 0) 
+	      if(hfakeRateDown->GetBinContent(iBin) < 0) {
 		hfakeRateDown->SetBinContent(iBin,0);
+		hfakeRateDown->SetBinError(iBin,0);
+	      }
 	    }
 
 	    hfakeRateUp->Write();
