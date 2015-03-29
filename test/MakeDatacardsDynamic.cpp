@@ -1044,6 +1044,11 @@ int main (int argc, char ** argv) {
 	  hStatUp   = (TH1F*) hNominal->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeUp");
 	  hStatDown = (TH1F*) hNominal->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeDown");
 
+	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
+	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
+	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
+	  }
+
 	  // unRolling
 	  hLepScaleUp = unRollingHistogram(HminusNoH_scale_lUp,errorType);
 	  hLepScaleUp->SetName("histo_HminusNoH_CMS_scale_lUp");
@@ -1072,6 +1077,10 @@ int main (int argc, char ** argv) {
 	  avoidEmptyBins(hLepResUp);
 	  avoidEmptyBins(hLepResDown);
 
+	  avoidEmptyBins(hStatUp);
+	  avoidEmptyBins(hStatDown);
+
+
 	  avoidEmptyBins(hJetScaleUp);
 	  avoidEmptyBins(hJetScaleDown);
 	  avoidEmptyBins(hJetResUp);
@@ -1085,6 +1094,9 @@ int main (int argc, char ** argv) {
 	  hJetScaleDown->Write();
 	  hJetResUp->Write();
 	  hJetResDown->Write();
+
+	  hStatUp->Write();
+	  hStatDown->Write();
 	    
 	}
 
