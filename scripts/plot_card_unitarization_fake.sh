@@ -15,8 +15,6 @@ python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_H
 
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeAsymptotic/ --channel UEmm --outputPlotDIR plotAsymptotic --inputVariable R_mll --makeAsymptoticPlot 1
 
-
-
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeAsymptotic/ --channel COMB --outputPlotDIR plotAsymptotic --inputVariable R_mll --makeAsymptoticPlot 1
 
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeProfileLikelihood/ --channel UUpp --outputPlotDIR plotProfileLikelihood --inputVariable R_mll --makeProfileLikelihoodPlot 1

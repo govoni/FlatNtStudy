@@ -336,6 +336,14 @@ int main (int argc, char ** argv) {
 	  addOverAndUnderFlow(Higgs126_scale_jDw);
 	  addOverAndUnderFlow(Higgs126_res_jUp);
 
+	  avoidEmptyBins(Higgs126);
+	  avoidEmptyBins(Higgs126_scale_lUp);
+	  avoidEmptyBins(Higgs126_scale_lDw);
+	  avoidEmptyBins(Higgs126_res_lUp);
+	  avoidEmptyBins(Higgs126_scale_jUp);
+	  avoidEmptyBins(Higgs126_scale_jDw);
+	  avoidEmptyBins(Higgs126_res_jUp);
+
 	}
 
         else if(TString(SampleVector.at(iSample).m_sampleName).Contains("noH")){
@@ -364,6 +372,14 @@ int main (int argc, char ** argv) {
 	  addOverAndUnderFlow(noHiggs_scale_jDw);
 	  addOverAndUnderFlow(noHiggs_res_jUp);
 
+	  avoidEmptyBins(noHiggs);
+	  avoidEmptyBins(noHiggs_scale_lUp);
+	  avoidEmptyBins(noHiggs_scale_lDw);
+	  avoidEmptyBins(noHiggs_res_lUp);
+	  avoidEmptyBins(noHiggs_scale_jUp);
+	  avoidEmptyBins(noHiggs_scale_jDw);
+	  avoidEmptyBins(noHiggs_res_jUp);
+
 	}
       }
 
@@ -372,37 +388,37 @@ int main (int argc, char ** argv) {
 
 	HminusNoH = (TH1F*) noHiggs->Clone("histo_HminusNoH");
 	HminusNoH->Add(Higgs126,-1);
-        makePositiveDefine(HminusNoH);
+        avoidEmptyBins(HminusNoH);
 
 	HminusNoH_scale_lUp = (TH1F*) noHiggs_scale_lUp->Clone("histo_HminusNoH_CMS_scale_lUp");
 	HminusNoH_scale_lUp ->Add(Higgs126_scale_lUp,-1);
-        makePositiveDefine(HminusNoH_scale_lUp);
+        avoidEmptyBins(HminusNoH_scale_lUp);
 
 	HminusNoH_scale_lDw = (TH1F*) noHiggs_scale_lDw->Clone("histo_HminusNoH_CMS_scale_lDown");
 	HminusNoH_scale_lDw->Add(Higgs126_scale_lDw,-1);
-        makePositiveDefine(HminusNoH_scale_lDw);
+        avoidEmptyBins(HminusNoH_scale_lDw);
 
 	HminusNoH_res_lUp = (TH1F*) noHiggs_res_lUp->Clone("histo_HminusNoH_CMS_res_lUp");
 	HminusNoH_res_lUp->Add(Higgs126_res_lUp,-1);
-        makePositiveDefine(HminusNoH_res_lUp);
+        avoidEmptyBins(HminusNoH_res_lUp);
 
 	HminusNoH_res_lDw = mirrorHistogram("histo_HminusNoH_CMS_res_lDown",HminusNoH,HminusNoH_res_lUp);
-	makePositiveDefine(HminusNoH_res_lDw);
+	avoidEmptyBins(HminusNoH_res_lDw);
 
 	HminusNoH_scale_jUp = (TH1F*) noHiggs_scale_jUp->Clone("histo_HminusNoH_CMS_scale_jUp");
 	HminusNoH_scale_jUp->Add(Higgs126_scale_jUp,-1);
-        makePositiveDefine(HminusNoH_scale_jUp);
+        avoidEmptyBins(HminusNoH_scale_jUp);
 
 	HminusNoH_scale_jDw = (TH1F*) noHiggs_scale_jDw->Clone("histo_HminusNoH_CMS_scale_jDown");
 	HminusNoH_scale_jDw->Add(Higgs126_scale_jDw,-1);
-        makePositiveDefine(HminusNoH_scale_jDw);
+        avoidEmptyBins(HminusNoH_scale_jDw);
 
 	HminusNoH_res_jUp = (TH1F*) noHiggs_res_jUp->Clone("histo_HminusNoH_CMS_res_jUp");
 	HminusNoH_res_jUp->Add(Higgs126_res_jUp,-1);
-        makePositiveDefine(Higgs126_res_jUp);
+        avoidEmptyBins(Higgs126_res_jUp);
 
 	HminusNoH_res_jDw = mirrorHistogram("histo_HminusNoH_CMS_res_jDown",HminusNoH,HminusNoH_res_jUp);
-	makePositiveDefine(HminusNoH_res_jDw);
+	avoidEmptyBins(HminusNoH_res_jDw);
       }
     
          
@@ -454,6 +470,7 @@ int main (int argc, char ** argv) {
 	  lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	  lineProcess += "HminusNoH   ";
           hNominal     =  HminusNoH ; // overlow and underflow already added
+	  avoidEmptyBins(hNominal);
 	}
 	else{
 	  
@@ -462,6 +479,7 @@ int main (int argc, char ** argv) {
 
 	  hNominal     = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableListDynamic1D.at(iVar).variableName];
 	  addOverAndUnderFlow(hNominal);
+	  avoidEmptyBins(hNominal);
 	}
  
 	// set the name of histogram
@@ -564,9 +582,10 @@ int main (int argc, char ** argv) {
 	    for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
 	      hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
 	      hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
-	      if(hfakeRateDown->GetBinContent(iBin) < 0) 
-		hfakeRateDown->SetBinContent(iBin,0);
 	    }
+
+	    avoidEmptyBins(hfakeRateUp);
+	    avoidEmptyBins(hfakeRateDown);
 
 	    hfakeRateUp->Write();
 	    hfakeRateDown->Write();
@@ -581,6 +600,8 @@ int main (int argc, char ** argv) {
 
 	  // nominal value
 	  hNominal = SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableListDynamic1D.at(iVar).variableName] ;         
+	  avoidEmptyBins(hNominal);
+
 	  // scale up for lepton scale
 	  hLepScaleUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_lepScaleUp[variableListDynamic1D.at(iVar).variableName]->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lUp").c_str());
 	  addOverAndUnderFlow(hLepScaleUp);
@@ -610,15 +631,15 @@ int main (int argc, char ** argv) {
 	  hJetResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown",hNominal,hJetResUp);
 
 	  // write the histograms in the file
-	  makePositiveDefine(hLepScaleUp);
-	  makePositiveDefine(hLepScaleDown);
-	  makePositiveDefine(hLepResUp);
-	  makePositiveDefine(hLepResDown);
+	  avoidEmptyBins(hLepScaleUp);
+	  avoidEmptyBins(hLepScaleDown);
+	  avoidEmptyBins(hLepResUp);
+	  avoidEmptyBins(hLepResDown);
 
-	  makePositiveDefine(hJetScaleUp);
-	  makePositiveDefine(hJetScaleDown);
-	  makePositiveDefine(hJetResUp);
-	  makePositiveDefine(hJetResDown);
+	  avoidEmptyBins(hJetScaleUp);
+	  avoidEmptyBins(hJetScaleDown);
+	  avoidEmptyBins(hJetResUp);
+	  avoidEmptyBins(hJetResDown);
 
 	  hLepScaleUp->Write();
 	  hLepScaleDown->Write();
@@ -637,9 +658,10 @@ int main (int argc, char ** argv) {
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) < 0) 
-	      hStatDown->SetBinContent(iBin,0);
 	  }
+
+	  avoidEmptyBins(hStatUp);
+	  avoidEmptyBins(hStatDown);
 
 	  hStatUp->Write();
 	  hStatDown->Write();
@@ -654,9 +676,19 @@ int main (int argc, char ** argv) {
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) < 0) 
-	      hStatDown->SetBinContent(iBin,0);
 	  }
+
+	  avoidEmptyBins(hStatUp);
+	  avoidEmptyBins(hStatDown);
+
+	  avoidEmptyBins(HminusNoH_scale_lUp);
+	  avoidEmptyBins(HminusNoH_scale_lDw);
+	  avoidEmptyBins(HminusNoH_res_lUp);
+	  avoidEmptyBins(HminusNoH_res_lDw);
+	  avoidEmptyBins(HminusNoH_scale_jUp);
+	  avoidEmptyBins(HminusNoH_scale_jDw);
+	  avoidEmptyBins(HminusNoH_res_jUp);
+	  avoidEmptyBins(HminusNoH_res_jDw);
 	
 	  HminusNoH_scale_lUp->Write();
 	  HminusNoH_scale_lDw->Write();
@@ -831,31 +863,24 @@ int main (int argc, char ** argv) {
 
 	HminusNoH = (TH2F*) noHiggs->Clone("histo_HminusNoH_2D");
 	HminusNoH->Add(Higgs126,-1);
-        makePositiveDefine(HminusNoH);
 
 	HminusNoH_scale_lUp = (TH2F*) noHiggs_scale_lUp->Clone("histo_HminusNoH_CMS_scale_lUp_2D");
 	HminusNoH_scale_lUp ->Add(Higgs126_scale_lUp,-1);
-        makePositiveDefine(HminusNoH_scale_lUp);
 
 	HminusNoH_scale_lDw = (TH2F*) noHiggs_scale_lDw->Clone("histo_HminusNoH_CMS_scale_lDown_2D");
 	HminusNoH_scale_lDw->Add(Higgs126_scale_lDw,-1);
-        makePositiveDefine(HminusNoH_scale_lDw);
 
 	HminusNoH_res_lUp = (TH2F*) noHiggs_res_lUp->Clone("histo_HminusNoH_CMS_res_lUp_2D");
 	HminusNoH_res_lUp->Add(Higgs126_res_lUp,-1);
-        makePositiveDefine(HminusNoH_res_lUp);
 
 	HminusNoH_scale_jUp = (TH2F*) noHiggs_scale_jUp->Clone("histo_HminusNoH_CMS_scale_jUp_2D");
 	HminusNoH_scale_jUp->Add(Higgs126_scale_jUp,-1);
-        makePositiveDefine(HminusNoH_scale_jUp);
 
 	HminusNoH_scale_jDw = (TH2F*) noHiggs_scale_jDw->Clone("histo_HminusNoH_CMS_scale_jDown_2D");
 	HminusNoH_scale_jDw->Add(Higgs126_scale_jDw,-1);
-        makePositiveDefine(HminusNoH_scale_jDw);
 
 	HminusNoH_res_jUp = (TH2F*) noHiggs_res_jUp->Clone("histo_HminusNoH_CMS_res_jUp_2D");
 	HminusNoH_res_jUp->Add(Higgs126_res_jUp,-1);
-        makePositiveDefine(Higgs126_res_jUp);
 
       }
 
@@ -874,6 +899,7 @@ int main (int argc, char ** argv) {
       hTotal->SetBinErrorOption(TH1::kPoisson);
 
       observed = unRollingHistogram(hTotal,errorType); // rool histo in a TH1F      
+      avoidEmptyBins(observed);
       observed->SetName("histo_Data");
       observed->SetBinErrorOption(TH1::kPoisson);
       TH1F* hNominal = (TH1F*) observed->Clone("hNominal");
@@ -927,11 +953,13 @@ int main (int argc, char ** argv) {
 	  lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	  lineProcess += "HminusNoH   ";
           hNominal = unRollingHistogram(HminusNoH,errorType) ;	  
+	  avoidEmptyBins(hNominal);
 	}
 	else{
 	  lineBin     += CutList.at(iCut).cutLayerName+"_"+finalStateString+"   ";
 	  lineProcess += SampleVector.at(iSample).m_sampleName+"   ";
 	  hNominal = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos[variableListDynamic2D.at(iVar).variableNameX+"_"+variableListDynamic2D.at(iVar).variableNameY],errorType);
+	  avoidEmptyBins(hNominal);
 	}
  
 	// write in the output file
@@ -968,12 +996,10 @@ int main (int argc, char ** argv) {
         // make the stat histograms	
 	if((HminusNoH == 0 or (HminusNoH !=0 and !TString(SampleVector.at(iSample).m_sampleName).Contains("noH"))) and SampleVector.at(iSample).m_isSignal >= 0){
 
-	  hStatUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
-	  hStatDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
-
 	  // make systematic variations
 	  hLepScaleUp = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleUp[variableListDynamic2D.at(iVar).variableNameX+"_"+variableListDynamic2D.at(iVar).variableNameY],errorType);
 	  hLepScaleUp->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lUp").c_str());
+
 	    
 	  hLepScaleDown = unRollingHistogram(SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos_lepScaleDown[variableListDynamic2D.at(iVar).variableNameX+"_"+variableListDynamic2D.at(iVar).variableNameY],errorType);
 	  hLepScaleDown->SetName(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_scale_lDown").c_str());
@@ -994,15 +1020,15 @@ int main (int argc, char ** argv) {
 
 	  hJetResDown = mirrorHistogram("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_res_jDown",hNominal,hJetResUp);
 
-	  makePositiveDefine(hLepScaleUp);
-	  makePositiveDefine(hLepScaleDown);
-	  makePositiveDefine(hLepResUp);
-	  makePositiveDefine(hLepResDown);
+	  avoidEmptyBins(hLepScaleUp);
+	  avoidEmptyBins(hLepScaleDown);
+	  avoidEmptyBins(hLepResUp);
+	  avoidEmptyBins(hLepResDown);
 
-	  makePositiveDefine(hJetScaleUp);
-	  makePositiveDefine(hJetScaleDown);
-	  makePositiveDefine(hJetResUp);
-	  makePositiveDefine(hJetResDown);
+	  avoidEmptyBins(hJetScaleUp);
+	  avoidEmptyBins(hJetScaleDown);
+	  avoidEmptyBins(hJetResUp);
+	  avoidEmptyBins(hJetResDown);
 	  
 	  hLepScaleUp   ->Write();
 	  hLepScaleDown ->Write();
@@ -1017,6 +1043,11 @@ int main (int argc, char ** argv) {
 
 	  hStatUp   = (TH1F*) hNominal->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeUp");
 	  hStatDown = (TH1F*) hNominal->Clone("histo_HminusNoH_CMS_HminusNoH_stat_shapeDown");
+
+	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
+	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
+	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
+	  }
 
 	  // unRolling
 	  hLepScaleUp = unRollingHistogram(HminusNoH_scale_lUp,errorType);
@@ -1041,6 +1072,20 @@ int main (int argc, char ** argv) {
 
 	  hJetResDown = mirrorHistogram("histo_HminusNoH_CMS_res_jDown",hNominal,hJetResUp);
 
+	  avoidEmptyBins(hLepScaleUp);
+	  avoidEmptyBins(hLepScaleDown);
+	  avoidEmptyBins(hLepResUp);
+	  avoidEmptyBins(hLepResDown);
+
+	  avoidEmptyBins(hStatUp);
+	  avoidEmptyBins(hStatDown);
+
+
+	  avoidEmptyBins(hJetScaleUp);
+	  avoidEmptyBins(hJetScaleDown);
+	  avoidEmptyBins(hJetResUp);
+	  avoidEmptyBins(hJetResDown);
+
 	  hLepScaleUp->Write();
 	  hLepScaleDown->Write();
 	  hLepResUp->Write();
@@ -1049,24 +1094,28 @@ int main (int argc, char ** argv) {
 	  hJetScaleDown->Write();
 	  hJetResUp->Write();
 	  hJetResDown->Write();
+
+	  hStatUp->Write();
+	  hStatDown->Write();
 	    
 	}
 
 	// inject mc stat shape variation
 	if(SampleVector.at(iSample).m_isSignal >= 0){
 
+	  hStatUp   = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeUp").c_str());
+	  hStatDown = (TH1F*) hNominal->Clone(("histo_"+SampleVector.at(iSample).m_sampleName+"_CMS_"+SampleVector.at(iSample).m_sampleName+"_stat_shapeDown").c_str());
+
 	  for (int iBin = 0; iBin < hStatUp->GetNbinsX()+1; iBin++){
 	    hStatUp->SetBinContent(iBin,hStatUp->GetBinContent(iBin)+hStatUp->GetBinError(iBin));
 	    hStatDown->SetBinContent(iBin,hStatDown->GetBinContent(iBin)-hStatDown->GetBinError(iBin));
-	    if(hStatDown->GetBinContent(iBin) <0)
-	      hStatDown->SetBinContent(iBin,0);
 	  }
+
+	  avoidEmptyBins(hStatUp);
+	  avoidEmptyBins(hStatDown);
    
 	  hStatUp->Write();
 	  hStatDown->Write();
-	}
-	  
-	if(SampleVector.at(iSample).m_isSignal >= 0){
 
 	  // systematics lnN                                                                                                                                              
 	  lumiSys     = lumiSys     +"   1.026";
@@ -1141,9 +1190,10 @@ int main (int argc, char ** argv) {
 	    for (int iBin = 0; iBin < hfakeRateUp->GetNbinsX()+1; iBin++){
 	      hfakeRateUp->SetBinContent(iBin,hfakeRateUp->GetBinContent(iBin)+hfakeRateUp->GetBinError(iBin));
 	      hfakeRateDown->SetBinContent(iBin,hfakeRateDown->GetBinContent(iBin)-hfakeRateDown->GetBinError(iBin));
-	      if(hfakeRateDown->GetBinContent(iBin) < 0) 
-		hfakeRateDown->SetBinContent(iBin,0);
 	    }
+
+	    avoidEmptyBins(hfakeRateUp);
+	    avoidEmptyBins(hfakeRateDown);
 
 	    hfakeRateUp->Write();
 	    hfakeRateDown->Write();
@@ -1193,9 +1243,9 @@ int main (int argc, char ** argv) {
       
     }
   }
-
+  
   // Make datacards for 1D histograms
-  TFile* outputEfficiency = new TFile(("output/"+outputDataCardDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
+  TFile* outputEfficiency = new TFile(("output/"+outputDataCardDirectory+"/outputEfficiency_"+finalStateString+".root").c_str(),"RECREATE");
 
   for(map<string,TH1F*>::const_iterator itMap = histoCutEff.begin(); itMap !=  histoCutEff.end(); itMap++){
     itMap->second->Scale(1./itMap->second->GetBinContent(1));

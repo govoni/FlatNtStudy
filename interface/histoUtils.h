@@ -24,6 +24,8 @@ using namespace std ;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                
 
+void avoidEmptyBins(TH1F* input);
+
 // add the overflow bin as real bin to the histo                                                                                                                                
 void   addOverFlow (TH1F * input) ;
 void   addOverAndUnderFlow (TH1F* histo);
@@ -41,7 +43,7 @@ void   setAsymmetricErrorsToHisto (TH1F * input) ;
 void   setAsymmetricErrorsTo2DHisto (TH2F * input) ;
 
 // unrolled a 2D histo in a 1D one
-TH1F* unRollingHistogram(TH2F* histo, int errorType);
+TH1F*  unRollingHistogram(TH2F* histo, int errorType);
 
 // take an histogram with bin errors                                                                                                                                          
 TH1F*  getHistoOfErrors (TH1F * input,int isLog) ;

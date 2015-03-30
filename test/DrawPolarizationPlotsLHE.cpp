@@ -203,6 +203,17 @@ int main (int argc, char ** argv) {
 		     costheta1,costheta2,Phi,costhetastar,Phi1);
 
     
+    float mTR = 0;
+    float mR  = 0;
+
+    TLorentzVector L_met ,L_dijet, L_dilepton, L_LLmet; 
+
+    L_met = L_neutrino1 + L_neutrino2;
+    L_dijet    = L_parton1 + L_parton2;
+    L_dilepton = L_lepton1+L_lepton2;
+    L_LLmet    = L_dilepton + L_met ;
+
+    computeRazor(L_lepton1,L_lepton2,L_met,mTR,mR);
 
     if(L_lepton1.Pt() < minLeptonCutPt or L_lepton2.Pt() < minLeptonCutPt) continue;
 
@@ -231,12 +242,6 @@ int main (int argc, char ** argv) {
       
       float asimL = (L_lepton1.Pt()-L_lepton2.Pt())/(L_lepton1.Pt()+L_lepton2.Pt()) ;
 
-      TLorentzVector L_met ,L_dijet, L_dilepton, L_LLmet; 
-
-      L_met = L_neutrino1 + L_neutrino2;
-      L_dijet    = L_parton1 + L_parton2;
-      L_dilepton = L_lepton1+L_lepton2;
-      L_LLmet    = L_dilepton + L_met ;
 
       float asimJ    = (L_parton1.Pt()-L_parton2.Pt())/(L_parton1.Pt()+L_parton2.Pt()) ;
       float Rvar     = (L_lepton1.Pt()*L_lepton2.Pt())/(L_parton1.Pt()*L_parton2.Pt()) ;
@@ -311,7 +316,17 @@ int main (int argc, char ** argv) {
 	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
           itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
         }
+	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
+          itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
+        }
 
+	else if(variableList.at(iVar).variableName == "mTR"){
+          itVec->histogram->Fill(mTR,weight) ;
+	}
+
+	else if(variableList.at(iVar).variableName == "mR"){
+          itVec->histogram->Fill(mR,weight) ;
+	}
 
 	if(variableList.at(iVar).variableName == "ptj1"){
           itVec->histogram->Fill(L_parton1.Pt(),1.*weight) ; 

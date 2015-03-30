@@ -1767,7 +1767,7 @@ void fillHisto( plotter & analysisPlots,
     else if(VariableList.at(iVar).variableName == "etall"){
       analysisPlots.fillHisto (NameSample, samplePosition,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Eta(),eventFakeWeight,systematicName);   
     }
-    else if(VariableList.at(iVar).variableName == "mll"){
+    else if(VariableList.at(iVar).variableName == "mll" or VariableList.at(iVar).variableName == "mll_v2"){
       analysisPlots.fillHisto (NameSample, samplePosition,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     

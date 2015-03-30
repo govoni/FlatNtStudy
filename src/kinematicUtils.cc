@@ -305,3 +305,19 @@ TLorentzVector getNeutrinoPz( TLorentzVector & lepton4V, TLorentzVector & met){
 
   return neutrino4V;
 }
+
+
+void computeRazor (TLorentzVector & lepton1, TLorentzVector & lepton2, TLorentzVector & met, float & mTR, float & mR){
+
+  TVector3 metVec(met.Px(),met.Py(),0);
+  TVector3 leptonPtVec1(lepton1.Px(),lepton1.Py(),0);
+  TVector3 leptonPtVec2(lepton2.Px(),lepton2.Py(),0);  
+  
+  mTR = sqrt(met.Pt()*(lepton1.Pt()+lepton2.Pt())-metVec.Dot(leptonPtVec1+leptonPtVec2));
+
+  float mll2 = (lepton1+lepton2).M()*(lepton1+lepton2).M();
+  float ptl1l2 = ((lepton1+lepton2).Pt()*(lepton1+lepton2).Pt());
+
+  mR = sqrt(0.5*(mll2-metVec.Dot(leptonPtVec1+leptonPtVec2)+sqrt((mll2+ptl1l2)*(mll2+met.Pt()*met.Pt()))));
+
+}

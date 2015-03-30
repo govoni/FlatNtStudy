@@ -20,5 +20,6 @@ void computeAnglesVBF(TLorentzVector p4H, TLorentzVector p4V1, TLorentzVector p4
 
 TLorentzVector getNeutrinoPz( TLorentzVector & lepton4V, TLorentzVector & met);
 
+void computeRazor (TLorentzVector & lepton1, TLorentzVector & lepton2, TLorentzVector & met, float & mTR, float & mR);
 
 #endif

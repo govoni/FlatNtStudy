@@ -488,9 +488,8 @@ def makeProfileLikelihoodPlot(filelist):
                 xbins_err.append(0.); 
 
                 signifExp.Reset("ICES");
-
+                
                 getExpectedQuantile(filelist[ifile],signifExp);
-
                 ybins_exp.append(signifExp.GetMean());
                 ybins_err.append(signifExp.GetMeanError());
                 break;
