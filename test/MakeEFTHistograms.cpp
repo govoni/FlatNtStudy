@@ -309,7 +309,7 @@ int main (int argc, char ** argv) {
 
     // Loop over operators
     for( int iOp = 0; iOp < (Noperators+1); ++iOp ) {
-        TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/VBS_SS_"+opName[iOp]+"_icut_"+to_string(iHisto)+".root").Data(),"RECREATE");
+        TFile* eftFunctionFile = new TFile(("output/"+outputPlotDirectory+"/signal_WWVBS_mll_L"+opName[iOp]+".root").Data(),"RECREATE");
         eftFunctionFile->cd();
         
         // Loop over bins ( every bin is fitted as a function of the coupling parameters )
@@ -327,7 +327,7 @@ int main (int argc, char ** argv) {
                         // Skip 2D scan
                         if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
                         
-                        x.push_back( opValVec[iOp][iEFT]*1e9 ); // factor 1e9 for fit convergence
+                        x.push_back( opValVec[iOp][iEFT]*1e12 ); // factor 1e9 for fit convergence
                         y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
                     }
                 }
@@ -339,9 +339,9 @@ int main (int argc, char ** argv) {
                 graph->SetMarkerStyle(20);
                 graph->GetYaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
                 graph->GetYaxis()->SetTitleOffset(1.3);
-                graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-9})",opName[iOp].Data()));
+                graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-12})",opName[iOp].Data()));
                 graph->Draw("AP");
-                TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1,1);
+                TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1e3,1e3);
                 func->SetLineWidth(2);
                 graph->Fit(func,"QRME");
                 c->Write();
@@ -357,8 +357,8 @@ int main (int argc, char ** argv) {
                 for(size_t iEFT = 0; iEFT < histoCont.histogramEFT.size(); iEFT++){
                     TH1F* histoEFT = histoCont.histogramEFT.at(iEFT);
                     if( opValVec[0][iEFT] != 0 || opValVec[1][iEFT] != 0 ) {                    
-                        x.push_back( opValVec[0][iEFT]*1e9 ); // factor 1e9 for fit convergence
-                        y.push_back( opValVec[1][iEFT]*1e9 );
+                        x.push_back( opValVec[0][iEFT]*1e12 ); // factor 1e12 for fit convergence
+                        y.push_back( opValVec[1][iEFT]*1e12 );
                         z.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
                     }
                 }
@@ -371,12 +371,12 @@ int main (int argc, char ** argv) {
                 graph->SetMarkerStyle(20);
                 graph->GetZaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
                 graph->GetZaxis()->SetTitleOffset(1.5);
-                graph->GetXaxis()->SetTitle("S0 operator (x 10^{-9})");
+                graph->GetXaxis()->SetTitle("S0 operator (x 10^{-12})");
                 graph->GetXaxis()->SetTitleOffset(1.5);
-                graph->GetYaxis()->SetTitle("S1 operator (x 10^{-9})");
+                graph->GetYaxis()->SetTitle("S1 operator (x 10^{-12})");
                 graph->GetYaxis()->SetTitleOffset(1.5);
                 graph->Draw("p0");
-                TF2* func = new TF2(TString::Format("bin_function_%d",iBin),"[0]+[1]*x+[2]*y+[3]*x*y+[4]*x*x+[5]*y*y", -0.07, 0.07, -0.15, 0.15);
+                TF2* func = new TF2(TString::Format("bin_function_%d",iBin),"[0]+[1]*x+[2]*y+[3]*x*y+[4]*x*x+[5]*y*y", -70, 70, -150, 150);
                 func->SetParameter(0,1);
                 graph->Fit(func,"QRME");
                 func->Draw("surf1same");
