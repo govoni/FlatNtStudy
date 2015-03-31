@@ -288,8 +288,7 @@ int ReadInputSampleFile(const string & InputSampleList, map<string,vector<sample
 
   
   for(size_t iSample = 0; iSample < NameReducedSample.size(); iSample++){
-    SampleContainer[NameReducedSample.at(iSample)].push_back(
-           sampleContainer(NameSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
+    SampleContainer[NameReducedSample.at(iSample)].push_back(sampleContainer(NameSample.at(iSample),NameReducedSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
   }
 
 
@@ -345,8 +344,7 @@ int ReadInputSampleFile(const string & InputSampleList, unordered_map<string,vec
 
   
   for(size_t iSample = 0; iSample < NameReducedSample.size(); iSample++){
-    SampleContainer[NameReducedSample.at(iSample)].push_back(
-           sampleContainer(NameSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
+    SampleContainer[NameReducedSample.at(iSample)].push_back(sampleContainer(NameSample.at(iSample),NameReducedSample.at(iSample),ColorSample.at(iSample),SampleCrossSection.at(iSample),NumEntriesBefore.at(iSample),isSignal.at(iSample)));
   }
 
 

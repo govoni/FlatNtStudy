@@ -28,8 +28,9 @@ class sampleContainer {
   sampleContainer(){};
   ~sampleContainer(){};
 
- sampleContainer(string sampleName, int color, float xsec, int numBefore, int isSignal):
+ sampleContainer(string sampleName, string sampleNameReduced, int color, float xsec, int numBefore, int isSignal):
   sampleName(sampleName),
+    sampleNameReduced(sampleNameReduced),
     color(color),
     xsec(xsec),
     numBefore(numBefore),
@@ -38,19 +39,24 @@ class sampleContainer {
 
   bool operator < (const sampleContainer & container2) const {
     if(sampleName < container2.sampleName) return true;
+    else if(sampleName == container2.sampleName){
+      if (sampleNameReduced < container2.sampleNameReduced) return true;
+      else return false;
+    }
     else return false;    
   }
 
   bool operator == (const sampleContainer & container2) const {
-    if(sampleName == container2.sampleName and xsec == container2.xsec and isSignal == container2.isSignal) return true;
+    if(sampleName == container2.sampleName and xsec == container2.xsec and isSignal == container2.isSignal and sampleNameReduced == container2.sampleNameReduced) return true;
     else return false;    
   }
   
   string sampleName ;
+  string sampleNameReduced;
   int    color;
-  float xsec;
-  int numBefore;
-  int isSignal;
+  float  xsec;
+  int    numBefore;
+  int    isSignal;
 
 };
 

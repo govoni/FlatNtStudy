@@ -109,6 +109,8 @@ int main (int argc, char ** argv) {
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
   system(("mkdir -p output/"+outputPlotDirectory).c_str());
   system(("rm -r output/"+outputPlotDirectory+"/*").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/xs").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/norm").c_str());
 
 
   ///// Start the analysis  
@@ -259,10 +261,10 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(RecoJets.at(1).jet4V_.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (RecoJets.at(0).jet4V_.Eta()),weight) ;
+          itVec->histogram->Fill(RecoJets.at(0).jet4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (RecoJets.at(1).jet4V_.Eta()),weight) ;
+          itVec->histogram->Fill(RecoJets.at(1).jet4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "detajj" and RecoJets.size() >=2){
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),weight) ;
@@ -273,18 +275,13 @@ int main (int argc, char ** argv) {
 	else if(variableList.at(iVar).variableName == "mjj" and RecoJets.size() >=2){
           itVec->histogram->Fill(L_dijet.M(),weight) ;
         }
-	else if(variableList.at(iVar).variableName == "dRjj" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(0).jet4V_.DeltaR(RecoJets.at(1).jet4V_),weight) ;
-        }
 	else if(variableList.at(iVar).variableName == "Asim_j" and RecoJets.size() >=2){
           itVec->histogram->Fill(asimJ,weight) ;
         }
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" and RecoJets.size() >=2){
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),weight) ;
         }
-	else if(variableList.at(iVar).variableName == "etaj1etaj2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta(),weight) ;
-        }
+
 	else if(variableList.at(iVar).variableName == "ptl1" and RecoJets.size() >=2){
           itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Pt(),weight) ;
         }
@@ -293,10 +290,10 @@ int main (int argc, char ** argv) {
         }
  
 	else if(variableList.at(iVar).variableName == "etal1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (leptonsIsoTight.at(0).lepton4V_.Eta()),weight) ;
+          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etal2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (leptonsIsoTight.at(1).lepton4V_.Eta()),weight) ;
+          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "mll" and RecoJets.size() >=2){
           itVec->histogram->Fill(L_dilepton.M(),weight) ;
@@ -304,12 +301,7 @@ int main (int argc, char ** argv) {
 	else if(variableList.at(iVar).variableName == "ptll" and RecoJets.size() >=2){
           itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
         }
-	else if(variableList.at(iVar).variableName == "etall" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (L_dilepton.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "phill" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.Phi(),weight) ;
-        }
+
 	else if(variableList.at(iVar).variableName == "dRll" and RecoJets.size() >=2){
           itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),weight) ;
         }
@@ -524,6 +516,17 @@ int main (int argc, char ** argv) {
   cCanvas->SetBottomMargin(0.12);
   cCanvas->SetFrameBorderMode(0);
 
+  TCanvas *cCanvasNorm = new TCanvas("cCanvasNorm","",1,52,550,550);
+  cCanvasNorm->SetTicks();
+  cCanvasNorm->SetFillColor(0);
+  cCanvasNorm->SetBorderMode(0);
+  cCanvasNorm->SetBorderSize(2);
+  cCanvasNorm->SetTickx(1);
+  cCanvasNorm->SetTicky(1);
+  cCanvasNorm->SetRightMargin(0.05);
+  cCanvasNorm->SetBottomMargin(0.12);
+  cCanvasNorm->SetFrameBorderMode(0);
+
   TPad* upperPad = new TPad("upperPad", "upperPad", .005, .180, .995, .980);
   TPad* lowerPad = new TPad("lowerPad", "lowerPad", .005, .005, .995, .18);
   lowerPad->SetGridx();
@@ -536,6 +539,19 @@ int main (int argc, char ** argv) {
 
   lowerPad->Draw();
   upperPad->Draw();
+
+  TPad* upperPadNorm = new TPad("upperPadNorm", "upperPadNorm", .005, .180, .995, .980);
+  TPad* lowerPadNorm = new TPad("lowerPadNorm", "lowerPadNorm", .005, .005, .995, .18);
+  lowerPadNorm->SetGridx();
+  lowerPadNorm->SetGridy();
+  upperPadNorm->SetLeftMargin(0.12);
+  upperPadNorm->SetRightMargin(0.1);
+  lowerPadNorm->SetLeftMargin(0.12);
+  lowerPadNorm->SetRightMargin(0.1);
+  lowerPadNorm->SetTopMargin(0.002);
+
+  lowerPadNorm->Draw();
+  upperPadNorm->Draw();
 
   TLatex * tex = new TLatex(0.88,0.92," 14 TeV");
   tex->SetNDC();
@@ -611,6 +627,16 @@ int main (int argc, char ** argv) {
 
         if(itVec->findCutByLabel("LL")) numerator.push_back(itVec->histogram);
         denominator.push_back(itVec->histogram);
+
+	itVec->histogram->Scale(1./itVec->histogram->Integral());
+	
+	upperPadNorm->cd();
+
+        if(iCut == 0) 
+          itVec->histogram->Draw("hist");
+        else
+          itVec->histogram->Draw("hist same");
+	
     }
   
     // make ratio plot
@@ -698,10 +724,12 @@ int main (int argc, char ** argv) {
     frame->GetYaxis()->SetTitleSize(0.15);
     frame->GetYaxis()->SetTitleOffset(0.30);
     frame->GetYaxis()->SetNdivisions(504);
-    
+
+    ratio->GetYaxis()->SetRange(min(ratio->GetMinimum(),ratioW->GetMinimum())*0.9,max(ratio->GetMaximum(),ratioW->GetMaximum())*1.1);
+
     ratio->Draw("Lsame");    
     ratioW->Draw("Lsame");    
-    
+
     upperPad->cd();
 
     tex->Draw("same");
@@ -709,19 +737,28 @@ int main (int argc, char ** argv) {
     tex3->Draw("same");
     legend->Draw("same");
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".png").c_str(),"png");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".root").c_str(),"root");
 
-    /*
-    upperPad->SetLogy();
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.root").c_str(),"root");
+    upperPadNorm->cd();
 
-    upperPad->SetLogy(0);
-    gPad->Update();
-    */
+    tex->Draw("same");
+    tex2->Draw("same");
+    tex3->Draw("same");
+    legend->Draw("same");
+
+    lowerPadNorm->cd();
+    
+    ratio->Draw("Lsame");    
+    ratioW->Draw("Lsame");    
+    
+
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+
+  
     legend->Clear();
 
   } // loop on var

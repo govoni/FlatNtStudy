@@ -110,6 +110,8 @@ int main (int argc, char ** argv) {
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
   system(("mkdir -p output/"+outputPlotDirectory).c_str());
   system(("rm -r output/"+outputPlotDirectory+"/*").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/xs").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/norm").c_str());
 
 
   ///// Start the analysis  
@@ -169,20 +171,69 @@ int main (int argc, char ** argv) {
 
     passingLHEFilter++;
 
-    // if an event pass the cut, fill the associated map                                                                                                                         
-    TLorentzVector L_lepton1, L_lepton2, L_parton1, L_parton2, L_neutrino1, L_neutrino2, L_vboson1, L_vboson2 ;
+    // if an event pass the cut, fill the associated map                                                              
+    leptonContainer lepton1,lepton2,parton1,parton2,neutrino1,neutrino2,vboson1,vboson2;
 
-    L_lepton1.SetPtEtaPhiM(reader->leptonLHEpt1,reader->leptonLHEeta1,reader->leptonLHEphi1,reader->leptonLHEm1);
-    L_lepton2.SetPtEtaPhiM(reader->leptonLHEpt2,reader->leptonLHEeta2,reader->leptonLHEphi2,reader->leptonLHEm2);
+    lepton1.lepton4V_.SetPtEtaPhiM(reader->leptonLHEpt1,reader->leptonLHEeta1,reader->leptonLHEphi1,reader->leptonLHEm1);
+    lepton1.charge_  = reader->leptonLHEch1;
+    lepton1.flavour_ = reader->leptonLHEpid1;  
 
-    L_parton1.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
-    L_parton2.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
+    lepton2.lepton4V_.SetPtEtaPhiM(reader->leptonLHEpt2,reader->leptonLHEeta2,reader->leptonLHEphi2,reader->leptonLHEm2);
+    lepton2.charge_  = reader->leptonLHEch2;
+    lepton2.flavour_ = reader->leptonLHEpid2;  
 
-    L_neutrino1.SetPtEtaPhiM(reader->neutrinoLHEpt1,reader->neutrinoLHEeta1,reader->neutrinoLHEphi1,0.);
-    L_neutrino2.SetPtEtaPhiM(reader->neutrinoLHEpt2,reader->neutrinoLHEeta2,reader->neutrinoLHEphi2,0.);
+    parton1.lepton4V_.SetPtEtaPhiM(reader->jetLHEPartonpt1,reader->jetLHEPartoneta1,reader->jetLHEPartonphi1,0.);
+    parton2.lepton4V_.SetPtEtaPhiM(reader->jetLHEPartonpt2,reader->jetLHEPartoneta2,reader->jetLHEPartonphi2,0.);
 
-    L_vboson1.SetPtEtaPhiM(reader->vbosonLHEpt1,reader->vbosonLHEeta1,reader->vbosonLHEphi1,reader->vbosonLHEm1);
-    L_vboson2.SetPtEtaPhiM(reader->vbosonLHEpt2,reader->vbosonLHEeta2,reader->vbosonLHEphi2,reader->vbosonLHEm2);
+    neutrino1.lepton4V_.SetPtEtaPhiM(reader->neutrinoLHEpt1,reader->neutrinoLHEeta1,reader->neutrinoLHEphi1,0.);
+    neutrino1.charge_  = 0.;
+    neutrino1.flavour_ = reader->neutrinoLHEpid1;  
+
+    neutrino2.lepton4V_.SetPtEtaPhiM(reader->neutrinoLHEpt2,reader->neutrinoLHEeta2,reader->neutrinoLHEphi2,0.);
+    neutrino2.charge_  = 0.;
+    neutrino2.flavour_ = reader->neutrinoLHEpid2;  
+
+    vboson1.lepton4V_.SetPtEtaPhiM(reader->vbosonLHEpt1,reader->vbosonLHEeta1,reader->vbosonLHEphi1,reader->vbosonLHEm1);
+    vboson1.charge_  = reader->vbosonLHEch1;
+    vboson1.flavour_ = reader->vbosonLHEpid1;  
+    
+    vboson2.lepton4V_.SetPtEtaPhiM(reader->vbosonLHEpt2,reader->vbosonLHEeta2,reader->vbosonLHEphi2,reader->vbosonLHEm2);
+    vboson2.charge_  = reader->vbosonLHEch2;
+    vboson2.flavour_ = reader->vbosonLHEpid2;  
+
+    float minDR_1 = 999;
+    float minDR_2 = 999;
+
+    vector<leptonContainer> lepton, neutrino;
+    lepton.push_back(lepton1);
+    lepton.push_back(lepton2);
+    neutrino.push_back(neutrino1);
+    neutrino.push_back(neutrino2);
+
+    leptonContainer leptFromV1, leptFromV2, neuFromV1, neuFromV2;
+
+    for(size_t iLep= 0; iLep < lepton.size(); iLep++){
+      for(size_t iNeu = 0; iNeu < neutrino.size(); iNeu++){
+	if((lepton.at(iLep).lepton4V_+neutrino.at(iNeu).lepton4V_).DeltaR(vboson1.lepton4V_) < minDR_1 ){
+	  minDR_1    = (lepton.at(iLep).lepton4V_+neutrino.at(iNeu).lepton4V_).DeltaR(vboson1.lepton4V_);
+	  leptFromV1 = lepton.at(iLep);
+	  neuFromV1  = neutrino.at(iNeu);
+	}
+
+	if((lepton.at(iLep).lepton4V_+neutrino.at(iNeu).lepton4V_).DeltaR(vboson2.lepton4V_) < minDR_2){
+	  minDR_2    = (lepton.at(iLep).lepton4V_+neutrino.at(iNeu).lepton4V_).DeltaR(vboson2.lepton4V_);
+	  leptFromV2 = lepton.at(iLep);
+	  neuFromV2  = neutrino.at(iNeu);
+	}	
+
+      }
+    }
+
+    if(leptFromV1.lepton4V_ == leptFromV2.lepton4V_ or neuFromV1.lepton4V_ == neuFromV2.lepton4V_){
+      cerr<<" bad matching with gen W "<<endl;
+      continue;
+    }
+		       
 
     double costheta1 = 0;
     double costheta2 = 0;
@@ -190,34 +241,66 @@ int main (int argc, char ** argv) {
     double costhetastar  = 0;
     double Phi1  = 0;
 
-    computeAnglesResonance(L_vboson1+L_vboson2,L_vboson1,L_lepton1,L_neutrino1,L_vboson2,L_lepton2,L_neutrino2,
-			   costheta1,costheta2,Phi,costhetastar,Phi1);
-
     double costheta1_vbf = 0;
     double costheta2_vbf = 0;
     double Phi_vbf = 0;
     double costhetastar_vbf = 0;
     double Phi1_vbf = 0;
 
-    computeAnglesVBF(L_vboson1+L_vboson2,L_vboson1,L_vboson2,L_lepton1,L_neutrino1,L_lepton2,L_neutrino2,L_parton1,L_parton2,
-		     costheta1,costheta2,Phi,costhetastar,Phi1);
 
+    TLorentzVector VV = vboson1.lepton4V_ + vboson2.lepton4V_;
+
+    if(leptFromV1.charge_ > 0  and leptFromV2.charge_ > 0){
+
+      computeAnglesResonance(VV,vboson1.lepton4V_,neuFromV1.lepton4V_,leptFromV1.lepton4V_,vboson2.lepton4V_,neuFromV2.lepton4V_,leptFromV2.lepton4V_,
+			     costheta1,costheta2,Phi,costhetastar,Phi1);
+
+      computeAnglesVBF(VV,vboson1.lepton4V_,neuFromV1.lepton4V_,leptFromV1.lepton4V_,vboson2.lepton4V_,neuFromV2.lepton4V_,leptFromV2.lepton4V_,parton1.lepton4V_,
+		       parton2.lepton4V_,costheta1_vbf,costheta2_vbf,Phi_vbf,costhetastar_vbf,Phi1_vbf);
+    }
+    else if(leptFromV1.charge_ < 0  and leptFromV2.charge_ < 0){
+
+      computeAnglesResonance(VV,vboson1.lepton4V_,leptFromV1.lepton4V_,neuFromV1.lepton4V_,vboson2.lepton4V_,leptFromV2.lepton4V_,neuFromV2.lepton4V_,
+			     costheta1,costheta2,Phi,costhetastar,Phi1);
+
+      computeAnglesVBF(VV,vboson1.lepton4V_,leptFromV1.lepton4V_,neuFromV1.lepton4V_,vboson2.lepton4V_,leptFromV2.lepton4V_,neuFromV2.lepton4V_,parton1.lepton4V_,
+		       parton2.lepton4V_,costheta1_vbf,costheta2_vbf,Phi_vbf,costhetastar_vbf,Phi1_vbf);
+
+    }
+
+    else if(leptFromV1.charge_ < 0  and leptFromV2.charge_ > 0){
+      computeAnglesResonance(VV,vboson1.lepton4V_,leptFromV1.lepton4V_,neuFromV1.lepton4V_,vboson2.lepton4V_,neuFromV2.lepton4V_,leptFromV2.lepton4V_,
+			     costheta1,costheta2,Phi,costhetastar,Phi1);
+
+      computeAnglesVBF(VV,vboson1.lepton4V_,leptFromV1.lepton4V_,neuFromV1.lepton4V_,vboson2.lepton4V_,neuFromV2.lepton4V_,leptFromV2.lepton4V_,parton1.lepton4V_,
+		       parton2.lepton4V_,costheta1_vbf,costheta2_vbf,Phi_vbf,costhetastar_vbf,Phi1_vbf);
+    }
+    else if(leptFromV1.charge_ > 0  and leptFromV2.charge_ < 0){
+
+      computeAnglesResonance(VV,vboson1.lepton4V_,neuFromV1.lepton4V_,leptFromV1.lepton4V_,vboson2.lepton4V_,leptFromV2.lepton4V_,neuFromV2.lepton4V_,
+			     costheta1,costheta2,Phi,costhetastar,Phi1);
+
+      computeAnglesVBF(VV,vboson1.lepton4V_,neuFromV1.lepton4V_,leptFromV1.lepton4V_,vboson2.lepton4V_,leptFromV2.lepton4V_,neuFromV2.lepton4V_,parton1.lepton4V_,
+		       parton2.lepton4V_,costheta1_vbf,costheta2_vbf,Phi_vbf,costhetastar_vbf,Phi1_vbf);
+
+    }
+    else{ cerr<<" wrong charge composition "<<endl;
+      continue;
+    }
     
     float mTR = 0;
     float mR  = 0;
 
     TLorentzVector L_met ,L_dijet, L_dilepton, L_LLmet; 
 
-    L_met = L_neutrino1 + L_neutrino2;
-    L_dijet    = L_parton1 + L_parton2;
-    L_dilepton = L_lepton1+L_lepton2;
+    L_met      = neutrino1.lepton4V_ + neutrino2.lepton4V_;
+    L_dijet    = parton1.lepton4V_   + parton2.lepton4V_;
+    L_dilepton = lepton1.lepton4V_   + lepton2.lepton4V_;
     L_LLmet    = L_dilepton + L_met ;
 
-    computeRazor(L_lepton1,L_lepton2,L_met,mTR,mR);
+    computeRazor(lepton1.lepton4V_,lepton2.lepton4V_,L_met,mTR,mR);
 
-    if(L_lepton1.Pt() < minLeptonCutPt or L_lepton2.Pt() < minLeptonCutPt) continue;
-
-    if(L_parton1.Eta()*L_parton2.Eta() > 0) continue;
+    if(lepton1.lepton4V_.Pt() < minLeptonCutPt or lepton2.lepton4V_.Pt() < minLeptonCutPt) continue;
 
     // Loop  on the cut list --> one cut for each polarization
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
@@ -240,11 +323,11 @@ int main (int argc, char ** argv) {
 				    finalStateString)) continue;
 
       
-      float asimL = (L_lepton1.Pt()-L_lepton2.Pt())/(L_lepton1.Pt()+L_lepton2.Pt()) ;
+      float asimL = (lepton1.lepton4V_.Pt()-lepton2.lepton4V_.Pt())/(lepton1.lepton4V_.Pt()+lepton2.lepton4V_.Pt()) ;
 
 
-      float asimJ    = (L_parton1.Pt()-L_parton2.Pt())/(L_parton1.Pt()+L_parton2.Pt()) ;
-      float Rvar     = (L_lepton1.Pt()*L_lepton2.Pt())/(L_parton1.Pt()*L_parton2.Pt()) ;
+      float asimJ    = (parton1.lepton4V_.Pt()-parton2.lepton4V_.Pt())/(parton1.lepton4V_.Pt()+parton2.lepton4V_.Pt()) ;
+      float Rvar     = (lepton1.lepton4V_.Pt()*lepton2.lepton4V_.Pt())/(parton1.lepton4V_.Pt()*parton2.lepton4V_.Pt()) ;
 
       // loop on variables
       for(size_t iVar = 0; iVar < variableList.size(); iVar++){
@@ -257,18 +340,19 @@ int main (int argc, char ** argv) {
           cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
           continue ;
         }
-
+	
+	// vector boson info
 	if(variableList.at(iVar).variableName == "ptV1"){
-          itVec->histogram->Fill(L_vboson1.Pt(),1.*weight) ; 
+          itVec->histogram->Fill(vboson1.lepton4V_.Pt(),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "ptV2"){
-          itVec->histogram->Fill(L_vboson2.Pt(),weight) ;
+          itVec->histogram->Fill(vboson2.lepton4V_.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaV1"){
-          itVec->histogram->Fill(fabs (L_vboson1.Eta()),weight) ;
+          itVec->histogram->Fill(vboson1.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaV2"){
-          itVec->histogram->Fill(fabs (L_vboson2.Eta()),weight) ;
+          itVec->histogram->Fill(vboson2.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptVV"){
           itVec->histogram->Fill(L_dijet.Pt(),weight) ;
@@ -277,7 +361,7 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(L_dijet.M(),weight) ;
         }
 
-
+	// decay information
 	if(variableList.at(iVar).variableName == "costheta1"){
           itVec->histogram->Fill(fabs(costheta1),1.*weight) ; 
         }
@@ -304,17 +388,8 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
         }
 
-	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
-        }
 	else if(variableList.at(iVar).variableName == "costhetastar"){
           itVec->histogram->Fill(fabs(costhetastar),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
-          itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
           itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
@@ -328,20 +403,22 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(mR,weight) ;
 	}
 
+	// jet info
+
 	if(variableList.at(iVar).variableName == "ptj1"){
-          itVec->histogram->Fill(L_parton1.Pt(),1.*weight) ; 
+          itVec->histogram->Fill(parton1.lepton4V_.Pt(),1.*weight) ; 
         }
 	else if(variableList.at(iVar).variableName == "ptj2"){
-          itVec->histogram->Fill(L_parton2.Pt(),weight) ;
+          itVec->histogram->Fill(parton2.lepton4V_.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj1"){
-          itVec->histogram->Fill(fabs (L_parton1.Eta()),weight) ;
+          itVec->histogram->Fill(parton1.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etaj2"){
-          itVec->histogram->Fill(fabs (L_parton2.Eta()),weight) ;
+          itVec->histogram->Fill(parton2.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "detajj"){
-          itVec->histogram->Fill(fabs(L_parton1.Eta()-L_parton2.Eta()),weight) ;
+          itVec->histogram->Fill(fabs(parton1.lepton4V_.Eta()-parton2.lepton4V_.Eta()),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptjj"){
           itVec->histogram->Fill(L_dijet.Pt(),weight) ;
@@ -354,21 +431,21 @@ int main (int argc, char ** argv) {
           itVec->histogram->Fill(asimJ,weight) ;
         }
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ"){
-          itVec->histogram->Fill(fabs(L_parton1.DeltaPhi(L_parton2)),weight) ;
+          itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "ptl1"){
-          itVec->histogram->Fill(L_lepton1.Pt(),weight) ;
+          itVec->histogram->Fill(lepton1.lepton4V_.Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptl2"){
-          itVec->histogram->Fill(L_lepton2.Pt(),weight) ;
+          itVec->histogram->Fill(lepton2.lepton4V_.Pt(),weight) ;
         }
  
 	else if(variableList.at(iVar).variableName == "etal1"){
-          itVec->histogram->Fill(fabs (L_lepton1.Eta()),weight) ;
+          itVec->histogram->Fill(lepton1.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "etal2"){
-          itVec->histogram->Fill(fabs (L_lepton2.Eta()),weight) ;
+          itVec->histogram->Fill(lepton2.lepton4V_.Eta(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "mll"){
           itVec->histogram->Fill(L_dilepton.M(),weight) ;
@@ -376,16 +453,10 @@ int main (int argc, char ** argv) {
 	else if(variableList.at(iVar).variableName == "ptll"){
           itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
         }
-	else if(variableList.at(iVar).variableName == "etall"){
-          itVec->histogram->Fill(fabs (L_dilepton.Eta()),weight) ;
-        }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LL"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_lepton2)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(lepton2.lepton4V_)),weight) ;
         }
-	else if(variableList.at(iVar).variableName == "DeltaEta_LL"){
-          itVec->histogram->Fill(fabs(L_lepton1.Eta()-L_lepton2.Eta()),weight) ;
-	}
 	else if(variableList.at(iVar).variableName == "Asim_l"){
           itVec->histogram->Fill(asimL,weight) ;
         }
@@ -399,16 +470,16 @@ int main (int argc, char ** argv) {
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LMet"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_met)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptLMet"){
-          itVec->histogram->Fill((L_lepton1 + L_met).Pt(),weight) ;
+          itVec->histogram->Fill((lepton1.lepton4V_ + L_met).Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "DeltaPhi_TLMet"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_met)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptTLMet"){
-          itVec->histogram->Fill((L_lepton2 + L_met).Pt(),weight) ;
+          itVec->histogram->Fill((lepton2.lepton4V_ + L_met).Pt(),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LLMet"){
           itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_met)),weight) ;
@@ -418,58 +489,58 @@ int main (int argc, char ** argv) {
         }
 	///
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LJL"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_parton1)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptLJL"){
-          itVec->histogram->Fill((L_lepton1+L_parton1).Pt(),weight) ;
+          itVec->histogram->Fill((lepton1.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_TJL"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_parton2)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptTJL"){
-          itVec->histogram->Fill((L_lepton1+L_parton2).Pt(),weight) ;
+          itVec->histogram->Fill((lepton1.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJL"){
-          itVec->histogram->Fill(fabs(L_lepton1.DeltaPhi(L_dijet)),weight) ;
+          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_dijet)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptJJL"){
-          itVec->histogram->Fill((L_lepton1+L_dijet).Pt(),weight) ;
+          itVec->histogram->Fill((lepton1.lepton4V_+L_dijet).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LJTL"){
-          itVec->histogram->Fill(fabs(L_lepton2.DeltaPhi(L_parton1)),weight) ;
+          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_TJTL"){
-          itVec->histogram->Fill(fabs(L_lepton2.DeltaPhi(L_parton2)),weight) ;
+          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJTL"){
-          itVec->histogram->Fill(fabs(L_lepton2.DeltaPhi(L_dijet)),weight) ;
+          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(L_dijet)),weight) ;
         }
 
 
 	else if(variableList.at(iVar).variableName == "ptLJTL"){
-          itVec->histogram->Fill((L_lepton2+L_parton1).Pt(),weight) ;
+          itVec->histogram->Fill((lepton2.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "ptTJTL"){
-          itVec->histogram->Fill((L_lepton2+L_parton2).Pt(),weight) ;
+          itVec->histogram->Fill((lepton2.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "ptJJTL"){
-          itVec->histogram->Fill((L_lepton2+L_dijet).Pt(),weight) ;
+          itVec->histogram->Fill((lepton2.lepton4V_+L_dijet).Pt(),weight) ;
         }
 
  
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LJLL"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_parton1)),weight) ;
+          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton1.lepton4V_)),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_TJLL"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_parton2)),weight) ;
+          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton2.lepton4V_)),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJLL"){
@@ -477,11 +548,11 @@ int main (int argc, char ** argv) {
         }
 
 	else if(variableList.at(iVar).variableName == "ptLJLL"){
-          itVec->histogram->Fill((L_dilepton+L_parton1).Pt(),weight) ;
+          itVec->histogram->Fill((L_dilepton+parton1.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "ptTJLL"){
-          itVec->histogram->Fill((L_dilepton+L_parton2).Pt(),weight) ;
+          itVec->histogram->Fill((L_dilepton+parton2.lepton4V_).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "ptJJLL"){
@@ -489,7 +560,6 @@ int main (int argc, char ** argv) {
         }
 
 	///
-
 	else if(variableList.at(iVar).variableName == "DeltaPhi_JJMet"){
           itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_met)),weight) ;
         }
@@ -498,27 +568,19 @@ int main (int argc, char ** argv) {
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_LJMet"){
-          itVec->histogram->Fill(fabs(L_parton1.DeltaPhi(L_met)),weight) ;
+          itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(L_met)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptLJMet"){
-          itVec->histogram->Fill((L_parton1+L_met).Pt(),weight) ;
+          itVec->histogram->Fill((parton1.lepton4V_+L_met).Pt(),weight) ;
         }
 
 	else if(variableList.at(iVar).variableName == "DeltaPhi_TJMet"){
-          itVec->histogram->Fill(fabs(L_parton2.DeltaPhi(L_met)),weight) ;
+          itVec->histogram->Fill(fabs(parton2.lepton4V_.DeltaPhi(L_met)),weight) ;
         }
 	else if(variableList.at(iVar).variableName == "ptTJMet"){
-          itVec->histogram->Fill((L_parton2+L_met).Pt(),weight) ;
+          itVec->histogram->Fill((parton2.lepton4V_+L_met).Pt(),weight) ;
         }
  
-	///
-	else if(variableList.at(iVar).variableName == "ptJJ_LLMet"){
-          itVec->histogram->Fill((L_dijet+L_LLmet).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ_LLMet"){
-          itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_LLmet)),weight) ;
-        }
-
 	else if(variableList.at(iVar).variableName == "mlljj"){
           itVec->histogram->Fill((L_dilepton+L_dijet).M(),weight) ;
         }
@@ -559,6 +621,8 @@ int main (int argc, char ** argv) {
   cCanvas->SetBottomMargin(0.12);
   cCanvas->SetFrameBorderMode(0);
 
+  cCanvas->cd();
+
   TPad* upperPad = new TPad("upperPad", "upperPad", .005, .180, .995, .980);
   TPad* lowerPad = new TPad("lowerPad", "lowerPad", .005, .005, .995, .18);
   lowerPad->SetGridx();
@@ -572,6 +636,17 @@ int main (int argc, char ** argv) {
   lowerPad->Draw();
   upperPad->Draw();
 
+  TCanvas *cCanvasNorm = new TCanvas("cCanvasNorm","",1,52,550,550);
+  cCanvasNorm->SetTicks();
+  cCanvasNorm->SetFillColor(0);
+  cCanvasNorm->SetBorderMode(0);
+  cCanvasNorm->SetBorderSize(2);
+  cCanvasNorm->SetTickx(1);
+  cCanvasNorm->SetTicky(1);
+  cCanvasNorm->SetRightMargin(0.05);
+  cCanvasNorm->SetBottomMargin(0.12);
+  cCanvasNorm->SetFrameBorderMode(0);
+
   TLatex * tex = new TLatex(0.88,0.92," 14 TeV");
   tex->SetNDC();
   tex->SetTextAlign(31);
@@ -583,7 +658,7 @@ int main (int argc, char ** argv) {
   tex2->SetTextFont(61);
   tex2->SetTextSize(0.045);
   tex2->SetLineWidth(2);
-  TLatex * tex3 = new TLatex(0.286,0.92,"Simulation Preliminary");
+  TLatex * tex3 = new TLatex(0.295,0.92,"Simulation Preliminary");
   tex3->SetNDC();
   tex3->SetTextFont(52);
   tex3->SetTextSize(0.04);
@@ -620,7 +695,7 @@ int main (int argc, char ** argv) {
         itVec->histogram->GetXaxis()->SetTitleOffset(1.16);
         itVec->histogram->GetXaxis()->SetLabelSize(0.04);
 
-        itVec->histogram->GetYaxis()->SetRangeUser(0.001,itVec->histogram->GetMaximum()*1.1);
+        itVec->histogram->GetYaxis()->SetRangeUser(0.001,itVec->histogram->GetMaximum()*1.25);
         itVec->histogram->GetYaxis()->SetTitleSize(0.05);
         itVec->histogram->GetYaxis()->SetTitleOffset(1.20);
         itVec->histogram->GetYaxis()->SetLabelSize(0.04);
@@ -646,6 +721,18 @@ int main (int argc, char ** argv) {
 
         if(itVec->findCutByLabel("LL")) numerator.push_back(itVec->histogram);
         denominator.push_back(itVec->histogram);
+
+	cCanvasNorm->cd();
+
+	TH1F* htempNorm = (TH1F*) itVec->histogram->Clone((string(itVec->histogram->GetName())+"_norm").c_str());
+	htempNorm->Scale(1./itVec->histogram->Integral());
+
+	htempNorm->GetYaxis()->SetRangeUser(0.,htempNorm->GetMaximum()*1.5);
+
+        if(iCut == 0)
+          htempNorm->Draw("hist");
+        else
+          htempNorm->Draw("hist same");
     }
     
     // make ratio plot
@@ -698,7 +785,7 @@ int main (int argc, char ** argv) {
 	ratio->SetBinContent(iBin,0.);
     }
  
-    ratio->GetYaxis()->SetRangeUser(ratio->GetMinimum()*0.7,ratio->GetMaximum()*1.2);
+    //    ratio->GetYaxis()->SetRangeUser(ratio->GetMinimum()*0.7,ratio->GetMaximum()*1.2);
     ratio->GetXaxis()->SetTitle("");
     ratio->SetLineColor(kBlue);
     ratio->SetLineStyle(2);
@@ -710,7 +797,7 @@ int main (int argc, char ** argv) {
     ratio->GetYaxis()->SetTitleOffset(0.30);
     ratio->GetYaxis()->SetNdivisions(504);
 
-    ratioW->GetYaxis()->SetRangeUser(ratioW->GetMinimum()*0.7,ratioW->GetMaximum()*1.2);
+    //    ratioW->GetYaxis()->SetRangeUser(ratioW->GetMinimum()*0.7,ratioW->GetMaximum()*1.2);
     ratioW->GetXaxis()->SetTitle("");
     ratioW->SetLineColor(kBlack);
     ratioW->SetLineWidth(2);
@@ -731,8 +818,10 @@ int main (int argc, char ** argv) {
     frame->GetYaxis()->SetTitleSize(0.15);
     frame->GetYaxis()->SetTitleOffset(0.30);
     frame->GetYaxis()->SetNdivisions(504);
-    
-    ratio->Draw("Lsame");    
+
+    ratio->GetYaxis()->SetRange(min(ratio->GetMinimum(),ratioW->GetMinimum())*0.9,max(ratio->GetMaximum(),ratioW->GetMaximum())*1.1);    
+
+    ratio->Draw("P");    
     ratioW->Draw("Lsame");    
     
     upperPad->cd();
@@ -742,9 +831,21 @@ int main (int argc, char ** argv) {
     tex3->Draw("same");
     legend->Draw("same");
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".png").c_str(),"png");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+
+    cCanvasNorm->cd();
+
+    tex->Draw("same");
+    tex2->Draw("same");
+    tex3->Draw("same");
+    legend->Draw("same");
+
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+
     
     legend->Clear();
     
