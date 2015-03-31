@@ -20,14 +20,8 @@
 using namespace std ;
 
 float matchingCone ;
-float minLeptonCleaningPt;
 float minLeptonCutPt;
 float minJetCutPt;
-float leptonIsoCut_mu;
-float leptonIsoCut_el;
-float leptonIsoCutLoose;
-bool   usePuppiAsDefault;
-
 string  finalStateString;
 
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
@@ -98,13 +92,8 @@ int main (int argc, char ** argv) {
   finalStateString    = gConfigParser -> readStringOption("Option::finalStateString");
 
   matchingCone        = gConfigParser -> readFloatOption("Option::matchingCone"); 
-  minLeptonCleaningPt = gConfigParser -> readFloatOption("Option::minLeptonCleaningPt"); 
   minLeptonCutPt      = gConfigParser -> readFloatOption("Option::minLeptonCutPt");
   minJetCutPt         = gConfigParser -> readFloatOption("Option::minJetCutPt");
-  usePuppiAsDefault   = gConfigParser -> readBoolOption("Option::usePuppiAsDefault");
-  leptonIsoCut_mu     = gConfigParser -> readFloatOption("Option::leptonIsoCutMu");
-  leptonIsoCut_el     = gConfigParser -> readFloatOption("Option::leptonIsoCutEl");
-  leptonIsoCutLoose   = gConfigParser -> readFloatOption("Option::leptonIsoCutLoose");
 
   // output directory
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
@@ -204,11 +193,13 @@ int main (int argc, char ** argv) {
     float minDR_1 = 999;
     float minDR_2 = 999;
 
-    vector<leptonContainer> lepton, neutrino;
+    vector<leptonContainer> lepton, neutrino, jets;
     lepton.push_back(lepton1);
     lepton.push_back(lepton2);
     neutrino.push_back(neutrino1);
     neutrino.push_back(neutrino2);
+    jets.push_back(parton1);
+    jets.push_back(parton2);
 
     leptonContainer leptFromV1, leptFromV2, neuFromV1, neuFromV2;
 
@@ -225,7 +216,6 @@ int main (int argc, char ** argv) {
 	  leptFromV2 = lepton.at(iLep);
 	  neuFromV2  = neutrino.at(iNeu);
 	}	
-
       }
     }
 
@@ -298,6 +288,10 @@ int main (int argc, char ** argv) {
     L_dilepton = lepton1.lepton4V_   + lepton2.lepton4V_;
     L_LLmet    = L_dilepton + L_met ;
 
+    // sort in pt before calculating this values
+    sort(lepton.rbegin(),lepton.rend());
+    sort(jets.rbegin(),jets.rend());
+
     computeRazor(lepton1.lepton4V_,lepton2.lepton4V_,L_met,mTR,mR);
 
     if(lepton1.lepton4V_.Pt() < minLeptonCutPt or lepton2.lepton4V_.Pt() < minLeptonCutPt) continue;
@@ -306,298 +300,511 @@ int main (int argc, char ** argv) {
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
 
       // cut the events
-      string name = "WW_EWK";
-      if(!passCutContainerSelection(reader,
-                                    CutList.at(iCut),
-                                    name,
-				    int(iCut),
-                                    usePuppiAsDefault,
-                                    minLeptonCutPt,
-                                    minLeptonCleaningPt,
-                                    leptonIsoCut_mu,
-                                    leptonIsoCut_el,
-                                    leptonIsoCutLoose,
-                                    matchingCone,
-                                    minJetCutPt,
-                                    histoCutEff,
-				    finalStateString)) continue;
+      string name = "WW_EWK_pos_"+to_string(iCut);
 
-      
+      int iBin = 1;
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
+	iBin++;
+      }
+      if(lepton.size() < 2)  continue ; // skip the event --> only two reco leptons are good                                                                              
+      if(jets.size()   < 2)  continue ; // skip the event with less than two reco jet                                                                                       
+
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
+	iBin++;
+      }
+
+      // identify tight leptons and require exactly nLep                                                                                                                       
+      if (int(lepton.size()) != CutList.at(iCut).nLep ) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+	iBin++;
+      }
+
+      if (lepton.at(0).lepton4V_.Pt() < CutList.at(iCut).ptL.first) continue;
+      if (fabs(lepton.at(0).lepton4V_.Eta()) > CutList.at(iCut).etaMaxL) continue ;
+
+      bool badTrailingLepton = false;
+      for( size_t iLep = 1 ; iLep < lepton.size(); iLep++){
+	if( lepton.at(iLep).lepton4V_.Pt() < CutList.at(iCut).ptL.second or fabs(lepton.at(iLep).lepton4V_.Eta()) > CutList.at(iCut).etaMaxL){
+	  badTrailingLepton = true;
+	}
+      }
+      if(badTrailingLepton) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
+	iBin++;
+      }
+
+      // apply Zmass veto: if nLep == 2 is a veto (WW analysis) if nLep == 3 is a tag (WZ analysis)                                                                         
+      bool isZMassVeto = false;
+      for(size_t iLept = 0; iLept < lepton.size() ; iLept++){
+	if(lepton.at(iLept).lepton4V_.Pt() < minLeptonCutPt) continue;
+	for(size_t jLept = iLept+1; jLept < lepton.size() ; jLept++){
+	  if(lepton.at(jLept).lepton4V_.Pt() < minLeptonCutPt) continue;
+	  if(fabs(lepton.at(jLept).flavour_) != fabs(lepton.at(iLept).flavour_)) continue;
+	  if((lepton.at(iLept).lepton4V_ + lepton.at(jLept).lepton4V_).M() > CutList.at(iCut).MllZVeto.first and
+	     (lepton.at(iLept).lepton4V_ + lepton.at(jLept).lepton4V_).M() < CutList.at(iCut).MllZVeto.second and
+	     lepton.at(iLept).charge_*lepton.at(jLept).charge_ == -1)
+	    isZMassVeto = true;
+	}
+      }
+
+      if(isZMassVeto and CutList.at(iCut).nLep == 2) continue;
+      if(not isZMassVeto and CutList.at(iCut).nLep == 3) continue;
+
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Z veto");
+	iBin++;
+      }
+
+      // charge cut for same sign final state : zero means no cut, one means same sign, -1 opposite sign                                                                    
+      if(CutList.at(iCut).chargeSign != 0){
+	int sign = 1;
+	for(size_t leptSize = 0; leptSize < lepton.size(); leptSize++) // loop on tight leptns                                                                        
+	  sign *= lepton.at(leptSize).charge_;
+	if(sign != CutList.at(iCut).chargeSign) continue;
+      }
+
+      if(TString(finalStateString).Contains("pp") and (lepton.at(0).charge_ < 0 or lepton.at(1).charge_ < 0))
+	continue;
+
+      if(TString(finalStateString).Contains("mm") and (lepton.at(0).charge_ > 0 or lepton.at(1).charge_ > 0))
+	continue;
+
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
+	iBin++;
+      }
+
+      // flavour selection                                                                                                                                                   
+      if(CutList.at(iCut).flavour != 0){
+	int flavour = 0;
+	int sameflavour = 0;
+	for(size_t leptSize = 0; leptSize < lepton.size(); leptSize++) // loop on tight leptns                                                                              
+	  flavour += fabs(lepton.at(leptSize).flavour_) ;
+	if(flavour/lepton.size() == 11 or flavour/lepton.size() == 13 ) sameflavour = 1;
+	else sameflavour = -1;
+	if(sameflavour != CutList.at(iCut).flavour) continue;
+      }
+
+      if(TString(finalStateString).Contains("UU")){
+	if(fabs(lepton.at(0).flavour_) != 13) continue;
+	if(fabs(lepton.at(1).flavour_) != 13) continue;
+      }
+      else if(TString(finalStateString).Contains("EE")){
+	if(fabs(lepton.at(0).flavour_) != 11) continue;
+	if(fabs(lepton.at(1).flavour_) != 11) continue;
+      }
+
+      else if(TString(finalStateString).Contains("EU")){
+	if(fabs(lepton.at(0).flavour_) != 11) continue;
+	if(fabs(lepton.at(1).flavour_) != 13) continue;
+      }
+      else if(TString(finalStateString).Contains("UE")){
+	if(fabs(lepton.at(0).flavour_) != 13) continue;
+	if(fabs(lepton.at(1).flavour_) != 11) continue;
+      }
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"flavour selection");
+	iBin++;
+      }
+
+      // met cut                                                                                                                                                                     
+      if(reader->pfmet_puppi < CutList.at(iCut).MET) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"met selection");
+	iBin++;
+      }
+
+
+      if(jets.at(0).lepton4V_.Pt() < minJetCutPt) continue;
+      if(jets.at(1).lepton4V_.Pt() < minJetCutPt) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
+	iBin++;
+      }
+
+      // apply Mll cut                                                                                                                                                      
+      if(L_dilepton.M() < CutList.at(iCut).Mll.first or L_dilepton.M() > CutList.at(iCut).Mll.second) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mll");
+	iBin++;
+      }
+
+      // apply VBF cuts                                                                                                                                                     
+      if(L_dijet.M() < CutList.at(iCut).Mjj) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mjj");
+	iBin++;
+      }
+
+      if(fabs(jets.at(0).lepton4V_.Eta()-jets.at(1).lepton4V_.Eta()) < CutList.at(iCut).DetaJJ) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaJJ");
+	iBin++;
+      }
+
+      if(fabs(lepton.at(0).lepton4V_.Eta()-lepton.at(1).lepton4V_.Eta()) > CutList.at(iCut).DetaLL) continue;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
+	iBin++;
+      }
+
+
+
+      // apply further cuts for fakes                                                                                                                                                
+      float aveEta    = 0.5*(jets.at(0).lepton4V_.Eta()+jets.at(1).lepton4V_.Eta());
+      float leadZep   = fabs((lepton.at(0).lepton4V_.Eta()-aveEta)/(fabs(jets.at(0).lepton4V_.Eta()-jets.at(1).lepton4V_.Eta())));
+      float trailZep  = fabs((lepton.at(1).lepton4V_.Eta()-aveEta)/(fabs(jets.at(0).lepton4V_.Eta()-jets.at(1).lepton4V_.Eta())));
+
+
+      if(L_dijet.DeltaR(L_dilepton) > CutList.at(iCut).dRlJ) continue;
+      if(jets.at(0).lepton4V_.DeltaR(lepton.at(1).lepton4V_) > CutList.at(iCut).dRlJ) continue;
+
+      if(leadZep  > CutList.at(iCut).lZep) continue ;
+      if(trailZep > CutList.at(iCut).lZep) continue ;
+
+      if(histoCutEff.size()!=0){
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"fake bkg reduction");
+	iBin++;
+      }
+
+      // polarized cut                                                                                                                                                        
+      if(CutList.at(iCut).polarization != 99 or TString(name).Contains("Madgraph")){
+
+	int polarizationFlag = 0;
+
+	if(CutList.at(iCut).polarization != 99){
+
+	  
+	  if(fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) == 0)
+	    polarizationFlag = 0 ; //LL                                                                                                                                       
+	  else if((fabs(reader->vbosonLHEspin1) == 1 and fabs(reader->vbosonLHEspin2) ==0) or (fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) ==1))
+	    polarizationFlag = 1 ; //TL                                                                                                                                        
+	  else
+	    polarizationFlag = 2 ; //TT                                                                                                                                       
+
+	  if(polarizationFlag != CutList.at(iCut).polarization) continue;
+	  
+	  if(histoCutEff.size()!=0){
+	    histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	    histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
+	    iBin++;
+	  }
+	}
+	else if(TString(name).Contains("Madgraph")){
+	  if(fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) == 0)
+	    polarizationFlag = 0 ; //LL                                                                                                                                         
+	  else if((fabs(reader->vbosonLHEspin1) == 1 and fabs(reader->vbosonLHEspin2) ==0) or (fabs(reader->vbosonLHEspin1) == 0 and fabs(reader->vbosonLHEspin2) ==1))
+	    polarizationFlag = 1 ; //TL                                                                                                                                        
+	  else
+	    polarizationFlag = 2 ; //TT                                                                                                                                       
+	  
+	  if(TString(name).Contains("_LL")  and polarizationFlag != 0) continue;
+	  if(TString(name).Contains("_TL")  and polarizationFlag != 1) continue;
+	  if(TString(name).Contains("_TT")  and polarizationFlag != 2) continue;
+	  
+	  if(histoCutEff.size()!=0){
+	    histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	    histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
+	    iBin++;
+	  }
+	}
+      }
+      else{
+	if(histoCutEff.size()!=0){
+	  histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->SetBinContent(iBin,histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetBinContent(iBin)+1);
+	  histoCutEff[name+"_"+CutList.at(iCut).cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
+	  iBin++;
+	}
+      }
+        
+    
       float asimL = (lepton1.lepton4V_.Pt()-lepton2.lepton4V_.Pt())/(lepton1.lepton4V_.Pt()+lepton2.lepton4V_.Pt()) ;
-
-
+      
+      
       float asimJ    = (parton1.lepton4V_.Pt()-parton2.lepton4V_.Pt())/(parton1.lepton4V_.Pt()+parton2.lepton4V_.Pt()) ;
       float Rvar     = (lepton1.lepton4V_.Pt()*lepton2.lepton4V_.Pt())/(parton1.lepton4V_.Pt()*parton2.lepton4V_.Pt()) ;
-
+      
       // loop on variables
       for(size_t iVar = 0; iVar < variableList.size(); iVar++){
-        histoContainer tmpPlot;
-        tmpPlot.cutName = CutList.at(iCut).cutLayerName;
-        tmpPlot.varName = variableList.at(iVar).variableName;
-        vector<histoContainer>::iterator itVec ;
-        itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
-        if(itVec == plotVector.end()){
-          cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
-          continue ;
-        }
+	histoContainer tmpPlot;
+	tmpPlot.cutName = CutList.at(iCut).cutLayerName;
+	tmpPlot.varName = variableList.at(iVar).variableName;
+	vector<histoContainer>::iterator itVec ;
+	itVec = find(plotVector.begin(),plotVector.end(),tmpPlot);
+	if(itVec == plotVector.end()){
+	  cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
+	continue ;
+	}
 	
-	// vector boson info
-	if(variableList.at(iVar).variableName == "ptV1"){
-          itVec->histogram->Fill(vboson1.lepton4V_.Pt(),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "ptV2"){
-          itVec->histogram->Fill(vboson2.lepton4V_.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaV1"){
-          itVec->histogram->Fill(vboson1.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaV2"){
+	// histoCutEffor boson info
+	if(variableList.at(iVar).variableName == "ptV1")
+	  itVec->histogram->Fill(vboson1.lepton4V_.Pt(),1.*weight) ; 
+
+	else if(variableList.at(iVar).variableName == "ptV2")
+	  itVec->histogram->Fill(vboson2.lepton4V_.Pt(),weight) ;
+
+	else if(variableList.at(iVar).variableName == "etaV1")
+	  itVec->histogram->Fill(vboson1.lepton4V_.Eta(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "etaV2")
           itVec->histogram->Fill(vboson2.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptVV"){
-          itVec->histogram->Fill(L_dijet.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "mVV"){
-          itVec->histogram->Fill(L_dijet.M(),weight) ;
-        }
-
-	// decay information
-	if(variableList.at(iVar).variableName == "costheta1"){
-          itVec->histogram->Fill(fabs(costheta1),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "costheta2"){
-          itVec->histogram->Fill(fabs(costheta2),weight) ;
-        }
-	if(variableList.at(iVar).variableName == "costheta1_vbf"){
-          itVec->histogram->Fill(fabs(costheta1_vbf),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "costheta2_vbf"){
-          itVec->histogram->Fill(fabs(costheta2_vbf),weight) ;
-        }
-
-	if(variableList.at(iVar).variableName == "Phi"){
-          itVec->histogram->Fill(fabs(Phi),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "Phi1"){
-          itVec->histogram->Fill(fabs(Phi1),weight) ;
-        }
-	if(variableList.at(iVar).variableName == "Phi_vbf"){
-          itVec->histogram->Fill(fabs(Phi_vbf),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "Phi1_vbf"){
-          itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "costhetastar"){
-          itVec->histogram->Fill(fabs(costhetastar),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "costhetastar_vbf"){
-          itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "mTR"){
-          itVec->histogram->Fill(mTR,weight) ;
-	}
-
-	else if(variableList.at(iVar).variableName == "mR"){
-          itVec->histogram->Fill(mR,weight) ;
-	}
-
-	// jet info
-
-	if(variableList.at(iVar).variableName == "ptj1"){
-          itVec->histogram->Fill(parton1.lepton4V_.Pt(),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "ptj2"){
-          itVec->histogram->Fill(parton2.lepton4V_.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaj1"){
-          itVec->histogram->Fill(parton1.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaj2"){
-          itVec->histogram->Fill(parton2.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "detajj"){
-          itVec->histogram->Fill(fabs(parton1.lepton4V_.Eta()-parton2.lepton4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptjj"){
-          itVec->histogram->Fill(L_dijet.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "mjj"){
-          itVec->histogram->Fill(L_dijet.M(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "Asim_j"){
-          itVec->histogram->Fill(asimJ,weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ"){
-          itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptl1"){
-          itVec->histogram->Fill(lepton1.lepton4V_.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptl2"){
-          itVec->histogram->Fill(lepton2.lepton4V_.Pt(),weight) ;
-        }
- 
-	else if(variableList.at(iVar).variableName == "etal1"){
-          itVec->histogram->Fill(lepton1.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etal2"){
-          itVec->histogram->Fill(lepton2.lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "mll"){
-          itVec->histogram->Fill(L_dilepton.M(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptll"){
-          itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LL"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(lepton2.lepton4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "Asim_l"){
-          itVec->histogram->Fill(asimL,weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "met"){
-          itVec->histogram->Fill(L_met.Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "R"){
-          itVec->histogram->Fill(Rvar,weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LMet"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLMet"){
-          itVec->histogram->Fill((lepton1.lepton4V_ + L_met).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TLMet"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTLMet"){
-          itVec->histogram->Fill((lepton2.lepton4V_ + L_met).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LLMet"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLLMet"){
-          itVec->histogram->Fill((L_dilepton + L_met).Pt(),weight) ;
-        }
-	///
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJL"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLJL"){
-          itVec->histogram->Fill((lepton1.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJL"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTJL"){
-          itVec->histogram->Fill((lepton1.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJL"){
-          itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_dijet)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptJJL"){
-          itVec->histogram->Fill((lepton1.lepton4V_+L_dijet).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJTL"){
-          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJTL"){
-          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJTL"){
-          itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(L_dijet)),weight) ;
-        }
-
-
-	else if(variableList.at(iVar).variableName == "ptLJTL"){
-          itVec->histogram->Fill((lepton2.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptTJTL"){
-          itVec->histogram->Fill((lepton2.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptJJTL"){
-          itVec->histogram->Fill((lepton2.lepton4V_+L_dijet).Pt(),weight) ;
-        }
-
- 
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJLL"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton1.lepton4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJLL"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton2.lepton4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJLL"){
-          itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_dijet)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptLJLL"){
-          itVec->histogram->Fill((L_dilepton+parton1.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptTJLL"){
-          itVec->histogram->Fill((L_dilepton+parton2.lepton4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptJJLL"){
-          itVec->histogram->Fill((L_dilepton+L_dijet).Pt(),weight) ;
-        }
-
-	///
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJMet"){
-          itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptJJMet"){
-          itVec->histogram->Fill((L_dijet+L_met).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJMet"){
-          itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLJMet"){
-          itVec->histogram->Fill((parton1.lepton4V_+L_met).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJMet"){
-          itVec->histogram->Fill(fabs(parton2.lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTJMet"){
-          itVec->histogram->Fill((parton2.lepton4V_+L_met).Pt(),weight) ;
-        }
- 
-	else if(variableList.at(iVar).variableName == "mlljj"){
-          itVec->histogram->Fill((L_dilepton+L_dijet).M(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "mlljjmet"){
-          itVec->histogram->Fill((L_dilepton+L_dijet+L_met).M(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "mTH"){
-          itVec->histogram->Fill(sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),weight) ;
-        } 
-      } // loop on variables
+	
+	else if(variableList.at(iVar).variableName == "ptVV")
+	  itVec->histogram->Fill(L_dijet.Pt(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "mVV")
+	  itVec->histogram->Fill(L_dijet.M(),weight) ;
+	
       
-    } // Loop  on the cut list
+	// decay information
+	if(variableList.at(iVar).variableName == "costheta1")
+	  itVec->histogram->Fill(fabs(costheta1),1.*weight) ; 
+	
+	else if(variableList.at(iVar).variableName == "costheta2")
+	  itVec->histogram->Fill(fabs(costheta2),weight) ;
+	
+	if(variableList.at(iVar).variableName == "costheta1_vbf")
+	  itVec->histogram->Fill(fabs(costheta1_vbf),1.*weight) ; 
+      
+	else if(variableList.at(iVar).variableName == "costheta2_vbf")
+	  itVec->histogram->Fill(fabs(costheta2_vbf),weight) ;
+            
+	if(variableList.at(iVar).variableName == "Phi")
+	  itVec->histogram->Fill(fabs(Phi),1.*weight) ; 
+	
+	else if(variableList.at(iVar).variableName == "Phi1")
+	  itVec->histogram->Fill(fabs(Phi1),weight) ;
+      
+	if(variableList.at(iVar).variableName == "Phi_vbf")
+	  itVec->histogram->Fill(fabs(Phi_vbf),1.*weight) ; 
+      
+	else if(variableList.at(iVar).variableName == "Phi1_vbf")
+	  itVec->histogram->Fill(fabs(Phi1_vbf),weight) ;
+            
+	else if(variableList.at(iVar).variableName == "costhetastar")
+	  itVec->histogram->Fill(fabs(costhetastar),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "costhetastar_vbf")
+          itVec->histogram->Fill(fabs(costhetastar_vbf),weight) ;
+            
+	else if(variableList.at(iVar).variableName == "mTR")
+	  itVec->histogram->Fill(mTR,weight) ;
+	      
+	else if(variableList.at(iVar).variableName == "mR")
+	  itVec->histogram->Fill(mR,weight) ;
+	
+      
+	// jet info
+      
+	if(variableList.at(iVar).variableName == "ptj1")
+	  itVec->histogram->Fill(parton1.lepton4V_.Pt(),1.*weight) ; 
+	
+	else if(variableList.at(iVar).variableName == "ptj2")
+	  itVec->histogram->Fill(parton2.lepton4V_.Pt(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "etaj1")
+	  itVec->histogram->Fill(parton1.lepton4V_.Eta(),weight) ;
+      
+	else if(variableList.at(iVar).variableName == "etaj2")
+	  itVec->histogram->Fill(parton2.lepton4V_.Eta(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "detajj")
+	  itVec->histogram->Fill(fabs(parton1.lepton4V_.Eta()-parton2.lepton4V_.Eta()),weight) ;
+      
+	else if(variableList.at(iVar).variableName == "ptjj")
+	  itVec->histogram->Fill(L_dijet.Pt(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "mjj")
+	  itVec->histogram->Fill(L_dijet.M(),weight) ;
+            
+	else if(variableList.at(iVar).variableName == "Asim_j")
+	  itVec->histogram->Fill(asimJ,weight) ;
+	
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ")
+	  itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "ptl1")
+	  itVec->histogram->Fill(lepton1.lepton4V_.Pt(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "ptl2")
+	  itVec->histogram->Fill(lepton2.lepton4V_.Pt(),weight) ;
+           
+	else if(variableList.at(iVar).variableName == "etal1")
+	  itVec->histogram->Fill(lepton1.lepton4V_.Eta(),weight) ;
+      
+	else if(variableList.at(iVar).variableName == "etal2")
+	  itVec->histogram->Fill(lepton2.lepton4V_.Eta(),weight) ;
+      
+	else if(variableList.at(iVar).variableName == "mll")
+	  itVec->histogram->Fill(L_dilepton.M(),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "ptll")
+	  itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
+      
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LL")
+	  itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(lepton2.lepton4V_)),weight) ;
+	
+	else if(variableList.at(iVar).variableName == "Asim_l")
+	  itVec->histogram->Fill(asimL,weight) ;
+	      
+	else if(variableList.at(iVar).variableName == "met")
+	  itVec->histogram->Fill(L_met.Pt(),weight) ;
+	      
+	else if(variableList.at(iVar).variableName == "R")
+	  itVec->histogram->Fill(Rvar,weight) ;
+	      
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LMet")
+	  itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
 
-  } // Loop on the events
+	else if(variableList.at(iVar).variableName == "ptLMet")
+	itVec->histogram->Fill((lepton1.lepton4V_ + L_met).Pt(),weight) ;
 
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TLMet")
+	  itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_met)),weight) ;
+
+	else if(variableList.at(iVar).variableName == "ptTLMet")
+	  itVec->histogram->Fill((lepton2.lepton4V_ + L_met).Pt(),weight) ;
+
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LLMet")
+	  itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_met)),weight) ;
+
+	else if(variableList.at(iVar).variableName == "ptLLMet")
+	itVec->histogram->Fill((L_dilepton + L_met).Pt(),weight) ;
+
+	///
+      else if(variableList.at(iVar).variableName == "DeltaPhi_LJL")
+	itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptLJL")
+	itVec->histogram->Fill((lepton1.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_TJL")
+	itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptTJL")
+	itVec->histogram->Fill((lepton1.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_JJL")
+	itVec->histogram->Fill(fabs(lepton1.lepton4V_.DeltaPhi(L_dijet)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptJJL")
+	itVec->histogram->Fill((lepton1.lepton4V_+L_dijet).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_LJTL")
+	itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton1.lepton4V_)),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_TJTL")
+	itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(parton2.lepton4V_)),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_JJTL")
+	itVec->histogram->Fill(fabs(lepton2.lepton4V_.DeltaPhi(L_dijet)),weight) ;
+          
+      else if(variableList.at(iVar).variableName == "ptLJTL")
+	itVec->histogram->Fill((lepton2.lepton4V_+parton1.lepton4V_).Pt(),weight) ;
+            
+      else if(variableList.at(iVar).variableName == "ptTJTL")
+	itVec->histogram->Fill((lepton2.lepton4V_+parton2.lepton4V_).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "ptJJTL")
+	itVec->histogram->Fill((lepton2.lepton4V_+L_dijet).Pt(),weight) ;
+      
+            
+      else if(variableList.at(iVar).variableName == "DeltaPhi_LJLL")
+	itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton1.lepton4V_)),weight) ;
+      
+
+      else if(variableList.at(iVar).variableName == "DeltaPhi_TJLL")
+	itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(parton2.lepton4V_)),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_JJLL")
+	itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_dijet)),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "ptLJLL")
+	itVec->histogram->Fill((L_dilepton+parton1.lepton4V_).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "ptTJLL")
+	itVec->histogram->Fill((L_dilepton+parton2.lepton4V_).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "ptJJLL")
+	itVec->histogram->Fill((L_dilepton+L_dijet).Pt(),weight) ;
+      
+
+      ///
+      else if(variableList.at(iVar).variableName == "DeltaPhi_JJMet")
+	itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_met)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptJJMet")
+	itVec->histogram->Fill((L_dijet+L_met).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_LJMet")
+	itVec->histogram->Fill(fabs(parton1.lepton4V_.DeltaPhi(L_met)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptLJMet")
+	itVec->histogram->Fill((parton1.lepton4V_+L_met).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "DeltaPhi_TJMet")
+	itVec->histogram->Fill(fabs(parton2.lepton4V_.DeltaPhi(L_met)),weight) ;
+      
+      else if(variableList.at(iVar).variableName == "ptTJMet")
+	itVec->histogram->Fill((parton2.lepton4V_+L_met).Pt(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "mlljj")
+	itVec->histogram->Fill((L_dilepton+L_dijet).M(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "mlljjmet")
+	itVec->histogram->Fill((L_dilepton+L_dijet+L_met).M(),weight) ;
+      
+      
+      else if(variableList.at(iVar).variableName == "mTH")
+	itVec->histogram->Fill(sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),weight) ;
+
+      }
+    }
+  }      
   
   TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");
 
@@ -785,7 +992,6 @@ int main (int argc, char ** argv) {
 	ratio->SetBinContent(iBin,0.);
     }
  
-    //    ratio->GetYaxis()->SetRangeUser(ratio->GetMinimum()*0.7,ratio->GetMaximum()*1.2);
     ratio->GetXaxis()->SetTitle("");
     ratio->SetLineColor(kBlue);
     ratio->SetLineStyle(2);
@@ -797,7 +1003,6 @@ int main (int argc, char ** argv) {
     ratio->GetYaxis()->SetTitleOffset(0.30);
     ratio->GetYaxis()->SetNdivisions(504);
 
-    //    ratioW->GetYaxis()->SetRangeUser(ratioW->GetMinimum()*0.7,ratioW->GetMaximum()*1.2);
     ratioW->GetXaxis()->SetTitle("");
     ratioW->SetLineColor(kBlack);
     ratioW->SetLineWidth(2);
@@ -807,6 +1012,9 @@ int main (int argc, char ** argv) {
     ratioW->GetYaxis()->SetTitleSize(0.15);
     ratioW->GetYaxis()->SetTitleOffset(0.30);
     ratioW->GetYaxis()->SetNdivisions(504);
+
+    ratio->GetYaxis()->SetRange(min(ratio->GetMinimum(),ratioW->GetMinimum())*0.9,max(ratio->GetMaximum(),ratioW->GetMaximum())*1.1);    
+
 
     TH1F * frame = lowerPad->DrawFrame (ratio->GetXaxis ()->GetXmin (), 0., 
                                         ratio->GetXaxis ()->GetXmax (), 2.) ;
@@ -818,8 +1026,6 @@ int main (int argc, char ** argv) {
     frame->GetYaxis()->SetTitleSize(0.15);
     frame->GetYaxis()->SetTitleOffset(0.30);
     frame->GetYaxis()->SetNdivisions(504);
-
-    ratio->GetYaxis()->SetRange(min(ratio->GetMinimum(),ratioW->GetMinimum())*0.9,max(ratio->GetMaximum(),ratioW->GetMaximum())*1.1);    
 
     ratio->Draw("P");    
     ratioW->Draw("Lsame");    

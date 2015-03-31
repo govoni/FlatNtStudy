@@ -77,7 +77,6 @@ int main (int argc, char ** argv) {
   if(ReadInputCutFile(InputCutList,CutList) <= 0){
     cerr<<" Empty Cut List File or not Exisisting --> Exit "<<endl; return -1;}
 
-
   // take the variable list to be used for 1D analysis
   string InputVariableList1D  = gConfigParser -> readStringOption("Input::InputVariableList1D");
   vector<variableContainerDynamic> variableListDynamic1D;
@@ -101,7 +100,7 @@ int main (int argc, char ** argv) {
   for(size_t iVar = 0; iVar < variableListDynamic2D.size(); iVar++){
     variableList2D.push_back(variableListDynamic2D.at(iVar).getVariableContainer2D());
   }
-  
+
   // lumi and cut values
   float lumi  =  gConfigParser -> readFloatOption("Option::Lumi"); // fb^(-1)
   lumi *= 1000. ;   // transform into pb^(-1)
