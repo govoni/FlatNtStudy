@@ -16,6 +16,10 @@ FlatNtStudy
     cd HiggsAnalysis/CombinedLimit
     git fetch origin
     git checkout v5.0.1
+    cd ../../
+    git clone https://github.com/SPRACE/CMS-CombineEFTAnalysis.git CombineEFT
+    source CombineEFT/CommonTools/setup/patchToSource.sh
+    git apply /afs/cern.ch/user/j/jlauwers/public/TP/EFT.diff
     scramv1 b clean; scramv1 b
     cd ../../
     git clone git@github.com:govoni/FlatNtStudy.git ;
@@ -381,3 +385,14 @@ FlatNtStudy
 
     maximumLikelihoodFit --> make max likelihood fit, injecting signal with injectSignal, rMin and rMax fixed in the code, nToys to perform toys, outpuTree to store the information
         
+
+12) EFT calculation :
+    
+    convert the SM card 
+
+    python python/convertDC2EFT.py -i Card1D/final_mll_EEmm.txt -o Card1D/config_mll_EEmm -p LS0:-15:15:LS0
+
+    python buildWorkspace.py --config=config_mll_EEmm 
+    text2workspace.py WWVBS_mll_LS0.txt -o VBS_SS_Combine.root -P CombineEFT.CommonTools.HigherDimensionalOperators:LS0
+    
+    combine VBS_SS_Combine.root -M MultiDimFit -P LS0 --floatOtherPOIs=0 --algo=grid --points=1000 --minimizerStrategy=2 -n test_VBS_LS0 -t -1 --expectSignal=1
