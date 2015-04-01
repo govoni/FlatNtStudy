@@ -17,6 +17,25 @@ python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynam
 python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihood --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeMaxLikelihoodFitPlot 1 -b  --rMin -10 --rMax 10
 
 
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel UUpp --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel EEpp --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel EUpp --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel UEpp --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel UUmm --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel EEmm --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel EUmm --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel UEmm --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeMaximumLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodUnc --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeUncertaintyPlot 1 -b  --rMin -10 --rMax 10
+
+
 python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeAsymptotic/ --channel UUpp --outputPlotDIR plotAsymptotic --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeAsymptoticPlot 1 -b --rMin -10 --rMax 10
 
 python python/plotCombineCard2D.py --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/computeAsymptotic/ --channel EEpp --outputPlotDIR plotAsymptotic --inputVariableList cfg/DataCardCfg/HvsNoHCards/VariablesDynamic2D.txt  --makeAsymptoticPlot 1 -b --rMin -10 --rMax 10

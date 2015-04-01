@@ -54,3 +54,25 @@ python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_H
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeMaxLikelihoodFitPlot 1
 
 
+
+
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_HvsNoH_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable R_mll --makeUncertaintyPlot 1
+
+

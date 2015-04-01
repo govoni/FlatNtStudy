@@ -53,3 +53,22 @@ python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclu
 python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeMaxLikelihoodFitPlot 1
 
 
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UUpp --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EEpp --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EUpp --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UEpp --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UUmm --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EEmm --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EUmm --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UEmm --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Inclusive_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR computeMaxLikelihoodFit --inputVariable R_mjj --makeUncertaintyPlot 1
+
+
