@@ -33,6 +33,7 @@ parser.add_option('--inputVariable',   action="store", type="string", dest="inpu
 parser.add_option('--makeAsymptoticPlot',           action="store", type="int",    dest="makeAsymptoticLimitPlot",   default=0)
 parser.add_option('--makeProfileLikelihoodPlot',    action="store", type="int",    dest="makeProfileLikelihoodPlot", default=0)
 parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int",    dest="makeMaxLikelihoodFitPlot",  default=0)
+parser.add_option('--makeUncertaintyPlot',          action="store", type="int",    dest="makeUncertaintyPlot",       default=0)
 
 (options, args) = parser.parse_args()
 
@@ -368,8 +369,6 @@ def makeAsymptoticLimitPlot(filelist):
                 break;
 
 
-
-
     ## make the plot and setting the style                               
     curGraph_exp = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins,ybins_exp);
     curGraph_1s  = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins,ybins_exp,xbins_err_dw,xbins_err_up,ybins_1s_dw,ybins_1s_up);
@@ -697,6 +696,141 @@ def makeMaxLikelihoodFitPlot(filelist):
     can.SaveAs("%s/maximumLikelihoodFit_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/maximumLikelihoodFit_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
+
+
+##############################                                                                                                                                                
+### make uncertaintyb plot ###                                                                                                                                               
+##############################                                                                                                                                                 
+
+def makeUncertaintyPlot(filelist):
+
+    xbins_mu         = array('f', []);
+    ybins_mu_err_1s  = array('f', []);
+    ybins_mu_err_2s  = array('f', []);
+
+    muValue         = ROOT.TH1F("muValue","",100,-10,10);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+
+    muValue.Sumw2();
+    muErrUpOneSigma.Sumw2();
+    muErrUpTwoSigma.Sumw2();
+    muErrDownOneSigma.Sumw2();
+    muErrDownTwoSigma.Sumw2();
+
+        
+    for fake in fakeRateScaleFactor :
+        for ifile in range(len(filelist)):
+            if filelist[ifile].find("_%d"%(fake*10)) != -1 :
+
+                muValue.Reset("ICES");
+                muErrUpOneSigma.Reset("ICES");
+                muErrUpTwoSigma.Reset("ICES");
+                muErrDownOneSigma.Reset("ICES");
+                muErrDownTwoSigma.Reset("ICES");
+
+                getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
+     
+                xbins_mu.append(fake); 
+
+                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDwOneSigma.GetMean())/2);
+                ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDownTwoSigma.GetMean())/2);                
+
+
+                break;
+
+            
+
+    gr_mu_1s = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins_mu,ybins_mu_err_1s);
+    gr_mu_1s.SetLineColor(1); gr_mu_1s.SetMarkerColor(1); gr_mu_1s.SetMarkerStyle(20); gr_mu_1s.SetLineWidth(5); gr_mu_1s.SetMarkerSize(1.6);
+
+    gr_mu_2s = ROOT.TGraphAsymmErrors(len(fakeRateScaleFactor),xbins_mu,ybins_mu_err_2s);
+    gr_mu_2s.SetLineColor(ROOT.kBlue); gr_mu_2s.SetMarkerColor(ROOT.kBlue); gr_mu_2s.SetMarkerStyle(20); gr_mu_2s.SetLineWidth(3); gr_mu_2s.SetMarkerSize(1.6);
+
+    ban1s = TLatex(950,1.,("#mu SM injected"));
+    ban1s.SetTextSize(0.028); ban1s.SetTextColor(1)
+
+    can = ROOT.TCanvas("can","can",800,650);
+
+    gr_mu_2s.GetYaxis().SetTitle("signal strenght uncertainty");
+    gr_mu_2s.GetYaxis().SetTitleOffset(0.95);
+
+    gr_mu_2s.GetXaxis().SetTitle("fake scale factor");
+
+    can.SetGrid();
+   
+    gr_mu_2s.Draw("aP");
+    gr_mu_1s.Draw("Psame"); 
+
+
+    tex = ROOT.TLatex(0.892,0.957," 14 TeV");
+    tex.SetNDC();
+    tex.SetTextAlign(31);
+    tex.SetTextFont(42);
+    tex.SetTextSize(0.04);
+    tex.SetLineWidth(2);
+    tex.Draw("same");
+
+    tex2 = ROOT.TLatex(0.173,0.957,"Delphes");
+    tex2.SetNDC();
+    tex2.SetTextFont(61);
+    tex2.SetTextSize(0.04);
+    tex2.SetLineWidth(2);
+    tex2.Draw();
+
+    tex3 = ROOT.TLatex(0.332,0.957,"Simulation Preliminary");
+    tex3.SetNDC();
+    tex3.SetTextFont(52);
+    tex3.SetTextSize(0.035);
+    tex3.SetLineWidth(2);
+    tex3.Draw();
+   
+    can.SaveAs("%s/mu_uncertainty_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    can.SaveAs("%s/mu_uncertainty_%s.png"%(options.outputPlotDIR,options.channel),"png");
+
+    evolution_1s = ROOT.TF1 ("evolution_1s", "[0]/TMath::Sqrt([1]*[1]/x)", 0, 30) ;
+    evolution_1s.SetParameter (0, gr_mu_1s.GetMaximum()*2) ;
+    evolution_1s.SetParameter (1, 0.5) ;
+    gr_mu_1s.Fit ("evolution_1s","RMEQEX0") ;
+
+    evolution_2s = ROOT.TF1 ("evolution_2s", "[0]/TMath::Sqrt([1]*[1]/x)", 0, 30) ;
+    evolution_2s.SetParameter (0, gr_mu_2s.GetMaximum()*2) ;
+    evolution_2s.SetParameter (1, 0.5) ;
+    gr_mu_2s.Fit ("evolution_2s","RMEQEX0") ;
+
+    can.cd();
+    can.SetGrid();
+
+    evolution_1s.SetLineColor(ROOT.kRed);
+    evolution_1s.SetLineWidth(2);
+    evolution_2s.SetLineColor(ROOT.kRed);
+    evolution_2s.SetLineWidth(2);
+
+    evolution_1s.Draw();
+    evolution_2s.Draw("same");
+    evolution_1s.GetYaxis().SetTitleOffset(0.95);
+    evolution_2s.GetYaxis().SetTitleOffset(0.95);
+    evolution_1s.GetYaxis().SetTitle("#mu uncertainty");
+    evolution_2s.GetYaxis().SetTitle("#mu uncertainty");
+
+    evolution_1s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    evolution_2s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    gr_mu_1s.Draw("P");
+    gr_mu_2s.Draw("Psame");
+    evolution_1s.Draw("same");
+    evolution_2s.Draw("same");
+
+    can.SaveAs("%s/mu_uncertainty_%s_vsLumi.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsLumi.pdf"%(options.outputPlotDIR,options.channel));
+
+    can.SetLogy();
+
+    can.SaveAs("%s/mu_uncertainty_%s_vsLumi_log.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsLumi_log.pdf"%(options.outputPlotDIR,options.channel));
+
+
 ##################################
 ########### Main Code ############
 ##################################    
@@ -728,6 +862,8 @@ if __name__ == '__main__':
         makeProfileLikelihoodPlot(filelist);
     elif options.makeMaxLikelihoodFitPlot :
         makeMaxLikelihoodFitPlot(filelist);
+   elif options.makeUncertaintyPlot:
+        makeUncertaintyPlot(filelist);
 
     os.system("rm list.txt");    
  

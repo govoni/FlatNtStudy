@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env pythonexp
 import os
 import glob
 import math
@@ -35,9 +35,12 @@ parser.add_option('--makeAsymptoticPlot',           action="store", type="int", 
 parser.add_option('--makeProfileLikelihoodPlot',    action="store", type="int",    dest="makeProfileLikelihoodPlot", default=0)
 parser.add_option('--makeLikelihoodScanPlot',       action="store", type="int",    dest="makeLikelihoodScanPlot",    default=0)
 parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int",    dest="makeMaxLikelihoodFitPlot",  default=0)
+parser.add_option('--makeUncertaintyPlot',          action="store", type="int",    dest="makeUncertaintyPlot",       default=0)
 
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
+
+parser.add_option('--symmetricError',    action="store", type=int, dest="symmetricError", default=1)
 
 (options, args) = parser.parse_args()
 
@@ -425,6 +428,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     leg2 = ROOT.TLegend(0.53,0.71,0.86,0.92);
     leg2.SetFillColor(0);
+    leg2.SetFillStyle(0);
     leg2.SetShadowColor(0);
     leg2.SetTextFont(42);
     leg2.SetTextSize(0.028);
@@ -640,7 +644,7 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
  
     can = ROOT.TCanvas("can","can",1050,650);
-    hrl = can.DrawFrame(0,options.rMin*0.75,nPoints,options.rMax*1.25);
+    hrl = can.DrawFrame(0,1-ROOT.TMath.MaxElement(gr_mu_2s.GetN(),ybins_mu_err_dn_2s)*1.25,nPoints,1+ROOT.TMath.MaxElement(gr_mu_2s.GetN(),ybins_mu_err_up_2s)*1.25);
     hrl.SetBins(len(binName),0,nPoints);
 
     for ibin in range(hrl.GetNbinsX()):
@@ -679,6 +683,118 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
    
     can.SaveAs("%s/maximumLikelihoodFit_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/maximumLikelihoodFit_%s.png"%(options.outputPlotDIR,options.channel),"png");
+
+##############################
+### make uncertaintyb plot ###
+##############################
+
+def makeUncertaintyPlot(filelist,variableName,variableLabel):
+
+    nPoints = len(variableName);
+
+    xbins_mu         = array('f', []);
+    ybins_mu_err_1s  = array('f', []);
+    ybins_mu_err_2s  = array('f', []);
+
+    binName = [];
+
+    muValue         = ROOT.TH1F("muValue","",100,-10,10);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+
+    muValue.Sumw2();
+    muErrUpOneSigma.Sumw2();
+    muErrUpTwoSigma.Sumw2();
+    muErrDownOneSigma.Sumw2();
+    muErrDownTwoSigma.Sumw2();
+
+    for ivar in range(len(variableName)) :
+        for ifile in range(len(filelist)):
+            if filelist[ifile].find(variableName[ivar]+"_"+options.channel) != -1 :
+                binName.append(variableLabel[ivar]);
+                
+                muValue.Reset("ICES");
+                muErrUpOneSigma.Reset("ICES");
+                muErrUpTwoSigma.Reset("ICES");
+                muErrDownOneSigma.Reset("ICES");
+                muErrDownTwoSigma.Reset("ICES");
+
+                getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
+
+                xbins_mu.append(ivar+0.5); 
+
+                if options.symmetricError == 1 :
+                    ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDownOneSigma.GetMean())/2);
+                    ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDownTwoSigma.GetMean())/2);
+                else:
+                    ybins_mu_err_1s.append(muErrDownOneSigma.GetMean());
+                    ybins_mu_err_2s.append(muErrDownTwoSigma.GetMean());
+
+                break;
+
+    gr_mu_1s = ROOT.TGraph(nPoints,xbins_mu,ybins_mu_err_1s);
+    gr_mu_1s.SetLineColor(1); gr_mu_1s.SetMarkerColor(1); gr_mu_1s.SetMarkerStyle(20); gr_mu_1s.SetLineWidth(2); gr_mu_1s.SetMarkerSize(1.6);
+
+    gr_mu_2s = ROOT.TGraphAsymmErrors(nPoints,xbins_mu,ybins_mu_err_2s);
+    gr_mu_2s.SetLineColor(ROOT.kBlue); gr_mu_2s.SetMarkerColor(ROOT.kBlue); gr_mu_2s.SetMarkerStyle(20); gr_mu_2s.SetLineWidth(2); gr_mu_2s.SetMarkerSize(1.6);
+
+    ban1s = TLatex(950,1.,("#mu SM injected"));
+    ban1s.SetTextSize(0.028); ban1s.SetTextColor(1)
+ 
+    can = ROOT.TCanvas("can","can",1050,650);
+    hrl = can.DrawFrame(0,0.,nPoints,ROOT.TMath.MaxElement(gr_mu_2s.GetN(),gr_mu_2s.GetY())*1.25);
+    hrl.SetBins(len(binName),0,nPoints);
+
+    for ibin in range(hrl.GetNbinsX()):
+        hrl.GetXaxis().SetBinLabel(ibin+1,binName[ibin]);
+
+    hrl.GetYaxis().SetTitle("signal strenght uncertainty");
+    hrl.GetYaxis().SetTitleOffset(0.95)
+
+    can.SetGrid();
+   
+    gr_mu_2s.Draw("PL");
+    gr_mu_1s.Draw("PLsame"); 
+
+
+    tex = ROOT.TLatex(0.892,0.957," 14 TeV");
+    tex.SetNDC();
+    tex.SetTextAlign(31);
+    tex.SetTextFont(42);
+    tex.SetTextSize(0.04);
+    tex.SetLineWidth(2);
+    tex.Draw("same");
+
+    tex2 = ROOT.TLatex(0.173,0.957,"Delphes");
+    tex2.SetNDC();
+    tex2.SetTextFont(61);
+    tex2.SetTextSize(0.04);
+    tex2.SetLineWidth(2);
+    tex2.Draw("same");
+
+    tex3 = ROOT.TLatex(0.332,0.957,"Simulation Preliminary");
+    tex3.SetNDC();
+    tex3.SetTextFont(52);
+    tex3.SetTextSize(0.035);
+    tex3.SetLineWidth(2);
+    tex3.Draw("same");
+
+    leg2 = ROOT.TLegend(0.73,0.8,0.86,0.92);
+    leg2.SetFillColor(0);
+    leg2.SetFillStyle(0);
+    leg2.SetShadowColor(0);
+    leg2.SetTextFont(42);
+    leg2.SetTextSize(0.028);
+
+    leg2.AddEntry(gr_mu_2s,"2#sigma band","PL")
+    leg2.AddEntry(gr_mu_1s,"1#sigma band","PL")
+
+    leg2.Draw("same")
+
+    can.SaveAs("%s/mu_uncertainty_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    can.SaveAs("%s/mu_uncertainty_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
 
 #################################
@@ -804,5 +920,7 @@ if __name__ == '__main__':
         makeLikelihoodScanPlot(filelist,variableName,variableLabel);    
     elif options.makeMaxLikelihoodFitPlot :
         makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel);
-
+    elif options.makeUncertaintyPlot:
+        makeUncertaintyPlot(filelist,variableName,variableLabel);              
+                  
     os.system("rm list.txt");    

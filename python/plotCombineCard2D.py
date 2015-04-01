@@ -34,6 +34,7 @@ parser.add_option('--makeAsymptoticPlot',           action="store", type="int", 
 parser.add_option('--makeProfileLikelihoodPlot',    action="store", type="int",    dest="makeProfileLikelihoodPlot", default=0)
 parser.add_option('--makeLikelihoodScanPlot',       action="store", type="int",    dest="makeLikelihoodScanPlot",    default=0)
 parser.add_option('--makeMaxLikelihoodFitPlot',     action="store", type="int",    dest="makeMaxLikelihoodFitPlot",  default=0)
+parser.add_option('--makeUncertaintyPlot',          action="store", type="int",    dest="makeUncertaintyPlot",       default=0)
 
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
@@ -431,7 +432,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histoExp.GetZaxis().SetLabelSize(0.03);
     histoExp.GetZaxis().SetTitleSize(0.03);
-    histoExp.GetZaxis().SetRangeUser(histoExp.GetMinimum()*0.75,histoExp.GetMaximum());
+    histoExp.GetZaxis().SetRangeUser(histoExp.GetMinimum()*0.95,histoExp.GetMaximum()*1.05);
     histoExp.GetZaxis().SetTitleOffset(0.95);
 
     tex = ROOT.TLatex(0.91,0.957," 14 TeV");
@@ -462,7 +463,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     
     histo1sUp.GetZaxis().SetLabelSize(0.03);
     histo1sUp.GetZaxis().SetTitleSize(0.03);
-    histo1sUp.GetZaxis().SetRangeUser(histo1sUp.GetMinimum()*0.75,histo1sUp.GetMaximum());
+    histo1sUp.GetZaxis().SetRangeUser(histo1sUp.GetMinimum()*0.8,histo1sUp.GetMaximum()*1.2);
     histo1sUp.GetZaxis().SetTitleOffset(0.95);
 
     histo1sUp.Draw("colz TEXT");
@@ -482,7 +483,7 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     histo2sUp.GetZaxis().SetLabelSize(0.03);
     histo2sUp.GetZaxis().SetTitleSize(0.03);
-    histo2sUp.GetZaxis().SetRangeUser(histo2sUp.GetMinimum()*0.75,histo2sUp.GetMaximum());
+    histo2sUp.GetZaxis().SetRangeUser(histo2sUp.GetMinimum()*0.8,histo2sUp.GetMaximum()*1.2);
     histo2sUp.GetZaxis().SetTitleOffset(0.95);
 
     histo2sUp.Draw("colz TEXT");
@@ -802,6 +803,122 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     #can.SaveAs("%s/maximumLikelihoodFit_Mu_Dw2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
 
+##############################                                                                                                                                                
+### make uncertaintyb plot ###                                                                                                                                                 
+##############################                                                                                                                                                
+
+def makeUncertaintyPlot(filelist,variableName,variableLabel):
+
+
+    ## the matrix is always squared                                                                                                                                             
+    nvar = len(variableName);
+
+    muErrOneSigma = ROOT.TH2F("muErrOneSigma","",nvar,0,nvar,nvar,0,nvar);
+    muErrTwoSigma = ROOT.TH2F("muErrTwoSigma","",nvar,0,nvar,nvar,0,nvar);
+
+    muValueTemp         = ROOT.TH1F("muValueTemp","",100,-10,10);
+    muErrUpOneSigmaTemp = ROOT.TH1F("muErrUpOneSigmaTemp","",100,-10,10);
+    muErrUpTwoSigmaTemp = ROOT.TH1F("muErrUpTwoSigmaTemp","",100,-10,10);
+    muErrDownOneSigmaTemp = ROOT.TH1F("muErrDownOneSigmaTemp","",100,-10,10);
+    muErrDownTwoSigmaTemp = ROOT.TH1F("muErrDownTwoSigmaTemp","",100,-10,10);
+
+    for ivar in range(nvar):
+
+        muErrOneSigma.GetYaxis().SetBinLabel(ivar+1,variableLabel[ivar]);
+        muErrOneSigma.GetXaxis().SetBinLabel(ivar+1,variableLabel[ivar]);
+
+        muErrTwoSigma.GetYaxis().SetBinLabel(ivar+1,variableLabel[ivar]);
+        muErrTwoSigma.GetXaxis().SetBinLabel(ivar+1,variableLabel[ivar]);
+
+    varUsed = [];
+
+    for ivarX in range(len(variableName)) :
+        for ivarY in range(len(variableName)) :
+            if ivarX == ivarY :
+                continue ;
+
+            if not variableName[ivarX]+"_"+variableName[ivarY] in varUsed :
+
+                varUsed.append(variableName[ivarX]+"_"+variableName[ivarY]);
+
+                for ifile in range(len(filelist)):
+
+                    if filelist[ifile].find(variableName[ivarX]+"_"+variableName[ivarY]+"_"+options.channel) != - 1 :
+
+                        muValueTemp.Reset("ICES");
+                        muErrUpOneSigmaTemp.Reset("ICES");
+                        muErrUpTwoSigmaTemp.Reset("ICES");
+                        muErrDownOneSigmaTemp.Reset("ICES");
+                        muErrDownTwoSigmaTemp.Reset("ICES");
+
+                        getSignalStrenght(filelist[ifile], muValueTemp, muErrUpOneSigmaTemp, muErrUpTwoSigmaTemp, muErrDownOneSigmaTemp, muErrDownTwoSigmaTemp)
+                    
+                        muErrOneSigma.SetBinContent(ivarX+1,ivarY+1,round((muErrUpOneSigmaTemp.GetMean()+muErrDownOneSigmaTemp.GetMean())/2,2));
+                        muErrTwoSigma.SetBinContent(ivarX+1,ivarY+1,round((muErrUpTwoSigmaTemp.GetMean()+muErrDownTwoSigmaTemp.GetMean())/2,2));
+
+                        muErrOneSigma.SetBinContent(ivarY+1,ivarX+1,round((muErrUpOneSigmaTemp.GetMean()+muErrDownOneSigmaTemp.GetMean())/2,2));
+                        muErrTwoSigma.SetBinContent(ivarY+1,ivarX+1,round((muErrUpTwoSigmaTemp.GetMean()+muErrDownTwoSigmaTemp.GetMean())/2,2));
+
+
+         
+    can = ROOT.TCanvas("can","can",650,650);
+
+    can.SetGrid();
+
+    tex = ROOT.TLatex(0.892,0.957," 14 TeV");
+    tex.SetNDC();
+    tex.SetTextAlign(31);
+    tex.SetTextFont(42);
+    tex.SetTextSize(0.04);
+    tex.SetLineWidth(2);
+    tex.Draw("same");
+
+    tex2 = ROOT.TLatex(0.173,0.957,"Delphes");
+    tex2.SetNDC();
+    tex2.SetTextFont(61);
+    tex2.SetTextSize(0.04);
+    tex2.SetLineWidth(2);
+    tex2.Draw();
+
+    tex3 = ROOT.TLatex(0.332,0.957,"Simulation Preliminary");
+    tex3.SetNDC();
+    tex3.SetTextFont(52);
+    tex3.SetTextSize(0.035);
+    tex3.SetLineWidth(2);
+    tex3.Draw();
+
+    muErrOneSigma.GetZaxis().SetRangeUser(muErrOneSigma.GetMinimum()*0.8,muErrOneSigma.GetMaximum()*1.2)
+
+    muErrOneSigma.Draw("colz TEXT");   
+ 
+    muErrOneSigma.GetZaxis().SetLabelSize(0.03);
+    muErrOneSigma.GetZaxis().SetTitleSize(0.03);
+
+    tex.Draw("same");
+    tex2.Draw();
+    tex3.Draw();
+
+   
+    can.SaveAs("%s/mu_uncertainty_1s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    can.SaveAs("%s/mu_uncertainty_1s_%s.png"%(options.outputPlotDIR,options.channel),"png");
+
+
+    muErrTwoSigma.GetZaxis().SetRangeUser(muErrTwoSigma.GetMinimum()*0.8,muErrTwoSigma.GetMaximum()*1.2)
+
+    muErrTwoSigma.GetZaxis().SetLabelSize(0.03);
+    muErrTwoSigma.GetZaxis().SetTitleSize(0.03);
+
+    muErrTwoSigma.Draw("colz TEXT");   
+
+    tex.Draw("same");
+    tex2.Draw();
+    tex3.Draw();
+
+    can.SaveAs("%s/mu_uncertainty_2s_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    can.SaveAs("%s/mu_uncertainty_2s_%s.png"%(options.outputPlotDIR,options.channel),"png");
+   
+
+
 #################################
 ### make likelihood scan plot ###
 #################################    
@@ -950,5 +1067,7 @@ if __name__ == '__main__':
         makeLikelihoodScanPlot(filelist,variableName,variableLabel);    
     elif options.makeMaxLikelihoodFitPlot :
         makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel);
+    elif options.makeUncertaintyPlot:
+        makeUncertaintyPlot(filelist,variableName,variableLabel);
 
     os.system("rm list.txt");    
