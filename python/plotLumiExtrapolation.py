@@ -757,11 +757,9 @@ def makeUncertaintyPlot(filelist):
                 getSignalStrenght(filelist[ifile],muValue, muErrUpOneSigma, muErrUpTwoSigma, muErrDownOneSigma, muErrDownTwoSigma)
      
                 xbins_mu.append(lumi); 
-                xbins_mu_err_up.append(0); 
-                xbins_mu_err_dn.append(0); 
 
-                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDwOneSigma.GetMean())/2);
-                ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDwTwoSigma.GetMean())/2);
+                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDownOneSigma.GetMean())/2);
+                ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDownTwoSigma.GetMean())/2);
 
                 break;
 
@@ -815,17 +813,24 @@ def makeUncertaintyPlot(filelist):
     can.SaveAs("%s/mu_uncertainty_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/mu_uncertainty_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
+    can.SetLogy();
 
-    evolution_1s = ROOT.TF1 ("evolutionn_1s", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10000) ;
+    can.SaveAs("%s/mu_uncertainty_%s_log.pdf"%(options.outputPlotDIR,options.channel),"pdf");
+    can.SaveAs("%s/mu_uncertainty_%s_log.png"%(options.outputPlotDIR,options.channel),"png");
+
+    can.SetLogy(0);
+
+
+    evolution_1s = ROOT.TF1 ("evolution_1s", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10000) ;
     evolution_1s.SetParameter (0, gr_mu_1s.GetMaximum()) ;
-    evolutionn_1s.SetParameter (1, 0.5) ;
-    evolutionn_1s.SetParameter (2, 0.5) ;
+    evolution_1s.SetParameter (1, 0.5) ;
+    evolution_1s.SetParameter (2, 0.5) ;
     gr_mu_1s.Fit ("evolution_1s","RMEQEX0") ;
 
-    evolution_2s = ROOT.TF1 ("evolutionn_2s", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10000) ;
+    evolution_2s = ROOT.TF1 ("evolution_2s", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10000) ;
     evolution_2s.SetParameter (0, gr_mu_2s.GetMaximum()) ;
-    evolutionn_2s.SetParameter (1, 0.5) ;
-    evolutionn_2s.SetParameter (2, 0.5) ;
+    evolution_2s.SetParameter (1, 0.5) ;
+    evolution_2s.SetParameter (2, 0.5) ;
     gr_mu_2s.Fit ("evolution_2s","RMEQEX0") ;
 
     can.cd();

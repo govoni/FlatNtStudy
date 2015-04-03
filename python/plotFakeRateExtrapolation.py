@@ -735,7 +735,7 @@ def makeUncertaintyPlot(filelist):
      
                 xbins_mu.append(fake); 
 
-                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDwOneSigma.GetMean())/2);
+                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDownOneSigma.GetMean())/2);
                 ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDownTwoSigma.GetMean())/2);                
 
 
@@ -756,8 +756,9 @@ def makeUncertaintyPlot(filelist):
 
     gr_mu_2s.GetYaxis().SetTitle("signal strenght uncertainty");
     gr_mu_2s.GetYaxis().SetTitleOffset(0.95);
-
     gr_mu_2s.GetXaxis().SetTitle("fake scale factor");
+
+    gr_mu_2s.GetYaxis().SetRangeUser(ROOT.TMath.MinElement(gr_mu_1s.GetN(),gr_mu_1s.GetY())*0.8,ROOT.TMath.MaxElement(gr_mu_2s.GetN(),gr_mu_2s.GetY())*1.2)
 
     can.SetGrid();
    
@@ -790,14 +791,17 @@ def makeUncertaintyPlot(filelist):
     can.SaveAs("%s/mu_uncertainty_%s.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/mu_uncertainty_%s.png"%(options.outputPlotDIR,options.channel),"png");
 
-    evolution_1s = ROOT.TF1 ("evolution_1s", "[0]/TMath::Sqrt([1]*[1]/x)", 0, 30) ;
-    evolution_1s.SetParameter (0, gr_mu_1s.GetMaximum()*2) ;
-    evolution_1s.SetParameter (1, 0.5) ;
+    can.SetLogy();
+
+    can.SaveAs("%s/mu_uncertainty_%s_log.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_log.pdf"%(options.outputPlotDIR,options.channel));
+
+    can.SetLogy(0);
+
+    evolution_1s = ROOT.TF1 ("evolution_1s", "pol1", 0, 30) ;
     gr_mu_1s.Fit ("evolution_1s","RMEQEX0") ;
 
-    evolution_2s = ROOT.TF1 ("evolution_2s", "[0]/TMath::Sqrt([1]*[1]/x)", 0, 30) ;
-    evolution_2s.SetParameter (0, gr_mu_2s.GetMaximum()*2) ;
-    evolution_2s.SetParameter (1, 0.5) ;
+    evolution_2s = ROOT.TF1 ("evolution_2s", "pol1", 0, 30) ;
     gr_mu_2s.Fit ("evolution_2s","RMEQEX0") ;
 
     can.cd();
@@ -862,7 +866,7 @@ if __name__ == '__main__':
         makeProfileLikelihoodPlot(filelist);
     elif options.makeMaxLikelihoodFitPlot :
         makeMaxLikelihoodFitPlot(filelist);
-   elif options.makeUncertaintyPlot:
+    elif options.makeUncertaintyPlot:
         makeUncertaintyPlot(filelist);
 
     os.system("rm list.txt");    
