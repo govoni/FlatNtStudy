@@ -355,8 +355,8 @@ int main (int argc, char ** argv) {
 	  noHiggs_scale_elUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_elScaleUp[variableList1D.at(iVar).variableName]->Clone("histo_noHiggs_CMS_scale_elUp");
 
 	  // scaled down by lepton scale unc
+	  noHiggs_scale_muDw = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_muScaleDown[variableList1D.at(iVar).variableName]->Clone("histo_noHiggs_CMS_scale_muDown");
 	  noHiggs_scale_elDw = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_elScaleDown[variableList1D.at(iVar).variableName]->Clone("histo_noHiggs_CMS_scale_elDown");
-	  noHiggs_scale_elDw = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_muScaleDown[variableList1D.at(iVar).variableName]->Clone("histo_noHiggs_CMS_scale_muDown");
 
 	  // smeared by lepton res
 	  noHiggs_res_muUp = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos_muRes[variableList1D.at(iVar).variableName]->Clone("histo_noHiggs_CMS_res_muUp");
