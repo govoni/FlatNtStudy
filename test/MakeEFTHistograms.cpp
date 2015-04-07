@@ -282,7 +282,7 @@ int main (int argc, char ** argv) {
   const int Noperators = 9;
   Float_t opVal[Noperators] = {0,0,0,0,0,0,0,0,0};
   int opNum[Noperators] = {1,2,3,4,9,10,11,12,13};
-  TString opName[Noperators+1] = {"S0","S1","M0","M1","M6","M7","T0","T1","T2","S01"};
+  TString opName[Noperators+1] = {"S0","S1","M0","M1","M6","M7","T0","T1","T2","S0_LS1"};
   
   TFile* file = new TFile((InputBaseDirectory + "/" + sampleMap.begin()->second.begin()->sampleName + "/outDumper_0.root").c_str(), "READ");
   TTree* tree = (TTree*) file->Get("weightsInfo");
@@ -327,7 +327,7 @@ int main (int argc, char ** argv) {
                         // Skip 2D scan
                         if( ( iOp == 0 && opValVec[1][iEFT] != 0 ) || ( iOp == 1 && opValVec[0][iEFT] != 0 ) ) continue; 
                         
-                        x.push_back( opValVec[iOp][iEFT]*1e12 ); // factor 1e9 for fit convergence
+                        x.push_back( opValVec[iOp][iEFT]*1e12 ); // factor 1e12 for fit convergence
                         y.push_back( histoEFT->GetBinContent(iBin+1)/hSM->GetBinContent(iBin+1) );
                     }
                 }
@@ -346,7 +346,7 @@ int main (int argc, char ** argv) {
                 graph->Fit(func,"QRME");
                 c->Write();
                 func->Write();
-                c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
             }
             // 2D grid
             else {
@@ -382,7 +382,7 @@ int main (int argc, char ** argv) {
                 func->Draw("surf1same");
                 c->Write();
                 func->Write();
-                c->SaveAs(("output/"+outputPlotDirectory+"/opertator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
             }
         }// End loop over bins
         
