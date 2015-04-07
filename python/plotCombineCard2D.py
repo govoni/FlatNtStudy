@@ -346,11 +346,11 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
 
     varUsed = [];
 
-    limitExp     = ROOT.TH1F("limitExp","",1000,-1,10);
-    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,10);
-    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,10);
-    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,10);
-    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,10);
+    limitExp     = ROOT.TH1F("limitExp","",1000,-1,100);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,100);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,100);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,100);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,100);
     limitExp.Sumw2();
     limitExp1sUp.Sumw2();
     limitExp2sUp.Sumw2();
@@ -656,11 +656,11 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
     muErrDownOneSigma = ROOT.TH2F("muErrDownOneSigma","",nvar,0,nvar,nvar,0,nvar);
     muErrDownTwoSigma = ROOT.TH2F("muErrDownTwoSigma","",nvar,0,nvar,nvar,0,nvar);
 
-    muValueTemp         = ROOT.TH1F("muValueTemp","",100,-10,10);
-    muErrUpOneSigmaTemp = ROOT.TH1F("muErrUpOneSigmaTemp","",100,-10,10);
-    muErrUpTwoSigmaTemp = ROOT.TH1F("muErrUpTwoSigmaTemp","",100,-10,10);
-    muErrDownOneSigmaTemp = ROOT.TH1F("muErrDownOneSigmaTemp","",100,-10,10);
-    muErrDownTwoSigmaTemp = ROOT.TH1F("muErrDownTwoSigmaTemp","",100,-10,10);
+    muValueTemp         = ROOT.TH1F("muValueTemp","",1000,-100,100);
+    muErrUpOneSigmaTemp = ROOT.TH1F("muErrUpOneSigmaTemp","",1000,-100,100);
+    muErrUpTwoSigmaTemp = ROOT.TH1F("muErrUpTwoSigmaTemp","",1000,-100,100);
+    muErrDownOneSigmaTemp = ROOT.TH1F("muErrDownOneSigmaTemp","",1000,-100,100);
+    muErrDownTwoSigmaTemp = ROOT.TH1F("muErrDownTwoSigmaTemp","",1000,-100,100);
 
     for ivar in range(nvar):
 
@@ -816,11 +816,11 @@ def makeUncertaintyPlot(filelist,variableName,variableLabel):
     muErrOneSigma = ROOT.TH2F("muErrOneSigma","",nvar,0,nvar,nvar,0,nvar);
     muErrTwoSigma = ROOT.TH2F("muErrTwoSigma","",nvar,0,nvar,nvar,0,nvar);
 
-    muValueTemp         = ROOT.TH1F("muValueTemp","",100,-10,10);
-    muErrUpOneSigmaTemp = ROOT.TH1F("muErrUpOneSigmaTemp","",100,-10,10);
-    muErrUpTwoSigmaTemp = ROOT.TH1F("muErrUpTwoSigmaTemp","",100,-10,10);
-    muErrDownOneSigmaTemp = ROOT.TH1F("muErrDownOneSigmaTemp","",100,-10,10);
-    muErrDownTwoSigmaTemp = ROOT.TH1F("muErrDownTwoSigmaTemp","",100,-10,10);
+    muValueTemp         = ROOT.TH1F("muValueTemp","",1000,-100,100);
+    muErrUpOneSigmaTemp = ROOT.TH1F("muErrUpOneSigmaTemp","",1000,-100,100);
+    muErrUpTwoSigmaTemp = ROOT.TH1F("muErrUpTwoSigmaTemp","",1000,-100,100);
+    muErrDownOneSigmaTemp = ROOT.TH1F("muErrDownOneSigmaTemp","",1000,-100,100);
+    muErrDownTwoSigmaTemp = ROOT.TH1F("muErrDownTwoSigmaTemp","",1000,-100,100);
 
     for ivar in range(nvar):
 

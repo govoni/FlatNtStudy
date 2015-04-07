@@ -337,11 +337,11 @@ def makeAsymptoticLimitPlot(filelist,variableName,variableLabel):
     binName = [];     
 
     ## histograms for the limit values
-    limitExp     = ROOT.TH1F("limitExp","",1000,-1,30);
-    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,30);
-    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,30);
-    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,30);
-    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,30);
+    limitExp     = ROOT.TH1F("limitExp","",1000,-1,100);
+    limitExp1sUp = ROOT.TH1F("limitExp1sUp","",1000,-1,100);
+    limitExp2sUp = ROOT.TH1F("limitExp2sUp","",1000,-1,100);
+    limitExp1sDw = ROOT.TH1F("limitExp1sDw","",1000,-1,100);
+    limitExp2sDw = ROOT.TH1F("limitExp2sDw","",1000,-1,100);
     limitExp.Sumw2();
     limitExp1sUp.Sumw2();
     limitExp2sUp.Sumw2();
@@ -597,11 +597,11 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
 
     binName = [];
 
-    muValue         = ROOT.TH1F("muValue","",100,-10,10);
-    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
-    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
-    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
-    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+    muValue         = ROOT.TH1F("muValue","",1000,-100,100);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",1000,-100,100);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",1000,-100,100);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",1000,-100,100);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",1000,-100,100);
 
     muValue.Sumw2();
     muErrUpOneSigma.Sumw2();
@@ -626,10 +626,18 @@ def makeMaxLikelihoodFitPlot(filelist,variableName,variableLabel):
                 xbins_mu_err_up.append(0.5); 
                 xbins_mu_err_dn.append(0.5); 
                 ybins_mu.append(muValue.GetMean());
+
+                if muErrUpOneSigma.GetMean() > muErrUpTwoSigma.GetMean() :
+                     ybins_mu_err_up.append(muErrDownOneSigma.GetMean()/2);
+                else :
+                     ybins_mu_err_up.append(muErrUpOneSigma.GetMean());
+
                 ybins_mu_err_up.append(muErrUpOneSigma.GetMean());
                 ybins_mu_err_dn.append(muErrDownOneSigma.GetMean());
                 ybins_mu_err_up_2s.append(muErrUpTwoSigma.GetMean());
                 ybins_mu_err_dn_2s.append(muErrDownTwoSigma.GetMean());                
+
+                    
 
                 break;
 
@@ -698,11 +706,11 @@ def makeUncertaintyPlot(filelist,variableName,variableLabel):
 
     binName = [];
 
-    muValue         = ROOT.TH1F("muValue","",100,-10,10);
-    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",100,-10,10);
-    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",100,-10,10);
-    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",100,-10,10);
-    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",100,-10,10);
+    muValue         = ROOT.TH1F("muValue","",1000,-100,100);
+    muErrUpOneSigma = ROOT.TH1F("muErrUpOneSigma","",1000,-100,100);
+    muErrUpTwoSigma = ROOT.TH1F("muErrUpTwoSigma","",1000,-100,100);
+    muErrDownOneSigma = ROOT.TH1F("muErrDownOneSigma","",1000,-100,100);
+    muErrDownTwoSigma = ROOT.TH1F("muErrDownTwoSigma","",1000,-100,100);
 
     muValue.Sumw2();
     muErrUpOneSigma.Sumw2();

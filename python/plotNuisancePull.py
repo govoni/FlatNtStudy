@@ -290,7 +290,6 @@ if __name__ == '__main__':
       pullPlotNuisSFit.SetBinContent(ibin+1,pullValue.GetMean());
       if key != "r" :
         pullPlotNuisSFit.SetBinError(ibin+1,nuisanceHistoError_S[key].GetMean()/nuisanceHistoError_In[key].GetMean());        
-        print "nuisance : ",key," value ",nuisanceHistoError_S[key].GetMean()/nuisanceHistoError_In[key].GetMean()
       else :
         pullPlotNuisSFit.SetBinError(ibin+1,nuisanceHistoError_S[key].GetMean()/1.);        
       ibin = ibin+1;

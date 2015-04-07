@@ -661,10 +661,35 @@ def makeMaxLikelihoodFitPlot(filelist):
                 xbins_mu_err_dn.append(0); 
 
                 ybins_mu.append(muValue.GetMean());
-                ybins_mu_err_up.append(muErrUpOneSigma.GetMean());
-                ybins_mu_err_dn.append(muErrDownOneSigma.GetMean());
-                ybins_mu_err_up_2s.append(muErrUpTwoSigma.GetMean());
-                ybins_mu_err_dn_2s.append(muErrDownTwoSigma.GetMean());                
+
+                if muErrUpOneSigma.GetMean() ==0 :
+                    ybins_mu_err_up.append(muErrDownOneSigma.GetMean());
+                else :
+                    ybins_mu_err_up.append(muErrUpOneSigma.GetMean());
+
+
+                if muErrDownOneSigma.GetMean() == 0 :
+                    ybins_mu_err_dn.append(muErrUpOneSigma.GetMean());                    
+                else:
+                    ybins_mu_err_dn.append(muErrDownOneSigma.GetMean());                    
+
+
+                if muErrUpOneSigma.GetMean() > muErrUpTwoSigma.GetMean() :
+                    ybins_mu_err_up_2s.append(muErrUpOneSigma.GetMean()*2);
+                elif muErrUpTwoSigma.GetMean() == 0 and muErrUpOneSigma.GetMean() != 0:
+                    ybins_mu_err_up_2s.append(muErrUpOneSigma.GetMean()*2);
+                elif muErrUpTwoSigma.GetMean() == 0 and muErrUpOneSigma.GetMean() == 0:
+                    ybins_mu_err_up_2s.append(muErrDownOneSigma.GetMean()*2);
+                else :
+                    ybins_mu_err_up_2s.append(muErrUpTwoSigma.GetMean());
+
+
+                if muErrDownTwoSigma.GetMean() == 0 and muErrDownOneSigma.GetMean() != 0 :
+                    ybins_mu_err_dn_2s.append(muErrDownOneSigma.GetMean()*2);
+                elif muErrDownOneSigma.GetMean() == 0 and muErrDownTwoSigma.GetMean() == 0 :
+                    ybins_mu_err_dn_2s.append(muErrUpOneSigma.GetMean()*2);
+                else:
+                    ybins_mu_err_dn_2s.append(muErrDownTwoSigma.GetMean());
 
 
                 break;
@@ -758,8 +783,23 @@ def makeUncertaintyPlot(filelist):
      
                 xbins_mu.append(lumi); 
 
-                ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDownOneSigma.GetMean())/2);
-                ybins_mu_err_2s.append((muErrUpTwoSigma.GetMean()+muErrDownTwoSigma.GetMean())/2);
+
+                if muErrDownOneSigma.GetMean() == 0 :
+                    ybins_mu_err_1s.append(muErrUpOneSigma.GetMean());                    
+                else:
+                    ybins_mu_err_1s.append((muErrUpOneSigma.GetMean()+muErrDownOneSigma.GetMean())/2);
+
+                mu_up_2s = muErrUpTwoSigma.GetMean() ;
+                if mu_up_2s == 0 :
+                    mu_up_2s = muErrUpOneSigma.GetMean()*2
+
+                mu_dn_2s = muErrDownTwoSigma.GetMean() ;
+                if mu_dn_2s == 0 :
+                    mu_dn_2s = muErrDownOneSigma.GetMean()*2
+                    if mu_dn_2s == 0 :
+                        mu_dn_2s = muErrUpOneSigma.GetMean()*2
+
+                ybins_mu_err_2s.append((mu_up_2s+mu_dn_2s)/2);
 
                 break;
 
@@ -783,7 +823,9 @@ def makeUncertaintyPlot(filelist):
     gr_mu_2s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
 
     can.SetGrid();
-   
+
+    gr_mu_2s.GetYaxis().SetRangeUser(ROOT.TMath.MinElement(gr_mu_1s.GetN(),gr_mu_1s.GetY())*0.8,ROOT.TMath.MaxElement(gr_mu_2s.GetN(),gr_mu_1s.GetY())*1.25);
+
     gr_mu_2s.Draw("aP");
     gr_mu_1s.Draw("Psame"); 
 
@@ -836,10 +878,10 @@ def makeUncertaintyPlot(filelist):
     can.cd();
     can.SetGrid();
 
-    evolution_1s.SetLineColor(ROOT.kRed);
+    evolution_1s.SetLineColor(ROOT.kBlack);
     evolution_1s.SetLineWidth(2);
 
-    evolution_2s.SetLineColor(ROOT.kRed);
+    evolution_2s.SetLineColor(ROOT.kBlue);
     evolution_2s.SetLineWidth(2);
 
     evolution_1s.Draw();
