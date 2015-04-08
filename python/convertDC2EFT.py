@@ -12,8 +12,8 @@ parser = OptionParser(usage="usage: %prog [options]")
 
 parser.add_option("-a", "--AnaName"    , dest="AnaName"    , help="Analysis Name"       , default="WWVBS_mll", type='string' )
 parser.add_option("-i", "--InputFile"  , dest="InputFile"  , help="Input datacard file" , default="None" , type='string' )
-parser.add_option("-o", "--OutpurFile" , dest="OutputFile" , help="Output EFT file"     , default="None" , type='string' )
-parser.add_option("-d", "--dimension"  , dest="dimension"  , help="EFT Param Dimension" , default=1      , type='float'  )
+parser.add_option("-o", "--OutputFile" , dest="OutputFile" , help="Output EFT file"     , default="None" , type='string' )
+#parser.add_option("-d", "--dimension"  , dest="dimension"  , help="EFT Param Dimension" , default=1      , type='float'  )
 parser.add_option("-p", "--params"     , dest="params"     , help="EFT parameter(s)"    , default='cw:-50.:50.:c_{w}' , type='string')
 
 (options, args) = parser.parse_args()
@@ -38,10 +38,11 @@ f = open(options.OutputFile,'w')
 # [Global] Section
 
 f.write('[Global] \n')
-f.write('dimension = '+str(options.dimension)+'\n')
 
 # ... EFT parameters
 Params=options.params.split(';')
+f.write('dimension = '+str(len(Params))+'\n')
+
 nParam=0
 for iParam in Params :
   nParam+=1
@@ -88,9 +89,37 @@ for iDesc in dc.content['header2']:
 
 # ... lnN systematics
 if 'lnN' in dc.content['systs']:
+  NlnN = len(dc.content['systs']['lnN'])
+  f.write('NlnN = ' + str(NlnN) + '\n')
+  counter = 1
   #print dc.content['systs']
-  print 'lnN not implemented !!!! -> exit()' 
-  exit()
+  #print NlnN
+  for systName,systVal in dc.content['systs']['lnN'].items():
+    f.write('lnN'+ str(counter) + '_name = ' + systName + '\n')
+    # get non-zero names and values
+    syst = [[ systVal[i],dc.content['block2']['process'][i] ] for i in range(len(systVal)) if systVal[i] != '-']
+    #print syst
+    f.write('lnN'+ str(counter) + '_value = ')
+    for j,s in enumerate(syst) :
+      if j != 0 : 
+        f.write(',')
+      f.write(s[0])
+    f.write('\n')
+    
+    f.write('lnN'+ str(counter) + '_for = ')
+    for j,s in enumerate(syst) :
+      if j != 0 : 
+        f.write(',')
+      if s[1] == SigName :
+        f.write(options.AnaName + '_signal')
+      else :
+        f.write(options.AnaName + '_background_' + s[1])  
+    f.write('\n')
+    
+    counter+=1
+else:
+  f.write('NlnN = 0\n')
+
 
 # [AnaName] Section
 f.write('\n')
@@ -141,8 +170,9 @@ f.write('NSigBkg_corr_unc = 0 \n')
 
 # Start writing histogram file
 
-if '.txt' in options.OutputFile : rootFile = options.OutputFile.replace('.txt','.root')
-else                            : rootFile = options.OutputFile + '.root'
+#if '.txt' in options.OutputFile : rootFile = options.OutputFile.replace('.txt','.root')
+#else                            : rootFile = options.OutputFile + '.root'
+rootFile = os.path.dirname(options.OutputFile) + '/' + options.AnaName + '.root' # necessary for EFT framework
 print 'RootFile  : ',rootFile 
 
 fOut = TFile.Open(rootFile,'RECREATE')
