@@ -52,22 +52,36 @@ class layer {
 
   layer& operator = (const layer & layer2) {
     m_layerName = layer2.m_layerName;
+
     m_histos    = layer2.m_histos;
     m_2Dhistos  = layer2.m_2Dhistos;
-    m_histos_lepScaleUp  = layer2.m_histos_lepScaleUp;
-    m_2Dhistos_lepScaleUp  = layer2.m_2Dhistos_lepScaleUp;
-    m_histos_lepScaleDown  = layer2.m_histos_lepScaleDown;
-    m_2Dhistos_lepScaleDown  = layer2.m_2Dhistos_lepScaleDown;
 
-    m_histos_lepRes  = layer2.m_histos_lepRes;
-    m_2Dhistos_lepRes  = layer2.m_2Dhistos_lepRes;
-    m_histos_jetRes  = layer2.m_histos_jetRes;
-    m_2Dhistos_jetRes  = layer2.m_2Dhistos_jetRes;
+    m_histos_muScaleUp    = layer2.m_histos_muScaleUp;
+    m_2Dhistos_muScaleUp  = layer2.m_2Dhistos_muScaleUp;
 
-    m_histos_jetScaleUp  = layer2.m_histos_jetScaleUp;
+    m_histos_muScaleDown    = layer2.m_histos_muScaleDown;
+    m_2Dhistos_muScaleDown  = layer2.m_2Dhistos_muScaleDown;
+
+    m_histos_elScaleDown    = layer2.m_histos_elScaleUp;
+    m_2Dhistos_elScaleDown  = layer2.m_2Dhistos_elScaleUp;
+
+    m_histos_elScaleUp    = layer2.m_histos_elScaleDown;
+    m_2Dhistos_elScaleUp  = layer2.m_2Dhistos_elScaleDown;
+
+    m_histos_muRes    = layer2.m_histos_muRes;
+    m_2Dhistos_muRes  = layer2.m_2Dhistos_muRes;
+
+    m_histos_elRes    = layer2.m_histos_elRes;
+    m_2Dhistos_elRes  = layer2.m_2Dhistos_elRes;
+
+    m_histos_jetScaleUp    = layer2.m_histos_jetScaleUp;
     m_2Dhistos_jetScaleUp  = layer2.m_2Dhistos_jetScaleUp;
-    m_histos_jetScaleDown  = layer2.m_histos_jetScaleDown;
+
+    m_histos_jetScaleDown    = layer2.m_histos_jetScaleDown;
     m_2Dhistos_jetScaleDown  = layer2.m_2Dhistos_jetScaleDown;
+
+    m_histos_jetRes    = layer2.m_histos_jetRes;
+    m_2Dhistos_jetRes  = layer2.m_2Dhistos_jetRes;
 
     return *this;
   }
@@ -77,11 +91,17 @@ class layer {
   unordered_map<string, TH1F *> m_histos ;
   unordered_map<string, TH2F *> m_2Dhistos ;
 
-  unordered_map<string, TH1F *> m_histos_lepScaleUp ;
-  unordered_map<string, TH2F *> m_2Dhistos_lepScaleUp ;
+  unordered_map<string, TH1F *> m_histos_muScaleUp ;
+  unordered_map<string, TH2F *> m_2Dhistos_muScaleUp ;
 
-  unordered_map<string, TH1F *> m_histos_lepScaleDown ;
-  unordered_map<string, TH2F *> m_2Dhistos_lepScaleDown ;
+  unordered_map<string, TH1F *> m_histos_muScaleDown ;
+  unordered_map<string, TH2F *> m_2Dhistos_muScaleDown ;
+
+  unordered_map<string, TH1F *> m_histos_elScaleUp ;
+  unordered_map<string, TH2F *> m_2Dhistos_elScaleUp ;
+
+  unordered_map<string, TH1F *> m_histos_elScaleDown ;
+  unordered_map<string, TH2F *> m_2Dhistos_elScaleDown ;
 
   unordered_map<string, TH1F *> m_histos_jetScaleUp ;
   unordered_map<string, TH2F *> m_2Dhistos_jetScaleUp ;
@@ -89,12 +109,14 @@ class layer {
   unordered_map<string, TH1F *> m_histos_jetScaleDown ;
   unordered_map<string, TH2F *> m_2Dhistos_jetScaleDown ;
 
-  unordered_map<string, TH1F *> m_histos_lepRes ;
-  unordered_map<string, TH2F *> m_2Dhistos_lepRes ;
+  unordered_map<string, TH1F *> m_histos_muRes ;
+  unordered_map<string, TH2F *> m_2Dhistos_muRes ;
+
+  unordered_map<string, TH1F *> m_histos_elRes ;
+  unordered_map<string, TH2F *> m_2Dhistos_elRes ;
 
   unordered_map<string, TH1F *> m_histos_jetRes ;
   unordered_map<string, TH2F *> m_2Dhistos_jetRes ;
-
 
 } ;
 

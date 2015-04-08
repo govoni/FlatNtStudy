@@ -40,7 +40,7 @@ void computeAnglesResonance(TLorentzVector p4H, TLorentzVector p4V1, TLorentzVec
   p4F3_BV2.Boost( boostV2 );
   p4F4_BV2.Boost( boostV2 );
     
-  TLorentzVector p4V1_BV2 = p4F2_BV2 + p4F3_BV2;
+  TLorentzVector p4V1_BV2 = p4F1_BV2 + p4F2_BV2;
   //// costheta2
   costheta2 = -p4V1_BV2.Vect().Dot( p4F3_BV2.Vect() )/p4V1_BV2.Vect().Mag()/p4F3_BV2.Vect().Mag();
     
@@ -55,32 +55,32 @@ void computeAnglesResonance(TLorentzVector p4H, TLorentzVector p4V1, TLorentzVec
   p4F3_BX.Boost( boostX );
   p4F4_BX.Boost( boostX );
     
-  TVector3 tmp1 = p4F1_BX.Vect().Cross( p4F3_BX.Vect() );
-  TVector3 tmp2 = p4F2_BX.Vect().Cross( p4F4_BX.Vect() );    
+  TVector3 tmp1 = p4F1_BX.Vect().Cross( p4F2_BX.Vect() );
+  TVector3 tmp2 = p4F3_BX.Vect().Cross( p4F4_BX.Vect() );    
     
   TVector3 normal1_BX( tmp1.X()/tmp1.Mag(), tmp1.Y()/tmp1.Mag(), tmp1.Z()/tmp1.Mag() ); 
   TVector3 normal2_BX( tmp2.X()/tmp2.Mag(), tmp2.Y()/tmp2.Mag(), tmp2.Z()/tmp2.Mag() ); 
     
   //// Phi
   TLorentzVector p4V1_BX = p4F1_BX + p4F2_BX;    
-  double tmpSgnPhi = p4V1_BX.Vect().Dot( normal1_BX.Cross( normal2_BX) );
-  double sgnPhi = tmpSgnPhi/fabs(tmpSgnPhi);
-  Phi = sgnPhi * acos( -1.*normal1_BX.Dot( normal2_BX) );
+  double tmpSgnPhi       = p4V1_BX.Vect().Dot( normal1_BX.Cross( normal2_BX) );
+  double sgnPhi          = tmpSgnPhi/fabs(tmpSgnPhi);
+  Phi                    = sgnPhi * acos( -1.*normal1_BX.Dot( normal2_BX) );
     
     
   //////////////
     
   TVector3 beamAxis(0,0,1);
-  TVector3 tmp3 = (p4F1_BX + p4F2_BX).Vect();
+  TVector3 tmp3    = (p4F1_BX + p4F2_BX).Vect();
     
   TVector3 p3V1_BX( tmp3.X()/tmp3.Mag(), tmp3.Y()/tmp3.Mag(), tmp3.Z()/tmp3.Mag() );
-  TVector3 tmp4 = beamAxis.Cross( p3V1_BX );
+  TVector3 tmp4   = beamAxis.Cross( p3V1_BX );
   TVector3 normalSC_BX( tmp4.X()/tmp4.Mag(), tmp4.Y()/tmp4.Mag(), tmp4.Z()/tmp4.Mag() );
     
   //// Phi1
   double tmpSgnPhi1 = p4V1_BX.Vect().Dot( normal1_BX.Cross( normalSC_BX) );
-  double sgnPhi1 = tmpSgnPhi1/fabs(tmpSgnPhi1);    
-  Phi1 = sgnPhi1 * acos( normal1_BX.Dot( normalSC_BX) );    
+  double sgnPhi1    = tmpSgnPhi1/fabs(tmpSgnPhi1);    
+  Phi1              = sgnPhi1 * acos( normal1_BX.Dot( normalSC_BX) );    
     
   //    std::cout << "extractAngles: " << std::endl;
   //    std::cout << "costhetastar = " << costhetastar << ", costheta1 = " << costheta1 << ", costheta2 = " << costheta2 << std::endl;
@@ -130,7 +130,7 @@ void computeAnglesVBF(TLorentzVector p4H,  TLorentzVector p4V1, TLorentzVector p
   p4F3_BV2.Boost( boostV2 );
   p4F4_BV2.Boost( boostV2 );
     
-  TLorentzVector p4V1_BV2 = p4F2_BV2 + p4F3_BV2;
+  TLorentzVector p4V1_BV2 = p4F1_BV2 + p4F2_BV2;
   //// costheta2
   costheta2 = -p4V1_BV2.Vect().Dot( p4F3_BV2.Vect() )/p4V1_BV2.Vect().Mag()/p4F3_BV2.Vect().Mag();
     
@@ -145,8 +145,8 @@ void computeAnglesVBF(TLorentzVector p4H,  TLorentzVector p4V1, TLorentzVector p
   p4F3_BX.Boost( boostX );
   p4F4_BX.Boost( boostX );
     
-  TVector3 tmp1 = p4F1_BX.Vect().Cross( p4F3_BX.Vect() );
-  TVector3 tmp2 = p4F2_BX.Vect().Cross( p4F4_BX.Vect() );    
+  TVector3 tmp1 = p4F1_BX.Vect().Cross( p4F2_BX.Vect() );
+  TVector3 tmp2 = p4F3_BX.Vect().Cross( p4F4_BX.Vect() );    
     
   TVector3 normal1_BX( tmp1.X()/tmp1.Mag(), tmp1.Y()/tmp1.Mag(), tmp1.Z()/tmp1.Mag() ); 
   TVector3 normal2_BX( tmp2.X()/tmp2.Mag(), tmp2.Y()/tmp2.Mag(), tmp2.Z()/tmp2.Mag() ); 

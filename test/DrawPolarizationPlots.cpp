@@ -1,3 +1,4 @@
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // compare for a single variable the expected stats uncertainty to the difference between H and noH //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +16,8 @@
 #include "ConfigParser.h"
 #include "readTree.h"
 #include "utils.h"
+
+#include "kinematicUtils.h"
 
 using namespace std ;
 
@@ -109,6 +112,8 @@ int main (int argc, char ** argv) {
   string outputPlotDirectory = gConfigParser -> readStringOption("Output::outputPlotDirectory");
   system(("mkdir -p output/"+outputPlotDirectory).c_str());
   system(("rm -r output/"+outputPlotDirectory+"/*").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/xs").c_str());
+  system(("mkdir -p output/"+outputPlotDirectory+"/norm").c_str());
 
 
   ///// Start the analysis  
@@ -128,7 +133,7 @@ int main (int argc, char ** argv) {
   vector<histoContainer> plotVector;
 
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
-    histoCutEff["WW_EWK_"+CutList.at(iCut).cutLayerName] = new TH1F(("WW_EWK_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
+    histoCutEff["WW_EWK_pos_"+to_string(iCut)+"_"+CutList.at(iCut).cutLayerName] = new TH1F(("WW_EWK_pos_"+to_string(iCut)+"_"+CutList.at(iCut).cutLayerName).c_str(),"",15,0,15);
     for(size_t iVar = 0; iVar < variableList.size(); iVar++){
       plotVector.push_back(histoContainer(CutList.at(iCut).cutLayerName,variableList.at(iVar)));
     }
@@ -148,17 +153,17 @@ int main (int argc, char ** argv) {
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
 
     // filter LHE level leptons
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) != 13)
         continue;
     }
-    else if(finalStateString == "EE"){
+    else if(TString(finalStateString).Contains("EE")){
       if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) != 11) continue;
     }
-    else if(finalStateString == "EU"){
+    else if(TString(finalStateString).Contains("EU")){
       if(fabs(reader->leptonLHEpid1) != 11 or fabs(reader->leptonLHEpid2) !=13) continue ;
     }
-    else if(finalStateString == "UE"){
+    else if(TString(finalStateString).Contains("UE")){
       if(fabs(reader->leptonLHEpid1) != 13 or fabs(reader->leptonLHEpid2) !=11) continue ;
     }
     else{
@@ -189,7 +194,7 @@ int main (int argc, char ** argv) {
       if(!passCutContainerSelection(reader,
                                     CutList.at(iCut),
                                     name,
-				    0,
+				    int(iCut),
                                     usePuppiAsDefault,
                                     minLeptonCutPt,
                                     minLeptonCleaningPt,
@@ -240,6 +245,12 @@ int main (int argc, char ** argv) {
         Rvar     = (leptonsIsoTight.at(0).lepton4V_.Pt()*leptonsIsoTight.at(1).lepton4V_.Pt())/(RecoJets.at(0).jet4V_.Pt()*RecoJets.at(1).jet4V_.Pt()) ;
       }
 
+
+      float mTR = 0;
+      float mR  = 0;
+
+      computeRazor(leptonsIsoTight.at(0).lepton4V_,leptonsIsoTight.at(1).lepton4V_,L_met,mTR,mR);
+
       // loop on variables
       for(size_t iVar = 0; iVar < variableList.size(); iVar++){
         histoContainer tmpPlot;
@@ -252,253 +263,194 @@ int main (int argc, char ** argv) {
           continue ;
         }
 
-	if(variableList.at(iVar).variableName == "ptj1" and RecoJets.size() >=2){
+	if(variableList.at(iVar).variableName == "mTR" and RecoJets.size() >=2)
+          itVec->histogram->Fill(mTR,1.*weight) ; 
+        
+
+	if(variableList.at(iVar).variableName == "mR" and RecoJets.size() >=2)
+          itVec->histogram->Fill(mR,1.*weight) ; 
+        
+
+	if(variableList.at(iVar).variableName == "ptj1" and RecoJets.size() >=2)
           itVec->histogram->Fill(RecoJets.at(0).jet4V_.Pt(),1.*weight) ; 
-        }
-	else if(variableList.at(iVar).variableName == "ptj2" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptj2" and RecoJets.size() >=2)
           itVec->histogram->Fill(RecoJets.at(1).jet4V_.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaj1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (RecoJets.at(0).jet4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaj2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (RecoJets.at(1).jet4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "detajj" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "etaj1" and RecoJets.size() >=2)
+          itVec->histogram->Fill(RecoJets.at(0).jet4V_.Eta(),weight) ;
+        
+	else if(variableList.at(iVar).variableName == "etaj2" and RecoJets.size() >=2)
+          itVec->histogram->Fill(RecoJets.at(1).jet4V_.Eta(),weight) ;
+        
+	else if(variableList.at(iVar).variableName == "detajj" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptjj" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptjj" and RecoJets.size() >=2)
           itVec->histogram->Fill(L_dijet.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "mjj" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "mjj" and RecoJets.size() >=2)
           itVec->histogram->Fill(L_dijet.M(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dRjj" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(0).jet4V_.DeltaR(RecoJets.at(1).jet4V_),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "Asim_j" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "Asim_j" and RecoJets.size() >=2)
           itVec->histogram->Fill(asimJ,weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.DeltaPhi(RecoJets.at(1).jet4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etaj1etaj2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(RecoJets.at(0).jet4V_.Eta()*RecoJets.at(1).jet4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptl1" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptl1" and RecoJets.size() >=2)
           itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptl2" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptl2" and RecoJets.size() >=2)
           itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.Pt(),weight) ;
-        }
- 
-	else if(variableList.at(iVar).variableName == "etal1" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (leptonsIsoTight.at(0).lepton4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etal2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (leptonsIsoTight.at(1).lepton4V_.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "mll" and RecoJets.size() >=2){
+         
+	else if(variableList.at(iVar).variableName == "etal1" and RecoJets.size() >=2)
+          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Eta(),weight) ;
+        
+	else if(variableList.at(iVar).variableName == "etal2" and RecoJets.size() >=2)
+          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.Eta(),weight) ;
+        
+	else if(variableList.at(iVar).variableName == "mll" and RecoJets.size() >=2)
           itVec->histogram->Fill(L_dilepton.M(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptll" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptll" and RecoJets.size() >=2)
           itVec->histogram->Fill(L_dilepton.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etall" and RecoJets.size() >=2){
-          itVec->histogram->Fill(fabs (L_dilepton.Eta()),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "phill" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.Phi(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dRll" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.DeltaR(leptonsIsoTight.at(1).lepton4V_),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "etal1etal2" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.Eta()*leptonsIsoTight.at(1).lepton4V_.Eta(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LL" and RecoJets.size() >=2){
+        
+
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(leptonsIsoTight.at(1).lepton4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaEta_LL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaEta_LL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()),weight) ;
-	}
-	else if(variableList.at(iVar).variableName == "Asim_l" and RecoJets.size() >=2){
+	
+	else if(variableList.at(iVar).variableName == "Asim_l" and RecoJets.size() >=2)
           itVec->histogram->Fill(asimL,weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "met" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "met" and RecoJets.size() >=2)
           itVec->histogram->Fill(L_met.Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "R" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "R" and RecoJets.size() >=2)
           itVec->histogram->Fill(Rvar,weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(0).lepton4V_ + L_met).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptTLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(1).lepton4V_ + L_met).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptLLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton + L_met).Pt(),weight) ;
-        }
+        
 	///
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LJL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(RecoJets.at(0).jet4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLJL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptLJL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(0).lepton4V_+RecoJets.at(0).jet4V_).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dR_LJL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.DeltaR(RecoJets.at(0).jet4V_),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TJL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(RecoJets.at(1).jet4V_)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTJL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptTJL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(0).lepton4V_+RecoJets.at(1).jet4V_).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dR_TJL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.DeltaR(RecoJets.at(1).jet4V_),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(0).lepton4V_.DeltaPhi(L_dijet)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptJJL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptJJL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(0).lepton4V_+L_dijet).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dR_JJL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(0).lepton4V_.DeltaR(L_dijet),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJTL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(RecoJets.at(0).jet4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJTL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(RecoJets.at(1).jet4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJTL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(leptonsIsoTight.at(1).lepton4V_.DeltaPhi(L_dijet)),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "dR_LJTL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.DeltaR(RecoJets.at(0).jet4V_),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "dR_TJTL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.DeltaR(RecoJets.at(1).jet4V_),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "dR_JJTL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(leptonsIsoTight.at(1).lepton4V_.DeltaR(L_dijet),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptLJTL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "ptLJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(1).lepton4V_+RecoJets.at(0).jet4V_).Pt(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "ptTJTL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptTJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(1).lepton4V_+RecoJets.at(1).jet4V_).Pt(),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "ptJJTL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "ptJJTL" and RecoJets.size() >=2)
           itVec->histogram->Fill((leptonsIsoTight.at(1).lepton4V_+L_dijet).Pt(),weight) ;
-        }
 
- 
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJLL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(RecoJets.at(0).jet4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJLL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(RecoJets.at(1).jet4V_)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJLL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dilepton.DeltaPhi(L_dijet)),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "dR_LJLL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.DeltaR(RecoJets.at(0).jet4V_),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "dR_TJLL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.DeltaR(RecoJets.at(1).jet4V_),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "dR_JJLL" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dilepton.DeltaR(L_dijet),weight) ;
-        }
-
-
-	else if(variableList.at(iVar).variableName == "ptLJLL" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptLJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton+RecoJets.at(0).jet4V_).Pt(),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "ptTJLL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "ptTJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton+RecoJets.at(1).jet4V_).Pt(),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "ptJJLL" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "ptJJLL" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton+L_dijet).Pt(),weight) ;
-        }
+        
 
 	///
-
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJMet" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptJJMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptJJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dijet+L_met).Pt(),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "DeltaPhi_LJMet" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_LJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(RecoJets.at(0).jet4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptLJMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptLJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((RecoJets.at(0).jet4V_+L_met).Pt(),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "DeltaPhi_TJMet" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "DeltaPhi_TJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(RecoJets.at(1).jet4V_.DeltaPhi(L_met)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "ptTJMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "ptTJMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((RecoJets.at(1).jet4V_+L_met).Pt(),weight) ;
-        }
+        
  
-	///
-	else if(variableList.at(iVar).variableName == "ptJJ_LLMet" and RecoJets.size() >=2){
+	//
+	else if(variableList.at(iVar).variableName == "ptJJ_LLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dijet+L_LLmet).Pt(),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ_LLMet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "DeltaPhi_JJ_LLMet" and RecoJets.size() >=2)
           itVec->histogram->Fill(fabs(L_dijet.DeltaPhi(L_LLmet)),weight) ;
-        }
-	else if(variableList.at(iVar).variableName == "dR_JJ_LLMet" and RecoJets.size() >=2){
-          itVec->histogram->Fill(L_dijet.DeltaR(L_LLmet),weight) ;
-        }
+        
 
-	else if(variableList.at(iVar).variableName == "mlljj" and RecoJets.size() >=2){
+	else if(variableList.at(iVar).variableName == "mlljj" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton+L_dijet).M(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "mlljjmet" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "mlljjmet" and RecoJets.size() >=2)
           itVec->histogram->Fill((L_dilepton+L_dijet+L_met).M(),weight) ;
-        }
-
-	else if(variableList.at(iVar).variableName == "mTH" and RecoJets.size() >=2){
+        
+	else if(variableList.at(iVar).variableName == "mTH" and RecoJets.size() >=2)
           itVec->histogram->Fill(sqrt(2*L_dilepton.Pt()*L_met.Pt()*(1-TMath::Cos(L_dilepton.DeltaPhi(L_met)))),weight) ;
-        } 
-      } // loop on variables
-      
+        
+      } // loop on variables      
     } // Loop  on the cut list
   } // Loop on the events
 
@@ -510,7 +462,6 @@ int main (int argc, char ** argv) {
   }
 
   outputEfficiency->Close();    
-
   
   // make the canvas and basic banners                                                                                                                                         
   TCanvas *cCanvas = new TCanvas("cCanvas","",1,52,550,550);
@@ -536,6 +487,17 @@ int main (int argc, char ** argv) {
 
   lowerPad->Draw();
   upperPad->Draw();
+
+  TCanvas *cCanvasNorm = new TCanvas("cCanvasNorm","",1,52,550,550);
+  cCanvasNorm->SetTicks();
+  cCanvasNorm->SetFillColor(0);
+  cCanvasNorm->SetBorderMode(0);
+  cCanvasNorm->SetBorderSize(2);
+  cCanvasNorm->SetTickx(1);
+  cCanvasNorm->SetTicky(1);
+  cCanvasNorm->SetRightMargin(0.05);
+  cCanvasNorm->SetBottomMargin(0.12);
+  cCanvasNorm->SetFrameBorderMode(0);
 
   TLatex * tex = new TLatex(0.88,0.92," 14 TeV");
   tex->SetNDC();
@@ -571,6 +533,8 @@ int main (int argc, char ** argv) {
     denominator.clear();
 
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){ // loop on cuts
+
+      
         histoContainer tmpPlot;
         tmpPlot.cutName = CutList.at(iCut).cutLayerName;
         tmpPlot.varName = variableList.at(iVar).variableName;
@@ -580,7 +544,6 @@ int main (int argc, char ** argv) {
           cerr<<"Problem -->plot not found for "<<CutList.at(iCut).cutLayerName<<"  "<<variableList.at(iVar).variableName<<endl;
         }
 
-       
         itVec->histogram->GetXaxis()->SetTitleSize(0.04);
         itVec->histogram->GetXaxis()->SetTitleOffset(1.16);
         itVec->histogram->GetXaxis()->SetLabelSize(0.04);
@@ -611,6 +574,19 @@ int main (int argc, char ** argv) {
 
         if(itVec->findCutByLabel("LL")) numerator.push_back(itVec->histogram);
         denominator.push_back(itVec->histogram);
+
+	cCanvasNorm->cd();
+	
+	TH1F* htempNorm = (TH1F*) itVec->histogram->Clone((string(itVec->histogram->GetName())+"_norm").c_str());
+        htempNorm->Scale(1./itVec->histogram->Integral());
+	gPad->Update();
+        htempNorm->GetYaxis()->SetRangeUser(0.,htempNorm->GetMaximum()*1.5);
+	
+       
+	if(iCut == 0)
+	  htempNorm->Draw("hist");	
+	else
+	  htempNorm->Draw("hist same");
     }
   
     // make ratio plot
@@ -688,6 +664,9 @@ int main (int argc, char ** argv) {
     ratioW->GetYaxis()->SetTitleOffset(0.30);
     ratioW->GetYaxis()->SetNdivisions(504);
 
+    ratio->GetYaxis()->SetRange(min(ratio->GetMinimum(),ratioW->GetMinimum())*0.9,max(ratio->GetMaximum(),ratioW->GetMaximum())*1.1);
+
+
     TH1F * frame = lowerPad->DrawFrame (ratio->GetXaxis ()->GetXmin (), 0., 
                                         ratio->GetXaxis ()->GetXmax (), 2.) ;
     frame->GetXaxis()->SetTitle (ratio->GetXaxis ()->GetTitle ()) ;
@@ -698,10 +677,10 @@ int main (int argc, char ** argv) {
     frame->GetYaxis()->SetTitleSize(0.15);
     frame->GetYaxis()->SetTitleOffset(0.30);
     frame->GetYaxis()->SetNdivisions(504);
-    
-    ratio->Draw("Lsame");    
+
+    ratio->Draw("P");    
     ratioW->Draw("Lsame");    
-    
+
     upperPad->cd();
 
     tex->Draw("same");
@@ -709,19 +688,22 @@ int main (int argc, char ** argv) {
     tex3->Draw("same");
     legend->Draw("same");
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".png").c_str(),"png");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".root").c_str(),"root");
 
-    /*
-    upperPad->SetLogy();
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+variableList.at(iVar).variableName+"_log.root").c_str(),"root");
+    cCanvasNorm->cd();
 
-    upperPad->SetLogy(0);
-    gPad->Update();
-    */
+    tex->Draw("same");
+    tex2->Draw("same");
+    tex3->Draw("same");
+    legend->Draw("same");
+
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".png").c_str(),"png");
+    cCanvasNorm->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+".root").c_str(),"root");
+
+  
     legend->Clear();
 
   } // loop on var
@@ -733,7 +715,7 @@ int main (int argc, char ** argv) {
     if(plotVector.at(ihisto).varName == "DeltaPhi_LL")
       cout<<"Events Histo "<<plotVector.at(ihisto).histogram->GetName()<<" unweighted "<<plotVector.at(ihisto).histogram->GetEntries()<<" weighted "<<plotVector.at(ihisto).histogram->Integral(0,plotVector.at(ihisto).histogram->GetNbinsX()+1)<<endl;
   }	          
-  
+
   return 0 ;
 }  
 

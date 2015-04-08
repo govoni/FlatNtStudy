@@ -54,3 +54,22 @@ python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_P
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeMaxLikelihoodFitPlot 1
 
 python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeMaxLikelihoodFitPlot 1
+
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel EUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel UEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotFakeRateExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/fakeRateExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1

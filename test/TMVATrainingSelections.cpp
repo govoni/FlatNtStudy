@@ -164,13 +164,12 @@ int main (int argc, char** argv){
 
       int numBefore = 0;
       numBefore += itBackgroundSample->second.at(iContainer).numBefore;
-      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*_1.root").c_str()) ;
+      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*5.root").c_str()) ;
       backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*6.root").c_str()) ;
-      backgroundChainOriginal.back()->Add ((InputBaseDirectory+"/"+itBackgroundSample->second.at(iContainer).sampleName+"/*7.root").c_str()) ;
 
     
       TObjArray* fileElements = 0;
@@ -203,7 +202,6 @@ int main (int argc, char** argv){
     }
   }
 
-  
   // signal
   map<string,vector<sampleContainer> >::iterator itSignalSample = sampleMap.begin(); // loop on the sample map
   for( ; itSignalSample != sampleMap.end() ; ++itSignalSample){
@@ -221,11 +219,7 @@ int main (int argc, char** argv){
       int numBefore = 0;
 
       numBefore += itSignalSample->second.at(iContainer).numBefore;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*1.root").c_str()) ;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*2.root").c_str()) ;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*3.root").c_str()) ;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*4.root").c_str()) ;
-      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*5.root").c_str()) ;
+      signalChainOriginal.back()->Add ((InputBaseDirectory+"/"+itSignalSample->second.at(iContainer).sampleName+"/*.root").c_str()) ;
   
       TObjArray *fileElements = 0;
       fileElements = signalChainOriginal.back()->GetListOfFiles();
@@ -321,7 +315,7 @@ int main (int argc, char** argv){
 	for( ; itSignalContainer != itSignalSample->second.end(); itSignalContainer++){
 	  if(itSignalContainer->isSignal != 1) continue ; // skip if signal
 	  signalGlobalWeight[*itSignalContainer] = itSignalContainer->xsec*lumi/(float(itSignalContainer->numBefore));
-	  cout<<"Signal "<<itSignalSample->first<<" weight "<<signalGlobalWeight[*itSignalContainer]<<endl;
+	  cout<<"Signal "<<itSignalSample->first<<" xsec "<<itSignalContainer->xsec<<" entries "<<itSignalContainer->numBefore<<" weight "<<signalGlobalWeight[*itSignalContainer]<<endl;
 	  iSignal++;
 	}
       }

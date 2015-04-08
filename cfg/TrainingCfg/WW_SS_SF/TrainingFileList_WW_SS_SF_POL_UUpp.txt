@@ -6,4 +6,4 @@ output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_MVA_H
 output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_MVA_detajj.root       DeltaEta_jj      0         2000     #Delta#eta_{jj}                       
 output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_MVA_mjj.root          mjj              0         2000     M_{jj}                                  
 output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_mjj_detajj.root       DeltaEtaMjj      0         2000     M_{jj}-#Delta#eta_{jj}
-#output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_BDTG.root             MVA              0         2000     BDT
+output/TrainingResult/TrainingOutput/outTrain_WW_SS_SF_UUpp_POL/TMVAoutput_BDT.root             MVA              0         2000     BDT

@@ -188,21 +188,28 @@ if __name__ == '__main__':
 
       for ilist in range(normalizationArgList.getSize()) :
 
+        if normalizationArgList.at(ilist).GetName() == 'r' : continue ;
+
         if ifile == 1 :
           normalizationHistoIn[normalizationArgList.at(ilist).GetName()] = []
           normalizationHistoError_In[normalizationArgList.at(ilist).GetName()] = ROOT.TH1F("normalizationHistoError_In_"+normalizationArgList.at(ilist).GetName(),"",1000,0,10000);
 
         variable = ROOT.RooRealVar(normalizationArgList.at(ilist));
+
         normalizationHistoIn[normalizationArgList.at(ilist).GetName()].append(variable.getVal());
         normalizationHistoError_In[normalizationArgList.at(ilist).GetName()].Fill(variable.getError());
 
 
       for ilist in range(nuisanceArgList.getSize()) :
+
+        if nuisanceArgList.at(ilist).GetName() == 'r' : continue ;
+
         if ifile == 1:
           nuisanceHistoIn[nuisanceArgList.at(ilist).GetName()] = [];
           nuisanceHistoError_In[nuisanceArgList.at(ilist).GetName()] = ROOT.TH1F("nuisanceHistoError_In_"+nuisanceArgList.at(ilist).GetName(),"",1000,0,10000);
 
         variable = ROOT.RooRealVar(nuisanceArgList.at(ilist));
+
         nuisanceHistoIn[nuisanceArgList.at(ilist).GetName()].append(variable.getVal());
         nuisanceHistoError_In[nuisanceArgList.at(ilist).GetName()].Fill(variable.getError());
 
@@ -219,6 +226,7 @@ if __name__ == '__main__':
 
         for ilist in range(normalizationArgList_S.getSize()) :
 
+          if normalizationArgList_S.at(ilist).GetName() == 'r' : continue ;
 
           if ifile == 1 :
             normalizationHisto_S[normalizationArgList_S.at(ilist).GetName()] = []
@@ -237,6 +245,9 @@ if __name__ == '__main__':
         nuisanceArgList_S = result_S.floatParsFinal();
 
         for ilist in range(nuisanceArgList_S.getSize()):
+
+         if nuisanceArgList_S.at(ilist).GetName() == 'r' : continue ;
+          
          if ifile ==  1 :
            nuisanceHisto_S[nuisanceArgList_S.at(ilist).GetName()] = [];
            nuisanceHistoError_S[nuisanceArgList_S.at(ilist).GetName()] = ROOT.TH1F("nuisanceHistoError_S_"+nuisanceArgList_S.at(ilist).GetName()+"_"+str(itoy),"",1000,0,10000);
@@ -244,12 +255,11 @@ if __name__ == '__main__':
 
          variable = ROOT.RooRealVar(nuisanceArgList_S.at(ilist));
          nuisanceHisto_S[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal());
-         nuisanceHistoError_S[nuisanceArgList_S.at(ilist).GetName()].Fill(variable.getError());
+         nuisanceHistoError_S[nuisanceArgList_S.at(ilist).GetName()].Fill(variable.getError());         
          if nuisanceArgList_S.at(ilist).GetName() != "r" :
            pullNuisS[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal()-ROOT.RooRealVar(nuisanceArgList.at(ilist)).getVal());
-         else:
-           pullNuisS[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal()-options.expectSignal);
-
+#         else:
+#           pullNuisS[nuisanceArgList_S.at(ilist).GetName()].append(variable.getVal()-options.expectSignal);
 
 
     ###########################

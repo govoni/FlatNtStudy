@@ -54,3 +54,24 @@ python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polar
 python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeMaxLikelihoodFitPlot 1
 
 
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1  --modelType 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1  --modelType 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UEpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1  --modelType 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EUpp --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1  --modelType 1
+
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel UEmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel EUmm --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+python python/plotLumiExtrapolation.py -b --fileDIR output/DataCards_WW_SS_Polarized_Dynamic/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/ --channel COMB --outputPlotDIR plotMaxLikelihoodFit --inputVariable DeltaPhi_JJ_ptl1 --makeUncertaintyPlot 1
+
+
