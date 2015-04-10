@@ -222,31 +222,22 @@ int main (int argc, char ** argv) {
     cout<<"use sumW2 for MC histograms"<<endl;
   }
 
-  // get the sample vector from the analysis plotter object
-  vector<sample> SampleVectorTemp ;
-  SampleVectorTemp = analysisPlots.getSamples();   
-
-  vector<sample> SampleVector;
-  // make sure to merge samples with the same sampleName
-  for(size_t iSample = 0; iSample < SampleVectorTemp.size(); iSample++){
+  // get the sample vector from the analysis plotter object                                                                                                                      
+  vector<sample> SampleVector ;
+  SampleVector = analysisPlots.getSamples();
+  // make sure to merge samples with the same sampleName                                                                                                                         
+  for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
     size_t jSample   = iSample+1;
-    bool foundSample = false;
-    for( ; jSample < SampleVectorTemp.size(); jSample++){
-      if(SampleVectorTemp.at(iSample) == SampleVectorTemp.at(jSample)){
-	foundSample = true;
-	break;
+
+    for( ; jSample < SampleVector.size(); jSample++){
+      if(SampleVector.at(iSample) == SampleVector.at(jSample)){
+        sample sampleTemp ;
+	mergeSample(sampleTemp,SampleVector.at(iSample),SampleVector.at(jSample));
+        SampleVector.at(iSample) = sampleTemp;
+        SampleVector.erase(SampleVector.begin()+jSample);
+	jSample--;
+        continue;
       }
-    }
-    if(jSample < SampleVectorTemp.size() and jSample != iSample and foundSample){
-      sample sampleTemp ;      
-      mergeSample(sampleTemp,SampleVectorTemp.at(iSample),SampleVectorTemp.at(jSample));
-      SampleVector.push_back(sampleTemp);
-      SampleVectorTemp.erase(SampleVectorTemp.begin()+jSample);      
-      continue;
-    }
-    else{
-      SampleVector.push_back(SampleVectorTemp.at(iSample));
-      continue;
     }
   }
 
