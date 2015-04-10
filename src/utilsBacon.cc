@@ -1,7 +1,14 @@
 #include "utilsBacon.h"
 
 // --------------------------------                                                                                                                                           
-bool passEleID(TElectron* ele, float rho){
+bool passEleID(TElectron* ele, float rho, int nPU){
+
+  float isoVal = 0;
+
+  if(nPU == 50)
+    isoVal = 0.25;
+  else
+    isoVal = 0.60;
 
   if(fabs(ele->eta) < 1.5){
     if(fabs(ele->dz) < 0.01   and
@@ -12,7 +19,7 @@ bool passEleID(TElectron* ele, float rho){
        fabs(ele->dPhiIn) < 0.06  and
        fabs(ele->sieie)  < 0.01  and
        ele->hovere < 0.12 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
   }
   else {
     if(fabs(ele->dz) < 0.1    and
@@ -23,7 +30,43 @@ bool passEleID(TElectron* ele, float rho){
        fabs(ele->dPhiIn) < 0.03  and
        fabs(ele->sieie)  < 0.03  and
        ele->hovere < 0.10 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.65 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+  }
+
+  return false;
+
+}
+
+bool passEleIDLoose(TElectron* ele, float rho, int nPU){
+
+  float isoVal = 0;
+
+  if(nPU == 50)
+    isoVal = 0.35;
+  else
+    isoVal = 0.75;
+
+  if(fabs(ele->eta) < 1.5){
+    if(fabs(ele->dz) < 0.01   and
+       fabs(ele->d0) < 0.02   and
+       ele->nMissingHits <= 1 and
+       ele->isConv == 0       and
+       fabs(ele->dEtaIn) < 0.004 and
+       fabs(ele->dPhiIn) < 0.06  and
+       fabs(ele->sieie)  < 0.01  and
+       ele->hovere < 0.12 and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+  }
+  else {
+    if(fabs(ele->dz) < 0.1    and
+       fabs(ele->d0) < 0.02   and
+       ele->nMissingHits <= 1 and
+       ele->isConv == 0       and
+       fabs(ele->dEtaIn) < 0.007 and
+       fabs(ele->dPhiIn) < 0.03  and
+       fabs(ele->sieie)  < 0.03  and
+       ele->hovere < 0.10 and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
   }
 
   return false;
@@ -32,20 +75,52 @@ bool passEleID(TElectron* ele, float rho){
 
 
 // --------------------------------                                                                                                                                            
-bool passMuonID(TMuon* mu, float rho){
+bool passMuonID(TMuon* mu, float rho, int nPU){
+
+  float isoVal = 0;
+
+  if(nPU == 50)
+    isoVal = 0.25;
+  else
+    isoVal = 0.60;
+
 
   return (
 	  ((mu->typeBits)/2)%2 and
 	  ((mu->typeBits)/32)%2 and
            mu->tkNchi2 < 10 and
-           mu->nValidHits > 0 and
+           mu->nValidHits > 1 and
            mu->nMatchStn > 1 and
-	   fabs(mu->d0) < 0.2 and
-	   fabs(mu->dz) < 0.5 and
+	   fabs(mu->d0) < 0.02 and
+	   fabs(mu->dz) < 0.05 and
            mu->nPixHits  > 0 and
            mu->nTkLayers > 5 and
-	   mu->ptErr/mu->pt < 0.3 and 
-	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.65);
+	   mu->ptErr/mu->pt < 0.25 and 
+	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < isoVal);
+
+}
+
+bool passMuonIDLoose(TMuon* mu, float rho, int nPU){
+
+  float isoVal = 0;
+
+  if(nPU == 50)
+    isoVal = 0.35;
+  else
+    isoVal = 0.75;
+
+  return (
+	  ((mu->typeBits)/2)%2 and
+	  ((mu->typeBits)/32)%2 and
+           mu->tkNchi2 < 10 and
+           mu->nValidHits > 1 and
+           mu->nMatchStn > 1 and
+	   fabs(mu->d0) < 0.02 and
+	   fabs(mu->dz) < 0.05 and
+           mu->nPixHits  > 0 and
+           mu->nTkLayers > 5 and
+	  mu->ptErr/mu->pt < 0.25 and 
+	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < isoVal);
 
 }
 
@@ -127,10 +202,11 @@ void findGenNeutrinoFromW(TClonesArray* genParticles,
 
 // ----------------------------------                                                                                                                                         
 void cleanedJetsFromLeptons(// look for jets cleaning leptons                                                                                                                  
-                            vector<TJet> & cleanedJets,
-                            TClonesArray & inputJets,
+                            vector<TJet> &  cleanedJets,
+                            TClonesArray &  inputJets,
                             vector<TMuon> & goodTightMuons,
-                            vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone, float etaJetCut){
+                            vector<TElectron> & goodTightElectrons, 
+			    float minJetCutPt, float matchingCone, float etaJetCut){
 
 
   for( int iJet = 0; iJet < inputJets.GetEntriesFast(); iJet++){

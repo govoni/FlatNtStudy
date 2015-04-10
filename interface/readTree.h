@@ -118,6 +118,41 @@ public :
    Float_t         jetLHEGluonphi2;
    Int_t           jetLHEGluonpid2;
    Int_t           jetLHEGluonspin2;
+
+   Float_t         leptonGenpt1;
+   Float_t         leptonGeneta1;
+   Float_t         leptonGenphi1;
+   Int_t           leptonGenpid1;
+   Float_t         neutrinoGenpt1;
+   Float_t         neutrinoGeneta1;
+   Float_t         neutrinoGenphi1;
+   Int_t           neutrinoGenpid1;
+   Float_t         leptonGenpt2;
+   Float_t         leptonGeneta2;
+   Float_t         leptonGenphi2;
+   Int_t           leptonGenpid2;
+   Float_t         neutrinoGenpt2;
+   Float_t         neutrinoGeneta2;
+   Float_t         neutrinoGenphi2;
+   Int_t           neutrinoGenpid2;
+   Float_t         leptonGenpt3;
+   Float_t         leptonGeneta3;
+   Float_t         leptonGenphi3;
+   Int_t           leptonGenpid3;
+   Float_t         neutrinoGenpt3;
+   Float_t         neutrinoGeneta3;
+   Float_t         neutrinoGenphi3;
+   Int_t           neutrinoGenpid3;
+   Float_t         leptonGenpt4;
+   Float_t         leptonGeneta4;
+   Float_t         leptonGenphi4;
+   Int_t           leptonGenpid4;
+   Float_t         neutrinoGenpt4;
+   Float_t         neutrinoGeneta4;
+   Float_t         neutrinoGenphi4;
+   Int_t           neutrinoGenpid4;
+
+
    Float_t         jetGenpt1;
    Float_t         jetGeneta1;
    Float_t         jetGenphi1;
@@ -150,6 +185,43 @@ public :
    Float_t         jetGenAreaY4;
    Float_t         jetGenAreaZ4;
    Float_t         jetGenAreaT4;
+
+   Float_t         jetGenpt5;
+   Float_t         jetGeneta5;
+   Float_t         jetGenphi5;
+   Float_t         jetGenm5;
+   Float_t         jetGenAreaX5;
+   Float_t         jetGenAreaY5;
+   Float_t         jetGenAreaZ5;
+   Float_t         jetGenAreaT5;
+
+   Float_t         jetGenpt6;
+   Float_t         jetGeneta6;
+   Float_t         jetGenphi6;
+   Float_t         jetGenm6;
+   Float_t         jetGenAreaX6;
+   Float_t         jetGenAreaY6;
+   Float_t         jetGenAreaZ6;
+   Float_t         jetGenAreaT6;
+
+   Float_t         jetGenpt7;
+   Float_t         jetGeneta7;
+   Float_t         jetGenphi7;
+   Float_t         jetGenm7;
+   Float_t         jetGenAreaX7;
+   Float_t         jetGenAreaY7;
+   Float_t         jetGenAreaZ7;
+   Float_t         jetGenAreaT7;
+
+   Float_t         jetGenpt8;
+   Float_t         jetGeneta8;
+   Float_t         jetGenphi8;
+   Float_t         jetGenm8;
+   Float_t         jetGenAreaX8;
+   Float_t         jetGenAreaY8;
+   Float_t         jetGenAreaZ8;
+   Float_t         jetGenAreaT8;
+
    Int_t           TrackJet_V4_;
    UInt_t          TrackJet_V4_fUniqueID[kMaxTrackJet_V4];   //[TrackJet_V4_]
    UInt_t          TrackJet_V4_fBits[kMaxTrackJet_V4];   //[TrackJet_V4_]
@@ -891,6 +963,41 @@ public :
    TBranch        *b_jetLHEGluonphi2;   //!
    TBranch        *b_jetLHEGluonpid2;   //!
    TBranch        *b_jetLHEGluonspin2;   //!
+
+   TBranch        *b_leptonGenpt1;   //!                                                                                                                                     
+   TBranch        *b_leptonGeneta1;   //!                                                                                                                                       
+   TBranch        *b_leptonGenphi1;   //!                                                                                                                                       
+   TBranch        *b_leptonGenpid1;   //!                                                                                                                                       
+   TBranch        *b_neutrinoGenpt1;   //!                                                                                                                                      
+   TBranch        *b_neutrinoGeneta1;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenphi1;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenpid1;   //!                                                                                                                                     
+   TBranch        *b_leptonGenpt2;   //!                                                                                                                                        
+   TBranch        *b_leptonGeneta2;   //!                                                                                                                                       
+   TBranch        *b_leptonGenphi2;   //!                                                                                                                                       
+   TBranch        *b_leptonGenpid2;   //!                                                                                                                                       
+   TBranch        *b_neutrinoGenpt2;   //!                                                                                                                                      
+   TBranch        *b_neutrinoGeneta2;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenphi2;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenpid2;   //!                                                                                                                                     
+   TBranch        *b_leptonGenpt3;   //!                                                                                                                                        
+   TBranch        *b_leptonGeneta3;   //!                                                                                                                                       
+   TBranch        *b_leptonGenphi3;   //!                                                                                                                                       
+   TBranch        *b_leptonGenpid3;   //!                                                                                                                                       
+   TBranch        *b_neutrinoGenpt3;   //!                                                                                                                                      
+   TBranch        *b_neutrinoGeneta3;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenphi3;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenpid3;   //!                                                                                                                                     
+   TBranch        *b_leptonGenpt4;   //!                                                                                                                                        
+   TBranch        *b_leptonGeneta4;   //!                                                                                                                                       
+   TBranch        *b_leptonGenphi4;   //!                                                                                                                                       
+   TBranch        *b_leptonGenpid4;   //!                                                                                                                                       
+   TBranch        *b_neutrinoGenpt4;   //!                                                                                                                                      
+   TBranch        *b_neutrinoGeneta4;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenphi4;   //!                                                                                                                                     
+   TBranch        *b_neutrinoGenpid4;   //!                                                                                                                                      
+ 
+
    TBranch        *b_jetGenpt1;   //!
    TBranch        *b_jetGeneta1;   //!
    TBranch        *b_jetGenphi1;   //!
@@ -923,6 +1030,45 @@ public :
    TBranch        *b_jetGenAreaY4;   //!
    TBranch        *b_jetGenAreaZ4;   //!
    TBranch        *b_jetGenAreaT4;   //!
+
+   TBranch        *b_jetGenpt5;   //!
+   TBranch        *b_jetGeneta5;   //!
+   TBranch        *b_jetGenphi5;   //!
+   TBranch        *b_jetGenm5;   //!
+   TBranch        *b_jetGenAreaX5;   //!
+   TBranch        *b_jetGenAreaY5;   //!
+   TBranch        *b_jetGenAreaZ5;   //!
+   TBranch        *b_jetGenAreaT5;   //!
+
+   TBranch        *b_jetGenpt6;   //!
+   TBranch        *b_jetGeneta6;   //!
+   TBranch        *b_jetGenphi6;   //!
+   TBranch        *b_jetGenm6;   //!
+   TBranch        *b_jetGenAreaX6;   //!
+   TBranch        *b_jetGenAreaY6;   //!
+   TBranch        *b_jetGenAreaZ6;   //!
+   TBranch        *b_jetGenAreaT6;   //!
+
+   TBranch        *b_jetGenpt7;   //!
+   TBranch        *b_jetGeneta7;   //!
+   TBranch        *b_jetGenphi7;   //!
+   TBranch        *b_jetGenm7;   //!
+   TBranch        *b_jetGenAreaX7;   //!
+   TBranch        *b_jetGenAreaY7;   //!
+   TBranch        *b_jetGenAreaZ7;   //!
+   TBranch        *b_jetGenAreaT7;   //!
+
+   TBranch        *b_jetGenpt8;   //!
+   TBranch        *b_jetGeneta8;   //!
+   TBranch        *b_jetGenphi8;   //!
+   TBranch        *b_jetGenm8;   //!
+   TBranch        *b_jetGenAreaX8;   //!
+   TBranch        *b_jetGenAreaY8;   //!
+   TBranch        *b_jetGenAreaZ8;   //!
+   TBranch        *b_jetGenAreaT8;   //!
+
+
+
    TBranch        *b_TrackJet_V4_;   //!
    TBranch        *b_TrackJet_V4_fUniqueID;   //!
    TBranch        *b_TrackJet_V4_fBits;   //!
@@ -1733,6 +1879,41 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("jetLHEGluonphi2", &jetLHEGluonphi2, &b_jetLHEGluonphi2);
    fChain->SetBranchAddress("jetLHEGluonpid2", &jetLHEGluonpid2, &b_jetLHEGluonpid2);
    fChain->SetBranchAddress("jetLHEGluonspin2", &jetLHEGluonspin2, &b_jetLHEGluonspin2);
+
+   fChain->SetBranchAddress("leptonGenpt1", &leptonGenpt1, &b_leptonGenpt1);
+   fChain->SetBranchAddress("leptonGeneta1", &leptonGeneta1, &b_leptonGeneta1);
+   fChain->SetBranchAddress("leptonGenphi1", &leptonGenphi1, &b_leptonGenphi1);
+   fChain->SetBranchAddress("leptonGenpid1", &leptonGenpid1, &b_leptonGenpid1);
+   fChain->SetBranchAddress("neutrinoGenpt1", &neutrinoGenpt1, &b_neutrinoGenpt1);
+   fChain->SetBranchAddress("neutrinoGeneta1", &neutrinoGeneta1, &b_neutrinoGeneta1);
+   fChain->SetBranchAddress("neutrinoGenphi1", &neutrinoGenphi1, &b_neutrinoGenphi1);
+   fChain->SetBranchAddress("neutrinoGenpid1", &neutrinoGenpid1, &b_neutrinoGenpid1);
+   fChain->SetBranchAddress("leptonGenpt2", &leptonGenpt2, &b_leptonGenpt2);
+   fChain->SetBranchAddress("leptonGeneta2", &leptonGeneta2, &b_leptonGeneta2);
+   fChain->SetBranchAddress("leptonGenphi2", &leptonGenphi2, &b_leptonGenphi2);
+   fChain->SetBranchAddress("leptonGenpid2", &leptonGenpid2, &b_leptonGenpid2);
+   fChain->SetBranchAddress("neutrinoGenpt2", &neutrinoGenpt2, &b_neutrinoGenpt2);
+   fChain->SetBranchAddress("neutrinoGeneta2", &neutrinoGeneta2, &b_neutrinoGeneta2);
+   fChain->SetBranchAddress("neutrinoGenphi2", &neutrinoGenphi2, &b_neutrinoGenphi2);
+   fChain->SetBranchAddress("neutrinoGenpid2", &neutrinoGenpid2, &b_neutrinoGenpid2);
+   fChain->SetBranchAddress("leptonGenpt3", &leptonGenpt3, &b_leptonGenpt3);
+   fChain->SetBranchAddress("leptonGeneta3", &leptonGeneta3, &b_leptonGeneta3);
+   fChain->SetBranchAddress("leptonGenphi3", &leptonGenphi3, &b_leptonGenphi3);
+   fChain->SetBranchAddress("leptonGenpid3", &leptonGenpid3, &b_leptonGenpid3);
+   fChain->SetBranchAddress("neutrinoGenpt3", &neutrinoGenpt3, &b_neutrinoGenpt3);
+   fChain->SetBranchAddress("neutrinoGeneta3", &neutrinoGeneta3, &b_neutrinoGeneta3);
+   fChain->SetBranchAddress("neutrinoGenphi3", &neutrinoGenphi3, &b_neutrinoGenphi3);
+   fChain->SetBranchAddress("neutrinoGenpid3", &neutrinoGenpid3, &b_neutrinoGenpid3);
+   fChain->SetBranchAddress("leptonGenpt4", &leptonGenpt4, &b_leptonGenpt4);
+   fChain->SetBranchAddress("leptonGeneta4", &leptonGeneta4, &b_leptonGeneta4);
+   fChain->SetBranchAddress("leptonGenphi4", &leptonGenphi4, &b_leptonGenphi4);
+   fChain->SetBranchAddress("leptonGenpid4", &leptonGenpid4, &b_leptonGenpid4);
+   fChain->SetBranchAddress("neutrinoGenpt4", &neutrinoGenpt4, &b_neutrinoGenpt4);
+   fChain->SetBranchAddress("neutrinoGeneta4", &neutrinoGeneta4, &b_neutrinoGeneta4);
+   fChain->SetBranchAddress("neutrinoGenphi4", &neutrinoGenphi4, &b_neutrinoGenphi4);
+   fChain->SetBranchAddress("neutrinoGenpid4", &neutrinoGenpid4, &b_neutrinoGenpid4);
+    
+
    fChain->SetBranchAddress("jetGenpt1", &jetGenpt1, &b_jetGenpt1);
    fChain->SetBranchAddress("jetGeneta1", &jetGeneta1, &b_jetGeneta1);
    fChain->SetBranchAddress("jetGenphi1", &jetGenphi1, &b_jetGenphi1);
@@ -1765,6 +1946,43 @@ void readTree::Init(TTree *tree)
    fChain->SetBranchAddress("jetGenAreaY4", &jetGenAreaY4, &b_jetGenAreaY4);
    fChain->SetBranchAddress("jetGenAreaZ4", &jetGenAreaZ4, &b_jetGenAreaZ4);
    fChain->SetBranchAddress("jetGenAreaT4", &jetGenAreaT4, &b_jetGenAreaT4);
+
+   fChain->SetBranchAddress("jetGenpt5", &jetGenpt5, &b_jetGenpt5);
+   fChain->SetBranchAddress("jetGeneta5", &jetGeneta5, &b_jetGeneta5);
+   fChain->SetBranchAddress("jetGenphi5", &jetGenphi5, &b_jetGenphi5);
+   fChain->SetBranchAddress("jetGenm5", &jetGenm5, &b_jetGenm5);
+   fChain->SetBranchAddress("jetGenAreaX5", &jetGenAreaX5, &b_jetGenAreaX5);
+   fChain->SetBranchAddress("jetGenAreaY5", &jetGenAreaY5, &b_jetGenAreaY5);
+   fChain->SetBranchAddress("jetGenAreaZ5", &jetGenAreaZ5, &b_jetGenAreaZ5);
+   fChain->SetBranchAddress("jetGenAreaT5", &jetGenAreaT5, &b_jetGenAreaT5);
+
+   fChain->SetBranchAddress("jetGenpt6", &jetGenpt6, &b_jetGenpt6);
+   fChain->SetBranchAddress("jetGeneta6", &jetGeneta6, &b_jetGeneta6);
+   fChain->SetBranchAddress("jetGenphi6", &jetGenphi6, &b_jetGenphi6);
+   fChain->SetBranchAddress("jetGenm6", &jetGenm6, &b_jetGenm6);
+   fChain->SetBranchAddress("jetGenAreaX6", &jetGenAreaX6, &b_jetGenAreaX6);
+   fChain->SetBranchAddress("jetGenAreaY6", &jetGenAreaY6, &b_jetGenAreaY6);
+   fChain->SetBranchAddress("jetGenAreaZ6", &jetGenAreaZ6, &b_jetGenAreaZ6);
+   fChain->SetBranchAddress("jetGenAreaT6", &jetGenAreaT6, &b_jetGenAreaT6);
+
+   fChain->SetBranchAddress("jetGenpt7", &jetGenpt7, &b_jetGenpt7);
+   fChain->SetBranchAddress("jetGeneta7", &jetGeneta7, &b_jetGeneta7);
+   fChain->SetBranchAddress("jetGenphi7", &jetGenphi7, &b_jetGenphi7);
+   fChain->SetBranchAddress("jetGenm7", &jetGenm7, &b_jetGenm7);
+   fChain->SetBranchAddress("jetGenAreaX7", &jetGenAreaX7, &b_jetGenAreaX7);
+   fChain->SetBranchAddress("jetGenAreaY7", &jetGenAreaY7, &b_jetGenAreaY7);
+   fChain->SetBranchAddress("jetGenAreaZ7", &jetGenAreaZ7, &b_jetGenAreaZ7);
+   fChain->SetBranchAddress("jetGenAreaT7", &jetGenAreaT7, &b_jetGenAreaT7);
+
+   fChain->SetBranchAddress("jetGenpt8", &jetGenpt8, &b_jetGenpt8);
+   fChain->SetBranchAddress("jetGeneta8", &jetGeneta8, &b_jetGeneta8);
+   fChain->SetBranchAddress("jetGenphi8", &jetGenphi8, &b_jetGenphi8);
+   fChain->SetBranchAddress("jetGenm8", &jetGenm8, &b_jetGenm8);
+   fChain->SetBranchAddress("jetGenAreaX8", &jetGenAreaX8, &b_jetGenAreaX8);
+   fChain->SetBranchAddress("jetGenAreaY8", &jetGenAreaY8, &b_jetGenAreaY8);
+   fChain->SetBranchAddress("jetGenAreaZ8", &jetGenAreaZ8, &b_jetGenAreaZ8);
+   fChain->SetBranchAddress("jetGenAreaT8", &jetGenAreaT8, &b_jetGenAreaT8);
+
    fChain->SetBranchAddress("TrackJet_V4", &TrackJet_V4_, &b_TrackJet_V4_);
    fChain->SetBranchAddress("TrackJet_V4.fUniqueID", TrackJet_V4_fUniqueID, &b_TrackJet_V4_fUniqueID);
    fChain->SetBranchAddress("TrackJet_V4.fBits", TrackJet_V4_fBits, &b_TrackJet_V4_fBits);

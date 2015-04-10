@@ -169,17 +169,17 @@ int main (int argc, char ** argv) {
     if (iEventMG % 100000 == 0) cout << "reading event MG: " << iEventMG << "\n" ;
 
     // filter LHE level leptons
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(finalStateString == "EE"){      
+    else if(TString(finalStateString).Contains("EE")){      
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 11) continue;
     }
-    else if(finalStateString == "EU"){
+    else if(TString(finalStateString).Contains("EU")){
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 13) continue ;
     }
-    else if(finalStateString == "UE"){
+    else if(TString(finalStateString).Contains("UE")){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 11) continue ;
     }
     else {
@@ -522,17 +522,17 @@ int main (int argc, char ** argv) {
     if (iEventPH % 100000 == 0) cout << "reading event PH: " << iEventPH << "\n" ;
 
     // filter LHE level leptons
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(finalStateString == "EE"){      
+    else if(TString(finalStateString).Contains("EE")){      
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 11) continue;
     }
-    else if(finalStateString == "EU"){
+    else if(TString(finalStateString).Contains("EU")){
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 13) continue ;
     }
-    else if(finalStateString == "UE"){
+    else if(TString(finalStateString).Contains("UE")){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 11) continue ;
     }
     else {
@@ -914,18 +914,6 @@ int main (int argc, char ** argv) {
       if(itVecMG == plotVectorMG.end()){
 	cerr<<"Problem -->plot not found for MG :  "<<variableList.at(iVar).variableName<<endl;
       }
-       
-      itVecMG->histogram->GetXaxis()->SetTitleSize(0.04);
-      itVecMG->histogram->GetYaxis()->SetRangeUser(0.001,itVecMG->histogram->GetMaximum()*1.1);
-      itVecMG->histogram->GetYaxis()->SetTitleSize(0.05);
-
-      itVecMG->histogram->SetLineColor(kBlue);
-      itVecMG->histogram->SetLineStyle(1);
-      itVecMG->histogram->SetLineWidth(2);
-      itVecMG->histogram->GetYaxis()->SetTitle("#sigma x lumi");
-
-      itVecMG->histogram->Draw("hist");
-      legend->AddEntry(itVecMG->histogram,"Madgraph","l");
 
 
       histoContainer tmpPlotPH;
@@ -936,6 +924,19 @@ int main (int argc, char ** argv) {
       if(itVecPH == plotVectorPH.end()){
 	cerr<<"Problem -->plot not found for PH :  "<<variableList.at(iVar).variableName<<endl;
       }
+
+       
+      itVecMG->histogram->GetXaxis()->SetTitleSize(0.04);
+      itVecMG->histogram->GetYaxis()->SetRangeUser(0.001,max(itVecMG->histogram->GetMaximum(),itVecPH->histogram->GetMaximum())*1.1);
+      itVecMG->histogram->GetYaxis()->SetTitleSize(0.05);
+
+      itVecMG->histogram->SetLineColor(kBlue);
+      itVecMG->histogram->SetLineStyle(1);
+      itVecMG->histogram->SetLineWidth(2);
+      itVecMG->histogram->GetYaxis()->SetTitle("#sigma x lumi");
+
+      itVecMG->histogram->Draw("hist");
+      legend->AddEntry(itVecMG->histogram,"Madgraph","l");
 
        
       itVecPH->histogram->GetXaxis()->SetTitleSize(0.04);
@@ -960,6 +961,9 @@ int main (int argc, char ** argv) {
       cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList.at(iVar).variableName+".root").c_str(),"root");
 
       cCanvas->SetLogy();
+
+      itVecMG->histogram->GetYaxis()->SetRangeUser(0.001,max(itVecMG->histogram->GetMaximum(),itVecPH->histogram->GetMaximum())*100);
+
       cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
       cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
       cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/"+CutList.at(iCut).cutLayerName+"_"+variableList.at(iVar).variableName+"_log.root").c_str(),"root");

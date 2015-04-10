@@ -36,7 +36,8 @@ float getFakeWeight( jetContainer inputJet,
 leptonContainer createFakeLepton( jetContainer inputJet,
                                   leptonContainer inputLepton,
                                   fakeMigrationContainer & fakeMigration,
-                                  string finalStateString);
+                                  string finalStateString,
+				  int flavour = -1);
 
 void makeFakeLeptonBackground(const string & sampleName,
 			      const int    & samplePosition,

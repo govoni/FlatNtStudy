@@ -218,7 +218,39 @@ void fillGenJetArray (vector<jetContainer> & jetVector, readTree & reader) {
     dummy.jetflavour_     = -999 ;
     jetVector.push_back(dummy);
   }
+  /*
+  if(reader.jetGenpt5 > 0){
+    dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt5,reader.jetGeneta5,reader.jetGenphi5,reader.jetGenm5);
+    dummy.jetPUID_  = -999 ;
+    dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
+    jetVector.push_back(dummy);
+  }
 
+  if(reader.jetGenpt6 > 0){
+    dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt6,reader.jetGeneta6,reader.jetGenphi6,reader.jetGenm6);
+    dummy.jetPUID_  = -999 ;
+    dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
+    jetVector.push_back(dummy);
+  }
+
+  if(reader.jetGenpt7 > 0){
+    dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt7,reader.jetGeneta7,reader.jetGenphi7,reader.jetGenm7);
+    dummy.jetPUID_  = -999 ;
+    dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
+    jetVector.push_back(dummy);
+  }
+
+  if(reader.jetGenpt8 > 0){
+    dummy.jet4V_.SetPtEtaPhiM(reader.jetGenpt8,reader.jetGeneta8,reader.jetGenphi8,reader.jetGenm8);
+    dummy.jetPUID_  = -999 ;
+    dummy.btag_     = -999 ;
+    dummy.jetflavour_     = -999 ;
+    jetVector.push_back(dummy);
+  }
+  */
   return ;
 }
 
@@ -280,6 +312,47 @@ void fillRecoLeptonsArray (vector<leptonContainer> & lepVector, readTree & reade
   }
 
   return ;
+}
+
+void fillGenLeptonsArray(vector<leptonContainer> & lepVector, readTree & reader){
+
+  leptonContainer dummy;
+
+  if(reader.leptonGenpt1 > 0 ){
+    dummy.lepton4V_.SetPtEtaPhiM(reader.leptonGenpt1,reader.leptonGeneta1,reader.leptonGenphi1,0);    
+    dummy.charge_   = 0. ;
+    dummy.iso_      = 0. ;
+    dummy.flavour_ = reader.leptonGenpid1;
+    lepVector.push_back(dummy);
+  }
+
+  if(reader.leptonGenpt2 > 0){
+    dummy.lepton4V_.SetPtEtaPhiM(reader.leptonGenpt2,reader.leptonGeneta2,reader.leptonGenphi2,0);
+    dummy.charge_   = 0. ;
+    dummy.iso_      = 0. ;
+    dummy.flavour_ = reader.leptonGenpid2;
+    lepVector.push_back(dummy);
+  }
+   
+  if(reader.leptonGenpt3 > 0){
+    dummy.lepton4V_.SetPtEtaPhiM(reader.leptonGenpt3,reader.leptonGeneta3,reader.leptonGenphi3,0);
+    dummy.charge_   = 0. ;
+    dummy.iso_      = 0. ;
+    dummy.flavour_ = reader.leptonGenpid3;
+    lepVector.push_back(dummy);
+  }
+
+  if(reader.leptonGenpt4 > 0){
+    dummy.lepton4V_.SetPtEtaPhiM(reader.leptonGenpt4,reader.leptonGeneta4,reader.leptonGenphi4,0);
+    dummy.charge_   = 0. ;
+    dummy.iso_      = 0 ;
+    dummy.flavour_  = reader.leptonGenpid4;
+    lepVector.push_back(dummy);
+  }
+
+  return ;
+
+
 }
 
 
@@ -514,7 +587,7 @@ void loopOnEvents (plotter & analysisPlots,
     return ;
   }
 
-
+  
   // loop over events ////////                                                                                                                                               
   for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent){                                                                                                                      
 
@@ -1148,7 +1221,7 @@ void loopOnEvents (plotter & analysisPlots,
     cerr<<"problem in the setup, both fakes and charge misid has to be applied for this sample --> please check"<<endl;
     return ;
   }
-
+  
   // loop over events ////////                                                                                                                                               
   for (int iEvent = 0 ; iEvent < maxevents ; ++iEvent){                                                                                                                      
 
@@ -1198,7 +1271,7 @@ void loopOnEvents (plotter & analysisPlots,
 	continue;
     }
 
-
+    
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
       TLorentzVector L_met, L_gen_met;
@@ -1869,8 +1942,8 @@ void loopOnEvents (plotter & analysisPlots,
 	  }
 	}
       }
-    }
-  }
+    }    
+  }  
 }
 
 
@@ -2165,7 +2238,7 @@ void fillHisto( plotter & analysisPlots,
     else if(VariableList.at(iVar).variableName == "etall"){
       analysisPlots.fillHisto (NameSample, samplePosition,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.Eta(),eventFakeWeight,systematicName);   
     }
-    else if(VariableList.at(iVar).variableName == "mll" or VariableList.at(iVar).variableName == "mll_v2"){
+    else if(VariableList.at(iVar).variableName == "mll" or VariableList.at(iVar).variableName == "mll_v2" or VariableList.at(iVar).variableName == "mll_v3"){
       analysisPlots.fillHisto (NameSample, samplePosition,cutLayerName,VariableList.at(iVar).variableName,L_dilepton.M(),eventFakeWeight,systematicName);   
     }
     

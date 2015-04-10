@@ -124,17 +124,17 @@ int main (int argc, char ** argv) {
     if (iEventMG % 100000 == 0) cout << "reading event MG: " << iEventMG << "\n" ;
 
     // filter LHE level leptons
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) != 13)
 	continue;
     }
-    else if(finalStateString == "EE"){      
+    else if(TString(finalStateString).Contains("EE")){      
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) != 11) continue;
     }
-    else if(finalStateString == "UE"){
+    else if(TString(finalStateString).Contains("UE")){
       if(fabs(readerMG->leptonLHEpid1) != 13 or fabs(readerMG->leptonLHEpid2) !=11) continue ;
     }
-    else if(finalStateString == "EU"){
+    else if(TString(finalStateString).Contains("EU")){
       if(fabs(readerMG->leptonLHEpid1) != 11 or fabs(readerMG->leptonLHEpid2) !=13) continue ;
     }
     else{
@@ -356,17 +356,17 @@ int main (int argc, char ** argv) {
     if (iEventPH % 100000 == 0) cout << "reading event PH: " << iEventPH << "\n" ;
 
     // filter LHE level leptons
-    if(finalStateString == "UU"){
+    if(TString(finalStateString).Contains("UU")){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) != 13)
         continue;
     }
-    else if(finalStateString == "EE"){
+    else if(TString(finalStateString).Contains("EE")){
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) != 11) continue;
     }
-    else if(finalStateString == "UE"){
+    else if(TString(finalStateString).Contains("UE")){
       if(fabs(readerPH->leptonLHEpid1) != 13 or fabs(readerPH->leptonLHEpid2) !=11) continue ;
     }
-    else if(finalStateString == "EU"){
+    else if(TString(finalStateString).Contains("EU")){
       if(fabs(readerPH->leptonLHEpid1) != 11 or fabs(readerPH->leptonLHEpid2) !=13) continue ;
     }
     else{

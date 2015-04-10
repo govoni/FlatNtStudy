@@ -132,11 +132,11 @@ int main (int argc, char ** argv) {
   system(("rm output/"+outputDataCardDirectory+"/Card1D/*_"+finalStateString+"*").c_str());
   system(("rm output/"+outputDataCardDirectory+"/Card2D/*_"+finalStateString+"*").c_str());
 
-  
+    
   ///// Start the analysis --> apply cut and make histos
   plotter analysisPlots (lumi,"output",useObjectSystematics) ; // use the plotter structure to make the histograms for each sample and each cutLayer and each variable
   map<string,TH1F*> histoCutEff ;
-
+  
   for( unordered_map<string,vector<sampleContainer> >::iterator itSample = sampleMap.begin() ; itSample != sampleMap.end(); itSample++){ // loop on each sample
 
     vector<readTree*> ReadTree;
@@ -146,7 +146,7 @@ int main (int argc, char ** argv) {
       int numBefore = 0;
 
       numBefore += itSubSample->numBefore;
-      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*_1.root").c_str()) ;
 
       int totEvent = chain->GetEntries();
 
@@ -162,7 +162,6 @@ int main (int argc, char ** argv) {
     }
 
  
-
     // Add cuts to the analysis plot container
     for(size_t iCut = 0; iCut < CutList.size(); iCut++){
       analysisPlots.addLayerToSample  (itSample->first,CutList.at(iCut).cutLayerName) ;      
@@ -194,7 +193,7 @@ int main (int argc, char ** argv) {
 
     for(size_t iRead = 0; iRead < ReadTree.size(); iRead++){
       cout<<"analyzing for sample "<<itSample->first<<" chain number "<<iRead<<endl;
-      
+
       loopOnEvents(analysisPlots,
 		   sampleName,         // sample name
 		   int(iRead),
@@ -215,7 +214,7 @@ int main (int argc, char ** argv) {
 		   scenarioString,
 		   fakeRateFile
 		   );
-    }
+    }    
   }
   
   // plotting
@@ -231,37 +230,26 @@ int main (int argc, char ** argv) {
   else{
     cout<<"use sumW2 for MC histograms"<<endl;
   }
-
+  
   // get the sample vector from the analysis plotter object
-  vector<sample> SampleVectorTemp ;
-  SampleVectorTemp = analysisPlots.getSamples();   
-
-  vector<sample> SampleVector;
+  vector<sample> SampleVector ;
+  SampleVector = analysisPlots.getSamples();   
   // make sure to merge samples with the same sampleName
-  for(size_t iSample = 0; iSample < SampleVectorTemp.size(); iSample++){
+  for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
     size_t jSample   = iSample+1;
-    bool foundSample = false;
-    for( ; jSample < SampleVectorTemp.size(); jSample++){
-      if(SampleVectorTemp.at(iSample) == SampleVectorTemp.at(jSample)){
-	foundSample = true;
-	break;
-      }
-    }
 
-    if(jSample < SampleVectorTemp.size() and jSample != iSample and foundSample){
-      sample sampleTemp ;      
-      mergeSample(sampleTemp,SampleVectorTemp.at(iSample),SampleVectorTemp.at(jSample));
-      SampleVector.push_back(sampleTemp);
-      SampleVectorTemp.erase(SampleVectorTemp.begin()+jSample);      
-      continue;
-    }
-    else{
-      SampleVector.push_back(SampleVectorTemp.at(iSample));
-      continue;
+    for( ; jSample < SampleVector.size(); jSample++){
+      if(SampleVector.at(iSample) == SampleVector.at(jSample)){
+	sample sampleTemp ;      
+	mergeSample(sampleTemp,SampleVector.at(iSample),SampleVector.at(jSample));
+	SampleVector.at(iSample) = sampleTemp;
+	SampleVector.erase(SampleVector.begin()+jSample);      
+	jSample--;
+	continue;
+	}
     }
   }
 
-  
   ////////////////////////////////////////// 
   //####### TH1 sector Datacards #########//
   /////////////////////////////// //////////

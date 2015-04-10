@@ -159,8 +159,11 @@ void fillPuppiJetArray (vector<jetContainer> & jetVector,
 void fillGenJetArray   (vector<jetContainer> & jetVector, 
 			readTree & reader) ;
 
-void fillRecoLeptonsArray (vector<leptonContainer> & jetVector, 
+void fillRecoLeptonsArray (vector<leptonContainer> & lepVector, 
 			   readTree & reader) ;
+
+void fillGenLeptonsArray(vector<leptonContainer> & lepVector,
+			 readTree & reader);
 
 void fillTrackJetArray (vector<jetContainer> & jetVector, 
 			readTree & reader) ;

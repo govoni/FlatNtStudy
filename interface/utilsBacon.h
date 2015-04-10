@@ -14,9 +14,13 @@
 using namespace std ;
 using namespace baconhep ;
 
-bool passEleID(TElectron* ele, float rho);
+bool passEleID(TElectron* ele, float rho, int nPU = 140);
 
-bool passMuonID(TMuon* mu, float rho);
+bool passMuonID(TMuon* mu, float rho, int nPU = 140);
+
+bool passEleIDLoose(TElectron* ele, float rho, int nPU = 140);
+
+bool passMuonIDLoose(TMuon* mu, float rho, int nPU = 140);
 
 void findGenLeptonsFromW(TClonesArray* genParticles, 
 			 vector<int> & muIndex, 

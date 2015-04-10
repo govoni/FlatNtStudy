@@ -2,7 +2,6 @@
 #  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
 ##############################################################################################################################################
 Madgraph_SS_qqH_WW_2l2v_QED4_QCD0_2p5                       WW_EWK_SS_126          1        0.01022537637                    1               1
-#Madgraph_EFT_2p5                                            WW_EWK_SS_126          1        0.639366606629                   1               1
 PHANTOM_WZ_EWK_SF_126_4p0_EE                                WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_OS_QCDwg_EE_4p0                                     wrongCharge           417       0.35527                          1              -2
 PHANTOM_SS_QCD_EE_126_4p0                                   WW_QCD                  5       0.533455E-003                    1               0

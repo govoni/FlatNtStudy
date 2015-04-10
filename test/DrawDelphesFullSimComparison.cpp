@@ -104,6 +104,7 @@ int main (int argc, char ** argv) {
   float  minJetCutPt         = gConfigParser -> readFloatOption("Option::minJetCutPt");
  
   int   nLeptons   = gConfigParser -> readIntOption("Option::nLeptons");
+  int   nPU        = gConfigParser -> readIntOption("Option::nPU");
   float metCut     = gConfigParser -> readFloatOption("Option::metCut");
   float mllCut     = gConfigParser -> readFloatOption("Option::mllCut");
   float mjjCut     = gConfigParser -> readFloatOption("Option::mjjCut");
@@ -196,9 +197,11 @@ int main (int argc, char ** argv) {
     chain_FullSIM->GetEntry(iEvent);
 
     // filter away event with taus
+    bool eventWithTau = false ;
+
     for( int iGen = 0; iGen < fGenParticle_FullSIM->GetEntriesFast() ; ++iGen ) {
 	TGenParticle *genP = (TGenParticle*)((*fGenParticle_FullSIM)[iGen]);
-	if( abs(genP->pdgId) == 15 ) {
+	if( abs(genP->pdgId) == 15 or abs(genP->pdgId) == 16) {
 	  bool foundW = false, stuck = false;
 	  do {
 	    if(genP->parent!=-1) {
@@ -211,14 +214,20 @@ int main (int argc, char ** argv) {
 	    }
 	  } while( !stuck && !foundW );
 	  if( foundW ) {
-	    continue;
+	    eventWithTau = true;
+	    break;
 	  }
 	}
     }
+
+    if(eventWithTau) continue;
     
     // TElectron and TMuon are all the reco lepton to be used in the analysis --> apply some basic ID cuts
     vector<TMuon> goodTightMuons ;
     vector<TElectron> goodTightElectrons ;
+
+    vector<TMuon> goodLooseMuons ;
+    vector<TElectron> goodLooseElectrons ;
 
     if((fMuon_FullSIM->GetEntriesFast()+fElectron_FullSIM->GetEntriesFast()) < nLeptons) continue;
     if((fJet_FullSIM->GetEntriesFast()) < 2) continue;
@@ -227,26 +236,68 @@ int main (int argc, char ** argv) {
     for(int iEle = 0; iEle < fElectron_FullSIM->GetEntriesFast(); iEle++){
       TElectron *ele = (TElectron*)((*fElectron_FullSIM)[iEle]);
       if(ele->pt < minLeptonCutPt) continue;
-      if(fabs(ele->eta) > 2.5) continue;
-      if(passEleID(ele,fEventInfo_FullSIM->rhoIso))
+      if(fabs(ele->eta) >= 2.5) continue;
+      if(passEleID(ele,fEventInfo_FullSIM->rhoIso,nPU))
 	 goodTightElectrons.push_back(*ele);
     }
 
     for(int iMu = 0; iMu < fMuon_FullSIM->GetEntriesFast(); iMu++){
       TMuon *mu = (TMuon*)((*fMuon_FullSIM)[iMu]);
       if(mu->pt < minLeptonCutPt) continue;
-      if(fabs(mu->eta) > 2.5) continue;
-      if(passMuonID(mu,fEventInfo_FullSIM->rhoIso))
+      if(fabs(mu->eta) >= 2.5) continue;
+      if(passMuonID(mu,fEventInfo_FullSIM->rhoIso,nPU))
 	 goodTightMuons.push_back(*mu);
+    }
+
+
+    for(int iEle = 0; iEle < fElectron_FullSIM->GetEntriesFast(); iEle++){
+      TElectron *ele = (TElectron*)((*fElectron_FullSIM)[iEle]);
+      if(ele->pt < minLeptonCutPt) continue;
+      if(fabs(ele->eta) >= 2.5) continue;
+      if(passEleIDLoose(ele,fEventInfo_FullSIM->rhoIso,nPU))
+	 goodLooseElectrons.push_back(*ele);
+    }
+
+    for(int iMu = 0; iMu < fMuon_FullSIM->GetEntriesFast(); iMu++){
+      TMuon *mu = (TMuon*)((*fMuon_FullSIM)[iMu]);
+      if(mu->pt < minLeptonCutPt) continue;
+      if(fabs(mu->eta) >= 2.5) continue;
+      if(passMuonIDLoose(mu,fEventInfo_FullSIM->rhoIso,nPU))
+	 goodLooseMuons.push_back(*mu);
     }
 
     // sort in pt
     sort(goodTightMuons.rbegin(),goodTightMuons.rend());
     sort(goodTightElectrons.rbegin(),goodTightElectrons.rend());
+    sort(goodLooseMuons.rbegin(),goodLooseMuons.rend());
+    sort(goodLooseElectrons.rbegin(),goodLooseElectrons.rend());
+
 
     // apply a cut on the number of tight leptons and final state topology
-    if(int(goodTightElectrons.size()+goodTightMuons.size()) < nLeptons) continue;
+    if(int(goodTightElectrons.size()+goodTightMuons.size()) != nLeptons) continue;
+    
+    int nLooseLepton = 0;
 
+    for(size_t iEle = 0; iEle < goodLooseElectrons.size(); iEle++){
+      bool isGoodLooseLepton = true;
+      for(size_t jEle = 0; jEle < goodTightElectrons.size(); jEle++){
+	if(goodLooseElectrons.at(iEle).pt == goodTightElectrons.at(jEle).pt and goodLooseElectrons.at(iEle).eta == goodTightElectrons.at(jEle).eta and goodLooseElectrons.at(iEle).phi == goodTightElectrons.at(jEle).phi) 
+	  isGoodLooseLepton = false;
+      }
+      if(isGoodLooseLepton) nLooseLepton++;
+    }
+
+    for(size_t iMu = 0; iMu < goodLooseMuons.size(); iMu++){
+      bool isGoodLooseLepton = true;
+      for(size_t jMu = 0; jMu < goodTightMuons.size(); jMu++){
+	if(goodLooseMuons.at(iMu).pt == goodTightMuons.at(jMu).pt and goodLooseMuons.at(iMu).eta == goodTightMuons.at(jMu).eta and goodLooseMuons.at(iMu).phi == goodTightMuons.at(jMu).phi) 
+	  isGoodLooseLepton = false;
+      }
+      if(isGoodLooseLepton) nLooseLepton++;
+    }
+
+    if(nLooseLepton > 0 ) continue;
+    
     int iBin = 1;
     if(histoCutEff_FullSIM.size()!=0){
       histoCutEff_FullSIM[name]->SetBinContent(iBin,histoCutEff_FullSIM[name]->GetBinContent(iBin)+1);
@@ -401,7 +452,7 @@ int main (int argc, char ** argv) {
 
     // matching with gen jets by the flag
 
-    if(cleanedJets.at(0).genpt <= 0 and cleanedJets.at(1).genpt <= 0) continue;
+    if(cleanedJets.at(0).genpt <= 0 or cleanedJets.at(1).genpt <= 0) continue;
 
     TLorentzVector genjet1, genjet2;
     genjet1.SetPtEtaPhiM(cleanedJets.at(0).genpt,cleanedJets.at(0).geneta,cleanedJets.at(0).genphi,cleanedJets.at(0).genm);
@@ -438,7 +489,7 @@ int main (int argc, char ** argv) {
     
   }
 
-  // Loop on shashlik events
+  // Loop on Delphes events
   for(int iEvent = 0; iEvent < maximumEvents_Delphes ; iEvent++){
     
     if (iEvent % 100000 == 0) cout << "reading event " << iEvent << "\n" ;
@@ -455,11 +506,11 @@ int main (int argc, char ** argv) {
 
     // dump tight leptons                                                                                                                                                      
     vector<leptonContainer> leptonsIsoTight ;
-    leptonsIsoTight = dumpLeptons (LeptonsAll, 0.65, 0.65, minLeptonCutPt);
+    leptonsIsoTight = dumpLeptons (LeptonsAll, 0.6, 0.6, minLeptonCutPt);
 
     // identify loose leptons                                                                                                                                                  
     vector<leptonContainer> leptonsIsoLoose ;
-    leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.8, minLeptonCutPt);
+    leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.75, minLeptonCutPt);
 
     // take reco jets                                                                                                                                                        
     vector<jetContainer> RecoJetsAll ;
@@ -468,14 +519,22 @@ int main (int argc, char ** argv) {
 
     if(LeptonsAll.size()  < 2)  continue ; // skip the event --> only two reco leptons are good                                                                           
     if(RecoJetsAll.size() < 2)  continue ; // skip the event with less than two reco jet                                                                                
-
+    
     if (int(leptonsIsoTight.size()) != nLeptons ) continue;
+    if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) >= 2.5) continue;
 
-    if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > 2.5) continue;
+    int extraLepton = 0; // count the extra lepton number                                                                                                                          
+    for(size_t iLepton = 0; iLepton < leptonsIsoLoose.size() ; iLepton++){
+      if(leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(0).lepton4V_ or leptonsIsoLoose.at(iLepton).lepton4V_ == leptonsIsoLoose.at(1).lepton4V_) continue; 
+      if(leptonsIsoLoose.at(iLepton).lepton4V_.Eta() >= 2.5) continue ;
+      extraLepton++;
+    }
+
+    if(extraLepton > 0) continue;
 
     bool badTrailingLepton = false;
     for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
-      if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < minLeptonCutPt or fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > 2.5){
+      if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < minLeptonCutPt or fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) >= 2.5){
         badTrailingLepton = true;
       }
     }
@@ -549,18 +608,33 @@ int main (int argc, char ** argv) {
       iBin++;
     }
 
-    // mathing with LHE leptons
-    TLorentzVector leptonGen1; leptonGen1.SetPtEtaPhiM(readerDelphes->leptonLHEpt1,readerDelphes->leptonLHEeta1,readerDelphes->leptonLHEphi1,readerDelphes->leptonLHEm1);
-    TLorentzVector leptonGen2; leptonGen2.SetPtEtaPhiM(readerDelphes->leptonLHEpt2,readerDelphes->leptonLHEeta2,readerDelphes->leptonLHEphi2,readerDelphes->leptonLHEm2);
+    // mathing with gen leptons
+    vector<leptonContainer> genLeptons;
+    fillGenLeptonsArray (genLeptons, *readerDelphes);
 
-    if(leptonsIsoTight.at(0).lepton4V_.DeltaR(leptonGen1) > matchingCone or
-       leptonsIsoTight.at(1).lepton4V_.DeltaR(leptonGen2) > matchingCone) continue;
+    if(int(genLeptons.size()) != nLeptons) continue;
+
+    vector<int> matchedWith ;
+
+    for(size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
+      for(size_t iGenLep = 0; iGenLep < genLeptons.size(); iGenLep++){
+	if(leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_) < matchingCone){
+	  matchedWith.push_back(iGenLep);
+	  break;
+	}	  
+      }
+    }
+
+    if(matchedWith.size() != leptonsIsoTight.size()) continue;
 
     if(histoCutEff_Delphes.size()!=0){
       histoCutEff_Delphes[name]->SetBinContent(iBin,histoCutEff_Delphes[name]->GetBinContent(iBin)+1);
       histoCutEff_Delphes[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen lepton");
       iBin++;
     }
+
+    TLorentzVector genLepton1 = genLeptons.at(matchedWith.at(0)).lepton4V_ ;
+    TLorentzVector genLepton2 = genLeptons.at(matchedWith.at(1)).lepton4V_ ;
 
      
     vector<jetContainer> RecoJets;
@@ -572,17 +646,22 @@ int main (int argc, char ** argv) {
 
     // take gen jets                                                                                                                                                           
     vector<jetContainer> GenJets;
-    GenJets  = dumpJets (GenJetsAll, leptonsIsoTight, 0., 999, -999, minLeptonCutPt, matchingCone);
+    GenJets  = dumpJets (GenJetsAll, genLeptons, 0., 999, -999, minLeptonCutPt,matchingCone,10.);
 
     TLorentzVector genJet1 ; genJet1.SetPtEtaPhiM(0.,0.,0.,0.);
     TLorentzVector genJet2 ; genJet2.SetPtEtaPhiM(0.,0.,0.,0.);
 
     for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
       if(RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone) {
-	genJet1 = GenJetsAll.at(iGen).jet4V_;
+	genJet1 = GenJets.at(iGen).jet4V_;
+	break;
       }
-      if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone) {
-	genJet2 = GenJetsAll.at(iGen).jet4V_;
+    }
+
+    for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
+      if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone and GenJetsAll.at(iGen).jet4V_ != genJet1) {
+	genJet2 = GenJets.at(iGen).jet4V_;
+	break;
       }
     }
 
@@ -618,7 +697,7 @@ int main (int argc, char ** argv) {
 
     // fill response                                                                                                                                                         
     fillResponse(plotResponse_Delphes,variableRespList,name+"Response",weight_Delphes,
-		 leptonsIsoTight.at(0).lepton4V_,leptonGen1,leptonsIsoTight.at(1).lepton4V_,leptonGen2,
+		 leptonsIsoTight.at(0).lepton4V_,genLepton1,leptonsIsoTight.at(1).lepton4V_,genLepton2,
 		 RecoJets.at(0).jet4V_,genJet1,RecoJets.at(1).jet4V_,genJet2,met,genMet);
     
   }
@@ -800,13 +879,13 @@ int main (int argc, char ** argv) {
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+".png").c_str(),"png");
-    cCanvas->SetLogy(1);
+    //    cCanvas->SetLogy(1);
 
-    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.1,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
+    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.1,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
-    cCanvas->SetLogy(0);
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
+    //    cCanvas->SetLogy(0);
 
     itVec_FullSIM->histogram->Scale(1./itVec_FullSIM->histogram->Integral());
     itVec_Delphes->histogram->Scale(1./itVec_Delphes->histogram->Integral());
@@ -830,13 +909,13 @@ int main (int argc, char ** argv) {
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm.png").c_str(),"png");
-    cCanvas->SetLogy(1);
+    //    cCanvas->SetLogy(1);
 
-    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
+    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.png").c_str(),"png");
-    cCanvas->SetLogy(0);
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.pdf").c_str(),"pdf");
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.png").c_str(),"png");
+    //    cCanvas->SetLogy(0);
 
     legend->Clear();
 
@@ -910,13 +989,13 @@ int main (int argc, char ** argv) {
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp.png").c_str(),"png");
-    cCanvas->SetLogy(1);
+    //    cCanvas->SetLogy(1);
 
-    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.1,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
+    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.1,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.png").c_str(),"png");
-    cCanvas->SetLogy(0);
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.pdf").c_str(),"pdf");
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.png").c_str(),"png");
+    //    cCanvas->SetLogy(0);
 
     itVec_FullSIM->histogram->Scale(1./itVec_FullSIM->histogram->Integral());
     itVec_Delphes->histogram->Scale(1./itVec_Delphes->histogram->Integral());
@@ -936,13 +1015,13 @@ int main (int argc, char ** argv) {
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm.png").c_str(),"png");
-    cCanvas->SetLogy(1);
+    //    cCanvas->SetLogy(1);
 
-    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
+    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.png").c_str(),"png");
-    cCanvas->SetLogy(0);
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.pdf").c_str(),"pdf");
+    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.png").c_str(),"png");
+    //    cCanvas->SetLogy(0);
 
     legend->Clear();
 
