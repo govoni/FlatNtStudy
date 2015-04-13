@@ -30,6 +30,8 @@
 using namespace std;
 using namespace baconhep;
 
+float matchingConeLepton = 0.05 ;
+
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----                                                                                                
 int main (int argc, char ** argv) {
 
@@ -159,7 +161,8 @@ int main (int argc, char ** argv) {
 
   vector<histoContainer> plotVector_FullSIM;
   vector<histoContainer> plotVector_Delphes;
-  vector<histoContainer> plotVector_Gen;
+  vector<histoContainer> plotVector_GenFullSIM;
+  vector<histoContainer> plotVector_GenDelphes;
 
   vector<histoContainer> plotResponse_FullSIM;
   vector<histoContainer> plotResponse_Delphes;
@@ -170,7 +173,8 @@ int main (int argc, char ** argv) {
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
     plotVector_FullSIM.push_back(histoContainer("FullSIM",variableList.at(iVar)));
     plotVector_Delphes.push_back(histoContainer("Delphes",variableList.at(iVar)));
-    plotVector_Gen.push_back(histoContainer("Gen",variableList.at(iVar)));
+    plotVector_GenFullSIM.push_back(histoContainer("GenFullSIM",variableList.at(iVar)));
+    plotVector_GenDelphes.push_back(histoContainer("GenDelphes",variableList.at(iVar)));
    }
 
   for(size_t iVar = 0; iVar < variableRespList.size(); iVar++){
@@ -385,13 +389,18 @@ int main (int argc, char ** argv) {
       TLorentzVector mu4V;
       mu4V.SetPtEtaPhiM(mu.pt,mu.eta,mu.phi,0.);
       // Match with genParticle	
+      float minDR = 999;
       for( vector<int>::iterator iGen = genMuIndex.begin(); iGen != genMuIndex.end(); ++iGen ) {
 	TGenParticle *genP = (TGenParticle*)((*fGenParticle_FullSIM)[*iGen]); 
 	TLorentzVector gen4V;
 	gen4V.SetPtEtaPhiM(genP->pt,genP->eta,genP->phi,0.);
-	if(mu4V.DeltaR(gen4V) < matchingCone){
-	  genMatchedMuons.push_back(*genP);
-	  break;
+	if(mu4V.DeltaR(gen4V) < matchingConeLepton){
+	  if(minDR != 999)
+	    cerr<<"found another genMuon matching reco muon "<<endl;
+	  if(mu4V.DeltaR(gen4V) < minDR ){
+	    genMatchedMuons.push_back(*genP);
+	    minDR = mu4V.DeltaR(gen4V);
+	  }
 	}
       }
     }
@@ -401,13 +410,18 @@ int main (int argc, char ** argv) {
       TLorentzVector ele4V;
       ele4V.SetPtEtaPhiM(ele.pt,ele.eta,ele.phi,0.);
       // Match with genParticle	
+      float minDR = 999;
       for( vector<int>::iterator iGen = genEleIndex.begin(); iGen != genEleIndex.end(); ++iGen ) {
 	TGenParticle *genP = (TGenParticle*)((*fGenParticle_FullSIM)[*iGen]); 
 	TLorentzVector gen4V;
 	gen4V.SetPtEtaPhiM(genP->pt,genP->eta,genP->phi,0.);
-	if(ele4V.DeltaR(gen4V) < matchingCone){
-	  genMatchedElectrons.push_back(*genP);
-	  break;
+	if(ele4V.DeltaR(gen4V) < matchingConeLepton){
+	  if(minDR != 999)
+	    cerr<<"found another genElectron matching reco electron "<<endl;
+	  if(ele4V.DeltaR(gen4V) < minDR ){
+	    genMatchedElectrons.push_back(*genP);
+	    minDR = ele4V.DeltaR(gen4V);
+	  }
 	}
       }
     }
@@ -439,8 +453,10 @@ int main (int argc, char ** argv) {
     }
 
     // look for jets cleaning leptons
+    vector<TJet> cleanedJetsNoLep;    
     vector<TJet> cleanedJets;    
-    cleanedJetsFromLeptons(cleanedJets,*fJet_FullSIM,goodTightMuons,goodTightElectrons,minJetCutPt,matchingCone,etaJetCut);
+    cleanedJetsFromLeptons(cleanedJetsNoLep,*fJet_FullSIM,goodTightMuons,goodTightElectrons,minJetCutPt,matchingCone,etaJetCut); 
+    cleanedJesFromNeutrino(cleanedJets,cleanedJetsNoLep,genNeutrino,minJetCutPt,matchingCone,etaJetCut);
     sort(cleanedJets.rbegin(),cleanedJets.rend());
     if(cleanedJets.size() < 2) continue;
     
@@ -452,19 +468,10 @@ int main (int argc, char ** argv) {
 
     // matching with gen jets by the flag
 
-    if(cleanedJets.at(0).genpt <= 0 or cleanedJets.at(1).genpt <= 0) continue;
-
     TLorentzVector genjet1, genjet2;
     genjet1.SetPtEtaPhiM(cleanedJets.at(0).genpt,cleanedJets.at(0).geneta,cleanedJets.at(0).genphi,cleanedJets.at(0).genm);
     genjet2.SetPtEtaPhiM(cleanedJets.at(1).genpt,cleanedJets.at(1).geneta,cleanedJets.at(1).genphi,cleanedJets.at(1).genm);
 
-    if(genjet1.Pt() < 15. or genjet2.Pt() < 15) continue;
-
-    if(histoCutEff_FullSIM.size()!=0){
-      histoCutEff_FullSIM[name]->SetBinContent(iBin,histoCutEff_FullSIM[name]->GetBinContent(iBin)+1);
-      histoCutEff_FullSIM[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
-      iBin++;
-    }
 
     if(dijet.M() < mjjCut) continue;
     
@@ -481,14 +488,24 @@ int main (int argc, char ** argv) {
       histoCutEff_FullSIM[name]->GetXaxis()->SetBinLabel(iBin,"detajj cut");
       iBin++;
     }
+
+    if(genjet1.Pt() < 15. or genjet2.Pt() < 15) continue;
+
+    if(histoCutEff_FullSIM.size()!=0){
+      histoCutEff_FullSIM[name]->SetBinContent(iBin,histoCutEff_FullSIM[name]->GetBinContent(iBin)+1);
+      histoCutEff_FullSIM[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
+     iBin++;
+    }
     
     // fill histos
     fillHistos(plotVector_FullSIM,variableList,name,weight_FullSIM,lepton1,lepton2,jet1,jet2,met);
+    fillHistos(plotVector_GenFullSIM,variableList,"Gen"+name,weight_FullSIM,genLep1,genLep2,genjet1,genjet2,genMet);
+
     // fill response
     fillResponse(plotResponse_FullSIM,variableRespList,name+"Response",weight_FullSIM,lepton1,genLep1,lepton2,genLep2,jet1,genjet1,jet2,genjet2,met,genMet);
     
   }
-
+    
   // Loop on Delphes events
   for(int iEvent = 0; iEvent < maximumEvents_Delphes ; iEvent++){
     
@@ -498,7 +515,7 @@ int main (int argc, char ** argv) {
     chain_Delphes->GetEntry(iEvent);
 
     // filter way taus from the event
-    if(fabs(readerDelphes->leptonLHEpid1) == 15 or fabs(readerDelphes->leptonLHEpid2) == 15) continue;
+    if(fabs(readerDelphes->leptonLHEpid1) == 15 or fabs(readerDelphes->leptonLHEpid2) == 15 or fabs(readerDelphes->neutrinoLHEpid1) == 16 or fabs(readerDelphes->neutrinoLHEpid2) == 16) continue;
 
     // dump all the lepton in the event                                                                                                                                       
     vector<leptonContainer> LeptonsAll;
@@ -506,11 +523,17 @@ int main (int argc, char ** argv) {
 
     // dump tight leptons                                                                                                                                                      
     vector<leptonContainer> leptonsIsoTight ;
-    leptonsIsoTight = dumpLeptons (LeptonsAll, 0.6, 0.6, minLeptonCutPt);
+    if( nPU == 50)
+      leptonsIsoTight = dumpLeptons (LeptonsAll, 0.45, 0.45, minLeptonCutPt);
+    else
+      leptonsIsoTight = dumpLeptons (LeptonsAll, 0.6, 0.6, minLeptonCutPt);
 
     // identify loose leptons                                                                                                                                                  
     vector<leptonContainer> leptonsIsoLoose ;
-    leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.75, minLeptonCutPt);
+    if( nPU == 50)
+      leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.60, minLeptonCutPt);
+    else
+      leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.75, minLeptonCutPt);
 
     // take reco jets                                                                                                                                                        
     vector<jetContainer> RecoJetsAll ;
@@ -611,17 +634,24 @@ int main (int argc, char ** argv) {
     // mathing with gen leptons
     vector<leptonContainer> genLeptons;
     fillGenLeptonsArray (genLeptons, *readerDelphes);
+    sort(genLeptons.rbegin(),genLeptons.rend());
 
     if(int(genLeptons.size()) != nLeptons) continue;
 
     vector<int> matchedWith ;
 
     for(size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
+      float minDR = 999;
       for(size_t iGenLep = 0; iGenLep < genLeptons.size(); iGenLep++){
-	if(leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_) < matchingCone){
-	  matchedWith.push_back(iGenLep);
-	  break;
-	}	  
+	if(leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_) < matchingConeLepton){
+	  if(minDR!= 999){
+	    cerr<<" found another gen lepton matched to the reco one --> delphes"<<minDR<<" "<<leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_)<<" pt "<<genLeptons.at(iGenLep).lepton4V_.Pt()<<" iLep "<<iLep<<endl;
+	  }
+	  if(leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_) < minDR){
+	    matchedWith.push_back(iGenLep);
+	    minDR = leptonsIsoTight.at(iLep).lepton4V_.DeltaR(genLeptons.at(iGenLep).lepton4V_);
+	  }
+	}		  
       }
     }
 
@@ -646,33 +676,39 @@ int main (int argc, char ** argv) {
 
     // take gen jets                                                                                                                                                           
     vector<jetContainer> GenJets;
-    GenJets  = dumpJets (GenJetsAll, genLeptons, 0., 999, -999, minLeptonCutPt,matchingCone,10.);
+    GenJets  = dumpJets (GenJetsAll, genLeptons, 0., 999, -999, 0., matchingCone, 5.0);
+    sort(GenJets.rbegin(),GenJets.rend());
 
     TLorentzVector genJet1 ; genJet1.SetPtEtaPhiM(0.,0.,0.,0.);
     TLorentzVector genJet2 ; genJet2.SetPtEtaPhiM(0.,0.,0.,0.);
 
+    float minDR = 999 ;
+
     for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
       if(RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone) {
-	genJet1 = GenJets.at(iGen).jet4V_;
-	break;
+	if(minDR != 999)
+	  cerr<<" more than one gen jet matched to reco leading jet in delphes "<<minDR<<" "<<RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
+	if(RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < minDR){
+	  genJet1 = GenJets.at(iGen).jet4V_;
+	  minDR = RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_);
+	}
       }
     }
+
+    minDR = 999 ;
 
     for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
       if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone and GenJetsAll.at(iGen).jet4V_ != genJet1) {
-	genJet2 = GenJets.at(iGen).jet4V_;
-	break;
+	if(minDR != 999)
+	  cerr<<" more than one gen jet matched to reco trailing jet in delphes "<<minDR<<" "<<RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
+	if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < minDR){
+	  genJet2 = GenJets.at(iGen).jet4V_;
+	  minDR = RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_);
+	}
       }
     }
 
-    if(genJet1.Pt() <= 0 or genJet2.Pt() <= 0) continue;
-
-    if(histoCutEff_Delphes.size()!=0){
-      histoCutEff_Delphes[name]->SetBinContent(iBin,histoCutEff_Delphes[name]->GetBinContent(iBin)+1);
-      histoCutEff_Delphes[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
-      iBin++;
-    }
-
+    
     if((RecoJets.at(0).jet4V_+RecoJets.at(1).jet4V_).M() < mjjCut) continue;
 
     if(histoCutEff_Delphes.size()!=0){
@@ -689,11 +725,24 @@ int main (int argc, char ** argv) {
       iBin++;
     }
 
+    if(genJet1.Pt() <= 0 or genJet2.Pt() <= 0) continue;
+
+    if(histoCutEff_Delphes.size()!=0){
+      histoCutEff_Delphes[name]->SetBinContent(iBin,histoCutEff_Delphes[name]->GetBinContent(iBin)+1);
+      histoCutEff_Delphes[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
+      iBin++;
+    }
+
     // fill histos                                                                                                                                                             
     fillHistos(plotVector_Delphes,variableList,name,weight_Delphes,
 	       leptonsIsoTight.at(0).lepton4V_,leptonsIsoTight.at(1).lepton4V_,
 	       RecoJets.at(0).jet4V_,RecoJets.at(1).jet4V_,
 	       met);
+
+    fillHistos(plotVector_GenDelphes,variableList,"Gen"+name,weight_Delphes,
+	       genLepton1,genLepton2,
+	       genJet1,genJet2,
+	       genMet);
 
     // fill response                                                                                                                                                         
     fillResponse(plotResponse_Delphes,variableRespList,name+"Response",weight_Delphes,
@@ -701,7 +750,6 @@ int main (int argc, char ** argv) {
 		 RecoJets.at(0).jet4V_,genJet1,RecoJets.at(1).jet4V_,genJet2,met,genMet);
     
   }
-
 
   // make the canvas and basic banners                                                                                                                                         
   TCanvas *cCanvas = new TCanvas("cCanvas","",1,52,550,550);
@@ -827,9 +875,6 @@ int main (int argc, char ** argv) {
 
     itVec_FullSIM->histogram->GetYaxis()->SetTitle("#sigma x lumi");
 
-    legend->AddEntry(itVec_FullSIM->histogram,"Full SIM","l");
-
-
     histoContainer tmpPlot_Delphes;
     tmpPlot_Delphes.cutName = "Delphes";
     tmpPlot_Delphes.varName = variableList.at(iVar).variableName;
@@ -839,12 +884,22 @@ int main (int argc, char ** argv) {
       cerr<<"Problem -->plot not found for Delphes  "<<variableList.at(iVar).variableName<<endl;
     }
 
-    histoContainer tmpPlot_Gen;
-    tmpPlot_Gen.cutName = "Gen";
-    tmpPlot_Gen.varName = variableList.at(iVar).variableName;
-    vector<histoContainer>::iterator itVec_Gen ;
-    itVec_Gen = find(plotVector_Gen.begin(),plotVector_Gen.end(),tmpPlot_Gen);
-    if(itVec_Gen == plotVector_Gen.end()){
+    histoContainer tmpPlot_GenFullSIM;
+    tmpPlot_GenFullSIM.cutName = "GenFullSIM";
+    tmpPlot_GenFullSIM.varName = variableList.at(iVar).variableName;
+    vector<histoContainer>::iterator itVec_GenFullSIM ;
+    itVec_GenFullSIM = find(plotVector_GenFullSIM.begin(),plotVector_GenFullSIM.end(),tmpPlot_GenFullSIM);
+    if(itVec_GenFullSIM == plotVector_GenFullSIM.end()){
+      cerr<<"Problem -->plot not found for Delphes  "<<variableList.at(iVar).variableName<<endl;
+    }
+
+
+    histoContainer tmpPlot_GenDelphes;
+    tmpPlot_GenDelphes.cutName = "GenDelphes";
+    tmpPlot_GenDelphes.varName = variableList.at(iVar).variableName;
+    vector<histoContainer>::iterator itVec_GenDelphes ;
+    itVec_GenDelphes = find(plotVector_GenDelphes.begin(),plotVector_GenDelphes.end(),tmpPlot_GenDelphes);
+    if(itVec_GenDelphes == plotVector_GenDelphes.end()){
       cerr<<"Problem -->plot not found for Delphes  "<<variableList.at(iVar).variableName<<endl;
     }
 
@@ -859,18 +914,55 @@ int main (int argc, char ** argv) {
     itVec_Delphes->histogram->GetYaxis()->SetLabelSize(0.04);
 
     itVec_Delphes->histogram->SetLineColor(kRed);
-
     itVec_Delphes->histogram->SetLineWidth(2);
     itVec_Delphes->histogram->GetYaxis()->SetTitle("#sigma x lumi");
 
+    itVec_GenDelphes->histogram->GetXaxis()->SetTitleSize(0.04);
+    itVec_GenDelphes->histogram->GetXaxis()->SetTitleOffset(1.16);
+    itVec_GenDelphes->histogram->GetXaxis()->SetLabelSize(0.04);
+
+    itVec_GenDelphes->histogram->GetYaxis()->SetRangeUser(0.001,itVec_GenDelphes->histogram->GetMaximum()*1.1);
+    itVec_GenDelphes->histogram->GetYaxis()->SetTitleSize(0.05);
+    itVec_GenDelphes->histogram->GetYaxis()->SetTitleOffset(1.20);
+    itVec_GenDelphes->histogram->GetYaxis()->SetLabelSize(0.04);
+
+    itVec_GenDelphes->histogram->SetLineColor(kGreen+1);
+    itVec_GenDelphes->histogram->SetLineWidth(2);
+    itVec_GenDelphes->histogram->GetYaxis()->SetTitle("#sigma x lumi");
+
+    itVec_GenFullSIM->histogram->GetXaxis()->SetTitleSize(0.04);
+    itVec_GenFullSIM->histogram->GetXaxis()->SetTitleOffset(1.16);
+    itVec_GenFullSIM->histogram->GetXaxis()->SetLabelSize(0.04);
+
+    itVec_GenFullSIM->histogram->GetYaxis()->SetRangeUser(0.001,itVec_GenFullSIM->histogram->GetMaximum()*1.1);
+    itVec_GenFullSIM->histogram->GetYaxis()->SetTitleSize(0.05);
+    itVec_GenFullSIM->histogram->GetYaxis()->SetTitleOffset(1.20);
+    itVec_GenFullSIM->histogram->GetYaxis()->SetLabelSize(0.04);
+
+    itVec_GenFullSIM->histogram->SetLineColor(kOrange+1);
+    itVec_GenFullSIM->histogram->SetLineWidth(2);
+    itVec_GenFullSIM->histogram->GetYaxis()->SetTitle("#sigma x lumi");
+
+
+    legend->AddEntry(itVec_FullSIM->histogram,"Reco CMSSW","l");
+    legend->AddEntry(itVec_Delphes->histogram,"Reco Delphes","l");
+
+
+
     itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.001,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*1.3);
 
+    /*
     itVec_FullSIM->histogram->Draw("hist");
     itVec_Delphes->histogram->Draw("hist same");
-    legend->AddEntry(itVec_Delphes->histogram,"Delphes","l");
+    
+    itVec_GenDelphes->histogram->SetLineColor(kGreen+1);
+    itVec_GenDelphes->histogram->SetLineWidth(2);
+    itVec_GenFullSIM->histogram->SetLineColor(kYellow+1);
+    itVec_GenFullSIM->histogram->SetLineWidth(2);
 
-    itVec_Gen->histogram->SetLineColor(kGreen+1);
-    itVec_Gen->histogram->SetLineWidth(2);
+    legend->AddEntry(itVec_Delphes->histogram,"Delphes Gen","l");
+    legend->AddEntry(itVec_Delphes->histogram,"Full SIM Gen","l");
+
 
     legend->Draw("same");
     tex->Draw("same");
@@ -886,21 +978,24 @@ int main (int argc, char ** argv) {
     //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.pdf").c_str(),"pdf");
     //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_log.png").c_str(),"png");
     //    cCanvas->SetLogy(0);
+    */    
 
     itVec_FullSIM->histogram->Scale(1./itVec_FullSIM->histogram->Integral());
     itVec_Delphes->histogram->Scale(1./itVec_Delphes->histogram->Integral());
-    itVec_Gen->histogram->Scale(1./itVec_Gen->histogram->Integral());
+    itVec_GenFullSIM->histogram->Scale(1./itVec_GenFullSIM->histogram->Integral());
+    itVec_GenDelphes->histogram->Scale(1./itVec_GenDelphes->histogram->Integral());
 
     itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.001,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*1.3);
-
     itVec_FullSIM->histogram->GetYaxis()->SetTitle("a.u.");
 
     itVec_FullSIM->histogram->Draw("hist");
     itVec_Delphes->histogram->Draw("hist same");
-    itVec_Gen->histogram->Draw("hist same");
+    itVec_GenFullSIM->histogram->Draw("hist same");
+    itVec_GenDelphes->histogram->Draw("hist same");
     
 
-    legend->AddEntry(itVec_Gen->histogram,"gen level","l");
+    legend->AddEntry(itVec_GenFullSIM->histogram,"Gen CMSSW","l");
+    legend->AddEntry(itVec_GenDelphes->histogram,"Gen Delphes","l");
 
     legend->Draw("same");
     tex->Draw("same");
@@ -909,13 +1004,6 @@ int main (int argc, char ** argv) {
 
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm.pdf").c_str(),"pdf");
     cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm.png").c_str(),"png");
-    //    cCanvas->SetLogy(1);
-
-    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
-
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.pdf").c_str(),"pdf");
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_norm_log.png").c_str(),"png");
-    //    cCanvas->SetLogy(0);
 
     legend->Clear();
 
@@ -950,7 +1038,7 @@ int main (int argc, char ** argv) {
 
     itVec_FullSIM->histogram->GetYaxis()->SetTitle("#sigma x lumi");
 
-    legend->AddEntry(itVec_FullSIM->histogram,"Full SIM","l");
+    legend->AddEntry(itVec_FullSIM->histogram,"CMSSW","l");
 
     histoContainer tmpPlot_Delphes;
     tmpPlot_Delphes.cutName = "DelphesResponse";
@@ -975,27 +1063,21 @@ int main (int argc, char ** argv) {
 
     itVec_Delphes->histogram->SetLineWidth(2);
     itVec_Delphes->histogram->GetYaxis()->SetTitle("#sigma x lumi");
+    legend->AddEntry(itVec_Delphes->histogram,"Delphes"," l");
 
     itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.001,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*1.3);
-
+    /*
     itVec_FullSIM->histogram->Draw("hist");
     itVec_Delphes->histogram->Draw("hist same");
-    legend->AddEntry(itVec_Delphes->histogram,"Delphes"," l");
 
     legend->Draw("same");
     tex->Draw("same");
     tex2->Draw("same");
     tex3->Draw("same");
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp.png").c_str(),"png");
-    //    cCanvas->SetLogy(1);
-
-    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.1,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
-
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.pdf").c_str(),"pdf");
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableList.at(iVar).variableName+"_resp_log.png").c_str(),"png");
-    //    cCanvas->SetLogy(0);
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableRespList.at(iVar).variableName+"_resp.pdf").c_str(),"pdf");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/xs/"+variableRespList.at(iVar).variableName+"_resp.png").c_str(),"png");
+    */
 
     itVec_FullSIM->histogram->Scale(1./itVec_FullSIM->histogram->Integral());
     itVec_Delphes->histogram->Scale(1./itVec_Delphes->histogram->Integral());
@@ -1013,20 +1095,13 @@ int main (int argc, char ** argv) {
     tex2->Draw("same");
     tex3->Draw("same");
 
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm.pdf").c_str(),"pdf");
-    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm.png").c_str(),"png");
-    //    cCanvas->SetLogy(1);
-
-    //    itVec_FullSIM->histogram->GetYaxis()->SetRangeUser(0.01,max(itVec_FullSIM->histogram->GetMaximum(),itVec_Delphes->histogram->GetMaximum())*100);
-
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.pdf").c_str(),"pdf");
-    //    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableList.at(iVar).variableName+"_resp_norm_log.png").c_str(),"png");
-    //    cCanvas->SetLogy(0);
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableRespList.at(iVar).variableName+"_resp_norm.pdf").c_str(),"pdf");
+    cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/norm/"+variableRespList.at(iVar).variableName+"_resp_norm.png").c_str(),"png");
 
     legend->Clear();
 
   }  
-
+  
  return 0 ;
 
 }

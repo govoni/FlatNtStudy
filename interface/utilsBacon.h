@@ -34,7 +34,10 @@ void cleanedJetsFromLeptons(vector<TJet> & cleanedJets,
                             vector<TMuon> & goodTightMuons,
                             vector<TElectron> & goodTightElectrons, float minJetCutPt, float matchingCone, float etaJetCut = 4.7);
 
-
+void cleanedJesFromNeutrino(vector<TJet> & cleanedJets,
+			    vector<TJet> & inputJets,
+			    vector<TGenParticle> & genNeutrino,
+			    float minJetCutPt, float matchingCone, float etaJetCut = 4.7);
 
 void fillHistos(vector<histoContainer> & plotVector,
                 vector<variableContainer> variableList,

@@ -3,71 +3,124 @@
 // --------------------------------                                                                                                                                           
 bool passEleID(TElectron* ele, float rho, int nPU){
 
-  float isoVal = 0;
+  if(nPU == 50){
 
-  if(nPU == 50)
-    isoVal = 0.25;
-  else
-    isoVal = 0.60;
-
-  if(fabs(ele->eta) < 1.5){
-    if(fabs(ele->dz) < 0.01   and
-       fabs(ele->d0) < 0.02   and
-       ele->nMissingHits <= 1 and
-       ele->isConv == 0       and
-       fabs(ele->dEtaIn) < 0.004 and
-       fabs(ele->dPhiIn) < 0.06  and
-       fabs(ele->sieie)  < 0.01  and
-       ele->hovere < 0.12 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+    if(fabs(ele->eta) < 1.5){
+      if(fabs(ele->dz) < 0.01   and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.004 and
+	 fabs(ele->dPhiIn) < 0.06  and
+	 fabs(ele->sieie)  < 0.01  and
+	 ele->hovere < 0.12 and
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.30 ) return true;
   }
-  else {
-    if(fabs(ele->dz) < 0.1    and
-       fabs(ele->d0) < 0.02   and
-       ele->nMissingHits <= 1 and
-       ele->isConv == 0       and
-       fabs(ele->dEtaIn) < 0.007 and
-       fabs(ele->dPhiIn) < 0.03  and
-       fabs(ele->sieie)  < 0.03  and
-       ele->hovere < 0.10 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+    else {
+      if(fabs(ele->dz) < 0.1    and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.007 and
+	 fabs(ele->dPhiIn) < 0.03  and
+	 fabs(ele->sieie)  < 0.03  and
+	 ele->hovere < 0.10 and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.30 ) return true;
+    }
+    
   }
+  else{
 
+
+    if(fabs(ele->eta) < 1.5){
+      if(fabs(ele->dz)     < 0.1    and
+	 fabs(ele->d0)     < 0.02   and
+	 ele->nMissingHits < 1     and
+	 ele->isConv == 0           and
+	 fabs(ele->dEtaIn) < 0.006  and
+	 fabs(ele->dPhiIn) < 0.07   and
+	 fabs(ele->sieie)  < 0.015  and
+	 ele->hovere       < 0.15   and
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
+  }
+    else {
+      if(fabs(ele->dz) < 0.1    and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.009 and
+	 fabs(ele->dPhiIn) < 0.05  and
+	 fabs(ele->sieie)  < 0.04  and
+	 ele->hovere       < 0.45  and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
+    }
+
+
+
+  }
   return false;
 
 }
 
 bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 
-  float isoVal = 0;
 
-  if(nPU == 50)
-    isoVal = 0.35;
-  else
-    isoVal = 0.75;
+  if(nPU == 50){
 
-  if(fabs(ele->eta) < 1.5){
-    if(fabs(ele->dz) < 0.01   and
-       fabs(ele->d0) < 0.02   and
-       ele->nMissingHits <= 1 and
-       ele->isConv == 0       and
-       fabs(ele->dEtaIn) < 0.004 and
-       fabs(ele->dPhiIn) < 0.06  and
-       fabs(ele->sieie)  < 0.01  and
-       ele->hovere < 0.12 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+    if(fabs(ele->eta) < 1.5){
+      if(fabs(ele->dz) < 0.01   and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.004 and
+	 fabs(ele->dPhiIn) < 0.06  and
+	 fabs(ele->sieie)  < 0.01  and
+	 ele->hovere < 0.12 and
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.35 ) return true;
   }
-  else {
-    if(fabs(ele->dz) < 0.1    and
-       fabs(ele->d0) < 0.02   and
-       ele->nMissingHits <= 1 and
-       ele->isConv == 0       and
-       fabs(ele->dEtaIn) < 0.007 and
-       fabs(ele->dPhiIn) < 0.03  and
-       fabs(ele->sieie)  < 0.03  and
-       ele->hovere < 0.10 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < isoVal ) return true;
+    else {
+      if(fabs(ele->dz) < 0.1    and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.007 and
+	 fabs(ele->dPhiIn) < 0.03  and
+	 fabs(ele->sieie)  < 0.03  and
+	 ele->hovere < 0.10 and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.35 ) return true;
+    }
+    
   }
+  else{
+
+
+    if(fabs(ele->eta) < 1.5){
+      if(fabs(ele->dz)     < 0.1    and
+	 fabs(ele->d0)     < 0.02   and
+	 ele->nMissingHits <= 1     and
+	 ele->isConv == 0           and
+	 fabs(ele->dEtaIn) < 0.006  and
+	 fabs(ele->dPhiIn) < 0.07   and
+	 fabs(ele->sieie)  < 0.015  and
+	 ele->hovere       < 0.15   and
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.5 ) return true;
+  }
+    else {
+      if(fabs(ele->dz) < 0.1    and
+	 fabs(ele->d0) < 0.02   and
+	 ele->nMissingHits <= 1 and
+	 ele->isConv == 0       and
+	 fabs(ele->dEtaIn) < 0.009 and
+	 fabs(ele->dPhiIn) < 0.05  and
+	 fabs(ele->sieie)  < 0.04  and
+	 ele->hovere       < 0.5   and
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.5 ) return true;
+    }
+
+
+
+  }
+
 
   return false;
 
@@ -77,26 +130,35 @@ bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 // --------------------------------                                                                                                                                            
 bool passMuonID(TMuon* mu, float rho, int nPU){
 
-  float isoVal = 0;
+  if(nPU == 50){
 
-  if(nPU == 50)
-    isoVal = 0.25;
-  else
-    isoVal = 0.60;
-
-
-  return (
-	  ((mu->typeBits)/2)%2 and
-	  ((mu->typeBits)/32)%2 and
-           mu->tkNchi2 < 10 and
-           mu->nValidHits > 1 and
-           mu->nMatchStn > 1 and
-	   fabs(mu->d0) < 0.02 and
-	   fabs(mu->dz) < 0.05 and
-           mu->nPixHits  > 0 and
-           mu->nTkLayers > 5 and
-	   mu->ptErr/mu->pt < 0.25 and 
-	  ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < isoVal);
+    return (
+	    ((mu->typeBits)/2)%2 and
+	    ((mu->typeBits)/32)%2 and
+	    mu->tkNchi2    < 10 and
+	    mu->nValidHits > 1 and
+	    mu->nMatchStn  > 1 and
+	    fabs(mu->d0)   < 0.02 and
+	    fabs(mu->dz)   < 0.05 and
+	    mu->nPixHits   > 0 and
+	    mu->nTkLayers  > 5 and
+	    mu->ptErr/mu->pt < 0.25 and 
+	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.30);
+  }
+  else{
+    return (
+	    ((mu->typeBits)/2)%2 and
+	    ((mu->typeBits)/32)%2 and
+	    mu->tkNchi2    < 5 and
+	    mu->nValidHits > 3 and
+	    mu->nMatchStn  > 2 and
+	    fabs(mu->d0)   < 0.01 and
+	    fabs(mu->dz)   < 0.02 and
+	    mu->nPixHits   > 2 and
+	    mu->nTkLayers  > 7 and
+	    mu->ptErr/mu->pt < 0.2 and 
+	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.5);
+  }
 
 }
 
@@ -107,7 +169,7 @@ bool passMuonIDLoose(TMuon* mu, float rho, int nPU){
   if(nPU == 50)
     isoVal = 0.35;
   else
-    isoVal = 0.75;
+    isoVal = 0.65;
 
   return (
 	  ((mu->typeBits)/2)%2 and
@@ -246,6 +308,37 @@ void cleanedJetsFromLeptons(// look for jets cleaning leptons
 }
 
 
+
+void cleanedJesFromNeutrino(vector<TJet> & cleanedJets,
+                            vector<TJet> & inputJets,
+                            vector<TGenParticle> & genNeutrino,
+                            float minJetCutPt, float matchingCone, float etaJetCut){
+
+  for( size_t iJet = 0; iJet < inputJets.size(); iJet++){
+
+    if(inputJets.at(iJet).pt < minJetCutPt or fabs(inputJets.at(iJet).eta) > etaJetCut) continue;
+    TLorentzVector jet4V;
+    jet4V.SetPtEtaPhiM(inputJets.at(iJet).pt,inputJets.at(iJet).eta,inputJets.at(iJet).phi,inputJets.at(iJet).mass);
+
+    bool badJet = false;
+
+    for(size_t iMu = 0; iMu < genNeutrino.size(); iMu++){
+      TGenParticle mu = genNeutrino.at(iMu);
+      TLorentzVector mu4V ;
+      mu4V.SetPtEtaPhiM(mu.pt,mu.eta,mu.phi,0);
+      if(mu4V.DeltaR(jet4V) < matchingCone){
+        badJet = true;
+	break;
+      }
+    }
+
+    if(badJet)
+      continue;
+
+    cleanedJets.push_back(inputJets.at(iJet));
+  }
+}
+
 void fillHistos(vector<histoContainer> & plotVector,
 	       vector<variableContainer> variableList,
 	       string name,
@@ -269,27 +362,31 @@ void fillHistos(vector<histoContainer> & plotVector,
       continue ;
     }
 
-    if(variableList.at(iVar).variableName == "ptj1"){
+    if(variableList.at(iVar).variableName == "ptj1" and jet1.Pt() != 0){
       itVec->histogram->Fill(jet1.Pt(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "ptj2"){
+    else if(variableList.at(iVar).variableName == "ptj2" and jet2.Pt() != 0){
       itVec->histogram->Fill(jet2.Pt(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etaj1"){
+    else if(variableList.at(iVar).variableName == "etaj1" and jet1.Pt() != 0){
       itVec->histogram->Fill(jet1.Eta(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etaj2" ){
+    else if(variableList.at(iVar).variableName == "etaj2" and jet2.Pt() != 0){
       itVec->histogram->Fill(jet2.Eta(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "detajj" ){
+    else if(variableList.at(iVar).variableName == "detajj" and jet1.Pt() != 0 and jet2.Pt() != 0 ){
       itVec->histogram->Fill(fabs(jet1.Eta()-jet2.Eta()),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "mjj" ){
+    else if(variableList.at(iVar).variableName == "mjj" and jet1.Pt() != 0 and jet2.Pt() != 0 ){
       itVec->histogram->Fill((jet1+jet2).M(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" ){
+    else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" and jet1.Pt() != 0 and jet2.Pt() != 0 ){
       itVec->histogram->Fill(fabs(jet1.DeltaPhi(jet2)),weight) ;
     }
+    else if(variableList.at(iVar).variableName == "dR_JJ" and jet1.Pt() != 0 and jet2.Pt() != 0 ){
+      itVec->histogram->Fill(fabs(jet1.DeltaR(jet2)),weight) ;
+    }
+    
     else if(variableList.at(iVar).variableName == "ptl1" ){
       itVec->histogram->Fill(lepton1.Pt(),weight) ;
     }
@@ -309,9 +406,13 @@ void fillHistos(vector<histoContainer> & plotVector,
     else if(variableList.at(iVar).variableName == "ptll" ){
       itVec->histogram->Fill((lepton1+lepton2).Pt(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etall" ){
-      itVec->histogram->Fill(fabs ((lepton1+lepton2).Eta()),weight) ;
+    else if(variableList.at(iVar).variableName == "detall" ){
+      itVec->histogram->Fill(fabs(lepton1.Eta()-lepton2.Eta()),weight) ;
     }
+    else if(variableList.at(iVar).variableName == "dR_ll" ){
+      itVec->histogram->Fill(lepton1.DeltaR(lepton2),weight) ;
+    }
+
     else if(variableList.at(iVar).variableName == "DeltaPhi_LL" ){
       itVec->histogram->Fill(fabs(lepton1.DeltaPhi(lepton2)),weight) ;
     }
@@ -367,7 +468,8 @@ void fillResponse(vector<histoContainer> & plotVector,
 		  TLorentzVector genmet
 	       ){
 
-  // loop on variables                                                                                                                                                           
+  // loop on variables                                                                                                                                                          
+
   for(size_t iVar = 0; iVar < variableList.size(); iVar++){
     histoContainer tmpPlot;
     tmpPlot.cutName = name;
@@ -379,27 +481,39 @@ void fillResponse(vector<histoContainer> & plotVector,
       continue ;
     }
 
-    if(variableList.at(iVar).variableName == "ptj1"){
+    if(variableList.at(iVar).variableName == "ptj1" and genjet1.Pt()!=0 ){
       itVec->histogram->Fill((jet1.Pt()-genjet1.Pt())/(genjet1.Pt()),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "ptj2"){
+    else if(variableList.at(iVar).variableName == "ptj2" and genjet2.Pt()!=0){
       itVec->histogram->Fill((jet2.Pt()-genjet2.Pt())/(genjet2.Pt()),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etaj1"){
+    else if(variableList.at(iVar).variableName == "etaj1" and genjet1.Pt()!=0){
       itVec->histogram->Fill((jet1.Eta()-genjet1.Eta())/genjet1.Eta(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etaj2" ){
+    else if(variableList.at(iVar).variableName == "etaj2" and genjet2.Pt()!=0 ){
       itVec->histogram->Fill((jet2.Eta()-genjet2.Eta())/genjet2.Eta(),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "detajj" ){
+    else if(variableList.at(iVar).variableName == "phij1" and genjet1.Pt()!=0){
+      itVec->histogram->Fill((jet1.Phi()-genjet1.Phi())/genjet1.Phi(),weight) ;
+    }
+    else if(variableList.at(iVar).variableName == "phij2" and genjet2.Pt()!=0 ){
+      itVec->histogram->Fill((jet2.Phi()-genjet2.Phi())/genjet2.Phi(),weight) ;
+    }
+    else if(variableList.at(iVar).variableName == "detajj" and genjet1.Pt()!=0 and genjet2.Pt()!=0){
       itVec->histogram->Fill((fabs(jet1.Eta()-jet2.Eta())-fabs(genjet1.Eta()-genjet2.Eta()))/(fabs(genjet1.Eta()-genjet2.Eta())),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "mjj" ){
+    else if(variableList.at(iVar).variableName == "mjj" and genjet1.Pt()!=0 and genjet2.Pt()!=0){
       itVec->histogram->Fill(((jet1+jet2).M()-(genjet1+genjet2).M())/((genjet1+genjet2).M()),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" ){
+    else if(variableList.at(iVar).variableName == "DeltaPhi_JJ" and genjet1.Pt()!=0 and genjet2.Pt()!=0){
       itVec->histogram->Fill((fabs(jet1.DeltaPhi(jet2))-fabs(genjet1.DeltaPhi(genjet2)))/(fabs(genjet1.DeltaPhi(genjet2))),weight) ;
     }
+
+    else if(variableList.at(iVar).variableName == "dR_JJ" and genjet1.Pt()!=0 and genjet2.Pt()!=0){
+      itVec->histogram->Fill((fabs(jet1.DeltaR(jet2))-fabs(genjet1.DeltaR(genjet2)))/(fabs(genjet1.DeltaR(genjet2))),weight) ;
+    }
+    
+
     else if(variableList.at(iVar).variableName == "ptl1" ){
       itVec->histogram->Fill((lepton1.Pt()-genlepton1.Pt())/(genlepton1.Pt()),weight) ;
     }
@@ -413,18 +527,31 @@ void fillResponse(vector<histoContainer> & plotVector,
     else if(variableList.at(iVar).variableName == "etal2" ){
       itVec->histogram->Fill((lepton2.Eta()-genlepton2.Eta())/(genlepton2.Eta()),weight) ;
     }
+
+    else if(variableList.at(iVar).variableName == "phil1" ){
+      itVec->histogram->Fill((lepton1.Phi()-genlepton1.Phi())/(genlepton1.Phi()),weight) ;
+    }
+    else if(variableList.at(iVar).variableName == "phil2" ){
+      itVec->histogram->Fill((lepton2.Phi()-genlepton2.Phi())/(genlepton2.Phi()),weight) ;
+    }
+
+
     else if(variableList.at(iVar).variableName == "mll" ){
       itVec->histogram->Fill(((lepton1+lepton2).M()-(genlepton1+genlepton2).M())/((genlepton1+genlepton2).M()),weight) ;
     }
     else if(variableList.at(iVar).variableName == "ptll" ){
       itVec->histogram->Fill(((lepton1+lepton2).Pt()-(genlepton1+genlepton2).Pt())/((genlepton1+genlepton2).Pt()),weight) ;
     }
-    else if(variableList.at(iVar).variableName == "etall" ){
-      itVec->histogram->Fill((fabs((lepton1+lepton2).Eta())-fabs((genlepton1+genlepton2).Eta()))/(fabs((genlepton1+genlepton2).Eta())),weight) ;
+    else if(variableList.at(iVar).variableName == "detall" ){
+      itVec->histogram->Fill((fabs(lepton1.Eta()-lepton2.Eta())-(fabs(genlepton1.Eta()-genlepton2.Eta())))/(fabs(genlepton1.Eta()-genlepton2.Eta())),weight) ;
     }
     else if(variableList.at(iVar).variableName == "DeltaPhi_LL" ){
       itVec->histogram->Fill((fabs(lepton1.DeltaPhi(lepton2))-fabs(genlepton1.DeltaPhi(genlepton2)))/(fabs(genlepton1.DeltaPhi(genlepton2))),weight) ;
     }
+    else if(variableList.at(iVar).variableName == "dR_LL" ){
+      itVec->histogram->Fill((fabs(lepton1.DeltaR(lepton2))-fabs(genlepton1.DeltaR(genlepton2)))/(fabs(genlepton1.DeltaR(genlepton2))),weight) ;
+    }
+
     else if(variableList.at(iVar).variableName == "met" ){
       itVec->histogram->Fill((met.Pt()-genmet.Pt())/genmet.Pt(),weight) ;
     }

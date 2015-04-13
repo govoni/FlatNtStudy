@@ -83,12 +83,12 @@ class jetContainer {
    btag_(-999),
    jetflavour_(-999){};  
 
-   bool operator < ( const jetContainer & jet2){
+   bool operator < ( const jetContainer & jet2) const {
      if(jet4V_.Pt() < jet2.jet4V_.Pt()) return true;
      else return false;
    };
 
-   bool operator == ( const jetContainer & jet2){
+   bool operator == ( const jetContainer & jet2) const{
      if(jet4V_ == jet2.jet4V_ and jetPUID_ == jet2.jetPUID_ and btag_ == jet2.btag_ and jetflavour_ == jet2.jetflavour_ ) return true;
      else return false;
    };

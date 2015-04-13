@@ -396,3 +396,7 @@ FlatNtStudy
     text2workspace.py WWVBS_mll_LS0.txt -o VBS_SS_Combine.root -P CombineEFT.CommonTools.HigherDimensionalOperators:LS0
     
     combine VBS_SS_Combine.root -M MultiDimFit -P LS0 --floatOtherPOIs=0 --algo=grid --points=1000 --minimizerStrategy=2 -n test_VBS_LS0 -t -1 --expectSignal=1
+
+    For a complete recipe and automatic script look here :
+
+    https://github.com/jasperlauwers/CMS-CombineEFTAnalysis/
