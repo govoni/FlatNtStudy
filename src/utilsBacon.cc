@@ -33,14 +33,14 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 
 
     if(fabs(ele->eta) < 1.5){
-      if(fabs(ele->dz)     < 0.1    and
+      if(fabs(ele->dz)     < 0.01   and
 	 fabs(ele->d0)     < 0.02   and
-	 ele->nMissingHits < 1     and
+	 ele->nMissingHits < 1      and
 	 ele->isConv == 0           and
-	 fabs(ele->dEtaIn) < 0.006  and
-	 fabs(ele->dPhiIn) < 0.07   and
+	 fabs(ele->dEtaIn) < 0.005  and
+	 fabs(ele->dPhiIn) < 0.06   and
 	 fabs(ele->sieie)  < 0.015  and
-	 ele->hovere       < 0.15   and
+	 ele->hovere       < 0.12   and
 	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
   }
     else {
@@ -48,10 +48,10 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 	 fabs(ele->d0) < 0.02   and
 	 ele->nMissingHits <= 1 and
 	 ele->isConv == 0       and
-	 fabs(ele->dEtaIn) < 0.009 and
-	 fabs(ele->dPhiIn) < 0.05  and
+	 fabs(ele->dEtaIn) < 0.008 and
+	 fabs(ele->dPhiIn) < 0.04  and
 	 fabs(ele->sieie)  < 0.04  and
-	 ele->hovere       < 0.45  and
+	 ele->hovere       < 0.40  and
        (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
     }
 

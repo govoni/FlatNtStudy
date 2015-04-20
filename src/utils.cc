@@ -2009,6 +2009,7 @@ void fillHisto( plotter & analysisPlots,
   float dMassW_l2 = 9999, dMassTop_l2 = 9999; 
 
   for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) >2.5) continue;
     if(RecoJets.at(iJet).btag_ >= 1)
       nBjetsL ++;
     if(RecoJets.at(iJet).btag_ >= 2)
@@ -3626,6 +3627,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   // bveto
   int nBjets = 0 ;
   for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) >2.5) continue;
     if(RecoJets.at(iJet).btag_ >= Cut.bTagCut)
       nBjets ++ ;
   }

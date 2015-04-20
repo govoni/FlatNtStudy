@@ -243,6 +243,15 @@ int main (int argc, char ** argv) {
 	    if(variableList.at(iVar).variableName == "mll" and leptonsIsoTight.size() >= 2){
 	      fillEFTWeights(itVec->histogramEFT,(leptonsIsoTight.at(0).lepton4V_+leptonsIsoTight.at(1).lepton4V_).M(),weight.at(iRead),reader);
 	    }
+	    if(variableList.at(iVar).variableName == "mll_v2" and leptonsIsoTight.size() >= 2){
+	      fillEFTWeights(itVec->histogramEFT,(leptonsIsoTight.at(0).lepton4V_+leptonsIsoTight.at(1).lepton4V_).M(),weight.at(iRead),reader);
+	    }
+	    if(variableList.at(iVar).variableName == "mll_v3" and leptonsIsoTight.size() >= 2){
+	      fillEFTWeights(itVec->histogramEFT,(leptonsIsoTight.at(0).lepton4V_+leptonsIsoTight.at(1).lepton4V_).M(),weight.at(iRead),reader);
+	    }
+	    if(variableList.at(iVar).variableName == "mll_v4" and leptonsIsoTight.size() >= 2){
+	      fillEFTWeights(itVec->histogramEFT,(leptonsIsoTight.at(0).lepton4V_+leptonsIsoTight.at(1).lepton4V_).M(),weight.at(iRead),reader);
+	    }
 	    if(variableList.at(iVar).variableName == "ptl1" and leptonsIsoTight.size() >= 2){
 	      fillEFTWeights(itVec->histogramEFT,leptonsIsoTight.at(0).lepton4V_.Pt(),weight.at(iRead),reader);
 	    }
@@ -334,20 +343,21 @@ int main (int argc, char ** argv) {
                 x.push_back(0);
                 y.push_back(1);
             
-                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
+                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_%s_bin_%d",opName[iOp].Data(),histoCont.varName.c_str(),iBin),"");
                 TGraph *graph = new TGraph(x.size(), &x[0], &y[0]);
                 graph->SetMarkerStyle(20);
                 graph->GetYaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
                 graph->GetYaxis()->SetTitleOffset(1.3);
                 graph->GetXaxis()->SetTitle(Form("%s operator (x 10^{-12})",opName[iOp].Data()));
                 graph->Draw("AP");
-                TF1* func = new TF1(TString::Format("bin_function_%d",iBin),"pol2",-1e3,1e3);
+                TF1* func = new TF1(TString::Format("bin_function_%s_%s_%d",opName[iOp].Data(),histoCont.varName.c_str(),iBin),"pol2",-1e3,1e3);
                 func->SetLineWidth(2);
                 graph->Fit(func,"QRME");
                 c->Write();
                 func->Write();
-                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_"+histoCont.varName+"_bin_"+to_string(iBin)+".png").c_str(),"png");
             }
+
             // 2D grid
             else {
                 x.clear();
@@ -366,7 +376,7 @@ int main (int argc, char ** argv) {
                 y.push_back(0);
                 z.push_back(1);
                 
-                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_bin_%d",opName[iOp].Data(),iBin),"");
+                TCanvas *c = new TCanvas(TString::Format("c_opt_%s_%s_bin_%d_2D",opName[iOp].Data(),histoCont.varName.c_str(),iBin),"");
                 TGraph2D *graph = new TGraph2D(x.size(), &x[0], &y[0], &z[0]);
                 graph->SetMarkerStyle(20);
                 graph->GetZaxis()->SetTitle(Form("m_{ll}/m_{ll}^{SM} bin %d",iBin));
@@ -376,17 +386,15 @@ int main (int argc, char ** argv) {
                 graph->GetYaxis()->SetTitle("S1 operator (x 10^{-12})");
                 graph->GetYaxis()->SetTitleOffset(1.5);
                 graph->Draw("p0");
-                TF2* func = new TF2(TString::Format("bin_function_%d",iBin),"[0]+[1]*x+[2]*y+[3]*x*y+[4]*x*x+[5]*y*y", -70, 70, -150, 150);
+                TF2* func = new TF2(TString::Format("bin_function_%s_%s_%d",opName[iOp].Data(),histoCont.varName.c_str(),iBin),"[0]+[1]*x+[2]*y+[3]*x*y+[4]*x*x+[5]*y*y", -70, 70, -150, 150);
                 func->SetParameter(0,1);
                 graph->Fit(func,"QRME");
                 func->Draw("surf1same");
                 c->Write();
                 func->Write();
-                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_bin_"+to_string(iBin)+".png").c_str(),"png");
+                c->SaveAs(("output/"+outputPlotDirectory+"/operator_"+string(opName[iOp])+"_"+histoCont.varName+"_bin_"+to_string(iBin)+".png").c_str(),"png");
             }
-        }// End loop over bins
-        
-//         eftFunctionFile->Close();
+       }// End loop over bins
     }// End loop over operators
   }
   

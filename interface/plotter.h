@@ -352,6 +352,8 @@ class plotter { // generic plotter class
 	m_canvas.Print (Name, "pdf") ;
 	Name.ReplaceAll(".pdf",".png");
 	m_canvas.Print (Name, "png") ;
+	Name.ReplaceAll(".png",".root");
+	m_canvas.Print (Name, "root") ;
       }
       
 

@@ -797,7 +797,7 @@ int main (int argc, char ** argv) {
     itMap->second->Scale(1./(maximumEvents_FullSIM));
     efficiencyRatio.push_back((TH1F*) itMap->second->Clone((itMap->first+"_ratio").c_str()));
     itMap->second->GetYaxis()->SetRangeUser(0.,itMap->second->GetMaximum()*1.3);
-    itMap->second->Draw("hist");    
+    itMap->second->Draw("hist text");    
     itMap->second->SetLineColor(kBlue);
     itMap->second->SetLineWidth(2);
     itMap->second->GetYaxis()->SetTitle("Efficiency");
