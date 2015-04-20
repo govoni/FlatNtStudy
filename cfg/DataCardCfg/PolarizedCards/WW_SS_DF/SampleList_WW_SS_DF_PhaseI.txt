@@ -1,8 +1,9 @@
 ##############################################################################################################################################
 #  Sample Name                                              Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
 ##############################################################################################################################################
-PHANTOM_SS_EWK_DF_126_PhaseI_50PU                           WW_EWK_SS_126          4        4.13649215685881443E-003         1               1
-PHANTOM_SS_EWK_DF_noH_PhaseI_50PU                           WW_EWK_SS_noH          2        4.49200073018412010E-003         1               1
+Madgraph_SS_WW_QED4_QCD0_DECAY_PhaseI_50PU                  WW_EWK_SS_LL      1          0.01022537637                    1               1
+Madgraph_SS_WW_QED4_QCD0_DECAY_PhaseI_50PU                  WW_EWK_SS_LT      2          0.01022537637                    1               0
+Madgraph_SS_WW_QED4_QCD0_DECAY_PhaseI_50PU                  WW_EWK_SS_TT      3          0.01022537637                    1               0
 PHANTOM_OS_QCDwg_DF_PhaseI_50PU                             wrongCharge           417       0.708                            1              -2
 PHANTOM_WZ_EWK_DF_EU_126_PhaseI_50PU                        WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_WZ_EWK_DF_UE_126_PhaseI_50PU                        WZ_EWK                12        1.96E-003                        1               0

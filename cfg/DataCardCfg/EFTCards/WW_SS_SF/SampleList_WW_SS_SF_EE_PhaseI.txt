@@ -1,0 +1,11 @@
+##############################################################################################################################################
+#  Sample Name                                              Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
+##############################################################################################################################################
+Madgraph_SS_WW_QED4_QCD0_DECAY_PhaseI_50PU                  WW_EWK_SS_126      1          0.01022537637                    1               1
+PHANTOM_WZ_EWK_SF_126_2p5_EE                                WZ_EWK                12        1.96E-003                        1               0
+PHANTOM_OS_QCDwg_EE_2p5                                     wrongCharge           417       0.35527                          1              -2
+PHANTOM_SS_QCD_EE_126_2p5                                   WW_QCD                  5       0.533455E-003                    1               0
+PHANTOM_WZ_QCDwg_SF_2p5_EE                                  WZ_QCD                801       8.1326E-003                      1               0
+TTbar_2p5                                                   fakeLepton            861       242.5                            1              -1
+DY2J_ll_2p5                                                 wrongCharge           417       5.5                              1              -2
+W3J_lv_2p5                                                  fakeLepton            861       6.34                             1              -1

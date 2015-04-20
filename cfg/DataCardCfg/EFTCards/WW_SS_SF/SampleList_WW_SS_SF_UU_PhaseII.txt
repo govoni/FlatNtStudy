@@ -1,0 +1,9 @@
+##############################################################################################################################################
+#  Sample Name                                              Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
+##############################################################################################################################################
+Madgraph_SS_WW_QED4_QCD0_DECAY_PhaseII_140PU                  WW_EWK_SS_126      1          0.01022537637                    1               1
+PHANTOM_WZ_EWK_SF_UU_126_PhaseII_140PU                        WZ_EWK                12        1.96E-003                        1               0
+PHANTOM_SS_QCD_UU_126_PhaseII_140PU                           WW_QCD                  5       0.533455E-003                    1               0
+PHANTOM_WZ_QCD_SF_UU_PhaseII_140PU                            WZ_QCD                801       8.1326E-003                      1               0
+TTbar_PhaseII_140PU                                           fakeLepton            861       242.5                            1              -1
+W3J_lv_QED1_QCD3_PhaseII_140PU                                fakeLepton            861       6.34                             1              -1
