@@ -428,10 +428,14 @@ void mergeSample (sample & newSample, sample sample1, sample sample2){
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 plotter::plotter (float  lumi, 
 		  string folderName,
-		  bool   includeSystematics) :
+		  bool   includeSystematics,
+		  string phase,
+		  int    nPU) :
   m_folderName (folderName) ,
   m_lumi (lumi) ,
   m_includeSystematics(includeSystematics),
+  m_phase(phase),
+  m_nPU(nPU),
   m_canvas ("can", "can", 500, 500){
   setRootAspect () ;
 }
@@ -478,6 +482,11 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
 
     string h_name = sampleName + "_" + layerName + "_" + plotName + "_" + to_string(iSample) ;  
     iSample++;
+
+    TString labelTemp = Form("%s",labelName.c_str());
+    labelTemp.ReplaceAll("/_"," ");
+    labelName = labelTemp;
+
     TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
     dummy->GetXaxis()->SetTitle(labelName.c_str()); 
     if(sumW2)
@@ -523,6 +532,9 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
     iSample++;
 
     TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, &binningX[0]) ;
+    TString labelTemp = Form("%s",labelName.c_str());
+    labelTemp.ReplaceAll("/_"," ");
+    labelName = labelTemp;
     dummy->GetXaxis()->SetTitle(labelName.c_str()); 
     if(sumW2)
       dummy->Sumw2 () ;
@@ -577,6 +589,14 @@ void plotter::add2DPlotToLayer (string sampleName,
     TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
                            nBinsX, xMinX, xMaxX,
                            nBinsY, xMinY, xMaxY) ;
+
+    TString labelTempX = Form("%s",labelNameX.c_str());
+    labelTempX.ReplaceAll("/_"," ");
+    labelNameX = labelTempX;
+    TString labelTempY = Form("%s",labelNameY.c_str());
+    labelTempY.ReplaceAll("/_"," ");
+    labelNameY = labelTempY;
+
     dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
     dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
 
@@ -630,6 +650,14 @@ void plotter::add2DPlotToLayer (string sampleName,
     TH2F * dummy = new TH2F (h_name.c_str (), h_name.c_str (), 
                            nBinsX, &binningX[0],
                            nBinsY, &binningY[0]) ;
+
+    TString labelTempX = Form("%s",labelNameX.c_str());
+    labelTempX.ReplaceAll("/_"," ");
+    labelNameX = labelTempX;
+    TString labelTempY = Form("%s",labelNameY.c_str());
+    labelTempY.ReplaceAll("/_"," ");
+    labelNameY = labelTempY;
+
     dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
     dummy->GetYaxis ()->SetTitle (labelNameY.c_str ()) ; 
 
@@ -1341,28 +1369,53 @@ void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax,
 
   TH1F * bkg = m_canvas.DrawFrame (xmin, ymin, xmax, ymax) ;
   bkg->GetXaxis ()->SetTitle (xaxisTitle.c_str ()) ;
+  bkg->GetXaxis ()->SetTitleSize(0.045);
+  bkg->GetXaxis ()->SetLabelSize(0.04);
+
   bkg->GetYaxis ()->SetTitle (yaxisTitle.c_str ()) ;
+  bkg->GetYaxis ()->SetTitleSize(0.05);
+  bkg->GetYaxis ()->SetTitleOffset(1.55);
+  bkg->GetYaxis ()->SetLabelSize(0.04);
+
   bkg->Draw () ;
 
-  TLatex * tex = new TLatex(0.892,0.957," 14 TeV");
-  tex->SetNDC();
-  tex->SetTextAlign(31);
+  TString banner = TString::Format("14 TeV, %d fb^{-1}, PU = %d",int(m_lumi)/1000,m_nPU);
+
+  TLatex * tex;
+  if(m_nPU >=100)
+    tex = new TLatex(0.46,0.96,banner.Data());
+  else
+    tex = new TLatex(0.48,0.96,banner.Data());
+
+  tex->SetNDC(1);
+  tex->SetTextAlign(11);
   tex->SetTextFont(42);
   tex->SetTextSize(0.04);
   tex->SetLineWidth(2);
   tex->Draw();
-  TLatex * tex2 = new TLatex(0.173,0.957,"Delphes");
-  tex2->SetNDC();
+
+  TLatex* tex2 ;
+
+  if(TString(m_phase).Contains("II")){
+    TString banner2 = TString::Format("CMS Phase II Delphes Simulation");
+    tex2 = new TLatex(0.21,0.89,banner2.Data());
+  }
+  else if (TString(m_phase).Contains("Aged")){
+    TString banner2 = TString::Format("CMS Phase I Aged Delphes Simulation");
+    tex2 = new TLatex(0.21,0.89,banner2.Data());
+  }
+  else {
+    TString banner2 = TString::Format("CMS Phase I DelphesSimulation");
+    tex2 = new TLatex(0.21,0.89,banner2.Data());
+
+  }
+
+  tex2->SetNDC(1);
   tex2->SetTextFont(61);
+  tex2->SetTextAlign(11); 
   tex2->SetTextSize(0.04);
   tex2->SetLineWidth(2);
   tex2->Draw();
-  TLatex * tex3 = new TLatex(0.332,0.957,"Simulation Preliminary");
-  tex3->SetNDC();
-  tex3->SetTextFont(52);
-  tex3->SetTextSize(0.035);
-  tex3->SetLineWidth(2);
-  tex3->Draw();
 
   return ;
 }
@@ -1375,6 +1428,10 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
                                 string xaxisTitle, string yaxisTitle, int isLog, string folderName){
 
   prepareSampleForPlotting (sampleName) ; // prepare histo object
+
+  TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
+  xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTitle = xaxisTemp;
 
   int iSample = 0;
 
@@ -1399,7 +1456,10 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
       if(iSample == 0){
 	leg = initLegend (1) ; // crate the legend
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	    name.ReplaceAll("_","_{");
+	    name += "}";
+	}
 	leg->AddEntry (h_var,name.Data(), "fl") ;
       }
 
@@ -1418,7 +1478,10 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
       if(iSample == 0){
 	leg2D = initLegend (1) ;
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");
+	  name += "}";
+	}
 	leg2D->AddEntry (h_var, name.Data(), "fl") ;
       }
       
@@ -1440,6 +1503,10 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
 // plot a single histogram in a layer
 void plotter::plotSingleLayer (string layerName, string histoName, 
                                string xaxisTitle, string yaxisTitle, int isLog, string folderName){ // plot all the samples in a stack for a layer
+
+  TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
+  xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTitle = xaxisTemp;
 
   string name = string ("st_") + layerName + "_" + histoName ;
 
@@ -1464,7 +1531,10 @@ void plotter::plotSingleLayer (string layerName, string histoName,
       stack->Add (h_var) ;
       if(iSub == 0){
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");			
+	  name += "}";
+	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;
       }
       iSub++;
@@ -1488,7 +1558,10 @@ void plotter::plotSingleLayer (string layerName, string histoName,
       stack->Add (h_var) ;
       if(iSub == 0){
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");
+	  name += "}";
+	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;
       }
       iSub++;
@@ -1518,16 +1591,30 @@ void plotter::plotFullLayer (string layerName) { // plot all the layers
        ++iHisto){
 
     if(string(iHisto->second->GetXaxis()->GetTitle()) != ""){
+
+      string yaxis ;
+      if(TString(iHisto->second->GetXaxis()->GetTitle()).Contains("GeV"))
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1))+" GeV";
+      else
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1));
+
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 1, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(), yaxis, 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->second->GetXaxis()->GetTitle(), "#sigma #times lumi", 0, outFolderName) ;
+                       iHisto->second->GetXaxis()->GetTitle(),yaxis, 0, outFolderName) ;
     }
     else {
+
+      string yaxis ;
+      if(TString(iHisto->second->GetXaxis()->GetTitle()).Contains("GeV"))
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1))+" GeV";
+      else
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1));
+
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str(), "#sigma #times lumi", 1, outFolderName) ;
+                       iHisto->first.c_str(), yaxis, 1, outFolderName) ;
       plotSingleLayer (layerName, iHisto->first.c_str (), 
-                       iHisto->first.c_str(), "#sigma #times lumi", 0, outFolderName) ;
+                       iHisto->first.c_str(), yaxis, 0, outFolderName) ;
 
     }
   }   
@@ -1544,6 +1631,11 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
 
   // FIXME isNormalized needs to be implemented
   // FIXME ScaleSignal needs to be implemented
+
+  TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
+  xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTitle = xaxisTemp;
+
   string name = string ("comp_bkg_") + layerName + "_" + histoName ;
 
   THStack * bkg_stack = new THStack (name.c_str (), "") ;
@@ -1567,7 +1659,10 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
       bkg_stack->Add (h_var) ;
       if(iSub == 0){
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");
+	  name += "}";
+	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;
       }
       iSub++;
@@ -1591,7 +1686,10 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
       sig_stack->Add (h_var) ;
       if(iSub == 0){
 	TString name = Form("%s",sampleName.c_str ());
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");
+	  name += "}";
+	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;
       }
       iSub++;
@@ -1623,10 +1721,17 @@ void plotter::compareStoBFullLayer (string layerName, string folderTag){
        iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto){
 
-    compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-		 0, 1., 0, outFolderName) ;
-    compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-		 0, 1., 1, outFolderName) ;
+      string yaxis ;
+      if(TString(iHisto->second->GetXaxis()->GetTitle()).Contains("GeV"))
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1))+" GeV";
+      else
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1));
+
+
+      compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+		   0, 1., 0, outFolderName) ;
+      compareStoB (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+		   0, 1., 1, outFolderName) ;
     }   
   
   return ;
@@ -1643,6 +1748,10 @@ void plotter::compareStoB2D (string layerName, string histoName,
 
   // FIXME isNormalized needs to be implemented
   // FIXME scaleSignal needs to be implemented
+  TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
+  xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTitle = xaxisTemp;
+
   string bkgName = string ("comp_bkg_") + layerName + "_" + histoName ;
   string sigName = string ("comp_sig_") + layerName + "_" + histoName ;
   TH2F * bkg_stack = 0 ;
@@ -1699,6 +1808,7 @@ void plotter::compareStoB2D (string layerName, string histoName,
 void plotter::compareStoBFullLayer2D (string layerName, string folderTag){
 
   // FIXME needs to be finished
+
   string outFolderName = m_folderName + "/compareStoB" + folderTag + "/" + layerName + "/";
   system (Form ("mkdir -p %s", outFolderName.c_str ())) ;
 
@@ -1729,6 +1839,10 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   
   // prepare the first stacks
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+  TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
+  xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTitle = xaxisTemp;
+
   string name = string ("st_SM_") + layerName + "_" + histoName ; // SM = QCD bkg + EWK 126 GeV H
   THStack * SM_stack = new THStack (name.c_str (), "") ;
   name = string ("st_nH_") + layerName + "_" + histoName ;  // no H = QCD bkg + EWK noH
@@ -1774,7 +1888,10 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
       nH_stack->Add (h_var) ;
       if(iSub == 0){
 	TString name = Form("%s",sampleName.c_str ());      
-	name.ReplaceAll("_"," ");
+	if(name.Contains("_")){
+	  name.ReplaceAll("_","_{");
+	  name += "}";
+	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;  
       }
 
@@ -1837,16 +1954,14 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   }
   
   
+  // put the difference in a THStack and compare it to the expected SM measurement
+  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   TH1F * diff = (TH1F *) h_noH->Clone (name.c_str ()) ;
   
   diff->Add (h_sigSM, -1.) ;
   diff->SetLineColor (2) ;
   diff->SetLineWidth (2) ;
   diff->SetFillStyle (0) ;
-  leg->AddEntry (diff, "noH - 126", "fl") ;
-
-  // put the difference in a THStack and compare it to the expected SM measurement
-  // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   name = diff->GetName () ;
   name += "_st" ;
@@ -1864,7 +1979,6 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   SM_histo->SetFillColor (1) ;
   SM_histo->SetLineColor (4) ;
   SM_histo->SetFillStyle (3004) ;
-  leg->AddEntry (SM_histo, "bkg + EWK H126", "fl") ;
 
   // get the histogram of the total shape, of SM bkg + noH hypothesis
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -1876,8 +1990,11 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   nH_histo->SetLineWidth (2) ;
   nH_histo->SetLineStyle (2) ;
   nH_histo->SetFillStyle (0) ;
-  leg->AddEntry (nH_histo, "bkg + noH", "fl") ;
   histos.push_back (stackMe (nH_histo)) ;
+
+  leg->AddEntry (SM_histo, "WW_{EWK} (H_{126})", "fl") ;
+  leg->AddEntry (nH_histo, "WW_{EWK} (noH_{126})", "fl") ;
+  leg->AddEntry (diff,     "WW_{EWK} (noH_{126}-H_{126})", "fl") ;
   
   // do the drawing
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -1962,10 +2079,17 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
        iHisto != m_samples.begin ()->second.at(0).m_sampleContent[layerName].m_histos.end () ; 
        ++iHisto){
 
-    plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-			0, 1., 0, outFolderName) ;
-    plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), "#sigma #times lumi", 
-			0, 1., 1, outFolderName) ;
+      string yaxis ;
+      if(TString(iHisto->second->GetXaxis()->GetTitle()).Contains("GeV"))
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1))+" GeV";
+      else
+	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1));
+
+
+      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			  0, 1., 0, outFolderName) ;
+      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			  0, 1., 1, outFolderName) ;
   }   
   
   return ;
@@ -2989,8 +3113,8 @@ void plotter::resetAll (float lumi){
 
 TLegend* plotter::initLegend (int sampleNum){
 
-  TLegend* leg = new TLegend (0.2, 0.95 - 0.1 * sampleNum * 0.33, 0.87, 0.95) ;
-  leg->SetNColumns (3) ;
+  TLegend* leg = new TLegend (0.2, 0.9 - 0.1 * sampleNum * 0.45, 0.87, 0.86) ;
+  leg->SetNColumns (2) ;
   leg->SetLineStyle (0) ;
   leg->SetFillStyle (0) ;
   return leg ;
@@ -3043,7 +3167,7 @@ void plotter::setRootAspect (){
   
   gStyle->SetPadRightMargin  (0.15)  ;
   gStyle->SetPadLeftMargin   (0.25) ;
-  gStyle->SetPadBottomMargin (0.2) ;
+  gStyle->SetPadBottomMargin (0.22) ;
   gStyle->SetPadTopMargin    (0.1) ;
   
   gStyle->SetTitleSize (0.04, "xyz") ;

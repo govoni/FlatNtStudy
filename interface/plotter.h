@@ -190,7 +190,7 @@ class plotter { // generic plotter class
 
  public:
 
-  plotter (float lumi, string folderName = "plots", bool includeSystematics = false) ;
+  plotter (float lumi, string folderName = "plots", bool includeSystematics = false, string phase = "PhaseII", int nPU = 140) ;
   ~plotter () {} ;
   
   // adding methods
@@ -308,7 +308,7 @@ class plotter { // generic plotter class
       float xmin = histo.at (0)->GetXaxis ()->GetXmin () ;
       float xmax = histo.at (0)->GetXaxis ()->GetXmax () ;
       float ymin = histo.at (0)->GetMinimum () ;
-      float ymax = histo.at (0)->GetMaximum () ;
+      float ymax = histo.at (0)->GetMaximum ()*1.6 ;
 
       for (size_t i = 1 ; i < histo.size () ; ++i){
           histo.at (i)->Draw () ;
@@ -325,7 +325,7 @@ class plotter { // generic plotter class
 
       if (isLog){
 	float lymax = log10 (ymax) + height * (log10 (ymax) - log10 (ymin)) * linesNum ;
-	ymax = pow (10, lymax) ;
+	ymax = pow (10, lymax)*5000 ;
       }
       else 
 	ymax += height * (ymax - ymin) * linesNum ;
@@ -428,6 +428,8 @@ class plotter { // generic plotter class
  string  m_folderName ; 
  float   m_lumi ;
  bool    m_includeSystematics ;
+ string  m_phase;
+ int     m_nPU;
  TCanvas m_canvas ;
 
  unordered_map<string, vector<sample> > m_samples ; //map of sample names and sample object
