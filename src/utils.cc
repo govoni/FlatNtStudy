@@ -636,7 +636,7 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue;
       } 
     }   
-      
+   
     // loop on the cut list
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
@@ -840,7 +840,6 @@ void loopOnEvents (plotter & analysisPlots,
 	  electronsIsoTightRes       = dumpLeptons (electronsAllRes, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
 	  electronsIsoTight          = dumpLeptons (electronsAll, leptonIsoCut_mu, leptonIsoCut_el, minPtLeptonCut);
 
-
 	  // jet scale and resolution sector
 	  for(size_t iJet = 0; iJet < RecoJetsAll.size(); iJet++){
 
@@ -877,9 +876,10 @@ void loopOnEvents (plotter & analysisPlots,
 	  RecoJetsScaleUp   = dumpJets (RecoJetsAllScaleUp,leptonsIsoTight,minJetCutPt,999,CutList.at(iCut).jetPUID,minPtLeptonCutCleaning,matchingCone);
 	  RecoJetsScaleDown = dumpJets (RecoJetsAllScaleDown, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning,matchingCone);
 	  RecoJetsRes       = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
-	}     
 
+	}    
 
+	
 	// analysis with nominal objects
 	if( passCutContainerSelection (CutList.at(iCut),
 				       sampleName,
@@ -898,8 +898,9 @@ void loopOnEvents (plotter & analysisPlots,
 	  
 	  fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		    leptonsIsoTight, softMuons, RecoJets, GenJets, trackEvent, L_met, "",eventFakeWeight);
+	
 	}
-
+	
 	/// if perform sys analysis      
 	if(analysisPlots.getSystematics()){
 
@@ -3470,7 +3471,6 @@ bool passCutContainerSelection (cutContainer & Cut,
   else
     Name = sampleName+ "_pos_"+to_string(samplePosition) ;
 
-
   int iBin = 1;
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
@@ -3480,14 +3480,12 @@ bool passCutContainerSelection (cutContainer & Cut,
 
   if(LeptonsAll.size() < 2 )  return false ; // skip the event --> only two reco leptons are good            
 
-
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
     iBin++;   
   }
 
-   
   // identify tight leptons and require exactly nLep                                                                                                                       
   if (int(leptonsIsoTight.size()) != Cut.nLep ) return false;                                                                                                    
 
@@ -3499,7 +3497,7 @@ bool passCutContainerSelection (cutContainer & Cut,
 
   if (leptonsIsoTight.at(0).lepton4V_.Pt() < Cut.ptL.first) return false;
   if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > Cut.etaMaxL) return false ;
- 
+
   bool badTrailingLepton = false;
   for( size_t iLep = 1 ; iLep < leptonsIsoTight.size(); iLep++){
     if( leptonsIsoTight.at(iLep).lepton4V_.Pt() < Cut.ptL.second or fabs(leptonsIsoTight.at(iLep).lepton4V_.Eta()) > Cut.etaMaxL){
@@ -3513,7 +3511,7 @@ bool passCutContainerSelection (cutContainer & Cut,
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
     iBin++;   
   }
-
+  
   int extraLepton = 0; // count the extra lepton number                                                                                                            
             
   for(size_t iLepton = 0; iLepton < leptonsIsoLoose.size() ; iLepton++){                                                                                             
@@ -3528,7 +3526,7 @@ bool passCutContainerSelection (cutContainer & Cut,
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"extra lepton");
     iBin++;   
   }
-
+  
   // apply Zmass veto: if nLep == 2 is a veto (WW analysis) if nLep == 3 is a tag (WZ analysis)
   bool isZMassVeto = false;                                                                                                                                            
   for(size_t iLept = 0; iLept < LeptonsAll.size() ; iLept++){                                                                                                             
@@ -3761,6 +3759,8 @@ bool passCutContainerSelection (cutContainer & Cut,
       iBin++;   
     }
   } 
+
+
   
   return true;
 
@@ -3819,7 +3819,7 @@ bool passCutContainerSelection (readTree* reader,
   }
   else
     Name = sampleName + "_pos_"+to_string(samplePosition);
-
+  
   int iBin = 1;
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   

@@ -485,6 +485,7 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
 
     TString labelTemp = Form("%s",labelName.c_str());
     labelTemp.ReplaceAll("/_"," ");
+    labelTemp.ReplaceAll("/"," ");
     labelName = labelTemp;
 
     TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, xMin, xMax) ;
@@ -534,6 +535,7 @@ void plotter::addPlotToLayer (string sampleName,   // name of the sample
     TH1F * dummy = new TH1F (h_name.c_str (), h_name.c_str (), nBins, &binningX[0]) ;
     TString labelTemp = Form("%s",labelName.c_str());
     labelTemp.ReplaceAll("/_"," ");
+    labelTemp.ReplaceAll("/"," ");
     labelName = labelTemp;
     dummy->GetXaxis()->SetTitle(labelName.c_str()); 
     if(sumW2)
@@ -592,9 +594,11 @@ void plotter::add2DPlotToLayer (string sampleName,
 
     TString labelTempX = Form("%s",labelNameX.c_str());
     labelTempX.ReplaceAll("/_"," ");
+    labelTempX.ReplaceAll("/"," ");
     labelNameX = labelTempX;
     TString labelTempY = Form("%s",labelNameY.c_str());
     labelTempY.ReplaceAll("/_"," ");
+    labelTempY.ReplaceAll("/"," ");
     labelNameY = labelTempY;
 
     dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
@@ -653,9 +657,11 @@ void plotter::add2DPlotToLayer (string sampleName,
 
     TString labelTempX = Form("%s",labelNameX.c_str());
     labelTempX.ReplaceAll("/_"," ");
+    labelTempX.ReplaceAll("/"," ");
     labelNameX = labelTempX;
     TString labelTempY = Form("%s",labelNameY.c_str());
     labelTempY.ReplaceAll("/_"," ");
+    labelTempY.ReplaceAll("/"," ");
     labelNameY = labelTempY;
 
     dummy->GetXaxis ()->SetTitle (labelNameX.c_str ()) ; 
@@ -1383,9 +1389,9 @@ void plotter::prepareCanvas (float xmin, float xmax, float ymin, float ymax,
 
   TLatex * tex;
   if(m_nPU >=100)
-    tex = new TLatex(0.46,0.96,banner.Data());
+    tex = new TLatex(0.45,0.96,banner.Data());
   else
-    tex = new TLatex(0.48,0.96,banner.Data());
+    tex = new TLatex(0.47,0.96,banner.Data());
 
   tex->SetNDC(1);
   tex->SetTextAlign(11);
@@ -1431,6 +1437,7 @@ void plotter::plotSingleSample (string sampleName, string layerName, string hist
 
   TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
   xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTemp.ReplaceAll("/"," ");
   xaxisTitle = xaxisTemp;
 
   int iSample = 0;
@@ -1506,6 +1513,7 @@ void plotter::plotSingleLayer (string layerName, string histoName,
 
   TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
   xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTemp.ReplaceAll("/"," ");
   xaxisTitle = xaxisTemp;
 
   string name = string ("st_") + layerName + "_" + histoName ;
@@ -1634,6 +1642,7 @@ void plotter::compareStoB (string layerName, string histoName, string xaxisTitle
 
   TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
   xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTemp.ReplaceAll("/"," ");
   xaxisTitle = xaxisTemp;
 
   string name = string ("comp_bkg_") + layerName + "_" + histoName ;
@@ -1750,6 +1759,7 @@ void plotter::compareStoB2D (string layerName, string histoName,
   // FIXME scaleSignal needs to be implemented
   TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
   xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTemp.ReplaceAll("/"," ");
   xaxisTitle = xaxisTemp;
 
   string bkgName = string ("comp_bkg_") + layerName + "_" + histoName ;
@@ -1841,6 +1851,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
   TString xaxisTemp = TString::Format("%s",xaxisTitle.c_str());
   xaxisTemp.ReplaceAll("/_"," ");
+  xaxisTemp.ReplaceAll("/"," ");
   xaxisTitle = xaxisTemp;
 
   string name = string ("st_SM_") + layerName + "_" + histoName ; // SM = QCD bkg + EWK 126 GeV H
@@ -1854,8 +1865,11 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // add bkg to the stack and identify the position of the two signals in the sample
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  vector<int> signalPos (2, 0) ;
-  int sigSamplesNum = 0;
+  vector<int> signalPosH126 ;
+  vector<int> signalPosNoH  ;
+  int sigSamplesNumH126 = 0;
+  int sigSamplesNumNoH = 0;
+
   for (unsigned int iSample = 0 ; iSample < m_samplesSequence.size () ; ++iSample){
 
     string sampleName = m_samplesSequence.at (iSample) ;
@@ -1867,15 +1881,15 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 	itSubSample++){
        
       
-      if (itSubSample->m_isSignal == 1 and TString(sampleName).Contains("126") and iSub == 0) {
-	signalPos.at (0) = iSample ;
-	sigSamplesNum++;
+      if (itSubSample->m_isSignal == 1 and TString(sampleName).Contains("126")) {
+	signalPosH126.push_back(iSample);
+	sigSamplesNumH126++;
 	continue ;
       }
 
       else if (itSubSample->m_isSignal == 1 and TString(sampleName).Contains("noH")) {
-	signalPos.at (1) = iSample ;
-	sigSamplesNum++;
+	signalPosNoH.push_back(iSample);
+	sigSamplesNumNoH++;
 	continue ;
       }
       
@@ -1894,21 +1908,20 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 	}
 	leg->AddEntry (h_var, name.Data(), "fl") ;  
       }
-
       iSub++;
     }
     
   }
   
-  if (2 != sigSamplesNum){
-    cout << "ERROR: found " << sigSamplesNum << " signal samples, exiting" << endl ;
+  if (sigSamplesNumH126 != sigSamplesNumNoH){
+    cout << "ERROR: found " << sigSamplesNumH126 << " signal samples for H126 and "<<sigSamplesNumNoH<<" for noH exiting" << endl ;
     exit (1) ;
   }
   
   // add the first signal to the stack, to bild up the total SM expectations
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  string sampleName = m_samplesSequence.at (signalPos.at (0)) ;
+  string sampleName = m_samplesSequence.at (signalPosH126.at (0)) ;
 
   int iSub = 0;
   TH1F* h_sigSM = 0;
@@ -1922,16 +1935,15 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
     else 
       h_sigSM->Add(itSample->m_sampleContent[layerName].m_histos[histoName]);
 
-    SM_stack->Add (itSample->m_sampleContent[layerName].m_histos[histoName]) ;
-
     iSub++;
   }
 
-  
+  SM_stack->Add (h_sigSM) ;
+
   // calculate the difference between noH and SM126
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
-  sampleName = m_samplesSequence.at (signalPos.at (1)) ;
+  sampleName = m_samplesSequence.at (signalPosNoH.at (0)) ;
   iSub = 0;
   TH1F * h_noH = 0 ;
   for(vector<sample>::iterator itSample = m_samples[sampleName].begin();
@@ -1943,8 +1955,6 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
     else
       h_noH->Add(itSample->m_sampleContent[layerName].m_histos[histoName]);  
 
-    nH_stack->Add (h_noH) ;
-
     if(iSub == 0){
       name = "diff_" ;
       name += h_noH->GetName () ;
@@ -1952,7 +1962,9 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 
     iSub++;
   }
-  
+
+  nH_stack->Add (h_noH) ;
+
   
   // put the difference in a THStack and compare it to the expected SM measurement
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
@@ -2048,16 +2060,33 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   h_significance->SetLineColor (4) ;
   h_significance->SetLineWidth (2) ;
   
-
-  leg2->AddEntry (h_tot_SM_err, "SM fluct", "fl") ;
-  leg2->AddEntry (diff, "noH - 126", "fl") ;
+  leg2->AddEntry (h_tot_SM_err,   "SM fluct", "fl") ;
+  leg2->AddEntry (diff,           "noH - 126", "fl") ;
   leg2->AddEntry (h_significance, "(noH - 126)/#sigma_{SM} ", "l") ;
 
   vector<TH1F *> histos2 ;
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
   histos2.push_back (h_significance) ;
-  DrawPlots (histos2, *leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName) ;
+  DrawPlots (histos2, *leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName,false) ;
+
+  filename = folderName +"err_st_" + string(histos.at (0)->GetName ());
+  Name = TString::Format("%s",filename.c_str());
+  Name.ReplaceAll("#","");
+  Name.ReplaceAll("{","");
+  Name.ReplaceAll("}","");
+  Name.ReplaceAll("[","");
+  Name.ReplaceAll("]","");
+  Name.ReplaceAll("^","");
+  Name.ReplaceAll("__","_");
+  Name.ReplaceAll("..",".");
+  if (isLog) Name += "_log" ;
+  Name += ".pdf" ;
+  m_canvas.Print (Name, "pdf") ;
+  Name.ReplaceAll("pdf","png");
+  m_canvas.Print (Name, "png") ;
+  Name.ReplaceAll("png","root");
+  m_canvas.Print (Name, "root") ;
   
   return ;
 }
