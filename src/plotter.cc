@@ -1844,7 +1844,7 @@ void plotter::compareStoBFullLayer2D (string layerName, string folderTag){
 
 void plotter::plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle, 
                                   bool isNormalized, float scaleSignal, int isLog,
-                                  string folderName){
+                                  string folderName, bool saveMacro){
 
   
   // prepare the first stacks
@@ -2010,14 +2010,16 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   
   // do the drawing
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-  DrawPlots (histos, *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName, false) ;
+  system(("mkdir -p "+folderName+"/stacks/").c_str());
+  string folderNameStack = folderName+"/stacks/";
+  DrawPlots (histos, *leg, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderNameStack, false) ;
   SM_histo->Draw ("E2same") ; // draw the error band on the SM THstack
 
   if (isLog) m_canvas.SetLogy (1) ;
   m_canvas.RedrawAxis () ;    
   leg->Draw () ;
 
-  string filename = folderName + histos.at (0)->GetName () ;
+  string filename = folderNameStack + histos.at (0)->GetName () ;
   TString Name (filename.c_str());
   Name.ReplaceAll("#","");
   Name.ReplaceAll("{","");
@@ -2035,7 +2037,11 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   m_canvas.Print (Name, "png") ;
   Name.ReplaceAll("png","root");
   m_canvas.Print (Name, "root") ;
-  
+  if(saveMacro){
+    Name.ReplaceAll("root","C");
+    m_canvas.Print (Name, "C") ;
+  }
+    
 
   if (isLog) m_canvas.SetLogy (0) ;
 
@@ -2044,9 +2050,9 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
   TLegend* leg2 = initLegend (2) ;
-  TH1F * h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
-  TH1F * h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
-  TH1F * h_significance  = (TH1F *) diff->Clone(("h_significance_"+string(h_noH->GetName())).c_str()) ;  
+  TH1F *   h_tot_SM     = (TH1F *) SM_stack->GetStack ()->Last () ;  
+  TH1F *   h_tot_SM_err = getHistoOfErrors (h_tot_SM,isLog) ;
+  TH1F *   h_significance  = (TH1F *) diff->Clone(("h_significance_"+string(h_noH->GetName())).c_str()) ;  
 
   for(int iBin = 0; iBin < h_significance->GetNbinsX()+1; iBin++){
     if(h_tot_SM_err->GetBinContent(iBin+1) == 0) h_significance->SetBinContent(iBin+1,0.);
@@ -2068,9 +2074,12 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   histos2.push_back (h_tot_SM_err) ;
   histos2.push_back (diff) ;
   histos2.push_back (h_significance) ;
-  DrawPlots (histos2, *leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderName,false) ;
 
-  filename = folderName +"err_st_" + string(histos.at (0)->GetName ());
+  system(("mkdir -p "+folderName+"/HvsNoH/").c_str());
+  string folderNameErr = folderName+"/HvsNoH/";
+  DrawPlots (histos2, *leg2, m_samplesSequence.size (), xaxisTitle, yaxisTitle, isLog, folderNameErr,false) ;
+
+  filename = folderNameErr +"err_st_" + string(histos.at (0)->GetName ());
   Name = TString::Format("%s",filename.c_str());
   Name.ReplaceAll("#","");
   Name.ReplaceAll("{","");
@@ -2087,6 +2096,10 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
   m_canvas.Print (Name, "png") ;
   Name.ReplaceAll("png","root");
   m_canvas.Print (Name, "root") ;
+  if(saveMacro){
+    Name.ReplaceAll("root","C");
+    m_canvas.Print (Name, "C") ;
+  }
   
   return ;
 }
@@ -2096,7 +2109,7 @@ void plotter::plotRelativeExcess (string layerName, string histoName, string xax
 // ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
 
-void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
+void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder, bool saveMacro){
 
   // FIXME needs to be finished
   string outFolderName = m_folderName + "/" + basefolder + "/relExcess/" + layerName + "/";
@@ -2115,10 +2128,18 @@ void plotter::plotRelativeExcessFullLayer (string layerName, string basefolder){
 	yaxis = "Events / "+TString::Format("%.2f",iHisto->second->GetBinWidth(1));
 
 
-      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
-			  0, 1., 0, outFolderName) ;
-      plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
-			  0, 1., 1, outFolderName) ;
+      if(saveMacro){
+	plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			    0, 1., 0, outFolderName, true) ;
+	plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			    0, 1., 1, outFolderName, true) ;
+      }
+      else {
+	plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			    0, 1., 0, outFolderName, false) ;
+	plotRelativeExcess (layerName, iHisto->first.c_str (), iHisto->first.c_str (), yaxis, 
+			    0, 1., 1, outFolderName, false) ;
+      }
   }   
   
   return ;

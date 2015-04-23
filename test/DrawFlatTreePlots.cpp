@@ -177,7 +177,7 @@ int main (int argc, char ** argv) {
   analysisPlots.setPoissonErrors () ;
   for(size_t iCut = 0; iCut < CutList.size(); iCut++){
     analysisPlots.printEventNumber(CutList.at(iCut).cutLayerName,"DeltaPhi_LL");
-    analysisPlots.plotRelativeExcessFullLayer (CutList.at(iCut).cutLayerName, outputPlotDirectory) ;
+    analysisPlots.plotRelativeExcessFullLayer (CutList.at(iCut).cutLayerName, outputPlotDirectory,true) ;
   }
   
   TFile* outputEfficiency = new TFile(("output/"+outputPlotDirectory+"/outputEfficiency.root").c_str(),"RECREATE");

@@ -274,9 +274,9 @@ class plotter { // generic plotter class
   // Plot relatve excess
   void plotRelativeExcess (string layerName, string histoName, string xaxisTitle, string yaxisTitle,
 			   bool isNormalized = false, float scaleSignal = 1., int isLog = 0.,
-			   string folderName = "") ;
+			   string folderName = "", bool saveMacro = false) ;
 
-  void plotRelativeExcessFullLayer (string layerName, string basefolder = ".") ;
+  void plotRelativeExcessFullLayer (string layerName, string basefolder = ".", bool saveMacro = false) ;
 
   // scale all histos
   void scaleAllHistos (float scaleFactor) ;
@@ -318,7 +318,7 @@ class plotter { // generic plotter class
           if (histo.at (i)->GetMaximum () > ymax) ymax = histo.at (i)->GetMaximum () ;
       }
 
-      if (isLog && ymin <= 0) ymin = 0.001 ;
+      if (isLog) ymin = 0.1 ;
 
       float height = 0.17 ;
       float linesNum = sampleNum / 3 + 1 * (sampleNum % 3) ;
