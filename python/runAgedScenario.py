@@ -97,8 +97,19 @@ if __name__ == '__main__':
                     continue ;
 
                 if ifile.split(" ")[0] != "rate" and ifile.split(" ")[0] != "process" :
+                    if ifile.split(" ")[0] == "CMS_btag_eff" :
+                        newline = ifile.replace("1.040","1.100");                        
+                        fileNew.write(newline);
+                        continue;
+                    if ifile.split(" ")[0] == "CMS_lep_eff_mu" :
+                        newline = ifile.replace("1.020","1.030");                        
+                        fileNew.write(newline);
+                        continue;
+                    if ifile.split(" ")[0] == "CMS_lep_eff_el" :
+                        newline = ifile.replace("1.020","1.030");                        
+                        fileNew.write(newline);
+                        continue;
                     fileNew.write(ifile);
-                    continue;
 
                 if ifile.split(" ")[0] == "process" and iproc ==0:
                     iproc = 1 ;
@@ -106,7 +117,7 @@ if __name__ == '__main__':
                     icol = 0;
                     for columns in ifile.split() :
                         if options.datacardType == 0 :
-                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("WW_EWK") and not ROOT.TString(columns).Contains("HminusNoH") :
+                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("WW_EWK") :
                                 icol = icol+1;
                                 continue;
                             else :
@@ -122,7 +133,7 @@ if __name__ == '__main__':
                                 icol = icol+1;
                                 continue;
                         elif options.datacardType== 2 :
-                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("HminusNoH") :
+                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("HminusNoH") and not ROOT.TString(columns).Contains("WW_EWK") :
                                 icol = icol+1;
                                 continue;
                             else :
@@ -163,14 +174,126 @@ if __name__ == '__main__':
                         continue ;
                     outrootfile.cd();                  
                     histo = inputrootfile.Get(key.GetName()).Clone("temp");
+
+                    ## muons
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_muUp") :
+                        centralName = key.GetName().replace("_CMS_scale_muUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_muUp") :
+                        centralName = key.GetName().replace("_CMS_res_muUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_muDown") :
+                        centralName = key.GetName().replace("_CMS_scale_muDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_muDown") :
+                        centralName = key.GetName().replace("_CMS_res_muDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+
+                    ## electrons
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_elUp") :
+                        centralName = key.GetName().replace("_CMS_scale_elUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_elUp") :
+                        centralName = key.GetName().replace("_CMS_res_elUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_elDown") :
+                        centralName = key.GetName().replace("_CMS_scale_elDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_elDown") :
+                        centralName = key.GetName().replace("_CMS_res_elDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+                    ## jets
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_jUp") :
+                        centralName = key.GetName().replace("_CMS_scale_jUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_jUp") :
+                        centralName = key.GetName().replace("_CMS_res_jUp","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+
+                    if ROOT.TString(key.GetName()).Contains("CMS_scale_jDown") :
+                        centralName = key.GetName().replace("_CMS_scale_jDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+                            
+                    elif ROOT.TString(key.GetName()).Contains("CMS_res_jDown") :
+                        centralName = key.GetName().replace("_CMS_res_jDown","")
+                        histo2 = inputrootfile.Get(centralName).Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.35);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+                    elif ROOT.TString(key.GetName()).Contains("CMS_fakeLep") :
+                        histo2 = inputrootfile.Get("histo_fakeLepton").Clone("tempCentral")
+                        for ibin in  range(histo.GetNbinsX()):
+                            histo.SetBinContent(ibin+1,histo.GetBinContent(ibin+1)+(histo.GetBinContent(ibin+1)-histo2.GetBinContent(ibin+1))*0.30);
+                            if histo.GetBinContent(ibin+1) <= 0 : 
+                                histo.SetBinContent(ibin+1,0.00001);
+
+
                     if options.datacardType == 0 :
-                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("WW_EWK") or ROOT.TString(key.GetName()).Contains("HminusNoH"):       
+                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("WW_EWK") :       
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 1:
                         if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("_LL") :
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 2 :
-                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("HminusNoH") :
+                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("HminusNoH") or ROOT.TString(key.GetName()).Contains("WW_EWK") :
                             histo.Scale(options.rescaleFactor);
 
 
