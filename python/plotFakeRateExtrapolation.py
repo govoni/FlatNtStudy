@@ -569,6 +569,11 @@ def makeProfileLikelihoodPlot(filelist):
 
     can.SetLogy(0);
 
+    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsFake.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    gr_exp.Write("signficance_graph");
+    fileOut.Close();
+
+
     evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10) ;
     evolution.SetParameter (0, gr_exp.GetMaximum()) ;
     evolution.SetParameter (1, 0.5) ;
@@ -597,10 +602,6 @@ def makeProfileLikelihoodPlot(filelist):
     can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.pdf"%(options.outputPlotDIR,options.channel));
 
-    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsFake.root"%(options.outputPlotDIR,options.channel),"RECREATE")
-    evolution.Write("significance_fit");
-    gr_exp.Write("signficance_graph");
-    fileOut.Close();
 
 
 ####################################
@@ -843,6 +844,12 @@ def makeUncertaintyPlot(filelist):
     can.SaveAs("%s/mu_uncertainty_%s_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/mu_uncertainty_%s_log.pdf"%(options.outputPlotDIR,options.channel));
 
+    fileOut = ROOT.TFile("%s/mu_uncertainty_%s.root"%(options.outputPlotDIR,options.channel),"RECREATE");
+    gr_mu_2s.Write("mu_2s");
+    gr_mu_1s.Write("mu_1s");
+    fileOut.Close();
+
+    
     can.SetLogy(0);
 
     evolution_1s = ROOT.TF1 ("evolution_1s", "pol1", 0, 10) ;

@@ -578,6 +578,11 @@ def makeProfileLikelihoodPlot(filelist):
     can.SaveAs("%s/ProfileLikelihood_%s_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_log.pdf"%(options.outputPlotDIR,options.channel));
 
+
+    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsLumi.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    gr_exp.Write("signficance_graph");
+    fileOut.Close();
+
     ## make the fi
     can.SetLogy(0);
 
@@ -619,11 +624,6 @@ def makeProfileLikelihoodPlot(filelist):
 
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.pdf"%(options.outputPlotDIR,options.channel));
-
-    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsLumi.root"%(options.outputPlotDIR,options.channel),"RECREATE")
-    evolution.Write("significance_fit");
-    gr_exp.Write("signficance_graph");
-    fileOut.Close();
 
 
 
@@ -870,6 +870,11 @@ def makeUncertaintyPlot(filelist):
 
     can.SaveAs("%s/mu_uncertainty_%s_log.pdf"%(options.outputPlotDIR,options.channel),"pdf");
     can.SaveAs("%s/mu_uncertainty_%s_log.png"%(options.outputPlotDIR,options.channel),"png");
+
+    fileOut = ROOT.TFile("%s/mu_uncertainty_%s.root"%(options.outputPlotDIR,options.channel),"RECREATE");
+    gr_mu_2s.Write("mu_2s");
+    gr_mu_1s.Write("mu_1s");
+    fileOut.Close();
 
     can.SetLogy(0);
 

@@ -147,7 +147,7 @@ int main (int argc, char ** argv) {
 
       numBefore += itSubSample->numBefore;
       chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
-
+      
       int totEvent = chain->GetEntries();
 
       ReadTree.push_back( new readTree((TTree*)(chain))); // reader for chain trees
