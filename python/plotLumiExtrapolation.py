@@ -38,7 +38,7 @@ parser.add_option('--makeUncertaintyPlot',          action="store", type="int", 
 
 (options, args) = parser.parse_args()
 
-luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000];
+luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000,4000,5000,6000];
 
 ########################################
 ###### Make Asymptotic Limit Plot ######
@@ -473,6 +473,12 @@ def makeAsymptoticLimitPlot(filelist):
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.png"%(options.outputPlotDIR,options.channel));
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.pdf"%(options.outputPlotDIR,options.channel));
 
+    fileOut = ROOT.TFile("%s/Asymptotic_%s.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    curGraph_2s.Write("limit_2s");
+    curGraph_1s.Write("limit_1s");
+    curGraph_exp.Write("limit_exp");
+    fileOut.Close();
+
 
 ##############################
 #### Make SM PValue Plots ####  
@@ -605,6 +611,7 @@ def makeProfileLikelihoodPlot(filelist):
     gr_exp.Draw("P");
     evolution.Draw("same");
 
+
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi.pdf"%(options.outputPlotDIR,options.channel));
 
@@ -613,6 +620,10 @@ def makeProfileLikelihoodPlot(filelist):
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_vsLumi_log.pdf"%(options.outputPlotDIR,options.channel));
 
+    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsLumi.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    evolution.Write("significance_fit");
+    gr_exp.Write("signficance_graph");
+    fileOut.Close();
 
 
 

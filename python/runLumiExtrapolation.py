@@ -44,7 +44,7 @@ parser.add_option('--bruteForce',            action="store", type="int",    dest
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
-luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000];
+luminosity     = [20,50,100,150,250,500,750,1200,1800,2400,3000,4000,5000,6000];
 
 (options, args) = parser.parse_args()
 

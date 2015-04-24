@@ -37,7 +37,7 @@ parser.add_option('--makeUncertaintyPlot',          action="store", type="int", 
 
 (options, args) = parser.parse_args()
 
-fakeRateScaleFactor     = [0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0];
+fakeRateScaleFactor     = [0.1,0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0,6.5,8.0,10.0];
 
 ########################################
 ###### Make Asymptotic Limit Plot ######
@@ -463,6 +463,12 @@ def makeAsymptoticLimitPlot(filelist):
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.pdf"%(options.outputPlotDIR,options.channel));
     can_SM.SaveAs("%s/AsymptoticLimit_%s_log.root"%(options.outputPlotDIR,options.channel));
 
+    fileOut = ROOT.TFile("%s/Asymptotic_%s.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    curGraph_2s.Write("limit_2s");
+    curGraph_1s.Write("limit_1s");
+    curGraph_exp.Write("limit_exp");
+    fileOut.Close();
+
 
 ##############################
 #### Make SM PValue Plots ####  
@@ -563,7 +569,7 @@ def makeProfileLikelihoodPlot(filelist):
 
     can.SetLogy(0);
 
-    evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 30) ;
+    evolution = ROOT.TF1 ("evolution", "[0]/TMath::Sqrt([2]*[2] +[1]*[1]*x)", 0, 10) ;
     evolution.SetParameter (0, gr_exp.GetMaximum()) ;
     evolution.SetParameter (1, 0.5) ;
     evolution.SetParameter (2, 0.5) ;
@@ -591,6 +597,10 @@ def makeProfileLikelihoodPlot(filelist):
     can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.png"%(options.outputPlotDIR,options.channel));
     can.SaveAs("%s/ProfileLikelihood_%s_vsFake_log.pdf"%(options.outputPlotDIR,options.channel));
 
+    fileOut = ROOT.TFile("%s/ProfileLikelihood_%s_vsFake.root"%(options.outputPlotDIR,options.channel),"RECREATE")
+    evolution.Write("significance_fit");
+    gr_exp.Write("signficance_graph");
+    fileOut.Close();
 
 
 ####################################
@@ -835,10 +845,10 @@ def makeUncertaintyPlot(filelist):
 
     can.SetLogy(0);
 
-    evolution_1s = ROOT.TF1 ("evolution_1s", "pol1", 0, 30) ;
+    evolution_1s = ROOT.TF1 ("evolution_1s", "pol1", 0, 10) ;
     gr_mu_1s.Fit ("evolution_1s","RMEQEX0") ;
 
-    evolution_2s = ROOT.TF1 ("evolution_2s", "pol1", 0, 30) ;
+    evolution_2s = ROOT.TF1 ("evolution_2s", "pol1", 0, 10) ;
     gr_mu_2s.Fit ("evolution_2s","RMEQEX0") ;
 
     can.cd();
@@ -858,20 +868,20 @@ def makeUncertaintyPlot(filelist):
     evolution_1s.GetYaxis().SetTitle("#mu uncertainty");
     evolution_2s.GetYaxis().SetTitle("#mu uncertainty");
 
-    evolution_1s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
-    evolution_2s.GetXaxis().SetTitle("Luminosity (fb^{-1})");
+    evolution_1s.GetXaxis().SetTitle("fake rate scale factor");
+    evolution_2s.GetXaxis().SetTitle("fake rate scale factor");
     gr_mu_1s.Draw("P");
     gr_mu_2s.Draw("Psame");
     evolution_1s.Draw("same");
     evolution_2s.Draw("same");
 
-    can.SaveAs("%s/mu_uncertainty_%s_vsLumi.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/mu_uncertainty_%s_vsLumi.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsFake.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsFake.pdf"%(options.outputPlotDIR,options.channel));
 
     can.SetLogy();
 
-    can.SaveAs("%s/mu_uncertainty_%s_vsLumi_log.png"%(options.outputPlotDIR,options.channel));
-    can.SaveAs("%s/mu_uncertainty_%s_vsLumi_log.pdf"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsFake_log.png"%(options.outputPlotDIR,options.channel));
+    can.SaveAs("%s/mu_uncertainty_%s_vsFake_log.pdf"%(options.outputPlotDIR,options.channel));
 
 
 ##################################

@@ -44,7 +44,7 @@ parser.add_option('--bruteForce',            action="store", type="int",    dest
 parser.add_option('--rMin',          action="store", type=float, dest="rMin", default=0)
 parser.add_option('--rMax',          action="store", type=float, dest="rMax", default=10)
 
-fakeRateScaleFactor     = [0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0];
+fakeRateScaleFactor     = [0.1,0.2,0.5,0.7,0.8,0.9,1.1,1.2,1.5,2,2.5,3.0,4.0,5.0,6.5,8.0,10.0];
 
 (options, args) = parser.parse_args()
 
