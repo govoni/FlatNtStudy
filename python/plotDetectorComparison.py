@@ -3,6 +3,7 @@ import os
 import glob
 import math
 from array import array
+import numpy as numpy
 import sys
 import time
 import subprocess
@@ -130,6 +131,13 @@ if __name__ == '__main__':
     tex2.SetLineWidth(2);
     tex2.SetTextSize(0.04);
 
+    tex3 = ROOT.TLatex(0.67,0.96,"14 TeV, 3000 fb^{-1}");
+    tex3.SetNDC(1);
+    tex3.SetTextAlign(11);
+    tex3.SetTextFont(42);
+    tex3.SetTextSize(0.04);
+    tex3.SetLineWidth(2);
+
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs lumi
     filePolarizedPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
 
@@ -197,6 +205,8 @@ if __name__ == '__main__':
     os.system("mkdir -p output/detectorComparison/");
     os.system("rm output/detectorComparison/*");
 
+    can.RedrawAxis();
+
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.png","png");
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.pdf","pdf");
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.root","root");
@@ -254,7 +264,7 @@ if __name__ == '__main__':
     significanceAged_vsFake.SetMarkerColor(ROOT.kBlue);
     significanceAged_vsFake.Draw("plsame");
 
-    tex.Draw();
+    tex3.Draw();
     tex2.Draw();
 
     legend2 = ROOT.TLegend(0.45,0.55,0.85,0.75);
@@ -267,6 +277,8 @@ if __name__ == '__main__':
     legend2.AddEntry(significanceAged_vsFake,    "Phase I aged 140 PU","pl");
     legend2.AddEntry(significancePhaseII_vsFake, "Phase II 140 PU","pl");
     legend2.Draw();
+
+    can2.RedrawAxis();
     
     can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.png","png");
     can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.pdf","pdf");
@@ -301,11 +313,11 @@ if __name__ == '__main__':
     frame3 = can3.DrawFrame(limitPhaseI_vsLumi.GetXaxis().GetXmin(),
                           min(ROOT.TMath.MinElement(limitPhaseI_vsLumi.GetN(),limitPhaseI_vsLumi.GetY()),
                           min(ROOT.TMath.MinElement(limitPhaseII_vsLumi.GetN(),limitPhaseII_vsLumi.GetY()),
-                              ROOT.TMath.MinElement(limitAged_vsLumi.GetN(),limitAged_vsLumi.GetY())))*0.8,
+                              ROOT.TMath.MinElement(limitAged_vsLumi.GetN(),limitAged_vsLumi.GetY())))*0.7,
                             limitPhaseI_vsLumi.GetXaxis().GetXmax(),
                           max(ROOT.TMath.MaxElement(limitPhaseI_vsLumi.GetN(),limitPhaseI_vsLumi.GetY()),
                           max(ROOT.TMath.MaxElement(limitPhaseII_vsLumi.GetN(),limitPhaseII_vsLumi.GetY()),
-                              ROOT.TMath.MaxElement(limitAged_vsLumi.GetN(),limitAged_vsLumi.GetY())))*1.2);
+                              ROOT.TMath.MaxElement(limitAged_vsLumi.GetN(),limitAged_vsLumi.GetY())))*1.25);
 
     frame3.GetXaxis().SetTitle("Luminosity (fb^{-1})");
     frame3.GetXaxis().SetTitleSize(0.045);
@@ -342,6 +354,8 @@ if __name__ == '__main__':
     legend3.Draw();
 
     can3.SetLogy();
+    can3.RedrawAxis();
+
     can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.png","png");
     can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.pdf","pdf");
     can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.root","root");
@@ -376,11 +390,11 @@ if __name__ == '__main__':
     frame4 = can4.DrawFrame(limitPhaseI_vsFake.GetXaxis().GetXmin(),
                           min(ROOT.TMath.MinElement(limitPhaseI_vsFake.GetN(),limitPhaseI_vsFake.GetY()),
                           min(ROOT.TMath.MinElement(limitPhaseII_vsFake.GetN(),limitPhaseII_vsFake.GetY()),
-                              ROOT.TMath.MinElement(limitAged_vsFake.GetN(),limitAged_vsFake.GetY())))*0.8,                            
+                              ROOT.TMath.MinElement(limitAged_vsFake.GetN(),limitAged_vsFake.GetY())))*0.4,                            
                             limitPhaseI_vsFake.GetXaxis().GetXmax(),
                           max(ROOT.TMath.MaxElement(limitPhaseI_vsFake.GetN(),limitPhaseI_vsFake.GetY()),
                           max(ROOT.TMath.MaxElement(limitPhaseII_vsFake.GetN(),limitPhaseII_vsFake.GetY()),
-                              ROOT.TMath.MaxElement(limitAged_vsFake.GetN(),limitAged_vsFake.GetY())))*1.2);
+                              ROOT.TMath.MaxElement(limitAged_vsFake.GetN(),limitAged_vsFake.GetY())))*1.15);
 
     frame4.GetXaxis().SetTitle("fake rate scale factor");
     frame4.GetXaxis().SetTitleSize(0.045);
@@ -408,7 +422,7 @@ if __name__ == '__main__':
     limitAged_vsFake.SetMarkerColor(ROOT.kBlue);
     limitAged_vsFake.Draw("plsame");
 
-    tex.Draw();
+    tex3.Draw();
     tex2.Draw();
 
     legend4.AddEntry(limitPhaseI_vsFake, "Phase I 50 PU","pl");
@@ -416,7 +430,7 @@ if __name__ == '__main__':
     legend4.AddEntry(limitPhaseII_vsFake,"Phase II 140 PU","pl");
     legend4.Draw();
 
-    can4.SetLogy();
+    can4.RedrawAxis();
     can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.png","png");
     can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.pdf","pdf");
     can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.root","root");
@@ -440,7 +454,7 @@ if __name__ == '__main__':
 
     can5 = ROOT.TCanvas("can5","can5",600,600);
 
-    legend5 = ROOT.TLegend(0.45,0.35,0.85,0.55);
+    legend5 = ROOT.TLegend(0.45,0.55,0.85,0.75);
     legend5.SetFillColor(0);
     legend5.SetFillStyle(0);
     legend5.SetBorderSize(0);
@@ -450,7 +464,7 @@ if __name__ == '__main__':
     frame5= can5.DrawFrame(fitPhaseI_vsLumi.GetXaxis().GetXmin(),
                           min(ROOT.TMath.MinElement(fitPhaseI_vsLumi.GetN(),fitPhaseI_vsLumi.GetY()),
                           min(ROOT.TMath.MinElement(fitPhaseII_vsLumi.GetN(),fitPhaseII_vsLumi.GetY()),
-                              ROOT.TMath.MinElement(fitAged_vsLumi.GetN(),fitAged_vsLumi.GetY())))*0.8,                              
+                              ROOT.TMath.MinElement(fitAged_vsLumi.GetN(),fitAged_vsLumi.GetY())))*0.7,                              
                            fitPhaseI_vsLumi.GetXaxis().GetXmax(),
                           max(ROOT.TMath.MaxElement(fitPhaseI_vsLumi.GetN(),fitPhaseI_vsLumi.GetY()),
                           max(ROOT.TMath.MaxElement(fitPhaseII_vsLumi.GetN(),fitPhaseII_vsLumi.GetY()),
@@ -467,6 +481,49 @@ if __name__ == '__main__':
 
     fitPhaseI_vsLumi.SetMarkerSize(1.1);
     fitPhaseI_vsLumi.SetLineStyle(1);
+
+    arrayX_buffer = fitPhaseI_vsLumi.GetX();
+    arrayY_buffer = fitPhaseI_vsLumi.GetY();
+    arrayX_buffer.SetSize(fitPhaseI_vsLumi.GetN());
+    arrayY_buffer.SetSize(fitPhaseI_vsLumi.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = sorted(arrayY, reverse=True) ;
+
+    for ipoint in range(fitPhaseI_vsLumi.GetN()):
+      fitPhaseI_vsLumi.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
+
+    arrayX_buffer = fitPhaseII_vsLumi.GetX();
+    arrayY_buffer = fitPhaseII_vsLumi.GetY();
+    arrayX_buffer.SetSize(fitPhaseII_vsLumi.GetN());
+    arrayY_buffer.SetSize(fitPhaseII_vsLumi.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = sorted(arrayY, reverse=True) ;
+
+    for ipoint in range(fitPhaseII_vsLumi.GetN()):
+      fitPhaseII_vsLumi.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
+
+    arrayX_buffer = fitAged_vsLumi.GetX();
+    arrayY_buffer = fitAged_vsLumi.GetY();
+    arrayX_buffer.SetSize(fitAged_vsLumi.GetN());
+    arrayY_buffer.SetSize(fitAged_vsLumi.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = sorted(arrayY, reverse=True) ;
+
+    for ipoint in range(fitAged_vsLumi.GetN()):
+      fitAged_vsLumi.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
+
     fitPhaseI_vsLumi.Draw("pl");
 
     fitPhaseII_vsLumi.SetMarkerSize(1.1);
@@ -489,11 +546,12 @@ if __name__ == '__main__':
     legend5.AddEntry(fitPhaseII_vsLumi,"Phase II 140 PU","pl");
     legend5.Draw();
 
-    can3.SetLogy();
-    can3.SaveAs("output/detectorComparison/Inclusive_vsLumi.png","png");
-    can3.SaveAs("output/detectorComparison/Inclusive_vsLumi.pdf","pdf");
-    can3.SaveAs("output/detectorComparison/Inclusive_vsLumi.root","root");
-    can3.SaveAs("output/detectorComparison/Inclusive_vsLumi.C","C");
+    can5.SetLogy();
+    can5.RedrawAxis();
+    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.png","png");
+    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.pdf","pdf");
+    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.root","root");
+    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.C","C");
 
 
     ## input file for phaseII 140PU, aged and phaseII for noH-H signficance vs lumi
@@ -524,7 +582,7 @@ if __name__ == '__main__':
     frame6 = can6.DrawFrame(fitPhaseI_vsFake.GetXaxis().GetXmin(),
                           min(ROOT.TMath.MinElement(fitPhaseI_vsFake.GetN(),fitPhaseI_vsFake.GetY()),
                           min(ROOT.TMath.MinElement(fitPhaseII_vsFake.GetN(),fitPhaseII_vsFake.GetY()),
-                              ROOT.TMath.MinElement(fitAged_vsFake.GetN(),fitAged_vsFake.GetY())))*0.8,
+                              ROOT.TMath.MinElement(fitAged_vsFake.GetN(),fitAged_vsFake.GetY())))*0.4,
                             fitPhaseI_vsFake.GetXaxis().GetXmax(),
                           max(ROOT.TMath.MaxElement(fitPhaseI_vsFake.GetN(),fitPhaseI_vsFake.GetY()),
                           max(ROOT.TMath.MaxElement(fitPhaseII_vsFake.GetN(),fitPhaseII_vsFake.GetY()),
@@ -542,21 +600,65 @@ if __name__ == '__main__':
 
     fitPhaseI_vsFake.SetMarkerSize(1.1);
     fitPhaseI_vsFake.SetLineStyle(1);
+
+    arrayX_buffer = fitPhaseI_vsFake.GetX();
+    arrayY_buffer = fitPhaseI_vsFake.GetY();
+    arrayX_buffer.SetSize(fitPhaseI_vsFake.GetN());
+    arrayY_buffer.SetSize(fitPhaseI_vsFake.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = numpy.sort(arrayY)
+
+    for ipoint in range(fitPhaseI_vsFake.GetN()):
+      fitPhaseI_vsFake.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
     fitPhaseI_vsFake.Draw("pl");
 
     fitPhaseII_vsFake.SetMarkerSize(1.1);
     fitPhaseII_vsFake.SetLineStyle(1);
     fitPhaseII_vsFake.SetLineColor(ROOT.kRed);
     fitPhaseII_vsFake.SetMarkerColor(ROOT.kRed);
+
+    arrayX_buffer = fitPhaseII_vsFake.GetX();
+    arrayY_buffer = fitPhaseII_vsFake.GetY();
+    arrayX_buffer.SetSize(fitPhaseII_vsFake.GetN());
+    arrayY_buffer.SetSize(fitPhaseII_vsFake.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = numpy.sort(arrayY)
+
+    for ipoint in range(fitPhaseI_vsFake.GetN()):
+      fitPhaseII_vsFake.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
+
     fitPhaseII_vsFake.Draw("plsame");
 
     fitAged_vsFake.SetMarkerSize(1.1);
     fitAged_vsFake.SetLineStyle(1);
     fitAged_vsFake.SetLineColor(ROOT.kBlue);
     fitAged_vsFake.SetMarkerColor(ROOT.kBlue);
+
+    arrayX_buffer = fitAged_vsFake.GetX();
+    arrayY_buffer = fitAged_vsFake.GetY();
+    arrayX_buffer.SetSize(fitAged_vsFake.GetN());
+    arrayY_buffer.SetSize(fitAged_vsFake.GetN());
+
+    arrayX = numpy.array(arrayX_buffer,copy=True)
+    arrayY = numpy.array(arrayY_buffer,copy=True)
+    
+    arrayY_sorted = numpy.sort(arrayY)
+
+    for ipoint in range(fitPhaseI_vsFake.GetN()):
+      fitAged_vsFake.SetPoint(ipoint,arrayX[ipoint],arrayY_sorted[ipoint]);
+
+
     fitAged_vsFake.Draw("plsame");
 
-    tex.Draw();
+    tex3.Draw();
     tex2.Draw();
 
     legend6.AddEntry(fitPhaseI_vsFake, "Phase I 50 PU","pl");
@@ -564,7 +666,7 @@ if __name__ == '__main__':
     legend6.AddEntry(fitPhaseII_vsFake,"Phase II 140 PU","pl");
     legend6.Draw();
 
-    can6.SetLogy();
+    can6.RedrawAxis();
     can6.SaveAs("output/detectorComparison/Inclusive_vsFake.png","png");
     can6.SaveAs("output/detectorComparison/Inclusive_vsFake.pdf","pdf");
     can6.SaveAs("output/detectorComparison/Inclusive_vsFake.root","root");
