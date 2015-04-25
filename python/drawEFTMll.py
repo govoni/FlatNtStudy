@@ -126,7 +126,7 @@ if __name__ == '__main__':
   tex2.SetLineWidth(2);
   tex2.SetTextSize(0.04);
 
-  tex3 = ROOT.TLatex(0.55,0.95,"14 TeV, 3000 fb^{-1}, 140PU");
+  tex3 = ROOT.TLatex(0.53,0.95,"14 TeV, 3000 fb^{-1}, 140PU");
   tex3.SetNDC(1);
   tex3.SetTextAlign(11);
   tex3.SetTextFont(42);
@@ -150,7 +150,8 @@ if __name__ == '__main__':
   bins = hSignal.GetNbinsX();
   Noperators = 9;
   opName = ["S0","S1","M0","M1","M6","M7","T0","T1","T2"];
-  opVal  = [1.1,3.5,0.75,1.03,1.50,1.3,0.07,0.033,0.11];
+  opVal  = [1.1,3.5,0.75,1.03,1.50,1.3,0.07,0.03,0.11];
+  opVal2 = [2.2,7.0,1.50,2.06,3.00,2.5,0.14,0.06,0.22];
 
   binning = array('f',[40,250,400,600,700,900,1200,1500]);
   hBackg_2  = ROOT.TH1F("hBackg_2","hBackg_2",bins,binning);
@@ -168,8 +169,11 @@ if __name__ == '__main__':
   fileOut = ROOT.TFile("tmp.root","RECREATE");
 
   for  iOp in range(Noperators):
+
         fitFile = ROOT.TFile( EFTFit + "signal_WWVBS_mll_L"+opName[iOp]+".root", "READ");  
-        hEFT = hSignal_2.Clone("Sig"+opName[iOp]);
+        hEFT   = hSignal_2.Clone("Sig"+opName[iOp]);
+
+        hEFT_2 = hSignal_2.Clone("Sig"+opName[iOp]+"_2");
         
         for iBin in range(bins) :
             func = ROOT.TF1();
@@ -177,17 +181,22 @@ if __name__ == '__main__':
             
             hEFT.SetBinContent(iBin+1, hSignal_2.GetBinContent(iBin+1) * (func.Eval(opVal[iOp])) );
             hEFT.SetBinError  (iBin+1, hSignal_2.GetBinError(iBin+1) * (func.Eval(opVal[iOp])) );
+
+            hEFT_2.SetBinContent(iBin+1, hSignal_2.GetBinContent(iBin+1) * (func.Eval(opVal2[iOp])) );
+            hEFT_2.SetBinError  (iBin+1, hSignal_2.GetBinError(iBin+1) * (func.Eval(opVal2[iOp])) );
         
         hEFT.Add(hBackg_2);
+        hEFT_2.Add(hBackg_2);
         
         can = ROOT.TCanvas("mll_"+opName[iOp],"mll_"+opName[iOp],600,600);
 
         hSM_total.GetXaxis().SetRangeUser(600.,hSM_total.GetXaxis().GetXmax());
         hEFT.GetXaxis().SetRangeUser(600.,hSM_total.GetXaxis().GetXmax());
+        hEFT_2.GetXaxis().SetRangeUser(600.,hSM_total.GetXaxis().GetXmax());
 
-        frame = can.DrawFrame(600.,0.5,hSM_total.GetXaxis().GetXmax(),max(hSM_total.GetMaximum(),hEFT.GetMaximum())*10);
+        frame = can.DrawFrame(600.,0.5,hSM_total.GetXaxis().GetXmax(),max(hSM_total.GetMaximum(),max(hEFT.GetMaximum(),hEFT_2.GetMaximum()))*10);
 
-        legend = ROOT.TLegend(0.65,0.65,0.82,0.82); 
+        legend = ROOT.TLegend(0.52,0.58,0.70,0.75); 
 
         frame.GetXaxis().SetTitle("m_{ll} (GeV)");
         frame.GetYaxis().SetTitle("Events / bin");
@@ -198,15 +207,32 @@ if __name__ == '__main__':
         legend.SetFillStyle(0);
         legend.SetBorderSize(0);
 
-        hSM_total.SetLineColor(4);
+        hSM_total.SetLineColor(1);
         hSM_total.SetLineWidth(2);
         hSM_total.GetXaxis().SetNdivisions(205);
         hSM_total.Draw("histsame");
-        legend.AddEntry(hSM_total," SM","l");
+        legend.AddEntry(hSM_total," Standard Model","l");
         
         hEFT.SetLineWidth(2);
+        hEFT.SetLineColor(4);
+        hEFT.SetLineStyle(9);
+        hEFT.SetMarkerStyle(20);
+        hEFT.SetMarkerColor(4);
+        hEFT.SetMarkerSize(1.2);        
         hEFT.Draw("plsame");
-        legend.AddEntry(hEFT," %s = %1.1f TeV^{-4}"%(opName[iOp],opVal[iOp]),"l");
+        
+        hEFT_2.SetLineWidth(2);
+        hEFT_2.SetLineColor(2);
+        hEFT_2.SetLineStyle(7);
+        hEFT_2.SetMarkerStyle(20);
+        hEFT_2.SetMarkerColor(2);
+        hEFT_2.SetMarkerSize(1.2);        
+        hEFT_2.Draw("plsame");
+
+        opNameLegend = opName[iOp].replace("0","_{0}").replace("1","_{1}").replace("2","_{2}").replace("3","_{3}").replace("4","_{4}").replace("5","_{5}").replace("6","_{6}").replace("7","_{7}");
+
+        legend.AddEntry(hEFT," %s = %1.2f TeV^{-4}"%(opNameLegend,opVal[iOp]),"pl");
+        legend.AddEntry(hEFT_2," %s = %1.2f TeV^{-4}"%(opNameLegend,opVal2[iOp]),"pl");
         legend.Draw();
         can.SetLogy();
         
