@@ -31,7 +31,9 @@ parser.add_option('--outputDIR',     action="store", type="string",  dest="outpu
 parser.add_option('--batchMode',      action='store_true', dest='batchMode',      default=False, help='to run jobs on condor fnal')
 parser.add_option('--queque',         action="store",      type="string",         dest="queque",      default="")
 
-parser.add_option('--noGenerateCards',    action='store_true', dest='noGenerateCards', default=False, help='not generate again the cards')
+parser.add_option('--noGenerateCards',     action='store_true', dest='noGenerateCards',    default=False, help='not generate again the cards')
+parser.add_option('--runCombinationOnly',  action='store_true', dest='runCombinationOnly', default=False, help='just run comb cards')
+parser.add_option('--runWWWZCombination',  action='store_true', dest='runWWWZCombination', default=False, help='WW/WZ cards combination')
 
 parser.add_option('--makeAsymptotic',  action="store_true", dest="makeAsymptotic",        default=0)
 parser.add_option('--makeProfileLikelihood',  action="store_true", dest="makeProfileLikelihood", default=0)
@@ -83,6 +85,14 @@ def submitBatchJobCombine(command, fn, fileNames):
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
         nametemp = fileNames.replace("COMB","UEmm");
         outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = fileNames.replace("COMB","UUU");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = fileNames.replace("COMB","EEE");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = fileNames.replace("COMB","UUE");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
+        nametemp = fileNames.replace("COMB","EEU");
+        outScript.write('cp '+currentDir+"/"+nametemp+'* ./ \n');
 
     outScript.write(command+'\n');
 
@@ -119,14 +129,19 @@ if __name__ == '__main__':
             os.system("rm *_%d.root"%(lumi))
     
     ## make the card list
-    os.system("ls | grep txt | grep -v COMB | grep _UUpp.txt | grep "+options.inputVariable+" > list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _UUmm.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EEpp.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EEmm.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EUpp.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _EUmm.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _UEpp.txt | grep "+options.inputVariable+" >> list.txt");
-    os.system("ls | grep txt | grep -v COMB | grep _UEmm.txt | grep "+options.inputVariable+" >> list.txt");
+    for var in options.inputVariable.split(",") :    
+        os.system("ls | grep txt | grep -v COMB | grep _UUpp.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _UUmm.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EEpp.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EEmm.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EUpp.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EUmm.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _UEpp.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _UEmm.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _UUU.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EEE.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _UUE.txt | grep "+var+" >> list.txt");
+        os.system("ls | grep txt | grep -v COMB | grep _EEU.txt | grep "+var+" >> list.txt");
 
     datacardFile = open("list.txt","r");
     datacardList = [];
@@ -223,6 +238,7 @@ if __name__ == '__main__':
     else :
         os.system("mkdir -p "+options.outputDIR);
 
+    
     ## combine the cards
     combinedCards = [];
 
@@ -245,20 +261,44 @@ if __name__ == '__main__':
                     combinedCards.append(datacard.replace("_UUpp","_COMB"));
                 if datacard.find("_UUmm") != -1 :
                     combinedCards.append(datacard.replace("_UUmm","_COMB"));
+                if datacard.find("_UUU") != -1 :
+                    combinedCards.append(datacard.replace("_UUU","_COMB"));
+                if datacard.find("_EEE") != -1 :
+                    combinedCards.append(datacard.replace("_EEE","_COMB"));
+                if datacard.find("_EEU") != -1 :
+                    combinedCards.append(datacard.replace("_EEU","_COMB"));
+                if datacard.find("_UUE") != -1 :
+                    combinedCards.append(datacard.replace("_UUE","_COMB"));
 
                 break ;
 
     if not options.noGenerateCards :
         for card in combinedCards :
-            print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card;  
-            os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card);        
 
-    totalCards = createdCards + combinedCards
+            if options.runWWWZCombination :
+
+                print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" "+card.replace("_COMB","_UUU")+" "+card.replace("_COMB","_EEE")+" "+card.replace("_COMB","_EEU")+" "+card.replace("_COMB","_UUE")+" > "+card;  
+
+                os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" "+card.replace("_COMB","_UUU")+" "+card.replace("_COMB","_EEE")+" "+card.replace("_COMB","_EEU")+" "+card.replace("_COMB","_UUE")+" > "+card);        
+
+            else :
+
+                print "combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card;  
+
+                os.system("combineCards.py "+card.replace("_COMB","_EEpp")+" "+card.replace("_COMB","_UUpp")+" "+card.replace("_COMB","_EUpp")+" "+card.replace("_COMB","_UEpp")+" "+card.replace("_COMB","_EEmm")+" "+card.replace("_COMB","_UUmm")+" "+card.replace("_COMB","_EUmm")+" "+card.replace("_COMB","_UEmm")+" > "+card);        
+
+                
+    totalCards = [];
+
+    if not options.runCombinationOnly :
+        totalCards = createdCards + combinedCards
+    else :
+        totalCards = combinedCards
 
     for card in totalCards :
         
         outname = card.replace(".txt","");
-
+        
         if options.makeAsymptotic :
             runCmmd = "combine -M Asymptotic --minimizerAlgo Minuit2 --minosAlgo stepping -n %s -m 100 -d %s  -s -1 --expectSignal=%d -t %d --toysNoSystematics"%(outname,card,options.injectSignal,options.nToys);
             print runCmmd ;
@@ -299,4 +339,3 @@ if __name__ == '__main__':
                 os.system("mv mlfit* "+options.outputDIR);
                 os.system("rm roostat* ");
             continue ;
-

@@ -23,8 +23,8 @@ ptj2                         20      30     350         p_{T}^{j2}/_(GeV)
 #ptjj                        20      30     500         p_{T}^{jj}/_(GeV) 
 #etaj1                       15      -5     5           #eta_{j1}
 #etaj2                       15      -5     5           #eta_{j2}
-detajj                       15      2.5    8           #Delta#eta_{jj}
-mjj                          20      850    5000        m_{jj}  
+detajj                       20      0.0    8           #Delta#eta_{jj}
+mjj                          30      0    5000        m_{jj}  
 #ml1jW                       25      20     400         m_{l1j}^{W}/_(GeV)
 #ml2jW                       25      20     300         m_{l2j}^{W}/_(GeV)
 #mljW                        25      20     300         m_{lj}^{W}/_(GeV)
