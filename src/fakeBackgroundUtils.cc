@@ -221,6 +221,151 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
   return leptonContainer();
 }
 
+/// create fake lepton for 3 leptons topologies
+leptonContainer createFakeLepton(  jetContainer inputJet,
+                                   leptonContainer inputLepton_1,
+                                   leptonContainer inputLepton_2,
+                                   fakeMigrationContainer & fakeMigration,
+                                   string scenarioString,
+				   int flavour){
+
+  TLorentzVector lepton4V ;
+
+  TRandom3 rand ;
+  rand.SetSeed(0);
+  
+  float charge = rand.Uniform(0,1) > 0.5 ? 1 : -1;
+
+  if(TString(scenarioString).Contains("UUU") and fabs(inputLepton_1.flavour_) == 13 and fabs(inputLepton_2.flavour_) == 13 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton_1.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton_1.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,charge,inputLepton_1.flavour_,0.); // return lepton with same flavour and int(charge)
+
+  }
+
+  else if(TString(scenarioString).Contains("EEE") and fabs(inputLepton_1.flavour_) == 11 and fabs(inputLepton_2.flavour_) == 11 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton_1.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(inputLepton_1.flavour_,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),inputLepton_1.flavour_,0.); // return lepton with same flavour and charge
+
+  }
+
+  ////
+
+  else if(TString(scenarioString).Contains("EEU") and fabs(inputLepton_1.flavour_) == 11 and fabs(inputLepton_2.flavour_) == 11 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(13)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+  else if(TString(scenarioString).Contains("EEU") and fabs(inputLepton_1.flavour_) == 11 and fabs(inputLepton_2.flavour_) == 13 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(11)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+  else if(TString(scenarioString).Contains("EEU") and fabs(inputLepton_1.flavour_) == 13 and fabs(inputLepton_2.flavour_) == 11 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(11)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+
+  /////
+  else if(TString(scenarioString).Contains("UUE") and fabs(inputLepton_1.flavour_) == 13 and fabs(inputLepton_2.flavour_) == 13 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(11),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(11)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+  else if(TString(scenarioString).Contains("UUE") and fabs(inputLepton_1.flavour_) == 13 and fabs(inputLepton_2.flavour_) == 11 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(13)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+  else if(TString(scenarioString).Contains("UUE") and fabs(inputLepton_1.flavour_) == 11 and fabs(inputLepton_2.flavour_) == 13 ){
+
+    if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+      lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(int(13),inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+                            inputJet.jet4V_.Eta(),
+                            inputJet.jet4V_.Phi(),
+                            0.);
+    else
+      lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+    return leptonContainer(lepton4V,int(charge),int(13)*int(charge),0.); // return lepton with same flavour and charge
+
+  }
+
+  else if(TString(scenarioString).Contains("All")){ 
+
+      if( (inputJet.jet4V_.Pt()-fakeMigration.getMigration(flavour,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta())) > 0) // check if pt is well defined
+	lepton4V.SetPtEtaPhiM(inputJet.jet4V_.Pt()-fakeMigration.getMigration(flavour,inputJet.jetflavour_,inputJet.jet4V_.Pt(),inputJet.jet4V_.Eta()),
+			      inputJet.jet4V_.Eta(),
+			      inputJet.jet4V_.Phi(),			      
+			      0.);
+      else
+	lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
+
+      return leptonContainer(lepton4V,int(charge),flavour*int(charge),0.); // return lepton with same flavour and charge
+  }
+
+
+  else leptonContainer();
+
+  return leptonContainer();
+}
+
 
 // ---------------------                                                                                                                                                      
 void makeFakeLeptonBackground(const string & sampleName,
@@ -243,18 +388,31 @@ void makeFakeLeptonBackground(const string & sampleName,
                               const float & matchingCone,
                               fakeRateContainer & fakeRate,
                               fakeMigrationContainer & fakeMigration,
-			      map <string,TH1F*> & vect
+			      map <string,TH1F*> & vect,
+			      const int & numberOfPromptLeptons
                               ){
 
   float eventFakeWeight    = 1. ;
 
-  if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) return ; // if less than one isolated lepton over the minimum pt                                        
+  if(int(leptonsIsoTight.size()) < numberOfPromptLeptons or int(leptonsIsoTight.size()) >= numberOfPromptLeptons+1 ) return ; // if less than one isolated lepton over the minimum pt       
+  if(numberOfPromptLeptons != 1 and numberOfPromptLeptons !=2){
+    cerr<<" fake lepton background generator, fix number of prompt lepton "<<endl;
+    return ;
+  }
 
-  // take the fake weight from the cleaned jet collection over threshold                                                                                                    
-  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
-    return ;
-  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-    return ;
+  // take the fake weight from the cleaned jet collection over threshold                                
+  if(numberOfPromptLeptons == 1){  
+    if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+      return ;
+    if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+      return ;
+  }
+  else {
+    if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
+      return ;
+    if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 11))
+      return ;
+  }
 
   // tke the reco jets, check that they are not overlapping with isolated leptons and over threshold + PUID + btagging + etaCut + matched with a GenJet
   vector<jetContainer> RecoJetsForFake;
@@ -268,8 +426,6 @@ void makeFakeLeptonBackground(const string & sampleName,
 				      matchingCone,
 				      cutElement.etaMaxL);
 
-  
-
   // fake rate                                                                                                                                                             
   if(!TString(finalStateString).Contains("All")){
     
@@ -277,23 +433,58 @@ void makeFakeLeptonBackground(const string & sampleName,
 
       eventFakeWeight = 1.;
 
-      if(TString(finalStateString).Contains("UU")){
+      if(TString(finalStateString).Contains("UU") and numberOfPromptLeptons == 1 ){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake); // get the fake rate from interpolation
       }
-      else if(TString(finalStateString).Contains("EE")){
+      else if(TString(finalStateString).Contains("EE") and numberOfPromptLeptons == 1 ){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+    
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+
+
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
     
 
@@ -303,7 +494,12 @@ void makeFakeLeptonBackground(const string & sampleName,
       fakeLeptonsIsoTight = leptonsIsoTight ;
       fakeLeptonsAll      = LeptonsAll;
       leptonContainer fakeLepton ;
-      fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString);
+
+      if(numberOfPromptLeptons == 1)
+	fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString);
+      else if(numberOfPromptLeptons == 2)
+	fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString);
+
     
       fakeLeptonsIsoTight.push_back(fakeLepton);
       fakeLeptonsAll.push_back(fakeLepton);
@@ -362,7 +558,7 @@ void makeFakeLeptonBackground(const string & sampleName,
   }
   else{
 
-    for(size_t iLepType = 0; iLepType < 2 ; iLepType++){
+    for(size_t iLepType = 0; iLepType < 2 ; iLepType++){ // stands for electrons and muons
 
       for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
 
@@ -380,10 +576,14 @@ void makeFakeLeptonBackground(const string & sampleName,
 	fakeLeptonsIsoTight = leptonsIsoTight ;
 	fakeLeptonsAll      = LeptonsAll;
 	leptonContainer fakeLepton ;
-	if(iLepType == 0)
+	if(iLepType == 0 and numberOfPromptLeptons == 1)
 	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString,13);
-	else
+	else if(iLepType != 0 and numberOfPromptLeptons == 1)
 	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString,11);
+	else if(iLepType != 0 and numberOfPromptLeptons == 2)
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString,11);
+	else if(iLepType != 0 and numberOfPromptLeptons == 2)
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString,13);
     
 	fakeLeptonsIsoTight.push_back(fakeLepton);
 	fakeLeptonsAll.push_back(fakeLepton);
@@ -470,18 +670,31 @@ void makeFakeLeptonBackground(const string & sampleName,
                               const float & matchingCone,
                               fakeRateContainer & fakeRate,
                               fakeMigrationContainer & fakeMigration,
-			      map <string,TH1F*> & vect
+			      map <string,TH1F*> & vect,
+			      const int & numberOfPromptLeptons
                               ){
 
   float eventFakeWeight = 1. ;
 
-  if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) return ; // if less than one isolated lepton over the minimum pt                                        
+  if(int(leptonsIsoTight.size()) < numberOfPromptLeptons or int(leptonsIsoTight.size()) >= numberOfPromptLeptons+1 ) return ; // if less than one isolated lepton over the minimum pt       
+  if(numberOfPromptLeptons != 1 and numberOfPromptLeptons !=2){
+    cerr<<" fake lepton background generator, fix number of prompt lepton "<<endl;
+    return ;
+  }
 
-  // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
-    return ;
-  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-    return ;
+  // take the fake weight from the cleaned jet collection over threshold                                
+  if(numberOfPromptLeptons == 1){  
+    if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+      return ;
+    if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+      return ;
+  }
+  else {
+    if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
+      return ;
+    if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 11))
+      return ;
+  }
 
   vector<jetContainer> RecoJetsForFake;
   RecoJetsForFake  = dumpJetsForFake (RecoJets,
@@ -502,23 +715,59 @@ void makeFakeLeptonBackground(const string & sampleName,
 
       eventFakeWeight = 1.;
 
-      if(TString(finalStateString).Contains("UU")){
+
+      if(TString(finalStateString).Contains("UU") and numberOfPromptLeptons == 1 ){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake); // get the fake rate from interpolation
       }
-      else if(TString(finalStateString).Contains("EE")){
+      else if(TString(finalStateString).Contains("EE") and numberOfPromptLeptons == 1 ){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+      else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
-      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+      else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11 and numberOfPromptLeptons == 1){
 	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+    
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+
+
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
+      }
+      else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and 
+	      numberOfPromptLeptons == 2){
+	eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
       }
     
 
@@ -528,7 +777,11 @@ void makeFakeLeptonBackground(const string & sampleName,
       fakeLeptonsIsoTight = leptonsIsoTight ;
       fakeLeptonsAll      = LeptonsAll;
       leptonContainer fakeLepton ;
-      fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString);
+
+      if(numberOfPromptLeptons == 1)
+	fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString);
+      else if(numberOfPromptLeptons == 2)
+	fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString);
     
       fakeLeptonsIsoTight.push_back(fakeLepton);
       fakeLeptonsAll.push_back(fakeLepton);
@@ -607,12 +860,11 @@ void makeFakeLeptonBackground(const string & sampleName,
       for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
 
 	eventFakeWeight = 1.;
-
+    
 	if(iLepType == 0)
 	  eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
 	else
 	  eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"E",RecoJetsForFake);
-    
 
 	// promote the tighter jets as lepton trough the migration matrix ... add also to the whole lepton collection for systematics check                                    
 	vector<leptonContainer> fakeLeptonsAll;
@@ -620,10 +872,14 @@ void makeFakeLeptonBackground(const string & sampleName,
 	fakeLeptonsIsoTight = leptonsIsoTight ;
 	fakeLeptonsAll      = LeptonsAll;
 	leptonContainer fakeLepton ;
-	if(iLepType == 0)
+	if(iLepType == 0 and numberOfPromptLeptons == 1)
 	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString,13);
-	else
+	else if(iLepType != 0 and numberOfPromptLeptons == 1)
 	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),fakeMigration,finalStateString,11);
+	else if(iLepType != 0 and numberOfPromptLeptons == 2)
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString,11);
+	else if(iLepType != 0 and numberOfPromptLeptons == 2)
+	  fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),fakeMigration,finalStateString,13);
     
 	fakeLeptonsIsoTight.push_back(fakeLepton);
 	fakeLeptonsAll.push_back(fakeLepton);

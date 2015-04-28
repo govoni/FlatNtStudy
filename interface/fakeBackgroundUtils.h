@@ -39,6 +39,13 @@ leptonContainer createFakeLepton( jetContainer inputJet,
                                   string finalStateString,
 				  int flavour = -1);
 
+leptonContainer createFakeLepton( jetContainer inputJet,
+                                  leptonContainer inputLepton_1,
+                                  leptonContainer inputLepton_2,
+                                  fakeMigrationContainer & fakeMigration,
+                                  string finalStateString,
+				  int flavour = -1);
+
 void makeFakeLeptonBackground(const string & sampleName,
 			      const int    & samplePosition,
                               const string & finalStateString,
@@ -59,7 +66,8 @@ void makeFakeLeptonBackground(const string & sampleName,
                               const float & matchingCone,
                               fakeRateContainer & fakeRate,
                               fakeMigrationContainer & fakeMigration,
-                              map <string,TH1F*> & vect
+                              map <string,TH1F*> & vect,
+			      const int & numberPromtLeptons = 1
                               );
 
 void makeFakeLeptonBackground(const string & sampleName,
@@ -83,9 +91,9 @@ void makeFakeLeptonBackground(const string & sampleName,
                               const float & matchingCone,
                               fakeRateContainer & fakeRate,
                               fakeMigrationContainer & fakeMigration,
-                              map <string,TH1F*> & vect
+                              map <string,TH1F*> & vect,
+			      const int & numberPromtLeptons = 1
                               );
-
 
 // -------------------
 
