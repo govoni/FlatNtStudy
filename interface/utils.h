@@ -294,7 +294,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				const float & minPtLeptonCut,                    
                                 const float & leptonIsoLooseCut,
 				map<string,TH1F*> & vect,
-				const string & finalStateString);
+				const string & finalStateStringw,
+				const float & eventWeight = 1);
 
 
 bool passCutContainerSelection (readTree* readTree,
@@ -310,7 +311,8 @@ bool passCutContainerSelection (readTree* readTree,
 				const float & matchingCone,   
 				const float & minJetCutPt,
 				map<string,TH1F*> & vect,
-				const string & finalStateString
+				const string & finalStateString,
+				const float & eventWeight = 1
 				);
 
 #endif

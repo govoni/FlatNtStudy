@@ -1,4 +1,5 @@
 #include "fakeBackgroundUtils.h"
+#include <memory>
 
 float getElectronMisChargeProbability (const float & pt, const float & eta){
 
@@ -394,10 +395,23 @@ void makeFakeLeptonBackground(const string & sampleName,
 
   float eventFakeWeight    = 1. ;
 
+  int iBin = 1;
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
+    iBin++;
+  }
+
   if(int(leptonsIsoTight.size()) < numberOfPromptLeptons or int(leptonsIsoTight.size()) >= numberOfPromptLeptons+1 ) return ; // if less than one isolated lepton over the minimum pt       
   if(numberOfPromptLeptons != 1 and numberOfPromptLeptons !=2){
     cerr<<" fake lepton background generator, fix number of prompt lepton "<<endl;
     return ;
+  }
+
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
+    iBin++;
   }
 
   // take the fake weight from the cleaned jet collection over threshold                                
@@ -414,6 +428,12 @@ void makeFakeLeptonBackground(const string & sampleName,
       return ;
   }
 
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+    iBin++;
+  }
+ 
   // tke the reco jets, check that they are not overlapping with isolated leptons and over threshold + PUID + btagging + etaCut + matched with a GenJet
   vector<jetContainer> RecoJetsForFake;
   RecoJetsForFake  = dumpJetsForFake (RecoJets, 
@@ -538,7 +558,8 @@ void makeFakeLeptonBackground(const string & sampleName,
 				     minPtLeptonCutCleaning,
 				     leptonIsoLooseCut,
 				     vect,
-				     finalStateString)){
+				     finalStateString,
+				     eventFakeWeight)){
 	
 	fillHisto(analysisPlots, 
 		  sampleName, 
@@ -622,7 +643,8 @@ void makeFakeLeptonBackground(const string & sampleName,
 				       minPtLeptonCutCleaning,
 				       leptonIsoLooseCut,
 				       vect,
-				       finalStateString)){
+				       finalStateString,
+				       eventFakeWeight)){
 	  
 	  fillHisto(analysisPlots, 
 		    sampleName, 
@@ -676,10 +698,24 @@ void makeFakeLeptonBackground(const string & sampleName,
 
   float eventFakeWeight = 1. ;
 
+  int iBin = 1;
+
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
+    iBin++;
+  }
+
   if(int(leptonsIsoTight.size()) < numberOfPromptLeptons or int(leptonsIsoTight.size()) >= numberOfPromptLeptons+1 ) return ; // if less than one isolated lepton over the minimum pt       
   if(numberOfPromptLeptons != 1 and numberOfPromptLeptons !=2){
     cerr<<" fake lepton background generator, fix number of prompt lepton "<<endl;
     return ;
+  }
+
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
+    iBin++;
   }
 
   // take the fake weight from the cleaned jet collection over threshold                                
@@ -695,6 +731,13 @@ void makeFakeLeptonBackground(const string & sampleName,
     if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 11))
       return ;
   }
+
+  if(vect.size()!=0){
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->SetBinContent(iBin,vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetBinContent(iBin)+1);
+    vect[sampleName+"_pos_"+to_string(samplePosition)+"_"+cutElement.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+    iBin++;
+  }
+
 
   vector<jetContainer> RecoJetsForFake;
   RecoJetsForFake  = dumpJetsForFake (RecoJets,
@@ -820,7 +863,8 @@ void makeFakeLeptonBackground(const string & sampleName,
 				     minPtLeptonCutCleaning,
 				     leptonIsoLooseCut,
 				     vect,
-				     finalStateString)){
+				     finalStateString,
+				     eventFakeWeight)){
 
  
 	  fillHisto(analysisPlots, 
@@ -918,7 +962,8 @@ void makeFakeLeptonBackground(const string & sampleName,
 				       minPtLeptonCutCleaning,
 				       leptonIsoLooseCut,
 				       vect,
-				       finalStateString)){
+				       finalStateString,
+				       eventFakeWeight)){
 	  
 	  fillHisto(analysisPlots, 
 		    sampleName, 
@@ -1017,7 +1062,8 @@ void makeFakeChargeBackground(const string & sampleName,
 				   minPtLeptonCutCleaning,
 				   leptonIsoLooseCut,
 				   vect,
-				   finalStateString)){
+				   finalStateString,
+				   eventFakeWeight)){
 
       fillHisto(analysisPlots, 
 		sampleName, 
@@ -1105,7 +1151,8 @@ void makeFakeChargeBackground(const string & sampleName,
 				     minPtLeptonCutCleaning,
 				     leptonIsoLooseCut,
 				     vect,
-				     finalStateString)){
+				     finalStateString,
+				     eventFakeWeight)){
 
 	fillHisto(analysisPlots, 
 		  sampleName, 
@@ -1187,7 +1234,8 @@ void makeFakeChargeBackground(const string & sampleName,
 				   minPtLeptonCutCleaning,
 				   leptonIsoLooseCut,
 				   vect,
-				   finalStateString)){
+				   finalStateString,
+				   eventFakeWeight)){
 
       fillHisto(analysisPlots, 
 		sampleName, 
@@ -1289,7 +1337,8 @@ void makeFakeChargeBackground(const string & sampleName,
 				     minPtLeptonCutCleaning,
 				     leptonIsoLooseCut,
 				     vect,
-				     finalStateString)){
+				     finalStateString,
+				     eventFakeWeight)){
 
 	fillHisto(analysisPlots, 
 		  sampleName, 

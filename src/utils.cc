@@ -894,7 +894,8 @@ void loopOnEvents (plotter & analysisPlots,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
 				       vect,
-				       finalStateString)){
+				       finalStateString,
+				       eventFakeWeight)){
 	  
 	  fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		    leptonsIsoTight, softMuons, RecoJets, GenJets, trackEvent, L_met, "",eventFakeWeight);
@@ -929,7 +930,8 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,
+					 eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight, softMuons, RecoJets, GenJets, trackEvent, L_met_muonScaleUp, "muScaleUp",eventFakeWeight);
@@ -961,7 +963,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight,  softMuons, RecoJets, GenJets, trackEvent, L_met_muonScaleDown,"muScaleDown",eventFakeWeight);
@@ -994,7 +996,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight, softMuons, RecoJets, GenJets, trackEvent, L_met_electronScaleUp, "elScaleUp",eventFakeWeight);
@@ -1025,7 +1027,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight, softMuons, RecoJets, GenJets, trackEvent, L_met_electronScaleDown, "elScaleDown",eventFakeWeight);
@@ -1056,7 +1058,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight,  softMuons, RecoJets, GenJets, trackEvent, L_met_muonRes, "muRes",eventFakeWeight);
@@ -1087,7 +1089,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition, CutList.at(iCut).cutLayerName, VariableList, 
 		      leptonTight,  softMuons, RecoJets, GenJets, trackEvent, L_met_electronRes, "elRes",eventFakeWeight);
@@ -1107,7 +1109,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition,
 		      CutList.at(iCut).cutLayerName, VariableList, 
@@ -1130,7 +1132,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, sampleName, samplePosition,
 		      CutList.at(iCut).cutLayerName,VariableList, 
@@ -1155,7 +1157,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots,sampleName, samplePosition,
 		      CutList.at(iCut).cutLayerName,VariableList, 
@@ -1529,7 +1531,7 @@ void loopOnEvents (plotter & analysisPlots,
 				       minPtLeptonCut,
 				       leptonIsoLooseCut,
 				       vect,
-				       finalStateString)){
+				       finalStateString,eventFakeWeight)){
 
 	  fillHisto(analysisPlots, sampleName, samplePosition,
 		    CutList.at(iCut).cutLayerName,VariableList, 
@@ -1573,7 +1575,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1621,7 +1623,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1667,7 +1669,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1712,7 +1714,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1758,7 +1760,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1803,7 +1805,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, samplePosition,
@@ -1839,7 +1841,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1878,7 +1880,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -1917,7 +1919,7 @@ void loopOnEvents (plotter & analysisPlots,
 					 minPtLeptonCut,
 					 leptonIsoLooseCut,
 					 tempVect,
-					 finalStateString)){
+					 finalStateString,eventFakeWeight)){
 	  
 	    fillHisto(analysisPlots, 
 		      sampleName, 
@@ -3454,7 +3456,8 @@ bool passCutContainerSelection (cutContainer & Cut,
 				const float & minPtLeptonCut,
 				const float & leptonIsoLooseCut,
 				map<string,TH1F*> & vect,
-				const string & finalStateString){
+				const string & finalStateString,
+				const float & eventWeight){
 
   // identify loose leptons                                                                                                                                             
   vector<leptonContainer> leptonsIsoLoose ;                                                                                                                              
@@ -3471,29 +3474,45 @@ bool passCutContainerSelection (cutContainer & Cut,
   else
     Name = sampleName+ "_pos_"+to_string(samplePosition) ;
 
-  int iBin = 1;
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
-    iBin++;   
-  }
 
+  int iBin = 1;
+
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
+
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
+      iBin++;   
+    }
+
+  }
+  else iBin++;
+  
   if(LeptonsAll.size() < 2 )  return false ; // skip the event --> only two reco leptons are good            
 
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
-    iBin++;   
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
+
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
+      iBin++;   
+    }
   }
+  else iBin++;
 
   // identify tight leptons and require exactly nLep                                                                                                                       
   if (int(leptonsIsoTight.size()) != Cut.nLep ) return false;                                                                                                    
 
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
-    iBin++;   
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
+
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+      iBin++;   
+    }
   }
+  else iBin++;
+
 
   if (leptonsIsoTight.at(0).lepton4V_.Pt() < Cut.ptL.first) return false;
   if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > Cut.etaMaxL) return false ;
@@ -3507,7 +3526,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(badTrailingLepton) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
     iBin++;   
   }
@@ -3522,7 +3541,7 @@ bool passCutContainerSelection (cutContainer & Cut,
                                                                                                                                                                                
   if(extraLepton > Cut.nextra ) return false; // extra lepton cut                                                                                             
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"extra lepton");
     iBin++;   
   }
@@ -3545,7 +3564,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(not isZMassVeto and Cut.nLep == 3) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Z veto");
     iBin++;   
   }
@@ -3565,7 +3584,7 @@ bool passCutContainerSelection (cutContainer & Cut,
      return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
     iBin++;   
   }
@@ -3599,7 +3618,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   }
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"flavour selection");
     iBin++;   
   }
@@ -3608,7 +3627,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(L_met.Pt() < Cut.MET) return false;  
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"met selection");
     iBin++;   
   }
@@ -3617,7 +3636,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(RecoJets.size() < 2 ) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
     iBin++;   
   }
@@ -3625,7 +3644,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   // bveto
   int nBjets = 0 ;
   for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
-    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) >2.5) continue;
+    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) > 2.4) continue;
     if(RecoJets.at(iJet).btag_ >= Cut.bTagCut)
       nBjets ++ ;
   }
@@ -3633,7 +3652,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(nBjets > Cut.nBVeto) return false ;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"bveto");
     iBin++;   
   }
@@ -3642,7 +3661,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(int(softMuons.size()) > Cut.nSoftMu) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"softMu");
     iBin++;   
   }
@@ -3655,7 +3674,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(L_dilepton.M() < Cut.Mll.first or L_dilepton.M() > Cut.Mll.second) return false;
   
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mll");
     iBin++;   
   }
@@ -3669,7 +3688,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(L_dijet.M() < Cut.Mjj) return false;
      
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mjj");
     iBin++;   
   }
@@ -3677,7 +3696,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()) < Cut.DetaJJ) return false;
   
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaJJ");
     iBin++;   
   }
@@ -3685,7 +3704,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()) > Cut.DetaLL) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
     iBin++;   
   }
@@ -3706,7 +3725,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   if(trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"fake bkg reduction");
     iBin++;   
   }
@@ -3728,7 +3747,7 @@ bool passCutContainerSelection (cutContainer & Cut,
       if(polarizationFlag != Cut.polarization) return false;
 
       if(vect.size()!=0){
-	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
 	vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
 	iBin++;   
       }
@@ -3746,7 +3765,7 @@ bool passCutContainerSelection (cutContainer & Cut,
       if((TString(sampleName).Contains("_TL") or TString(sampleName).Contains("_LT"))  and polarizationFlag != 1) return false;
 
       if(vect.size()!=0){
-	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
 	vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
 	iBin++;   
       }
@@ -3754,7 +3773,7 @@ bool passCutContainerSelection (cutContainer & Cut,
   }
   else{    
     if(vect.size()!=0){
-      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
       vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
       iBin++;   
     }
@@ -3782,7 +3801,8 @@ bool passCutContainerSelection (readTree* reader,
                                 const float & matchingCone,
                                 const float & minJetCutPt,
                                 map<string,TH1F*> & vect,
-				const string & finalStateString){
+				const string & finalStateString,
+				const float & eventWeight){
 
 
   // dump all the lepton in the event
@@ -3821,30 +3841,43 @@ bool passCutContainerSelection (readTree* reader,
     Name = sampleName + "_pos_"+to_string(samplePosition);
   
   int iBin = 1;
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
-    iBin++;   
+ 
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
+
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"all events");
+      iBin++;   
+    }
   }
+  else iBin++;
 
   if(LeptonsAll.size() < 2 )  return false ; // skip the event --> only two reco leptons are good            
   if(RecoJetsAll.size() < 2)  return false ; // skip the event with less than two reco jet                                                     
 
-
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
-    iBin++;   
+  
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
+    
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Reco L-J");
+      iBin++;   
+    }
   }
+  else iBin++;
 
   // identify tight leptons and require exactly nLep                                                                                                                       
   if (int(leptonsIsoTight.size()) != Cut.nLep ) return false;                                                                                                    
+  
+  if(not TString(sampleName).Contains("TTbar") or not TString(sampleName).Contains("W3J") ){
 
-  if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
-    vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
-    iBin++;   
-  }
+    if(vect.size()!=0){
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
+      vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"NLep tight");
+      iBin++;   
+   }
+  }   
+  else iBin++;
 
   if (leptonsIsoTight.at(0).lepton4V_.Pt() < Cut.ptL.first) return false;
   if (fabs(leptonsIsoTight.at(0).lepton4V_.Eta()) > Cut.etaMaxL) return false ;
@@ -3858,7 +3891,7 @@ bool passCutContainerSelection (readTree* reader,
   if(badTrailingLepton) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Lepton PT");
     iBin++;   
   }
@@ -3873,7 +3906,7 @@ bool passCutContainerSelection (readTree* reader,
                                                                                                                                                                                
   if(extraLepton > Cut.nextra ) return false; // extra lepton cut                                                                                             
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"extra lepton");
     iBin++;   
   }
@@ -3896,7 +3929,7 @@ bool passCutContainerSelection (readTree* reader,
   if(not isZMassVeto and Cut.nLep == 3) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Z veto");
     iBin++;   
   }
@@ -3916,7 +3949,7 @@ bool passCutContainerSelection (readTree* reader,
      return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"same sign");
     iBin++;   
   }
@@ -3950,7 +3983,7 @@ bool passCutContainerSelection (readTree* reader,
   }
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"flavour selection");
     iBin++;   
   }
@@ -3959,7 +3992,7 @@ bool passCutContainerSelection (readTree* reader,
   if(reader->pfmet_puppi < Cut.MET) return false;  
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"met selection");
     iBin++;   
   }
@@ -3981,7 +4014,7 @@ bool passCutContainerSelection (readTree* reader,
 
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
     iBin++;   
   }
@@ -3989,6 +4022,7 @@ bool passCutContainerSelection (readTree* reader,
   // bveto
   int nBjets = 0 ;
   for(size_t iJet = 0; iJet < RecoJets.size(); iJet++){
+    if(fabs(RecoJets.at(iJet).jet4V_.Eta()) > 2.4) continue;
     if(RecoJets.at(iJet).btag_ >= Cut.bTagCut)
       nBjets ++ ;
   }
@@ -3996,7 +4030,7 @@ bool passCutContainerSelection (readTree* reader,
   if(nBjets > Cut.nBVeto) return false ;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"bveto");
     iBin++;   
   }
@@ -4005,7 +4039,7 @@ bool passCutContainerSelection (readTree* reader,
   if(int(softMuons.size()) > Cut.nSoftMu) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"softMu");
     iBin++;   
   }
@@ -4019,7 +4053,7 @@ bool passCutContainerSelection (readTree* reader,
   if(L_dilepton.M() < Cut.Mll.first or L_dilepton.M() > Cut.Mll.second) return false;
   
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mll");
     iBin++;   
   }
@@ -4034,7 +4068,7 @@ bool passCutContainerSelection (readTree* reader,
      
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Mjj");
     iBin++;   
   }
@@ -4042,7 +4076,7 @@ bool passCutContainerSelection (readTree* reader,
   if(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()) < Cut.DetaJJ) return false;
   
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaJJ");
     iBin++;   
   }
@@ -4050,7 +4084,7 @@ bool passCutContainerSelection (readTree* reader,
   if(fabs(leptonsIsoTight.at(0).lepton4V_.Eta()-leptonsIsoTight.at(1).lepton4V_.Eta()) > Cut.DetaLL) return false;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"DetaLL");
     iBin++;   
   }
@@ -4075,7 +4109,7 @@ bool passCutContainerSelection (readTree* reader,
   if(trailZep > Cut.lZep) return false ;
 
   if(vect.size()!=0){
-    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+    vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"fake bkg reduction");
     iBin++;   
   }
@@ -4097,7 +4131,7 @@ bool passCutContainerSelection (readTree* reader,
       if(polarizationFlag != Cut.polarization) return false;
 
       if(vect.size()!=0){
-	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
 	vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
 	iBin++;   
       }
@@ -4115,7 +4149,7 @@ bool passCutContainerSelection (readTree* reader,
       if(TString(sampleName).Contains("_TT")  and polarizationFlag != 2) return false;
 
       if(vect.size()!=0){
-	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+	vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
 	vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
 	iBin++;   
       }
@@ -4123,7 +4157,7 @@ bool passCutContainerSelection (readTree* reader,
   }
   else{    
     if(vect.size()!=0){
-      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+1);   
+      vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
       vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"Polarization");
       iBin++;   
     }
