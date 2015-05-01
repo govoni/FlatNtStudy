@@ -331,7 +331,7 @@ if __name__ == '__main__':
     frame3.GetXaxis().SetTitleSize(0.045);
     frame3.GetXaxis().SetLabelSize(0.04);
 
-    frame3.GetYaxis().SetTitle("95% upper CL [noH_{126}-H_{126}]");
+    frame3.GetYaxis().SetTitle("95% CL on \Delta_{SM}/(noH-SM)");
     frame3.GetYaxis().SetTitleSize(0.045);
     frame3.GetYaxis().SetTitleOffset(1.20);
     frame3.GetYaxis().SetLabelSize(0.04);
@@ -409,7 +409,7 @@ if __name__ == '__main__':
     frame4.GetXaxis().SetTitleSize(0.045);
     frame4.GetXaxis().SetLabelSize(0.04);
 
-    frame4.GetYaxis().SetTitle("95% upper CL [noH_{126}-H_{126}]");
+    frame4.GetYaxis().SetTitle("95% CL on \Delta_{SM}/(noH-SM)");
     frame4.GetYaxis().SetTitleSize(0.045);
     frame4.GetYaxis().SetTitleOffset(1.20);
     frame4.GetYaxis().SetLabelSize(0.04);
