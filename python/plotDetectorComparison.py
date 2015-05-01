@@ -323,7 +323,7 @@ if __name__ == '__main__':
     frame3.GetXaxis().SetTitleSize(0.045);
     frame3.GetXaxis().SetLabelSize(0.04);
 
-    frame3.GetYaxis().SetTitle("exclusion limit 95% C.L.");
+    frame3.GetYaxis().SetTitle("95% upper CL [noH_{126}-H_{126}]");
     frame3.GetYaxis().SetTitleSize(0.045);
     frame3.GetYaxis().SetTitleOffset(1.20);
     frame3.GetYaxis().SetLabelSize(0.04);
@@ -400,7 +400,7 @@ if __name__ == '__main__':
     frame4.GetXaxis().SetTitleSize(0.045);
     frame4.GetXaxis().SetLabelSize(0.04);
 
-    frame4.GetYaxis().SetTitle("exclusion limit 95% C.L.");
+    frame4.GetYaxis().SetTitle("95% upper CL [noH_{126}-H_{126}]");
     frame4.GetYaxis().SetTitleSize(0.045);
     frame4.GetYaxis().SetTitleOffset(1.20);
     frame4.GetYaxis().SetLabelSize(0.04);
@@ -451,6 +451,15 @@ if __name__ == '__main__':
     fitAged_vsLumi = ROOT.TGraphAsymmErrors();
     fitAged_vsLumi = fileInclusiveAged_vsLumi.Get("mu_1s");
 
+    for iPoint in range(fitPhaseI_vsLumi.GetN()):
+      fitPhaseI_vsLumi.GetY()[iPoint] *= 100;
+
+    for iPoint in range(fitPhaseII_vsLumi.GetN()):
+      fitPhaseII_vsLumi.GetY()[iPoint] *= 100;
+
+    for iPoint in range(fitAged_vsLumi.GetN()):
+      fitAged_vsLumi.GetY()[iPoint] *= 100;
+
 
     can5 = ROOT.TCanvas("can5","can5",600,600);
 
@@ -469,6 +478,8 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(fitPhaseI_vsLumi.GetN(),fitPhaseI_vsLumi.GetY()),
                           max(ROOT.TMath.MaxElement(fitPhaseII_vsLumi.GetN(),fitPhaseII_vsLumi.GetY()),
                               ROOT.TMath.MaxElement(fitAged_vsLumi.GetN(),fitAged_vsLumi.GetY())))*1.2);
+
+
 
     frame5.GetXaxis().SetTitle("Luminosity (fb^{-1})");
     frame5.GetXaxis().SetTitleSize(0.045);
@@ -568,6 +579,15 @@ if __name__ == '__main__':
     fileInclusiveAged_vsFake   = ROOT.TFile("output/DataCards_WW_SS_Inclusive_Dynamic_Aged/fakeRateExtrapolation/computeMaxLikelihoodFit/plotMaxLikelihoodFit/mu_uncertainty_COMB.root","OPEN");
     fitAged_vsFake = ROOT.TGraphAsymmErrors();
     fitAged_vsFake = fileInclusiveAged_vsFake.Get("mu_1s");
+
+    for iPoint in range(fitPhaseI_vsFake.GetN()):
+      fitPhaseI_vsFake.GetY()[iPoint] *= 100;
+
+    for iPoint in range(fitPhaseII_vsFake.GetN()):
+      fitPhaseII_vsFake.GetY()[iPoint] *= 100;
+
+    for iPoint in range(fitAged_vsFake.GetN()):
+      fitAged_vsFake.GetY()[iPoint] *= 100;
 
 
     can6 = ROOT.TCanvas("can6","can6",600,600);
