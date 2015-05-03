@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
                 if ifile.split(" ")[0] != "rate" and ifile.split(" ")[0] != "process" :
                     if ifile.split(" ")[0] == "CMS_btag_eff" :
-                        newline = ifile.replace("1.040","1.100");                        
+                        newline = ifile.replace("1.040","1.055");                        
                         fileNew.write(newline);
                         continue;
                     if ifile.split(" ")[0] == "CMS_lep_eff_mu" :

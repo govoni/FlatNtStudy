@@ -14,10 +14,10 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.06  and
 	 fabs(ele->sieie)  < 0.01  and
 	 ele->hovere < 0.12 and
-	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.30 ) return true;
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.15 ) return true;
   }
     else {
-      if(fabs(ele->dz) < 0.1    and
+      if(fabs(ele->dz) < 0.15    and
 	 fabs(ele->d0) < 0.02   and
 	 ele->nMissingHits <= 1 and
 	 ele->isConv == 0       and
@@ -25,7 +25,7 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.03  and
 	 fabs(ele->sieie)  < 0.03  and
 	 ele->hovere < 0.10 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.30 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.15 ) return true;
     }
     
   }
@@ -41,7 +41,7 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.06   and
 	 fabs(ele->sieie)  < 0.015  and
 	 ele->hovere       < 0.12   and
-	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.3 ) return true;
   }
     else {
       if(fabs(ele->dz) < 0.1    and
@@ -52,7 +52,7 @@ bool passEleID(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.04  and
 	 fabs(ele->sieie)  < 0.04  and
 	 ele->hovere       < 0.40  and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.3 ) return true;
     }
 
 
@@ -76,7 +76,7 @@ bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.06  and
 	 fabs(ele->sieie)  < 0.01  and
 	 ele->hovere < 0.12 and
-	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.35 ) return true;
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.2 ) return true;
   }
     else {
       if(fabs(ele->dz) < 0.1    and
@@ -87,7 +87,7 @@ bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.03  and
 	 fabs(ele->sieie)  < 0.03  and
 	 ele->hovere < 0.10 and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.35 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.2 ) return true;
     }
     
   }
@@ -103,7 +103,7 @@ bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.07   and
 	 fabs(ele->sieie)  < 0.015  and
 	 ele->hovere       < 0.15   and
-	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.5 ) return true;
+	 (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
   }
     else {
       if(fabs(ele->dz) < 0.1    and
@@ -114,7 +114,7 @@ bool passEleIDLoose(TElectron* ele, float rho, int nPU){
 	 fabs(ele->dPhiIn) < 0.05  and
 	 fabs(ele->sieie)  < 0.04  and
 	 ele->hovere       < 0.5   and
-       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.5 ) return true;
+       (ele->chHadIso03 + max(ele->gammaIso03+ele->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/ele->pt < 0.4 ) return true;
     }
 
 
@@ -143,7 +143,7 @@ bool passMuonID(TMuon* mu, float rho, int nPU){
 	    mu->nPixHits   > 0 and
 	    mu->nTkLayers  > 5 and
 	    mu->ptErr/mu->pt < 0.25 and 
-	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.30);
+	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.15);
   }
   else{
     return (
@@ -157,7 +157,7 @@ bool passMuonID(TMuon* mu, float rho, int nPU){
 	    mu->nPixHits   > 2 and
 	    mu->nTkLayers  > 7 and
 	    mu->ptErr/mu->pt < 0.2 and 
-	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.5);
+	    ((mu->chHadIso03 + max(mu->gammaIso03+mu->neuHadIso03-rho*0.3*0.3*TMath::Pi(),0.0))/mu->pt) < 0.3);
   }
 
 }
@@ -167,9 +167,9 @@ bool passMuonIDLoose(TMuon* mu, float rho, int nPU){
   float isoVal = 0;
 
   if(nPU == 50)
-    isoVal = 0.35;
+    isoVal = 0.20;
   else
-    isoVal = 0.65;
+    isoVal = 0.35;
 
   return (
 	  ((mu->typeBits)/2)%2 and

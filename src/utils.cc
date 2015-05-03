@@ -3635,6 +3635,9 @@ bool passCutContainerSelection (cutContainer & Cut,
   // jets cut
   if(RecoJets.size() < 2 ) return false;
 
+  if(RecoJets.at(0).jet4V_.Pt() < Cut.ptJet.first) return false;
+  if(RecoJets.at(1).jet4V_.Pt() < Cut.ptJet.second) return false;
+
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
@@ -4012,12 +4015,17 @@ bool passCutContainerSelection (readTree* reader,
   trackJetEvent trackEvent;
   trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
+  //jet pt cut 
+  if(RecoJets.at(0).jet4V_.Pt() < Cut.ptJet.first) return false;
+  if(RecoJets.at(1).jet4V_.Pt() < Cut.ptJet.second) return false;
+
 
   if(vect.size()!=0){
     vect[Name+"_"+Cut.cutLayerName]->SetBinContent(iBin,vect[Name+"_"+Cut.cutLayerName]->GetBinContent(iBin)+eventWeight);   
     vect[Name+"_"+Cut.cutLayerName]->GetXaxis()->SetBinLabel(iBin,"jet counting");
     iBin++;   
   }
+
 
   // bveto
   int nBjets = 0 ;

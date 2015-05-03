@@ -18,6 +18,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TLegend.h"
+#include "TGraphAsymmErrors.h"
 
 // Bacon and other includes
 #include "ReadInputFile.h"
@@ -191,6 +192,57 @@ int main (int argc, char ** argv) {
     maximumEvents_Delphes = maxEventNumber ;
 
 
+  /// VBF jet tagging efficiency/ purity plots
+  TH1F* Numerator_LeadJet_Eff_FullSIM_vsEta = new TH1F("Numerator_LeadJet_Eff_FullSIM_vsEta","Numerator_LeadJet_Eff_FullSIM_vsEta",10,0,5);
+  Numerator_LeadJet_Eff_FullSIM_vsEta->Sumw2();
+
+  TH1F* Numerator_TrailJet_Eff_FullSIM_vsEta = new TH1F("Numerator_TrailJet_Eff_FullSIM_vsEta","Numerator_TrailJet_Eff_FullSIM_vsEta",10,0,5);
+  Numerator_TrailJet_Eff_FullSIM_vsEta->Sumw2();
+
+  TH1F* Numerator_Eff_FullSIM_vsDEta = new TH1F("Numerator_Eff_FullSIM_vsDEta","Numerator_Eff_FullSIM_vsDEta",10,2,8);
+  Numerator_Eff_FullSIM_vsDEta->Sumw2();
+
+  TH1F* Numerator_Eff_FullSIM_vsMjj = new TH1F("Numerator_Eff_FullSIM_vsMjj","Numerator_Eff_FullSIM_vsMjj",15,500,2000);
+  Numerator_Eff_FullSIM_vsMjj->Sumw2();
+
+  TH1F* Denominator_LeadJet_Eff_FullSIM_vsEta = new TH1F("Denominator_LeadJet_Eff_FullSIM_vsEta","Denominator_LeadJet_Eff_FullSIM_vsEta",10,0,5);
+  Denominator_LeadJet_Eff_FullSIM_vsEta->Sumw2();
+
+  TH1F* Denominator_TrailJet_Eff_FullSIM_vsEta = new TH1F("Denominator_TrailJet_Eff_FullSIM_vsEta","Denominator_TrailJet_Eff_FullSIM_vsEta",10,0,5);
+  Denominator_TrailJet_Eff_FullSIM_vsEta->Sumw2();
+
+  TH1F* Denominator_Eff_FullSIM_vsDEta = new TH1F("Denominator_Eff_FullSIM_vsDEta","Denominator_Eff_FullSIM_vsDEta",10,2,8);
+  Denominator_Eff_FullSIM_vsDEta->Sumw2();
+
+  TH1F* Denominator_Eff_FullSIM_vsMjj = new TH1F("Denominator_Eff_FullSIM_vsMjj","Denominator_Eff_FullSIM_vsMjj",15,500,2000);
+  Denominator_Eff_FullSIM_vsMjj->Sumw2();
+
+
+
+  TH1F* Numerator_LeadJet_Eff_Delphes_vsEta = new TH1F("Numerator_LeadJet_Eff_Delphes_vsEta","Numerator_LeadJet_Eff_Delphes_vsEta",10,0,5);
+  Numerator_LeadJet_Eff_Delphes_vsEta->Sumw2();
+
+  TH1F* Numerator_TrailJet_Eff_Delphes_vsEta = new TH1F("Numerator_TrailJet_Eff_Delphes_vsEta","Numerator_TrailJet_Eff_Delphes_vsEta",10,0,5);
+  Numerator_TrailJet_Eff_Delphes_vsEta->Sumw2();
+
+  TH1F* Numerator_Eff_Delphes_vsDEta = new TH1F("Numerator_Eff_Delphes_vsDEta","Numerator_Eff_Delphes_vsDEta",10,2,8);
+  Numerator_Eff_Delphes_vsDEta->Sumw2();
+
+  TH1F* Numerator_Eff_Delphes_vsMjj = new TH1F("Numerator_Eff_Delphes_vsMjj","Numerator_Eff_Delphes_vsMjj",15,500,2000);
+  Numerator_Eff_Delphes_vsMjj->Sumw2();
+
+  TH1F* Denominator_LeadJet_Eff_Delphes_vsEta = new TH1F("Denominator_LeadJet_Eff_Delphes_vsEta","Denominator_LeadJet_Eff_Delphes_vsEta",10,0,5);
+  Denominator_LeadJet_Eff_Delphes_vsEta->Sumw2();
+
+  TH1F* Denominator_TrailJet_Eff_Delphes_vsEta = new TH1F("Denominator_TrailJet_Eff_Delphes_vsEta","Denominator_TrailJet_Eff_Delphes_vsEta",10,0,5);
+  Denominator_TrailJet_Eff_Delphes_vsEta->Sumw2();
+
+  TH1F* Denominator_Eff_Delphes_vsDEta = new TH1F("Denominator_Eff_Delphes_vsDEta","Denominator_Eff_Delphes_vsDEta",10,2,8);
+  Denominator_Eff_Delphes_vsDEta->Sumw2();
+
+  TH1F* Denominator_Eff_Delphes_vsMjj = new TH1F("Denominator_Eff_Delphes_vsMjj","Denominator_Eff_Delphes_vsMjj",15,500,2000);
+  Denominator_Eff_Delphes_vsMjj->Sumw2();
+
 
   // Loop on aged events
   for(int iEvent = 0; iEvent < maximumEvents_FullSIM ; iEvent++){
@@ -319,6 +371,15 @@ int main (int argc, char ** argv) {
       if(goodTightElectrons.size() != 2) continue;
       if(goodTightMuons.size() != 0) continue;
     }
+    else if(TString(finalStateString).Contains("All")){
+      if(goodTightMuons.size() == 2){
+	if(goodTightElectrons.size() != 0) continue;
+      }
+      else if(goodTightElectrons.size() == 2){
+	if(goodTightMuons.size() != 0) continue;
+      } 
+      else continue;
+    }
     else continue;
 
     if(histoCutEff_FullSIM.size()!=0){
@@ -333,6 +394,15 @@ int main (int argc, char ** argv) {
     }
     else if(TString(finalStateString).Contains("EE")){
       if(goodTightElectrons.at(0).q != goodTightElectrons.at(1).q) continue;
+    }
+    else if(TString(finalStateString).Contains("All")){
+      if(goodTightElectrons.size() == 2){
+	if(goodTightElectrons.at(0).q != goodTightElectrons.at(1).q) continue;
+      }
+      else if(goodTightMuons.size() == 2){
+	if(goodTightMuons.at(0).q != goodTightMuons.at(1).q) continue;
+      }    
+      else continue;
     }
     else continue;
 
@@ -362,6 +432,16 @@ int main (int argc, char ** argv) {
     else if(TString(finalStateString).Contains("EE")){
       lepton1.SetPtEtaPhiM(goodTightElectrons.at(0).pt,goodTightElectrons.at(0).eta,goodTightElectrons.at(0).phi,0.);
       lepton2.SetPtEtaPhiM(goodTightElectrons.at(1).pt,goodTightElectrons.at(1).eta,goodTightElectrons.at(1).phi,0.);
+    }
+    else if(TString(finalStateString).Contains("All")){
+      if(goodTightMuons.size() == 2){
+	lepton1.SetPtEtaPhiM(goodTightMuons.at(0).pt,goodTightMuons.at(0).eta,goodTightMuons.at(0).phi,0.);
+	lepton2.SetPtEtaPhiM(goodTightMuons.at(1).pt,goodTightMuons.at(1).eta,goodTightMuons.at(1).phi,0.);
+      }
+      else if (goodTightElectrons.size() == 2){
+	lepton1.SetPtEtaPhiM(goodTightElectrons.at(0).pt,goodTightElectrons.at(0).eta,goodTightElectrons.at(0).phi,0.);
+	lepton2.SetPtEtaPhiM(goodTightElectrons.at(1).pt,goodTightElectrons.at(1).eta,goodTightElectrons.at(1).phi,0.);
+      }
     }
 
     if((lepton1+lepton2).M() < mllCut) continue;
@@ -443,7 +523,16 @@ int main (int argc, char ** argv) {
       genLep1.SetPtEtaPhiM(genMatchedElectrons.at(0).pt,genMatchedElectrons.at(0).eta,genMatchedElectrons.at(0).phi,0.);
       genLep2.SetPtEtaPhiM(genMatchedElectrons.at(1).pt,genMatchedElectrons.at(1).eta,genMatchedElectrons.at(1).phi,0.);
     }
-
+    else if(TString(finalStateString).Contains("All")){
+      if(genMatchedElectrons.size() >= 2){
+	genLep1.SetPtEtaPhiM(genMatchedElectrons.at(0).pt,genMatchedElectrons.at(0).eta,genMatchedElectrons.at(0).phi,0.);
+	genLep2.SetPtEtaPhiM(genMatchedElectrons.at(1).pt,genMatchedElectrons.at(1).eta,genMatchedElectrons.at(1).phi,0.);
+      }
+      else if(genMatchedMuons.size() >=2){
+	genLep1.SetPtEtaPhiM(genMatchedMuons.at(0).pt,genMatchedMuons.at(0).eta,genMatchedMuons.at(0).phi,0.);
+	genLep2.SetPtEtaPhiM(genMatchedMuons.at(1).pt,genMatchedMuons.at(1).eta,genMatchedMuons.at(1).phi,0.);
+      }
+    }
 
     TLorentzVector genMet ;
     for(size_t iNu = 0; iNu < genNeutrino.size(); iNu++){
@@ -455,8 +544,8 @@ int main (int argc, char ** argv) {
     // look for jets cleaning leptons
     vector<TJet> cleanedJetsNoLep;    
     vector<TJet> cleanedJets;    
-    cleanedJetsFromLeptons(cleanedJetsNoLep,*fJet_FullSIM,goodTightMuons,goodTightElectrons,minJetCutPt,matchingCone,etaJetCut); 
-    cleanedJesFromNeutrino(cleanedJets,cleanedJetsNoLep,genNeutrino,minJetCutPt,matchingCone,etaJetCut);
+    cleanedJetsFromLeptons(cleanedJets,*fJet_FullSIM,goodTightMuons,goodTightElectrons,minJetCutPt,matchingCone,etaJetCut); 
+    //cleanedJesFromNeutrino(cleanedJets,cleanedJetsNoLep,genNeutrino,minJetCutPt,matchingCone,etaJetCut);
     sort(cleanedJets.rbegin(),cleanedJets.rend());
     if(cleanedJets.size() < 2) continue;
     
@@ -473,6 +562,7 @@ int main (int argc, char ** argv) {
     genjet2.SetPtEtaPhiM(cleanedJets.at(1).genpt,cleanedJets.at(1).geneta,cleanedJets.at(1).genphi,cleanedJets.at(1).genm);
 
 
+    // cuts
     if(dijet.M() < mjjCut) continue;
     
     if(histoCutEff_FullSIM.size()!=0){
@@ -489,14 +579,32 @@ int main (int argc, char ** argv) {
       iBin++;
     }
 
+    // efficiency and purity plots :
+    Denominator_LeadJet_Eff_FullSIM_vsEta->Fill(fabs(jet1.Eta()));
+    Denominator_TrailJet_Eff_FullSIM_vsEta->Fill(fabs(jet2.Eta()));
+
+    if(genjet1.Pt() > 15 and jet1.DeltaR(genjet1) < 0.25)
+      Numerator_LeadJet_Eff_FullSIM_vsEta->Fill(fabs(jet1.Eta()));
+    if(genjet2.Pt() > 15 and jet2.DeltaR(genjet2) < 0.25)
+      Numerator_TrailJet_Eff_FullSIM_vsEta->Fill(fabs(jet2.Eta()));
+
+    Denominator_Eff_FullSIM_vsDEta->Fill(fabs(jet1.Eta()-jet2.Eta()));
+    Denominator_Eff_FullSIM_vsMjj->Fill((jet1+jet2).M());
+
+    if(genjet1.Pt() > 15 and genjet2.Pt() > 15 and jet1.DeltaR(genjet1) < 0.25 and jet2.DeltaR(genjet2) < 0.25){
+      Numerator_Eff_FullSIM_vsDEta->Fill(fabs(jet1.Eta()-jet2.Eta()));
+      Numerator_Eff_FullSIM_vsMjj->Fill((jet1+jet2).M());
+    }
+
     if(genjet1.Pt() < 15. or genjet2.Pt() < 15) continue;
+    if(jet1.DeltaR(genjet1) > 0.25 or jet2.DeltaR(genjet2) > 0.25) continue; 
 
     if(histoCutEff_FullSIM.size()!=0){
       histoCutEff_FullSIM[name]->SetBinContent(iBin,histoCutEff_FullSIM[name]->GetBinContent(iBin)+1);
       histoCutEff_FullSIM[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
      iBin++;
     }
-    
+
     // fill histos
     fillHistos(plotVector_FullSIM,variableList,name,weight_FullSIM,lepton1,lepton2,jet1,jet2,met);
     fillHistos(plotVector_GenFullSIM,variableList,"Gen"+name,weight_FullSIM,genLep1,genLep2,genjet1,genjet2,genMet);
@@ -524,14 +632,14 @@ int main (int argc, char ** argv) {
     // dump tight leptons                                                                                                                                                      
     vector<leptonContainer> leptonsIsoTight ;
     if( nPU == 50)
-      leptonsIsoTight = dumpLeptons (LeptonsAll, 0.45, 0.45, minLeptonCutPt);
+      leptonsIsoTight = dumpLeptons (LeptonsAll, 0.38, 0.38, minLeptonCutPt);
     else
       leptonsIsoTight = dumpLeptons (LeptonsAll, 0.6, 0.6, minLeptonCutPt);
 
     // identify loose leptons                                                                                                                                                  
     vector<leptonContainer> leptonsIsoLoose ;
     if( nPU == 50)
-      leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.60, minLeptonCutPt);
+      leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.40, minLeptonCutPt);
     else
       leptonsIsoLoose = dumpLeptons (LeptonsAll, 0.75, minLeptonCutPt);
 
@@ -578,6 +686,9 @@ int main (int argc, char ** argv) {
     else if(TString(finalStateString).Contains("EE")){
       if(fabs(leptonsIsoTight.at(0).flavour_) != 11) continue;
       if(fabs(leptonsIsoTight.at(1).flavour_) != 11) continue;
+    }
+    else if(TString(finalStateString).Contains("All")){
+      if(fabs(leptonsIsoTight.at(0).flavour_) !=  fabs(leptonsIsoTight.at(1).flavour_)) continue; 
     }
     else continue;
 
@@ -669,6 +780,9 @@ int main (int argc, char ** argv) {
      
     vector<jetContainer> RecoJets;
     RecoJets  = dumpJets (RecoJetsAll, leptonsIsoTight, minJetCutPt, 99., -99, minLeptonCutPt, matchingCone,etaJetCut);
+    sort(RecoJets.rbegin(),RecoJets.rend());
+    
+
     if(RecoJets.size() < 2 )  continue;
 
     vector<jetContainer> GenJetsAll ;
@@ -676,7 +790,8 @@ int main (int argc, char ** argv) {
 
     // take gen jets                                                                                                                                                           
     vector<jetContainer> GenJets;
-    GenJets  = dumpJets (GenJetsAll, genLeptons, 0., 999, -999, 0., matchingCone, 5.0);
+    vector<leptonContainer> leptTmp;
+    GenJets  = dumpJets (GenJetsAll, leptTmp,0., 999, -999, 0., matchingCone, 5.0);
     sort(GenJets.rbegin(),GenJets.rend());
 
     TLorentzVector genJet1 ; genJet1.SetPtEtaPhiM(0.,0.,0.,0.);
@@ -686,8 +801,8 @@ int main (int argc, char ** argv) {
 
     for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
       if(RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone) {
-	if(minDR != 999)
-	  cerr<<" more than one gen jet matched to reco leading jet in delphes "<<minDR<<" "<<RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
+	//	if(minDR != 999)
+	  //cerr<<" more than one gen jet matched to reco leading jet in delphes "<<minDR<<" "<<RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
 	if(RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < minDR){
 	  genJet1 = GenJets.at(iGen).jet4V_;
 	  minDR = RecoJets.at(0).jet4V_.DeltaR(GenJets.at(iGen).jet4V_);
@@ -699,8 +814,8 @@ int main (int argc, char ** argv) {
 
     for(size_t iGen = 0; iGen < GenJets.size(); iGen++){
       if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < matchingCone and GenJetsAll.at(iGen).jet4V_ != genJet1) {
-	if(minDR != 999)
-	  cerr<<" more than one gen jet matched to reco trailing jet in delphes "<<minDR<<" "<<RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
+	//	if(minDR != 999)
+	  //cerr<<" more than one gen jet matched to reco trailing jet in delphes "<<minDR<<" "<<RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_)<<" pt "<<GenJets.at(iGen).jet4V_.Pt()<<" postion "<<iGen<<endl;
 	if(RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_) < minDR){
 	  genJet2 = GenJets.at(iGen).jet4V_;
 	  minDR = RecoJets.at(1).jet4V_.DeltaR(GenJets.at(iGen).jet4V_);
@@ -708,7 +823,7 @@ int main (int argc, char ** argv) {
       }
     }
 
-    
+    // cuts
     if((RecoJets.at(0).jet4V_+RecoJets.at(1).jet4V_).M() < mjjCut) continue;
 
     if(histoCutEff_Delphes.size()!=0){
@@ -725,6 +840,23 @@ int main (int argc, char ** argv) {
       iBin++;
     }
 
+    // efficiency and purity plots :
+    Denominator_LeadJet_Eff_Delphes_vsEta->Fill(fabs(RecoJets.at(0).jet4V_.Eta()));
+    Denominator_TrailJet_Eff_Delphes_vsEta->Fill(fabs(RecoJets.at(1).jet4V_.Eta()));
+
+    if(genJet1.Pt() > 0)
+      Numerator_LeadJet_Eff_Delphes_vsEta->Fill(fabs(RecoJets.at(0).jet4V_.Eta()));
+    if(genJet2.Pt() > 0)
+      Numerator_TrailJet_Eff_Delphes_vsEta->Fill(fabs(RecoJets.at(1).jet4V_.Eta()));
+
+    Denominator_Eff_Delphes_vsDEta->Fill(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()));
+    Denominator_Eff_Delphes_vsMjj->Fill((RecoJets.at(0).jet4V_+RecoJets.at(1).jet4V_).M());
+
+    if(genJet1.Pt() > 0 and genJet2.Pt() > 0){
+      Numerator_Eff_Delphes_vsDEta->Fill(fabs(RecoJets.at(0).jet4V_.Eta()-RecoJets.at(1).jet4V_.Eta()));
+      Numerator_Eff_Delphes_vsMjj->Fill((RecoJets.at(0).jet4V_+RecoJets.at(1).jet4V_).M());
+    }
+
     if(genJet1.Pt() <= 0 or genJet2.Pt() <= 0) continue;
 
     if(histoCutEff_Delphes.size()!=0){
@@ -732,6 +864,7 @@ int main (int argc, char ** argv) {
       histoCutEff_Delphes[name]->GetXaxis()->SetBinLabel(iBin,"mathcing gen jets after cleaning");
       iBin++;
     }
+
 
     // fill histos                                                                                                                                                             
     fillHistos(plotVector_Delphes,variableList,name,weight_Delphes,
@@ -1101,6 +1234,171 @@ int main (int argc, char ** argv) {
     legend->Clear();
 
   }  
+
+ // plot VBF efficiency and efficiency
+  TGraphAsymmErrors* Eff_Lead_FullSIM_vsEta = new TGraphAsymmErrors();
+  Eff_Lead_FullSIM_vsEta->SetName("Eff_Lead_vsEta_FullSIM");
+  Eff_Lead_FullSIM_vsEta->BayesDivide(Numerator_LeadJet_Eff_FullSIM_vsEta,Denominator_LeadJet_Eff_FullSIM_vsEta);
+
+  TGraphAsymmErrors* Eff_Trail_FullSIM_vsEta = new TGraphAsymmErrors();
+  Eff_Trail_FullSIM_vsEta->SetName("Eff_Trail_vsEta_FullSIM");
+  Eff_Trail_FullSIM_vsEta->BayesDivide(Numerator_TrailJet_Eff_FullSIM_vsEta,Denominator_TrailJet_Eff_FullSIM_vsEta);
+
+  TGraphAsymmErrors* Eff_FullSIM_vsDEta = new TGraphAsymmErrors();
+  Eff_FullSIM_vsDEta->SetName("Eff_vsDEta_FullSIM");
+  Eff_FullSIM_vsDEta->BayesDivide(Numerator_Eff_FullSIM_vsDEta,Denominator_Eff_FullSIM_vsDEta);
+
+  TGraphAsymmErrors* Eff_FullSIM_vsMjj = new TGraphAsymmErrors();
+  Eff_FullSIM_vsMjj->SetName("Eff_vsMjj_FullSIM");
+  Eff_FullSIM_vsMjj->BayesDivide(Numerator_Eff_FullSIM_vsMjj ,Denominator_Eff_FullSIM_vsMjj);
+
+  TGraphAsymmErrors* Eff_Lead_Delphes_vsEta = new TGraphAsymmErrors();
+  Eff_Lead_Delphes_vsEta->SetName("Eff_Lead_vsEta_Delphes");
+  Eff_Lead_Delphes_vsEta->BayesDivide(Numerator_LeadJet_Eff_Delphes_vsEta ,Denominator_LeadJet_Eff_Delphes_vsEta);
+
+  TGraphAsymmErrors* Eff_Trail_Delphes_vsEta = new TGraphAsymmErrors();
+  Eff_Trail_Delphes_vsEta->SetName("Eff_Trail_vsEta_Delphes");
+  Eff_Trail_Delphes_vsEta->BayesDivide(Numerator_TrailJet_Eff_Delphes_vsEta ,Denominator_TrailJet_Eff_Delphes_vsEta);
+
+  TGraphAsymmErrors* Eff_Delphes_vsDEta = new TGraphAsymmErrors();
+  Eff_Delphes_vsDEta->SetName("Eff_vsDEta_Delphes");
+  Eff_Delphes_vsDEta->BayesDivide(Numerator_Eff_Delphes_vsDEta ,Denominator_Eff_Delphes_vsDEta);
+
+  TGraphAsymmErrors* Eff_Delphes_vsMjj = new TGraphAsymmErrors();
+  Eff_Delphes_vsMjj->SetName("Eff_vsMjj_Delphes");
+  Eff_Delphes_vsMjj->BayesDivide(Numerator_Eff_Delphes_vsMjj ,Denominator_Eff_Delphes_vsMjj);
+
+  // Draw
+  Eff_Lead_FullSIM_vsEta->SetMarkerColor(kBlue);
+  Eff_Lead_FullSIM_vsEta->SetLineColor(kBlue);
+  Eff_Lead_FullSIM_vsEta->SetMarkerStyle(20);
+  Eff_Lead_FullSIM_vsEta->SetMarkerSize(1.1);
+  Eff_Lead_FullSIM_vsEta->SetLineWidth(2);
+  Eff_Lead_FullSIM_vsEta->GetXaxis()->SetTitle("|#eta_{j1}|");
+  Eff_Lead_FullSIM_vsEta->GetYaxis()->SetTitle("efficiency");
+  Eff_Lead_FullSIM_vsEta->GetYaxis()->SetRangeUser(0.5,1.2);
+  Eff_Lead_FullSIM_vsEta->Draw("ap");
+
+  Eff_Lead_Delphes_vsEta->SetMarkerColor(kRed);
+  Eff_Lead_Delphes_vsEta->SetLineColor(kRed);
+  Eff_Lead_Delphes_vsEta->SetMarkerStyle(20);
+  Eff_Lead_Delphes_vsEta->SetMarkerSize(1.1);
+  Eff_Lead_Delphes_vsEta->SetLineWidth(2);
+  Eff_Lead_Delphes_vsEta->Draw("psame");
+
+  TLegend* leg = new TLegend(0.25,0.3,0.45,0.55);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->SetTextSize(0.035);
+
+  leg->AddEntry(Eff_Lead_FullSIM_vsEta,"CMSSW full sim","p");
+  leg->AddEntry(Eff_Lead_Delphes_vsEta,"Delphes sim","p");
+  leg->Draw("same");
+  tex->Draw("same");
+  tex2->Draw("same");
+  tex3->Draw("same");
+    
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_LeadvsEta.pdf").c_str(),"pdf");
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_LeadvsEta.png").c_str(),"png");
+
+
+  Eff_Trail_FullSIM_vsEta->SetMarkerColor(kBlue);
+  Eff_Trail_FullSIM_vsEta->SetLineColor(kBlue);
+  Eff_Trail_FullSIM_vsEta->SetMarkerStyle(20);
+  Eff_Trail_FullSIM_vsEta->SetMarkerSize(1.1);
+  Eff_Trail_FullSIM_vsEta->SetLineWidth(2);
+  Eff_Trail_FullSIM_vsEta->GetXaxis()->SetTitle("|#eta_{j2}|");
+  Eff_Trail_FullSIM_vsEta->GetYaxis()->SetTitle("efficiency");
+  Eff_Trail_FullSIM_vsEta->GetYaxis()->SetRangeUser(0.5,1.2);
+  Eff_Trail_FullSIM_vsEta->Draw("ap");
+
+  Eff_Trail_Delphes_vsEta->SetMarkerColor(kRed);
+  Eff_Trail_Delphes_vsEta->SetLineColor(kRed);
+  Eff_Trail_Delphes_vsEta->SetMarkerStyle(20);
+  Eff_Trail_Delphes_vsEta->SetMarkerSize(1.1);
+  Eff_Trail_Delphes_vsEta->SetLineWidth(2);
+  Eff_Trail_Delphes_vsEta->Draw("psame");
+
+  leg->Clear();
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry(Eff_Trail_FullSIM_vsEta,"CMSSW full sim","p");
+  leg->AddEntry(Eff_Trail_Delphes_vsEta,"Delphes sim","p");
+  leg->Draw("same");
+  tex->Draw("same");
+  tex2->Draw("same");
+  tex3->Draw("same");
+    
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_TrailvsEta.pdf").c_str(),"pdf");
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_TrailvsEta.png").c_str(),"png");
+
+
+  Eff_FullSIM_vsDEta->SetMarkerColor(kBlue);
+  Eff_FullSIM_vsDEta->SetLineColor(kBlue);
+  Eff_FullSIM_vsDEta->SetMarkerStyle(20);
+  Eff_FullSIM_vsDEta->SetMarkerSize(1.1);
+  Eff_FullSIM_vsDEta->SetLineWidth(2);
+  Eff_FullSIM_vsDEta->GetXaxis()->SetTitle("|#Delta#eta_{jj}|");
+  Eff_FullSIM_vsDEta->GetYaxis()->SetTitle("efficiency");
+  Eff_FullSIM_vsDEta->GetYaxis()->SetRangeUser(0.5,1.2);
+  Eff_FullSIM_vsDEta->Draw("ap");
+
+  Eff_Delphes_vsDEta->SetMarkerColor(kRed);
+  Eff_Delphes_vsDEta->SetLineColor(kRed);
+  Eff_Delphes_vsDEta->SetMarkerStyle(20);
+  Eff_Delphes_vsDEta->SetMarkerSize(1.1);
+  Eff_Delphes_vsDEta->SetLineWidth(2);
+  Eff_Delphes_vsDEta->Draw("psame");
+
+  leg->Clear();
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry(Eff_FullSIM_vsDEta,"CMSSW full sim","p");
+  leg->AddEntry(Eff_Delphes_vsDEta,"Delphes sim","p");
+  leg->Draw("same");
+  tex->Draw("same");
+  tex2->Draw("same");
+  tex3->Draw("same");
+    
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_vsDEta.pdf").c_str(),"pdf");
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_vsDEta.png").c_str(),"png");
+
+
+  Eff_FullSIM_vsMjj->SetMarkerColor(kBlue);
+  Eff_FullSIM_vsMjj->SetLineColor(kBlue);
+  Eff_FullSIM_vsMjj->SetMarkerStyle(20);
+  Eff_FullSIM_vsMjj->SetMarkerSize(1.1);
+  Eff_FullSIM_vsMjj->SetLineWidth(2);
+  Eff_FullSIM_vsMjj->GetXaxis()->SetTitle("M_{jj}");
+  Eff_FullSIM_vsMjj->GetYaxis()->SetTitle("efficiency");
+  Eff_FullSIM_vsMjj->GetYaxis()->SetRangeUser(0.,1.2);
+  Eff_FullSIM_vsMjj->Draw("ap");
+
+  Eff_Delphes_vsMjj->SetMarkerColor(kRed);
+  Eff_Delphes_vsMjj->SetLineColor(kRed);
+  Eff_Delphes_vsMjj->SetMarkerStyle(20);
+  Eff_Delphes_vsMjj->SetMarkerSize(1.1);
+  Eff_Delphes_vsMjj->SetLineWidth(2);
+  Eff_Delphes_vsMjj->Draw("psame");
+
+  leg->Clear();
+  leg->SetFillColor(0);
+  leg->SetFillStyle(0);
+  leg->SetBorderSize(0);
+  leg->AddEntry(Eff_FullSIM_vsMjj,"CMSSW full sim","p");
+  leg->AddEntry(Eff_Delphes_vsMjj,"Delphes sim","p");
+  leg->Draw("same");
+  tex->Draw("same");
+  tex2->Draw("same");
+  tex3->Draw("same");
+    
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_vsMjj.pdf").c_str(),"pdf");
+  cCanvas->SaveAs(string("output/"+outputPlotDirectory+"/Eff_vsMjj.png").c_str(),"png");
+
+
   
  return 0 ;
 
