@@ -10,6 +10,8 @@ import subprocess
 import ROOT
 import argparse
 
+from optparse import OptionParser
+
 from cStringIO import StringIO
 
 from subprocess import Popen
@@ -17,6 +19,19 @@ from subprocess import Popen
 from ROOT import gROOT, gStyle, gSystem, TLatex, TGaxis, TPaveText, TH2D, TColor, gPad, TGraph2D, TLine,TGraph,TList
 
 from collections import defaultdict
+
+############################################                                                                                                                                    
+#            Job steering                  #                                                                                                                                  
+############################################                                                                                                                                   
+
+parser = OptionParser()
+
+parser.add_option('-b',         action='store_true', dest='noX', default=False, help='no X11 windows')
+parser.add_option('--D',        action="store",      type="string", dest="datacard", default="")
+parser.add_option('--channel',  action="store",      type="string", dest="channel",  default="WW")
+parser.add_option('--inputVar', action="store",      type="string", dest="inputVar", default="ptl1")
+
+(options, args) = parser.parse_args()
 
 
 #####################################
@@ -138,12 +153,8 @@ if __name__ == '__main__':
     tex3.SetTextSize (0.04)
     tex3.SetLineWidth (2)
 
-    parser = argparse.ArgumentParser (description = 'plot LL, TL, TT and bkg')
-    parser.add_argument ('-D', '--datacard' , default= 'NONE', help='1D datacard to be read')
-    parser.add_option('-b', action='store_true', dest='noX', default=True, help='no X11 windows')
-    args = parser.parse_args ()
-    print 'reading', args.datacard
-    f_datacard = ROOT.TFile (args.datacard)
+    f_datacard = ROOT.TFile (options.datacard)
+
     l0 = [elem.GetName () for elem in f_datacard.GetListOfKeys ()]
     l1 = [elem for elem in l0 if elem.find ('_scale') == -1]
     l2 = [elem for elem in l1 if elem.find ('Data') == -1]
@@ -151,6 +162,7 @@ if __name__ == '__main__':
     l4 = [elem for elem in l3 if elem.find ('_stat') == -1]
     l5 = [elem for elem in l4 if elem.find ('_shape') == -1]
 
+    
     elem_TT = [elem for elem in l5 if elem.find ('_TT') != -1]
     elem_LT = [elem for elem in l5 if elem.find ('_LT') != -1]
     elem_LL = [elem for elem in l5 if elem.find ('_LL') != -1]
@@ -163,7 +175,8 @@ if __name__ == '__main__':
     print 'TT component: ', elem_TT
     print 'LT component: ', elem_LT
     print 'LL component: ', elem_LL
-    
+
+
     h_LL = f_datacard.Get (elem_LL[0])
     h_LT = f_datacard.Get (elem_LT[0])
     h_TT = f_datacard.Get (elem_TT[0])
@@ -176,23 +189,30 @@ if __name__ == '__main__':
     h_LT.Scale (1./h_LT.Integral ())    
     h_TT.Scale (1./h_TT.Integral ())    
     h_bk.Scale (1./h_bk.Integral ())    
+
     
     can = ROOT.TCanvas ("can","can",600,600)
     
-    legend = ROOT.TLegend (0.4,0.68,0.56,0.9)
+    legend = ROOT.TLegend (0.3,0.68,0.56,0.9)
     legend.SetFillColor (0)
     legend.SetFillStyle (0)
     legend.SetBorderSize (0)
     legend.SetTextSize (0.040)
 
-    h_LL.SetLineColor (1)
-    h_LT.SetLineColor (2)
-    h_TT.SetLineColor (9)
+
+    h_LL.SetLineColor (2)
+    h_LL.SetFillColor (0)
+    h_LL.SetLineWidth (2)
+
+    h_TT.SetLineColor (4)
+    h_TT.SetFillColor (0)
+    h_TT.SetLineWidth (2)
+
+    h_LT.SetLineColor (1)
+    h_LT.SetFillColor (0)
+    h_LT.SetLineWidth (2)
+
     h_bk.SetLineColor (16)
-
-    h_LT.SetLineStyle (2)
-    h_TT.SetLineStyle (5)
-
     h_bk.SetFillColor (16)
 
     histos = [h_bk, h_TT, h_LT, h_LL]
@@ -201,7 +221,7 @@ if __name__ == '__main__':
     for elem in histos :
       if elem.GetMaximum () > maxi : maxi = elem.GetMaximum ()
       if elem.GetMinimum () < mini : mini = elem.GetMinimum ()
-    maxi = maxi * 1.1
+    maxi = maxi * 1.5
     if mini > 0 : mini = mini * 0.9  
 
     frame = can.DrawFrame (h_LL.GetXaxis ().GetXmin (), mini, h_LL.GetXaxis ().GetXmax (), maxi)
@@ -215,20 +235,28 @@ if __name__ == '__main__':
     frame.GetYaxis ().SetTitleOffset (1.17)
     frame.GetYaxis ().SetLabelSize (0.04)
 
-    legend.AddEntry (h_LL, "LL","l")
-    legend.AddEntry (h_LT, "LT","l")
-    legend.AddEntry (h_TT, "TT","l")
-    legend.AddEntry (h_bk, "bkg","fl")
-    
-    for elem in histos : 
-        elem.SetLineWidth (3)
-        elem.Draw ('histo same')
+    legend.AddEntry (h_LL, "WW_{EWK} LL","l")
+    legend.AddEntry (h_LT, "WW_{EWK} LT","l")
+    legend.AddEntry (h_TT, "WW_{EWK} TT","l")
+    if options.channel == "WW" :
+      legend.AddEntry (h_bk, "fake + WW_{QCD} + WZ + charge","fl")
+    else:
+      legend.AddEntry (h_bk, "fake + WZ_{QCD} + ZZ","fl")
+
+    h_bk.Draw("hist same")
+
+    h_TT.Draw("hist same")
+    h_LT.Draw("hist same")
+    h_LL.Draw("hist same")
         
     tex.Draw ()
     tex2.Draw ()
     legend.Draw ()
     can.RedrawAxis ()
 
-    can.SaveAs (args.datacard + '.png', 'png')
+    os.system("mkdir -p output/plotPolar/");
+    os.system("rm output/plotPolar/*"+options.channel+"*"+options.inputVar+"*");
 
-    
+    can.SaveAs ('output/plotPolar/polarShape_'+options.channel+'_'+options.inputVar+'.png', 'png')
+    can.SaveAs ('output/plotPolar/polarShape_'+options.channel+'_'+options.inputVar+'.pdf', 'pdf')
+     
