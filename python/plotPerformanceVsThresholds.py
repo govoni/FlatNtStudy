@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs lumi
 
-    filePolarized_ptj30  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj30_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","READ");
+    filePolarized_ptj30  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj30_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","READ");
     treePolarized_ptj30  = filePolarized_ptj30.Get("limit");
 
     for i in range(treePolarized_ptj30.GetEntries()):
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
     significance.GetXaxis().SetBinLabel(1,"nominal");
 
-    filePolarized_ptj40  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj40_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj40  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj40_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj40  = filePolarized_ptj40.Get("limit");
 
     for i in range(treePolarized_ptj40.GetEntries()):
@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     significance.GetXaxis().SetBinLabel(2,"p_{T}(jet)>40GeV");
 
-    filePolarized_ptj50  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj50_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj50  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj50_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj50  = filePolarized_ptj50.Get("limit");
 
     for i in range(treePolarized_ptj50.GetEntries()):
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     significance.GetXaxis().SetBinLabel(3,"p_{T}(jet)>50GeV");
 
-    filePolarized_ptj60  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj60_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj60  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj60_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj60  = filePolarized_ptj60.Get("limit");
     for i in range(treePolarized_ptj60.GetEntries()):
       treePolarized_ptj60.GetEntry(i)
@@ -171,7 +171,7 @@ if __name__ == '__main__':
 
     significance.GetXaxis().SetBinLabel(4,"p_{T}(jet)>60GeV");
 
-    filePolarized_ptl25  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptl25_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptl25  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptl25_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptl25  = filePolarized_ptl25.Get("limit");
     for i in range(treePolarized_ptl25.GetEntries()):
       treePolarized_ptl25.GetEntry(i)
@@ -179,7 +179,7 @@ if __name__ == '__main__':
 
     significance.GetXaxis().SetBinLabel(5,"p_{T}(lep)>25GeV");
 
-    filePolarized_ptl30  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptl30_DeltaPhi_JJ_ptl1_EEpp.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptl30  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptl30_DeltaPhi_JJ_ptl1_COMB.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptl30  = filePolarized_ptl30.Get("limit");
     for i in range(treePolarized_ptl30.GetEntries()):
       treePolarized_ptl30.GetEntry(i)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     significance.GetXaxis().SetBinLabel(6,"p_{T}(lep)>30GeV");
 
 
-    filePolarized_ptj30_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj30_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj30_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj30_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj30_stat  = filePolarized_ptj30_stat.Get("limit");
     for i in range(treePolarized_ptj30_stat.GetEntries()):
       treePolarized_ptj30_stat.GetEntry(i)
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     significance_stat.GetXaxis().SetBinLabel(1,"nominal");
 
-    filePolarized_ptj40_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj40_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj40_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj40_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj40_stat  = filePolarized_ptj40_stat.Get("limit");
     for i in range(treePolarized_ptj40_stat.GetEntries()):
       treePolarized_ptj40_stat.GetEntry(i)
@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
     significance_stat.GetXaxis().SetBinLabel(1,"nominal");
 
-    filePolarized_ptj50_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj50_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj50_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj50_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj50_stat  = filePolarized_ptj50_stat.Get("limit");
     for i in range(treePolarized_ptj50_stat.GetEntries()):
       treePolarized_ptj50_stat.GetEntry(i)
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     significance_stat.GetXaxis().SetBinLabel(1,"nominal");
 
-    filePolarized_ptj60_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptj60_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptj60_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptj60_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptj60_stat  = filePolarized_ptj60_stat.Get("limit");
     for i in range(treePolarized_ptj60_stat.GetEntries()):
       treePolarized_ptj60_stat.GetEntry(i)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     significance_stat.GetXaxis().SetBinLabel(1,"nominal");
 
 
-    filePolarized_ptl25_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptl25_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptl25_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptl25_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptl25_stat  = filePolarized_ptl25_stat.Get("limit");
     for i in range(treePolarized_ptl25_stat.GetEntries()):
       treePolarized_ptl25_stat.GetEntry(i)
@@ -229,7 +229,7 @@ if __name__ == '__main__':
 
     significance_stat.GetXaxis().SetBinLabel(1,"nominal");
 
-    filePolarized_ptl30_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_Object/Card2D/computeSignificance/higgsCombineptl30_DeltaPhi_JJ_ptl1_EEpp_stat.ProfileLikelihood.mH120.root","OPEN");
+    filePolarized_ptl30_stat  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/performanceVsCut/higgsCombineptl30_DeltaPhi_JJ_ptl1_COMB_stat.ProfileLikelihood.mH120.root","OPEN");
     treePolarized_ptl30_stat  = filePolarized_ptl30_stat.Get("limit");
     for i in range(treePolarized_ptl30_stat.GetEntries()):
       treePolarized_ptl30_stat.GetEntry(i)
