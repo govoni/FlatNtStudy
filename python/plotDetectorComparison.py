@@ -139,17 +139,17 @@ if __name__ == '__main__':
     tex3.SetLineWidth(2);
 
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs lumi
-    filePolarizedPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI_bbar/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
 
     significancePhaseI_vsLumi = ROOT.TGraphAsymmErrors();
     significancePhaseI_vsLumi = filePolarizedPhaseI_vsLumi.Get("signficance_graph");
 
-    filePolarizedPhaseII_vsLumi = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedPhaseII_vsLumi = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_bbar/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
 
     significancePhaseII_vsLumi = ROOT.TGraphAsymmErrors();
     significancePhaseII_vsLumi = filePolarizedPhaseII_vsLumi.Get("signficance_graph");
 
-    filePolarizedAged_vsLumi    = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedAged_vsLumi    = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged_bbar/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
     significanceAged_vsLumi = ROOT.TGraphAsymmErrors();
     significanceAged_vsLumi = filePolarizedAged_vsLumi.Get("signficance_graph");
 
@@ -213,12 +213,12 @@ if __name__ == '__main__':
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.C","C");
 
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs fake
-    filePolarizedPhaseI_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
+    filePolarizedPhaseI_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI_bbar/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
 
     significancePhaseI_vsFake = ROOT.TGraphAsymmErrors();
     significancePhaseI_vsFake = filePolarizedPhaseI_vsFake.Get("signficance_graph");
 
-    filePolarizedPhaseII_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
+    filePolarizedPhaseII_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_bbar/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
 
     significancePhaseII_vsFake = ROOT.TGraphAsymmErrors();
     significancePhaseII_vsFake = filePolarizedPhaseII_vsFake.Get("signficance_graph");

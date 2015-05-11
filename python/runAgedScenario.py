@@ -58,6 +58,10 @@ if __name__ == '__main__':
     os.system("ls | grep txt | grep -v COMB | grep _EUmm.txt | grep "+options.inputVariable+" >> list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _UEpp.txt | grep "+options.inputVariable+" >> list.txt");
     os.system("ls | grep txt | grep -v COMB | grep _UEmm.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EEE.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UUU.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _EEU.txt | grep "+options.inputVariable+" >> list.txt");
+    os.system("ls | grep txt | grep -v COMB | grep _UUE.txt | grep "+options.inputVariable+" >> list.txt");
 
     datacardFile = open("list.txt","r");
     datacardList = [];
@@ -125,7 +129,7 @@ if __name__ == '__main__':
                                 icol = icol+1;
                                 continue;
                         elif options.datacardType== 1 :
-                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("_LL") and not ROOT.TString(columns).Contains("_TL") and not ROOT.TString(columns).Contains("_TT") and not ROOT.TString(columns).Contains("_LT"):
+                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("_LL") and not ROOT.TString(columns).Contains("_TL") and not ROOT.TString(columns).Contains("_TT") and not ROOT.TString(columns).Contains("_LT") and columns != "WZ_QCD":
                                 icol = icol+1;
                                 continue;
                             else :
@@ -290,7 +294,7 @@ if __name__ == '__main__':
                         if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("WW_EWK") :       
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 1:
-                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("_LL") or ROOT.TString(key.GetName()).Contains("_TL") or ROOT.TString(key.GetName()).Contains("_LT") or ROOT.TString(key.GetName()).Contains("_TT")    :
+                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("_LL") or ROOT.TString(key.GetName()).Contains("_TL") or ROOT.TString(key.GetName()).Contains("_LT") or ROOT.TString(key.GetName()).Contains("_TT")  or ROOT.TString(key.GetName()).Contains("WZ_QCD")  :
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 2 :
                         if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("HminusNoH") or ROOT.TString(key.GetName()).Contains("WW_EWK") :
