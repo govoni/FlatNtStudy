@@ -292,19 +292,19 @@ if __name__ == '__main__':
     can2.SaveAs("output/Combination/LL_scattering_vsFake.pdf","pdf");
     can2.SaveAs("output/Combination/LL_scattering_vsFake.root","root");
     can2.SaveAs("output/Combination/LL_scattering_vsFake.C","C");
-
+ 
     ## input file for phaseI 50PU, aged and phaseII for noH-H signficance vs lumi
-    fileHvsNoHPhaseI_vsLumi  = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/PhaseI/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHPhaseI_vsLumi  = ROOT.TFile("output/DataCards_Combination_WW_WZ/PhaseI/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
 
     limitPhaseI_vsLumi = ROOT.TGraphAsymmErrors();
     limitPhaseI_vsLumi = fileHvsNoHPhaseI_vsLumi.Get("limit_exp");
 
-    fileHvsNoHPhaseII_vsLumi = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/PhaseII/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHPhaseII_vsLumi = ROOT.TFile("output/DataCards_Combination_WW_WZ/PhaseII/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
 
     limitPhaseII_vsLumi = ROOT.TGraphAsymmErrors();
     limitPhaseII_vsLumi = fileHvsNoHPhaseII_vsLumi.Get("limit_exp");
 
-    fileHvsNoHAged_vsLumi   = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/Aged/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHAged_vsLumi   = ROOT.TFile("output/DataCards_Combination_WW_WZ/Aged/HvsNoH/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
     limitAged_vsLumi = ROOT.TGraphAsymmErrors();
     limitAged_vsLumi = fileHvsNoHAged_vsLumi.Get("limit_exp");
 
@@ -372,17 +372,17 @@ if __name__ == '__main__':
 
 
     ## input file for phaseII 140PU, aged and phaseII for noH-H signficance vs lumi
-    fileHvsNoHPhaseI_vsFake  = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/PhaseI/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHPhaseI_vsFake  = ROOT.TFile("output/DataCards_Combination_WW_WZ/PhaseI/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
 
     limitPhaseI_vsFake = ROOT.TGraphAsymmErrors();
     limitPhaseI_vsFake = fileHvsNoHPhaseI_vsFake.Get("limit_exp");
 
-    fileHvsNoHPhaseII_vsFake = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/PhaseII/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHPhaseII_vsFake = ROOT.TFile("output/DataCards_Combination_WW_WZ/PhaseII/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
 
     limitPhaseII_vsFake = ROOT.TGraphAsymmErrors();
     limitPhaseII_vsFake = fileHvsNoHPhaseII_vsFake.Get("limit_exp");
 
-    fileHvsNoHAged_vsFake   = ROOT.TFile("output/DataCards_Combination_WW_WZ_v2/Aged/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
+    fileHvsNoHAged_vsFake   = ROOT.TFile("output/DataCards_Combination_WW_WZ/Aged/HvsNoH/fakeRateExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
     limitAged_vsFake = ROOT.TGraphAsymmErrors();
     limitAged_vsFake = fileHvsNoHAged_vsFake.Get("limit_exp");
 

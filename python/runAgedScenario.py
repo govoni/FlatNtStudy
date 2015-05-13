@@ -129,7 +129,7 @@ if __name__ == '__main__':
                                 icol = icol+1;
                                 continue;
                         elif options.datacardType== 1 :
-                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("_LL") and not ROOT.TString(columns).Contains("_TL") and not ROOT.TString(columns).Contains("_TT") and not ROOT.TString(columns).Contains("_LT") and columns != "WZ_QCD":
+                            if columns != "WW_QCD" and not ROOT.TString(columns).Contains("_LL") and not ROOT.TString(columns).Contains("_TL") and not ROOT.TString(columns).Contains("_TT") and not ROOT.TString(columns).Contains("_LT") :
                                 icol = icol+1;
                                 continue;
                             else :
@@ -294,7 +294,7 @@ if __name__ == '__main__':
                         if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("WW_EWK") :       
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 1:
-                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("_LL") or ROOT.TString(key.GetName()).Contains("_TL") or ROOT.TString(key.GetName()).Contains("_LT") or ROOT.TString(key.GetName()).Contains("_TT")  or ROOT.TString(key.GetName()).Contains("WZ_QCD")  :
+                        if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("_LL") or ROOT.TString(key.GetName()).Contains("_TL") or ROOT.TString(key.GetName()).Contains("_LT") or ROOT.TString(key.GetName()).Contains("_TT")  :
                             histo.Scale(options.rescaleFactor);
                     elif options.datacardType == 2 :
                         if ROOT.TString(key.GetName()).Contains("WW_QCD") or ROOT.TString(key.GetName()).Contains("HminusNoH") or ROOT.TString(key.GetName()).Contains("WW_EWK") :
