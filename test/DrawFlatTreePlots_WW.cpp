@@ -113,7 +113,7 @@ int main (int argc, char ** argv) {
       int numBefore = 0;
       // take input files
       numBefore += itSubSample->numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*_1.root").c_str()) ;
+      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
 
       int totEvent = chain->GetEntries();
 
