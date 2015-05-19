@@ -20,9 +20,11 @@
 #include "TClass.h"
 #include "TObject.h"
 #include "TKey.h"
+#include "TSystem.h"
 
 #include "ReadInputFile.h"
 #include "utils.h"
+#include "dumpObjectsFromTree.h"
 #include "readTree.h"
 #include "fakeBackgroundUtils.h"
 
@@ -36,6 +38,7 @@
 
 using namespace std;
 
+template <class T>
 class TMVATrainingClass {
 
  public :
@@ -71,7 +74,7 @@ class TMVATrainingClass {
 		    const string & transformation = "");       // transformation to be applied on the input variables
 
   // default de-constructor
-  ~TMVATrainingClass();
+  virtual ~TMVATrainingClass();
 
   // Set global event weight for signal and background
   void BookMVATrees ( const map<sampleContainer,float> & signalGlobalWeight,        // global cross section weight for each signal file or tree
@@ -83,7 +86,7 @@ class TMVATrainingClass {
                               const bool & trainEachVarIndependently = false); // input list of spectator ones	       
 
   // prepare events for training
-  void AddPrepareTraining (const cutContainer & cutContainer,     // cut to be applied on the input trees
+  void AddPrepareTraining (const T & cutContainer,     // cut to be applied on the input trees
                            string weightStringSignal,     // re-weighting expression or branch for signal events 
                            string weightStringBackground, // re-weighting expression or branch for background events
                            const pair<int,int>  & PileUpBinOfTraining = make_pair(0,500), // pile-up bin of training
@@ -240,7 +243,7 @@ class TMVATrainingClass {
   map<string,vector<shared_ptr<TNtuple>>> backgroundTNtuplaForTraining_ ;
 
   //cut container
-  cutContainer cutEvent_;
+  T cutEvent_;
   
   // list of input and spectator variables
   vector<string> trainingVariables_ ;

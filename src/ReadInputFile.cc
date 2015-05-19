@@ -591,7 +591,7 @@ int ReadInputVariableFileDynamicBinning( const string & InputVariableList , vect
 
 
 // cut list
-int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutContainer){
+int ReadInputCutFile( const string & InputCutList , vector<cutContainerWW> & CutContainer){
 
 
   ifstream inputFile (InputCutList.c_str());
@@ -611,30 +611,30 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
 
     line >> layerName >> ptL1 >> ptL2 >> etaMaxL >> chargeSign >> flavour >> nLep >> nextra >> MET >> ptJet1 >> ptJet2 >> DetaJJ >> Mjj >> DetaLL >> MllMin >> MllMax >>  MllZVetoMin >> MllZVetoMax >> bTagCut >> nBVeto >> nSoftMu >> jetPUID >> dRJL >> ptJJLLMet >> lZep >> HTTrackjets >> polarization;     
 
-    cutContainer dummy(layerName,
-                       make_pair(stof(ptL1),stof(ptL2)),
-		       stof(etaMaxL),
-                       stof(chargeSign),
-                       stof(flavour),
-                       stoi(nLep),
-                       stoi(nextra),
-                       stof(MET),
-                       make_pair(stof(ptJet1),stof(ptJet2)),
-                       stof(DetaJJ),
-                       stof(Mjj),
-                       stof(DetaLL),
-                       make_pair(stof(MllMin),stof(MllMax)),
-                       make_pair(stof(MllZVetoMin),stof(MllZVetoMax)),
-                       stof(bTagCut), 
-                       stoi(nBVeto), 
-                       stoi(nSoftMu), 		       
-                       stof(jetPUID),
-		       stof(dRJL),
-		       stof(ptJJLLMet),
-		       stof(lZep),
-		       stof(HTTrackjets),
-                       stoi(polarization));
-
+    cutContainerWW dummy(layerName,
+			 make_pair(stof(ptL1),stof(ptL2)),
+			 stof(etaMaxL),
+			 stof(chargeSign),
+			 stof(flavour),
+			 stoi(nLep),
+			 stoi(nextra),
+			 stof(MET),
+			 make_pair(stof(ptJet1),stof(ptJet2)),
+			 stof(DetaJJ),
+			 stof(Mjj),
+			 stof(DetaLL),
+			 make_pair(stof(MllMin),stof(MllMax)),
+			 make_pair(stof(MllZVetoMin),stof(MllZVetoMax)),
+			 stof(bTagCut), 
+			 stoi(nBVeto), 
+			 stoi(nSoftMu), 		       
+			 stof(jetPUID),
+			 stof(dRJL),
+			 stof(ptJJLLMet),
+			 stof(lZep),
+			 stof(HTTrackjets),
+			 stoi(polarization));
+    
     
     CutContainer.push_back(dummy);
 
@@ -643,6 +643,59 @@ int ReadInputCutFile( const string & InputCutList , vector<cutContainer> & CutCo
   return CutContainer.size() ;
 
 }
+
+// WZ file
+// cut list                                                                                                                                                                      
+int ReadInputCutFile( const string & InputCutList , vector<cutContainerWZ> & CutContainer){
+
+  ifstream inputFile (InputCutList.c_str());
+  string buffer;
+
+  if(inputFile.fail()) return -1;
+
+  while(!inputFile.eof()){
+
+    getline(inputFile,buffer);
+
+    if(buffer.empty() || !buffer.find("#") || buffer==" ") continue ;
+    
+    stringstream line(buffer);
+
+    string layerName, nLep, SFOS, nextra, flavour, etaMaxL, ptL1, ptL2, ptL3, etaL, MZcut, MLLcut, MET, nJet,  ptJet1, ptJet2, etaJet,  DetaJJ,Mjj, jetPUID, HTTrackjets, polarization;
+    line >> layerName >>  nLep >> SFOS >> nextra >> flavour >> etaMaxL >> ptL1 >> ptL2 >> ptL3 >> etaL >> MZcut >> MLLcut >> MET >> nJet >>  ptJet1 >> ptJet2 >> etaJet >>  DetaJJ >>  Mjj  >> jetPUID >> HTTrackjets >>  polarization;
+
+    cutContainerWZ dummy(layerName,
+			 stoi(nLep),
+			 stod(SFOS),
+			 stoi(nextra),
+			 stod(flavour),
+			 stod(etaMaxL),
+			 stod(ptL1),
+			 stod(ptL2),
+			 stod(ptL3),
+			 stod(etaL),
+			 stod(MZcut),
+			 stod(MLLcut),
+			 stod(MET),
+			 stod(nJet),
+			 stod(ptJet1),
+			 stod(ptJet2),
+			 stod(etaJet),
+			 stod(DetaJJ),
+			 stod(Mjj),
+			 stod(jetPUID),
+			 stod(HTTrackjets),
+			 stoi(polarization));
+    
+    CutContainer.push_back(dummy);
+
+  }
+
+  return CutContainer.size() ;
+
+}
+
+
 
 int ReadInputTrainingFile (const string & InputTrainingList, vector<trainingContainer> & trainContainer){
 

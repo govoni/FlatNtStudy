@@ -72,32 +72,29 @@ template <class T>
 TH2F * roll ( T * original,    // thing to be re-rolled                                                                                                                     
 	     int nBinsX, float Xmin, float Xmax,
 	     int nBinsY, float Ymin, float Ymax,
-	     RooHist * reference     // unrolled events, to get                                                                                                              
-	     )
-{
+	     RooHist * reference ){
+
   int nBinsOriginal = reference->GetN () ;
    
-  if (nBinsY * nBinsX != nBinsOriginal)
-    {
+  if (nBinsY * nBinsX != nBinsOriginal){
       cerr << " problems in number of bins" << endl ;
       exit (1) ;
-    }
+  }
+
   TString name = "roll_" ;
   name += original->GetName () ;
   TH2F * dummy = new TH2F (name, name,
 			   nBinsX, Xmin, Xmax,
-			   nBinsY, Ymin, Ymax
-			   ) ;
-  for (int i = 1 ; i <= nBinsOriginal ; ++i)
-    {
+			   nBinsY, Ymin, Ymax) ;
+
+  for (int i = 1 ; i <= nBinsOriginal ; ++i){
       Double_t yvalue = original->Eval (i - 0.5) ;
       int xbin = i / nBinsY + 1 ;
       int ybin = i % nBinsY ;
 
       dummy->SetBinContent (xbin, ybin, yvalue) ;
-    }
+  }
   return dummy ;
 }
  
-
 #endif

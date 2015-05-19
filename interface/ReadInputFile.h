@@ -60,60 +60,60 @@ class sampleContainer {
 
 };
 
-// ---------------
-class cutContainer {
+// --------------- cut contaier for WW analysis
+class cutContainerWW {
 
  public :
-  cutContainer(){};
-  ~cutContainer(){};
+  cutContainerWW(){};
+  ~cutContainerWW(){};
 
- cutContainer(string cutLayerName, 
-              pair<float,float> ptL, 
-	      float etaMaxL,
-              float chargeSign, 
-              float flavour,
-              int   nLep, 
-              int   nextra,             
-              float MET, 
-              pair<float,float> ptJet, 
-              float DetaJJ, 
-              float Mjj, 
-              float DetaLL, 
-              pair<float,float> Mll, 
-              pair<float,float> MllZVeto, 
-              float bTagCut, 
-              int   nBVeto, 
-	      int   nSoftMu,
-	      float jetPUID,
-	      float dRlJ,
-	      float ptJJLLMet,
-	      float lZep,
-	      float HTTrackjet,
-              int   polarization = 99):
-    cutLayerName(cutLayerName),
-      ptL( ptL),
-      etaMaxL(etaMaxL),
-      chargeSign(chargeSign),
-      flavour(flavour),
-      nLep(nLep),
-      nextra(nextra),
-      MET(MET),
-      ptJet(ptJet),
-      DetaJJ(DetaJJ),
-      Mjj(Mjj),
-      DetaLL(DetaLL),
-      Mll(Mll),
-      MllZVeto(MllZVeto),
-      bTagCut(bTagCut),
-      nBVeto(nBVeto),
-      nSoftMu(nSoftMu),
-      jetPUID(jetPUID),
-      dRlJ(dRlJ),
-      ptJJLLMet(ptJJLLMet),
-      lZep(lZep),
-      HTTrackjet(HTTrackjet),
-      polarization(polarization){};
-
+ cutContainerWW(string cutLayerName, 
+		pair<float,float> ptL, 
+		float etaMaxL,
+		float chargeSign, 
+		float flavour,
+		int   nLep, 
+		int   nextra,             
+		float MET, 
+		pair<float,float> ptJet, 
+		float DetaJJ, 
+		float Mjj, 
+		float DetaLL, 
+		pair<float,float> Mll, 
+		pair<float,float> MllZVeto, 
+		float bTagCut, 
+		int   nBVeto, 
+		int   nSoftMu,
+		float jetPUID,
+		float dRlJ,
+		float ptJJLLMet,
+		float lZep,
+		float HTTrackjet,
+		int   polarization = 99):
+  cutLayerName(cutLayerName),
+    ptL( ptL),
+    etaMaxL(etaMaxL),
+    chargeSign(chargeSign),
+    flavour(flavour),
+    nLep(nLep),
+    nextra(nextra),
+    MET(MET),
+    ptJet(ptJet),
+    DetaJJ(DetaJJ),
+    Mjj(Mjj),
+    DetaLL(DetaLL),
+    Mll(Mll),
+    MllZVeto(MllZVeto),
+    bTagCut(bTagCut),
+    nBVeto(nBVeto),
+    nSoftMu(nSoftMu),
+    jetPUID(jetPUID),
+    dRlJ(dRlJ),
+    ptJJLLMet(ptJJLLMet),
+    lZep(lZep),
+    HTTrackjet(HTTrackjet),
+    polarization(polarization){};
+  
   string cutLayerName ;
   pair<float,float> ptL;
   float  etaMaxL;
@@ -140,8 +140,84 @@ class cutContainer {
 
 };
 
-// ---------------
+// --------------- cut container for WZ analysis                                                                                                                              
+class cutContainerWZ {
 
+ public :
+  cutContainerWZ(){};
+  ~cutContainerWZ(){};
+
+  cutContainerWZ(string cutLayerName,
+		 int     nLep,
+		 double  SFOS,
+		 int     nextra,
+		 double  flavour,
+		 double etaMaxL,
+		 double ptL1,
+		 double ptL2,
+		 double ptL3,
+		 double etaL,
+		 double MZcut,
+		 double MLLcut,
+		 double MET,
+		 double nJet,
+		 double ptJet1,
+		 double ptJet2,
+		 double etaJet,
+		 double DetaJJ,
+		 double Mjj,
+		 double jetPUID,
+		 double HTTrackjet,
+		 int polarization = 99):  
+  cutLayerName(cutLayerName),
+    nLep(nLep),
+    SFOS(SFOS),
+    nextra(nextra),
+    flavour(flavour),
+    etaMaxL(etaMaxL),
+    ptL1(ptL1),
+    ptL2(ptL2),
+    ptL3(ptL3),
+    etaL(etaL),
+    MZcut(MZcut),
+    MLLcut(MLLcut),
+    MET(MET),
+    nJet(nJet),
+    ptJet1(ptJet1),
+    ptJet2(ptJet2),
+    etaJet(etaJet),
+    DetaJJ(DetaJJ),
+    Mjj(Mjj),
+    jetPUID(jetPUID),
+    HTTrackjet(HTTrackjet),
+    polarization(polarization){};
+
+  string cutLayerName ;
+  int     nLep;
+  double  SFOS;
+  int     nextra;
+  double  flavour;
+  double etaMaxL;
+  double ptL1;
+  double ptL2;
+  double ptL3;
+  double etaL;
+  double MZcut;
+  double MLLcut;
+  double  MET;
+  double nJet;
+  double ptJet1;
+  double ptJet2;
+  double etaJet;
+  double DetaJJ;
+  double Mjj;
+  double jetPUID;
+  double HTTrackjet;
+  int  polarization;
+
+};
+
+// ---------------
 class variableContainer {
 
  public :
@@ -448,7 +524,8 @@ int ReadInputVariableFile (const string & , vector<string> & );
 
 int ReadInputTrainingFile (const string & , vector<trainingContainer> & );
 
-int ReadInputCutFile      (const string & , vector<cutContainer> &);
+int ReadInputCutFile      (const string & , vector<cutContainerWW> &);
+int ReadInputCutFile      (const string & , vector<cutContainerWZ> &);
 
 // dynamic bin
 int ReadInputVariableFileDynamicBinning (const string & , vector<variableContainerDynamic> & );

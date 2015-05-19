@@ -1,6 +1,7 @@
 #include "fakeBackgroundUtils.h"
 #include <memory>
 
+// ------------
 float getElectronMisChargeProbability (const float & pt, const float & eta){
 
   if(fabs(eta) < 1.5){ //Barrel                                                                                                                                                 
@@ -16,6 +17,8 @@ float getElectronMisChargeProbability (const float & pt, const float & eta){
 
   return 0;
 }
+
+// ------------
 
 vector<jetContainer> dumpJetsForFake (vector<jetContainer> & RecoJets,
 				      vector<jetContainer> & GenJets,
@@ -89,7 +92,7 @@ float getFakeWeight(  jetContainer inputJet,
   return weight;
 }
 
-// ---------------------                                                                                                                                                        
+// --------------------- fake lepton for WW analysis                                                                                                                            
 leptonContainer createFakeLepton(  jetContainer inputJet,
                                    leptonContainer inputLepton,
                                    fakeMigrationContainer & fakeMigration,
@@ -212,7 +215,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 	lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
       if(inputLepton.flavour_ > 0)      
-	return leptonContainer(lepton4V,inputLepton.charge_,flavour,0.); // return lepton with same flavour and charge
+	return leptonContainer(lepton4V,inputLepton.charge_,flavour,0.); // return lepton with same flavour and charge not important the flavour since we are mixing all
       else 
 	return leptonContainer(lepton4V,inputLepton.charge_,-flavour,0.); // return lepton with same flavour and charge
   }
@@ -247,7 +250,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     else
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    return leptonContainer(lepton4V,charge,inputLepton_1.flavour_,0.); // return lepton with same flavour and int(charge)
+    return leptonContainer(lepton4V,charge,inputLepton_1.flavour_,0.); // return lepton with same flavour and int(charge) .. charge not important since we are not cutting it
 
   }
 
@@ -261,7 +264,7 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
     else
       lepton4V.SetPtEtaPhiM(0.,inputJet.jet4V_.Eta(),inputJet.jet4V_.Phi(),0.);
 
-    return leptonContainer(lepton4V,int(charge),inputLepton_1.flavour_,0.); // return lepton with same flavour and charge
+    return leptonContainer(lepton4V,int(charge),inputLepton_1.flavour_,0.); // return lepton with same flavour and charge .. charge not important since we are not cutting on it
 
   }
 
@@ -369,12 +372,13 @@ leptonContainer createFakeLepton(  jetContainer inputJet,
 
 
 // ---------------------                                                                                                                                                      
+template <typename T>
 void makeFakeLeptonBackground(const string & sampleName,
 			      const int    & samplePosition,
 			      const string & finalStateString,
 			      plotter & analysisPlots,
 			      readTree *reader,
-                              cutContainer & cutElement,
+                              T & cutElement,
 			      vector<variableContainer> & VariableList,
                               vector<leptonContainer> & leptonsIsoTight,
                               vector<leptonContainer> & LeptonsAll,
@@ -424,7 +428,7 @@ void makeFakeLeptonBackground(const string & sampleName,
   else {
     if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
       return ;
-    if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(0).flavour_) != 11))
+    if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
       return ;
   }
 
@@ -544,7 +548,6 @@ void makeFakeLeptonBackground(const string & sampleName,
       trackJetEvent trackEvent;
       trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
-      // analysis with nominal objects                                                                                                                                       
       if( passCutContainerSelection (cutElement,
 				     sampleName,
 				     samplePosition,
@@ -560,27 +563,43 @@ void makeFakeLeptonBackground(const string & sampleName,
 				     vect,
 				     finalStateString,
 				     eventFakeWeight)){
-	
-	fillHisto(analysisPlots, 
-		  sampleName, 
-		  samplePosition,
-		  cutElement.cutLayerName, 
-		  VariableList,
-		  fakeLeptonsIsoTight, 
-		  softMuons, 
-		  fakeRecoJets, 
-		  GenJets, 
-		  trackEvent, 
-		  fakeL_met, 
-		  "",
-		  eventFakeWeight);
+
+	if(typeid(cutElement) == typeid(cutContainerWW)){
+	  fillHistoWW(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList,
+		      fakeLeptonsIsoTight, 
+		      softMuons, 
+		      fakeRecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      fakeL_met, 
+		      "",
+		      eventFakeWeight);
+	}      
+	else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	  fillHistoWZ(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList,
+		      fakeLeptonsIsoTight, 
+		      softMuons, 
+		      fakeRecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      fakeL_met, 
+		      "",
+		      eventFakeWeight);
+	}
       }
     }
   }
   else{
 
     for(size_t iLepType = 0; iLepType < 2 ; iLepType++){ // stands for electrons and muons
-
       for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
 
 	eventFakeWeight = 1.;
@@ -645,38 +664,50 @@ void makeFakeLeptonBackground(const string & sampleName,
 				       vect,
 				       finalStateString,
 				       eventFakeWeight)){
-	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    samplePosition,
-		    cutElement.cutLayerName, 
-		    VariableList,
-		    fakeLeptonsIsoTight, 
-		    softMuons, 
-		    fakeRecoJets, 
-		    GenJets, 
-		    trackEvent, 
-		    fakeL_met, 
-		    "",
-		    eventFakeWeight);
-	}
+	  if(typeid(cutElement) == typeid(cutContainerWW)){
+	    fillHistoWW(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);
+	  }
+	  else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	    fillHistoWZ(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);
+	  }
+	}  
       }
     }
   }
 }
-  
 
-
-
-
-
-// ---------------------                                                                                                                                                        
+// ---------------------         
+template <typename T>                                                                                                                                               
 void makeFakeLeptonBackground(const string & sampleName,
 			      const int    & samplePosition,
 			      const string & finalStateString,
 			      plotter & analysisPlots,
 			      readTree *reader,
-                              cutContainer & cutElement,
+                              T & cutElement,
 			      vector<variableContainer> & VariableList,
 			      vector<variableContainer2D> & VariableList2D,
                               vector<leptonContainer> & leptonsIsoTight,
@@ -866,26 +897,12 @@ void makeFakeLeptonBackground(const string & sampleName,
 				     finalStateString,
 				     eventFakeWeight)){
 
- 
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    samplePosition,
-		    cutElement.cutLayerName, 
-		    VariableList,
-		    fakeLeptonsIsoTight, 
-		    softMuons, 
-		    fakeRecoJets, 
-		    GenJets, 
-		    trackEvent, 
-		    fakeL_met, 
-		    "",
-		    eventFakeWeight);
-
-	  fillHisto2D(analysisPlots, 
+	if(typeid(cutElement) == typeid(cutContainerWW)){
+	  fillHistoWW(analysisPlots, 
 		      sampleName, 
 		      samplePosition,
 		      cutElement.cutLayerName, 
-		      VariableList2D,
+		      VariableList,
 		      fakeLeptonsIsoTight, 
 		      softMuons, 
 		      fakeRecoJets, 
@@ -894,17 +911,59 @@ void makeFakeLeptonBackground(const string & sampleName,
 		      fakeL_met, 
 		      "",
 		      eventFakeWeight);
-      }
+	  
+	  fillHisto2DWW(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList2D,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);	  
+	}
+	else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	  fillHistoWZ(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList,
+		      fakeLeptonsIsoTight, 
+		      softMuons, 
+		      fakeRecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      fakeL_met, 
+		      "",
+		      eventFakeWeight);
+	  
+	  fillHisto2DWZ(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList2D,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);
+	}
+      } 
     }
   }
   else{
 
     for(size_t iLepType = 0; iLepType < 2 ; iLepType++){
-
       for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
 
-	eventFakeWeight = 1.;
-    
+	eventFakeWeight = 1.;   
 	if(iLepType == 0)
 	  eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),fakeRate,"U",RecoJetsForFake);
 	else
@@ -948,7 +1007,7 @@ void makeFakeLeptonBackground(const string & sampleName,
 	trackJetEvent trackEvent;
 	trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
-	// analysis with nominal objects                                                                                                                                       
+	// analysis with nominal objects      
 	if( passCutContainerSelection (cutElement,
 				       sampleName,
 				       samplePosition,
@@ -964,52 +1023,84 @@ void makeFakeLeptonBackground(const string & sampleName,
 				       vect,
 				       finalStateString,
 				       eventFakeWeight)){
+
+	  if(typeid(cutElement) == typeid(cutContainerWW)){
 	  
-	  fillHisto(analysisPlots, 
-		    sampleName, 
-		    samplePosition,
-		    cutElement.cutLayerName, 
-		    VariableList,
-		    fakeLeptonsIsoTight, 
-		    softMuons, 
-		    fakeRecoJets, 
-		    GenJets, 
-		    trackEvent, 
-		    fakeL_met, 
-		    "",
-		    eventFakeWeight);
-
-	  fillHisto2D(analysisPlots, 
-		      sampleName, 
-		      samplePosition,
-		      cutElement.cutLayerName, 
-		      VariableList2D,
-		      fakeLeptonsIsoTight, 
-		      softMuons, 
-		      fakeRecoJets, 
-		      GenJets, 
-		      trackEvent, 
-		      fakeL_met, 
-		      "",
-		      eventFakeWeight);
-
+	    fillHistoWW(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);
+	    
+	    fillHisto2DWW(analysisPlots, 
+			  sampleName, 
+			  samplePosition,
+			  cutElement.cutLayerName, 
+			  VariableList2D,
+			  fakeLeptonsIsoTight, 
+			  softMuons, 
+			  fakeRecoJets, 
+			  GenJets, 
+			  trackEvent, 
+			  fakeL_met, 
+			  "",
+			  eventFakeWeight);
+	    
+	  }
+	  
+	  else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	    
+	    fillHistoWZ(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			fakeLeptonsIsoTight, 
+			softMuons, 
+			fakeRecoJets, 
+			GenJets, 
+			trackEvent, 
+			fakeL_met, 
+			"",
+			eventFakeWeight);
+	    
+	    fillHisto2DWZ(analysisPlots, 
+			  sampleName, 
+			  samplePosition,
+			  cutElement.cutLayerName, 
+			  VariableList2D,
+			  fakeLeptonsIsoTight, 
+			  softMuons, 
+			  fakeRecoJets, 
+			  GenJets, 
+			  trackEvent, 
+			  fakeL_met, 
+			  "",
+			  eventFakeWeight);
+	    
+	  }
 	}
       }
     }
   }
 }
     
-  
-
-
-
 // -----------------------------------
+template <typename T>
 void makeFakeChargeBackground(const string & sampleName,
 			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,
-                              cutContainer & cutElement,
+                              T & cutElement,
                               vector<variableContainer> & VariableList,
                               vector<leptonContainer> & leptonsIsoTight,
                               vector<leptonContainer> & LeptonsAll,
@@ -1065,22 +1156,40 @@ void makeFakeChargeBackground(const string & sampleName,
 				   finalStateString,
 				   eventFakeWeight)){
 
-      fillHisto(analysisPlots, 
-		sampleName, 
-		samplePosition,
-		cutElement.cutLayerName, 
-		VariableList,
-		leptonsIsoTight, 
-		softMuons, 
-		RecoJets, 
-		GenJets, 
-		trackEvent, 
-		L_met, 
-		"",
-		eventFakeWeight);
+      if(typeid(cutElement) == typeid(cutContainerWW)){
+	
+	fillHistoWW(analysisPlots, 
+		    sampleName, 
+		    samplePosition,
+		    cutElement.cutLayerName, 
+		    VariableList,
+		    leptonsIsoTight, 
+		    softMuons, 
+		    RecoJets, 
+		    GenJets, 
+		    trackEvent, 
+		    L_met, 
+		    "",
+		    eventFakeWeight);
+      }
+    
+      else if (typeid(cutElement) == typeid(cutContainerWZ)){
+	fillHistoWZ(analysisPlots, 
+		    sampleName, 
+		    samplePosition,
+		    cutElement.cutLayerName, 
+		    VariableList,
+		    leptonsIsoTight, 
+		    softMuons, 
+		    RecoJets, 
+		    GenJets, 
+		    trackEvent, 
+		    L_met, 
+		    "",
+		    eventFakeWeight);
+      }
     }
   }
-
   else {
 
 
@@ -1137,37 +1246,55 @@ void makeFakeChargeBackground(const string & sampleName,
       trackJetEvent trackEvent;
       trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
-      // analysis with nominal objects                                                                                                                                     
-      if( passCutContainerSelection (cutElement,
-				     sampleName,
-				     samplePosition,
-				     reader,
-				     newLeptonsAll,
-				     newLeptonsIsoTight,
-				     softMuons,
-				     RecoJets,
-				     trackEvent,
-				     L_met,
-				     minPtLeptonCutCleaning,
-				     leptonIsoLooseCut,
-				     vect,
-				     finalStateString,
-				     eventFakeWeight)){
+      // analysis with nominal objects          
+	if( passCutContainerSelection (cutElement,
+				       sampleName,
+				       samplePosition,
+				       reader,
+				       newLeptonsAll,
+				       newLeptonsIsoTight,
+				       softMuons,
+				       RecoJets,
+				       trackEvent,
+				       L_met,
+				       minPtLeptonCutCleaning,
+				       leptonIsoLooseCut,
+				       vect,
+				       finalStateString,
+				       eventFakeWeight)){
 
-	fillHisto(analysisPlots, 
-		  sampleName, 
-		  samplePosition,
-		  cutElement.cutLayerName, 
-		  VariableList,
-		  newLeptonsIsoTight, 
-		  softMuons, 
-		  RecoJets, 
-		  GenJets, 
-		  trackEvent, 
-		  L_met, 
-		  "",
-		  eventFakeWeight);
-      }
+	  if(typeid(cutElement) == typeid(cutContainerWW)){
+	    fillHistoWW(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			newLeptonsIsoTight, 
+			softMuons, 
+			RecoJets, 
+			GenJets, 
+			trackEvent, 
+			L_met, 
+			"",
+			eventFakeWeight);
+	  }
+	  else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	  
+	    fillHistoWZ(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList,
+			newLeptonsIsoTight, 
+			softMuons, 
+			RecoJets, 
+			GenJets, 
+			trackEvent, 
+			L_met, 
+			"",
+			eventFakeWeight);
+	  }
+	}
     }
   }
 }
@@ -1175,12 +1302,13 @@ void makeFakeChargeBackground(const string & sampleName,
 
 
 // -----------------------------------
+template <typename T>
 void makeFakeChargeBackground(const string & sampleName,
 			      const int    & samplePosition,
                               const string & finalStateString,
                               plotter & analysisPlots,
                               readTree *reader,
-                              cutContainer & cutElement,
+                              T & cutElement,
                               vector<variableContainer> & VariableList,
                               vector<variableContainer2D> & VariableList2D,
                               vector<leptonContainer> & leptonsIsoTight,
@@ -1198,7 +1326,6 @@ void makeFakeChargeBackground(const string & sampleName,
 
   float eventFakeWeight = 1.;
       
-
   if(leptonsIsoTight.size() != 2) return ; // if less than one isolated lepton over the minimum pt                                                                       
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
@@ -1236,44 +1363,73 @@ void makeFakeChargeBackground(const string & sampleName,
 				   vect,
 				   finalStateString,
 				   eventFakeWeight)){
+      if(typeid(cutElement) == typeid(cutContainerWW)){
+	fillHistoWW(analysisPlots, 
+		    sampleName, 
+		    samplePosition,
+		    cutElement.cutLayerName, 
+		    VariableList,
+		    leptonsIsoTight, 
+		    softMuons, 
+		    RecoJets, 
+		    GenJets, 
+		    trackEvent, 
+		    L_met, 
+		    "",
+		    eventFakeWeight);
 
-      fillHisto(analysisPlots, 
-		sampleName, 
-		samplePosition,
-		cutElement.cutLayerName, 
-		VariableList,
-		leptonsIsoTight, 
-		softMuons, 
-		RecoJets, 
-		GenJets, 
-		trackEvent, 
-		L_met, 
-		"",
-		eventFakeWeight);
+	fillHisto2DWW(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList2D,
+		      leptonsIsoTight, 
+		      softMuons, 
+		      RecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      L_met, 
+		      "",
+		      eventFakeWeight);
+      }
+    
+      else if(typeid(cutElement) == typeid(cutContainerWZ)){
 
-      fillHisto2D(analysisPlots, 
-		  sampleName, 
-		  samplePosition,
-		  cutElement.cutLayerName, 
-		  VariableList2D,
-		  leptonsIsoTight, 
-		  softMuons, 
-		  RecoJets, 
-		  GenJets, 
-		  trackEvent, 
-		  L_met, 
-		  "",
-		  eventFakeWeight);
+	fillHistoWZ(analysisPlots, 
+		    sampleName, 
+		    samplePosition,
+		    cutElement.cutLayerName, 
+		    VariableList,
+		    leptonsIsoTight, 
+		    softMuons, 
+		    RecoJets, 
+		    GenJets, 
+		    trackEvent, 
+		    L_met, 
+		    "",
+		    eventFakeWeight);
+
+	fillHisto2DWZ(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList2D,
+		      leptonsIsoTight, 
+		      softMuons, 
+		      RecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      L_met, 
+		      "",
+		      eventFakeWeight);
+      }
     }
   }
-
   else {
-
 
     for (size_t iLep = 0; iLep < leptonsIsoTight.size(); iLep++){
 
       eventFakeWeight = 1.;
-
       if(fabs(leptonsIsoTight.at(iLep).flavour_) == 13) continue;
       
       // mischarge ID                                                                                                                                                      
@@ -1323,7 +1479,7 @@ void makeFakeChargeBackground(const string & sampleName,
       trackJetEvent trackEvent;
       trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
-      // analysis with nominal objects                                                                                                                                     
+      // analysis with nominal objects          
       if( passCutContainerSelection (cutElement,
 				     sampleName,
 				     samplePosition,
@@ -1340,36 +1496,260 @@ void makeFakeChargeBackground(const string & sampleName,
 				     finalStateString,
 				     eventFakeWeight)){
 
-	fillHisto(analysisPlots, 
-		  sampleName, 
-		  samplePosition,
-		  cutElement.cutLayerName, 
-		  VariableList,
-		  newLeptonsIsoTight, 
-		  softMuons, 
-		  RecoJets, 
-		  GenJets, 
-		  trackEvent, 
-		  L_met, 
-		  "",
-		  eventFakeWeight);
-
-	fillHisto2D(analysisPlots, 
-		    sampleName, 
-		    samplePosition,
-		    cutElement.cutLayerName, 
-		    VariableList2D,
-		    newLeptonsIsoTight, 
-		    softMuons, 
-		    RecoJets, 
-		    GenJets, 
-		    trackEvent, 
-		    L_met, 
-		    "",
-		    eventFakeWeight);
+	if(typeid(cutElement) == typeid(cutContainerWW)){
+	  fillHistoWW(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList,
+		      newLeptonsIsoTight, 
+		      softMuons, 
+		      RecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      L_met, 
+		      "",
+		      eventFakeWeight);
+	  
+	  fillHisto2DWW(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList2D,
+			newLeptonsIsoTight, 
+			softMuons, 
+			RecoJets, 
+			GenJets, 
+			trackEvent, 
+			L_met, 
+			"",
+			eventFakeWeight);
+	}      
+	else if(typeid(cutElement) == typeid(cutContainerWZ)){
+	  fillHistoWZ(analysisPlots, 
+		      sampleName, 
+		      samplePosition,
+		      cutElement.cutLayerName, 
+		      VariableList,
+		      newLeptonsIsoTight, 
+		      softMuons, 
+		      RecoJets, 
+		      GenJets, 
+		      trackEvent, 
+		      L_met, 
+		      "",
+		      eventFakeWeight);
+	  
+	  fillHisto2DWZ(analysisPlots, 
+			sampleName, 
+			samplePosition,
+			cutElement.cutLayerName, 
+			VariableList2D,
+			newLeptonsIsoTight, 
+			softMuons, 
+			RecoJets, 
+			GenJets, 
+			trackEvent, 
+			L_met, 
+			"",
+			eventFakeWeight);
+	}
       }
     }
   }
 }
 
+///////// template instance
+// produce histograms for fake lepton backgrounds taking a generic cut container : to be generic for WW and WZ analysis                                                          
+template 
+void makeFakeLeptonBackground(const string & sampleName,       // name of the sample                                                                                          
+                              const int    & samplePosition,   // position in the sample list                                                                                   
+                              const string & finalStateString, // to specify the final state you want to select                                                                 
+                              plotter & analysisPlots,         // plotter object                                                                                                
+                              readTree *reader,                // tree reader                                                      
+                              cutContainerWW & cutElement,                  // cut element                                                                       
+                              vector<variableContainer> & VariableList,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector       & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              fakeRateContainer      & fakeRate,
+                              fakeMigrationContainer & fakeMigration,
+                              map <string,TH1F*> & vect,
+                              const int & numberPromtLeptons = 1
+                              );
 
+
+template 
+void makeFakeLeptonBackground(const string & sampleName,       // name of the sample                                                                                          
+                              const int    & samplePosition,   // position in the sample list                                                                                   
+                              const string & finalStateString, // to specify the final state you want to select                                                                 
+                              plotter & analysisPlots,         // plotter object                                                                                                
+                              readTree *reader,                // tree reader                                                      
+                              cutContainerWW & cutElement,                  // cut element                                                                       
+                              vector<variableContainer> & VariableList,
+                              vector<variableContainer2D> & VariableList2D,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector       & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              fakeRateContainer      & fakeRate,
+                              fakeMigrationContainer & fakeMigration,
+                              map <string,TH1F*> & vect,
+                              const int & numberPromtLeptons = 1
+                              );
+
+template 
+void makeFakeLeptonBackground(const string & sampleName,       // name of the sample                                                                                          
+                              const int    & samplePosition,   // position in the sample list                                                                                   
+                              const string & finalStateString, // to specify the final state you want to select                                                                 
+                              plotter & analysisPlots,         // plotter object                                                                                                
+                              readTree *reader,                // tree reader                                                      
+                              cutContainerWZ & cutElement,                  // cut element                                                                       
+                              vector<variableContainer> & VariableList,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector       & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              fakeRateContainer      & fakeRate,
+                              fakeMigrationContainer & fakeMigration,
+                              map <string,TH1F*> & vect,
+                              const int & numberPromtLeptons = 1
+                              );
+
+
+template 
+void makeFakeLeptonBackground(const string & sampleName,       // name of the sample                                                                                          
+                              const int    & samplePosition,   // position in the sample list                                                                                   
+                              const string & finalStateString, // to specify the final state you want to select                                                                 
+                              plotter & analysisPlots,         // plotter object                                                                                                
+                              readTree *reader,                // tree reader                                                      
+                              cutContainerWZ & cutElement,                  // cut element                                                                       
+                              vector<variableContainer> & VariableList,
+                              vector<variableContainer2D> & VariableList2D,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector       & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              fakeRateContainer      & fakeRate,
+                              fakeMigrationContainer & fakeMigration,
+                              map <string,TH1F*> & vect,
+                              const int & numberPromtLeptons = 1
+                              );
+
+
+
+template
+void makeFakeChargeBackground(const string & sampleName,
+                              const int    & samplePosition,
+                              const string & finalStateString,
+                              plotter & analysisPlots,
+                              readTree *reader,
+                              cutContainerWW & cutElement,
+                              vector<variableContainer> & VariableList,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              map <string,TH1F*> & vect);
+
+template
+void makeFakeChargeBackground(const string & sampleName,
+                              const int    & samplePosition,
+                              const string & finalStateString,
+                              plotter & analysisPlots,
+                              readTree *reader,
+                              cutContainerWW & cutElement,
+                              vector<variableContainer> & VariableList,
+                              vector<variableContainer2D> & VariableList2D,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              map <string,TH1F*> & vect);
+
+
+template
+void makeFakeChargeBackground(const string & sampleName,
+                              const int    & samplePosition,
+                              const string & finalStateString,
+                              plotter & analysisPlots,
+                              readTree *reader,
+                              cutContainerWZ & cutElement,
+                              vector<variableContainer> & VariableList,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              map <string,TH1F*> & vect);
+
+template
+void makeFakeChargeBackground(const string & sampleName,
+                              const int    & samplePosition,
+                              const string & finalStateString,
+                              plotter & analysisPlots,
+                              readTree *reader,
+                              cutContainerWZ & cutElement,
+                              vector<variableContainer> & VariableList,
+                              vector<variableContainer2D> & VariableList2D,
+                              vector<leptonContainer> & leptonsIsoTight,
+                              vector<leptonContainer> & LeptonsAll,
+                              vector<leptonContainer> & softMuons,
+                              vector<jetContainer> & RecoJets,
+                              vector<jetContainer> & GenJets,
+                              vector<jetContainer> & trackJetsAll,
+                              TLorentzVector & L_met,
+                              const float & minJetCutPt,
+                              const float & leptonIsoLooseCut,
+                              const float & minPtLeptonCutCleaning,
+                              const float & matchingCone,
+                              map <string,TH1F*> & vect);

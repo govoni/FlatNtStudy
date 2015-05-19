@@ -1,15 +1,14 @@
 #include "TMVATrainingClass.h"
-#include "utils.h"
-#include "TSystem.h"
 
 // constructor giving files 
-TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TFile>>> & signalFileList, 
-				     const map<sampleContainer,vector<shared_ptr<TFile>>> & backgroundFileList, 
-				     const string & TreeName,
-				     const string & outputFilePath , 
-				     const string & outputFileName, 
-				     const string & Label, 
-				     const string & transformation){
+template <class T>
+TMVATrainingClass<T>::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TFile>>> & signalFileList, 
+					const map<sampleContainer,vector<shared_ptr<TFile>>> & backgroundFileList, 
+					const string & TreeName,
+					const string & outputFilePath , 
+					const string & outputFileName, 
+					const string & Label, 
+					const string & transformation){
 
    
   SetSignalTree     (signalFileList,TreeName) ; // set tree for signal
@@ -24,13 +23,14 @@ TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr
 }
 
 // constructor giving tree
-TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TTree>>> & signalTreeList, 
-				     const map<sampleContainer,vector<shared_ptr<TTree>>> & backgroundTreeList,  
-				     const string & TreeName,
-				     const string & outputFilePath , 
-				     const string & outputFileName, 
-				     const string & Label,
-				     const string & transformation){
+template <class T>
+TMVATrainingClass<T>::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TTree>>> & signalTreeList, 
+				       const map<sampleContainer,vector<shared_ptr<TTree>>> & backgroundTreeList,  
+				       const string & TreeName,
+				       const string & outputFilePath , 
+				       const string & outputFileName, 
+				       const string & Label,
+				       const string & transformation){
    
 
   SetTreeName       (TreeName) ;
@@ -47,13 +47,14 @@ TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr
 }
 
 // constructor giving tree
-TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TChain>>> & signalTreeList, 
-				     const map<sampleContainer,vector<shared_ptr<TChain>>> & backgroundTreeList,  
-				     const string & TreeName,
-				     const string & outputFilePath , 
-				     const string & outputFileName, 
-				     const string & Label,
-				     const string & transformation){
+template <class T>
+TMVATrainingClass<T>::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr<TChain>>> & signalTreeList, 
+					const map<sampleContainer,vector<shared_ptr<TChain>>> & backgroundTreeList,  
+					const string & TreeName,
+					const string & outputFilePath , 
+					const string & outputFileName, 
+					const string & Label,
+					const string & transformation){
    
 
   SetTreeName       (TreeName) ;
@@ -70,7 +71,8 @@ TMVATrainingClass::TMVATrainingClass(const map<sampleContainer,vector<shared_ptr
 }
 
 // Deconstructor
-TMVATrainingClass::~TMVATrainingClass(){
+template <class T>
+TMVATrainingClass<T>::~TMVATrainingClass(){
   
   signalTNtuplaForTraining_.clear();
   backgroundTNtuplaForTraining_.clear();
@@ -96,8 +98,9 @@ TMVATrainingClass::~TMVATrainingClass(){
 
 				     
 //Set Signal Tree Name
-void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & signalFileList, 
-				       const string & TreeName){
+template <class T>
+ void TMVATrainingClass<T>::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & signalFileList, 
+					   const string & TreeName){
 
   if(TreeName!="") TreeName_ = TreeName ;
   else TreeName_ = "easyDelphes" ;
@@ -115,7 +118,8 @@ void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_p
   return ;
 }
 
-void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TTree>> > & signalTreeList){
+template <class T>
+void TMVATrainingClass<T>::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TTree>> > & signalTreeList){
 
   signalTreeList_.clear();
   
@@ -131,7 +135,8 @@ void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_p
   return ;
 }
 				    
-void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & signalChainList){
+template <class T>
+void TMVATrainingClass<T>::SetSignalTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & signalChainList){
 
   signalTreeList_.clear();
   
@@ -148,7 +153,8 @@ void TMVATrainingClass::SetSignalTree (const map<sampleContainer,vector<shared_p
 
 
 // Set Background Tree Name
-void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & backgroundFileList, 
+template <class T>
+void TMVATrainingClass<T>::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TFile>> > & backgroundFileList, 
 					   const string & TreeName){
 
   if(TreeName!="") TreeName_ = TreeName ;
@@ -167,7 +173,8 @@ void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shar
   return ;
 }
   
-void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TTree>> > & backgroundTreeList){
+template <class T>
+void TMVATrainingClass<T>::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TTree>> > & backgroundTreeList){
 
   backgroundTreeList_.clear();
   
@@ -182,7 +189,8 @@ void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shar
   return ;
 }
 
-void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & backgroundChainList){
+template <class T>
+void TMVATrainingClass<T>::SetBackgroundTree (const map<sampleContainer,vector<shared_ptr<TChain>> > & backgroundChainList){
 
   backgroundTreeList_.clear();
   
@@ -199,13 +207,15 @@ void TMVATrainingClass::SetBackgroundTree (const map<sampleContainer,vector<shar
 }
 
 // Set label
-void TMVATrainingClass::SetLabel (const string & Label ){
+template <class T>
+void TMVATrainingClass<T>::SetLabel (const string & Label ){
   Label_ = Label ;
   return ;
 }
 
 // Set Tree Name
-void TMVATrainingClass::SetTreeName (const string & TreeName ){
+template <class T>
+void TMVATrainingClass<T>::SetTreeName (const string & TreeName ){
 
   if(TreeName!="") TreeName_ = TreeName ;
   else TreeName_ = "easyDelphes" ;
@@ -214,7 +224,8 @@ void TMVATrainingClass::SetTreeName (const string & TreeName ){
 }
 
 // set output file
-void TMVATrainingClass::SetOutputFile ( const string & outputFilePath , 
+template <class T>
+void TMVATrainingClass<T>::SetOutputFile ( const string & outputFilePath , 
 					const string & outputFileName ){
   
   if( !outputFilePath.empty() && !outputFileName.empty()) { 
@@ -234,7 +245,7 @@ void TMVATrainingClass::SetOutputFile ( const string & outputFilePath ,
    else
      outputFileNameComplete_.push_back(outputFilePath_.back()+"/"+outputFileName_.back()+".root");
  
-   cout<<"TMVATrainingClass::SetOutputFile "<<outputFileNameComplete_.back()<<endl;
+   cout<<"TMVATrainingClass<T>::SetOutputFile "<<outputFileNameComplete_.back()<<endl;
 
    outputFile_.push_back(shared_ptr<TFile>(new TFile((outputFileNameComplete_.back()).c_str(),"RECREATE")));   
    outputFile_.back()->cd();
@@ -244,7 +255,8 @@ void TMVATrainingClass::SetOutputFile ( const string & outputFilePath ,
 
 }
 
-void TMVATrainingClass::SetTransformations (const string & transformations){
+template <class T>
+void TMVATrainingClass<T>::SetTransformations (const string & transformations){
   transformations_ = transformations;
   return ;
 }
@@ -252,9 +264,10 @@ void TMVATrainingClass::SetTransformations (const string & transformations){
 
 
 // AddTrainingVariables in the MVA
-void TMVATrainingClass::AddTrainingVariables ( const vector<string> & trainingVariables, 
-					       const vector<string> & spectatorVariables,
-					       const bool & trainEachVarIndependently){
+template <class T>
+void TMVATrainingClass<T>::AddTrainingVariables ( const vector<string> & trainingVariables, 
+						  const vector<string> & spectatorVariables,
+						  const bool & trainEachVarIndependently){
 
   SetTrainingVariables(trainingVariables);
   SetSpectatorVariables(spectatorVariables);
@@ -263,12 +276,12 @@ void TMVATrainingClass::AddTrainingVariables ( const vector<string> & trainingVa
 
   if(trainEachVarIndependently_ == false){ // all in one factory -> combining variables
     for( size_t iVar = 0 ; iVar < trainingVariables_.size() ; iVar ++ ){
-      cout<<"TMVATrainingClass::AddTrainingVariables : train " <<trainingVariables_.at(iVar)<<endl;
+      cout<<"TMVATrainingClass<T>::AddTrainingVariables : train " <<trainingVariables_.at(iVar)<<endl;
       factory_.back()->AddVariable(trainingVariables_.at(iVar)+" := "+trainingVariables_.at(iVar),'F');
     }
 
     for( size_t iVar = 0 ; iVar < spectatorVariables_.size() ; iVar ++ ){
-      cout<<"TMVATrainingClass::AddTrainingVariables : spectator " <<spectatorVariables_.at(iVar)<<endl;
+      cout<<"TMVATrainingClass<T>::AddTrainingVariables : spectator " <<spectatorVariables_.at(iVar)<<endl;
       factory_.back()->AddSpectator(spectatorVariables_.at(iVar),'F');
     }    
   }
@@ -281,13 +294,13 @@ void TMVATrainingClass::AddTrainingVariables ( const vector<string> & trainingVa
       factory_.push_back(shared_ptr<TMVA::Factory> (new TMVA::Factory (Name,
 								       outputFile_.back().get(),
 								       Form("!V:!Silent:%sColor:DrawProgressBar:AnalysisType=Classification%s",gROOT->IsBatch()?"!":"",transformations_.c_str()))));
-      cout<<"TMVATrainingClass::AddTrainingVariables : train " <<trainingVariables_.at(iVar)<<" factory "<<factory_.back()->RootBaseDir()->GetName()<<endl;
+      cout<<"TMVATrainingClass<T>::AddTrainingVariables : train " <<trainingVariables_.at(iVar)<<" factory "<<factory_.back()->RootBaseDir()->GetName()<<endl;
       factory_.back()->AddVariable(trainingVariables_.at(iVar)+" := "+trainingVariables_.at(iVar),'F');
     }
     
 	for(size_t iFact = 0; iFact < factory_.size(); iFact++){
       for( size_t iVar = 0 ; iVar < spectatorVariables_.size() ; iVar ++ ){
-	cout<<"TMVATrainingClass::AddTrainingVariables spectator " <<spectatorVariables_.at(iVar)<<endl;
+	cout<<"TMVATrainingClass<T>::AddTrainingVariables spectator " <<spectatorVariables_.at(iVar)<<endl;
 	factory_.at(iFact)->AddSpectator(spectatorVariables_.at(iVar),'F');
       }
     }
@@ -296,7 +309,8 @@ void TMVATrainingClass::AddTrainingVariables ( const vector<string> & trainingVa
 
 
 // Set Training Variables 
-void TMVATrainingClass::SetTrainingVariables  (const vector<string> & trainingVariables){
+template <class T>
+void TMVATrainingClass<T>::SetTrainingVariables  (const vector<string> & trainingVariables){
 
    trainingVariables_.clear();
    if(trainingVariables.size()!=0) 
@@ -306,7 +320,8 @@ void TMVATrainingClass::SetTrainingVariables  (const vector<string> & trainingVa
 }
 
 // Set Spectator Variables
-void TMVATrainingClass::SetSpectatorVariables (const vector<string> & spectatorVariables){
+template <class T>
+void TMVATrainingClass<T>::SetSpectatorVariables (const vector<string> & spectatorVariables){
 
   spectatorVariables_.clear();
   if(spectatorVariables.size()!=0) 
@@ -315,16 +330,17 @@ void TMVATrainingClass::SetSpectatorVariables (const vector<string> & spectatorV
 }
 
 // Prepare the training addinf the preselection cut and the train/testing composition
-void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
-					    string  weightStringSignal,
-					    string  weightStringBackground,
-					    const pair<int,int> & PileUpBinOfTraining,
-					    const string & finalStateString,
-					    const string & fakeRateFile,
-					    const int & nTraining,
-					    const int & nTesting, 
-					    const string & splitMode,
-					    const string & NormMode){
+template <class T>
+void TMVATrainingClass<T>::AddPrepareTraining (const T & cutContainer,
+					       string  weightStringSignal,
+					       string  weightStringBackground,
+					       const pair<int,int> & PileUpBinOfTraining,
+					       const string & finalStateString,
+					       const string & fakeRateFile,
+					       const int & nTraining,
+					       const int & nTesting, 
+					       const string & splitMode,
+					       const string & NormMode){
 
   // cut container for events
   cutEvent_ = cutContainer;
@@ -444,7 +460,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
   for( ; itMap != signalTreeList_.end(); itMap++){
     for(size_t iTree = 0; iTree  < itMap->second.size() ; iTree++){
 
-      cout<<"TMVATrainingClass::AddPrepareTraining loop on signal "<<itMap->first.sampleName<<":"<<itMap->first.sampleNameReduced<<" tree "<<iTree<<endl;
+      cout<<"TMVATrainingClass<T>::AddPrepareTraining loop on signal "<<itMap->first.sampleName<<":"<<itMap->first.sampleNameReduced<<" tree "<<iTree<<endl;
 
       reader_  = new readTree(itMap->second.at(iTree).get()); // create a reader of each tree    
       
@@ -455,14 +471,15 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	variableValue.clear();  
 	totalSignalVariableList.clear();
 
-	if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading signal event " << iEvent << "\n" ;
+	if (iEvent % 100000 == 0) cout << "TMVATrainingClass<T>::AddPrepareTraining reading signal event " << iEvent << "\n" ;
       
 	// select the PU range
 	if(reader_->npu < npuRange_.first or reader_->npu >  npuRange_.second) continue; // cut on NPU range          
 	vect.clear();
 	
 	// filter LHE level leptons for madgraph polarized events /////////                                                                                                  
-	if(TString(itMap->first.sampleName).Contains("Madgraph") or TString(itMap->first.sampleName).Contains("WW_EWK") or 
+	if((TString(itMap->first.sampleName).Contains("Madgraph") and TString(itMap->first.sampleName).Contains("WW")) or 
+	   TString(itMap->first.sampleName).Contains("WW_EWK") or 
 	   TString(itMap->first.sampleName).Contains("WW_QCD")){
 	  if(TString(finalStateString).Contains("UU")){
 	    if(fabs(reader_->leptonLHEpid1) != 13 or fabs(reader_->leptonLHEpid2) != 13)
@@ -534,7 +551,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
 	// analysis with nominal objects                 	
-        if( !passCutContainerSelection (cutEvent_,
+	if( !passCutContainerSelection (cutEvent_,
 					itMap->first.sampleName+"_"+itMap->first.sampleNameReduced,
 					0,
 					reader_,
@@ -558,7 +575,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	    totalSignalVariableList.push_back(segment);
 	  } 
 	  variableValue.clear();
-	  
+	    
 	  FillVariablesNtupla(variableValue,
 			      totalSignalVariableList,
 			      leptonsIsoTight,
@@ -582,12 +599,10 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
   fakeMigration_     = shared_ptr<fakeMigrationContainer>( new fakeMigrationContainer(inputFileFakeRate_.get()));
 	  
 
-  for( ; itMap != backgroundTreeList_.end(); itMap++){
-    
+  for( ; itMap != backgroundTreeList_.end(); itMap++){    
     for(size_t iTree = 0; iTree  < itMap->second.size() ; iTree++){
 
-      cout<<"TMVATrainingClass::AddPrepareTraining loop on background "<<itMap->first.sampleName<<":"<<itMap->first.sampleNameReduced<<" tree "<<iTree<<endl;
-
+      cout<<"TMVATrainingClass<T>::AddPrepareTraining loop on background "<<itMap->first.sampleName<<":"<<itMap->first.sampleNameReduced<<" tree "<<iTree<<endl;
       reader_  = new readTree(itMap->second.at(iTree).get()); // create a reader of each tree    
       
       for(int iEvent = 0; iEvent < itMap->second.at(iTree)->GetEntries(); iEvent++){ // Loop on each tree entries
@@ -596,12 +611,13 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	variableValue.clear();  
 	totalBackgroundVariableList.clear();
 
-	if (iEvent % 100000 == 0) cout << "TMVATrainingClass::AddPrepareTraining reading bkg event " << iEvent << "\n" ;
+	if (iEvent % 100000 == 0) cout << "TMVATrainingClass<T>::AddPrepareTraining reading bkg event " << iEvent << "\n" ;
 	// skip event with less than two leptons by default                    
 	if(reader_->npu < npuRange_.first or reader_->npu > npuRange_.second) continue;
 
 	// filter LHE level leptons for madgraph polarized events /////////                                                                                                  
-	if(TString(itMap->first.sampleName).Contains("Madgraph") or TString(itMap->first.sampleName).Contains("WW_EWK") or 
+	if((TString(itMap->first.sampleName).Contains("Madgraph") and TString(itMap->first.sampleName).Contains("WW") ) or
+	   TString(itMap->first.sampleName).Contains("WW_EWK") or 
 	   TString(itMap->first.sampleName).Contains("WW_QCD")){
 	  if(TString(finalStateString).Contains("UU")){
 	    if(fabs(reader_->leptonLHEpid1) != 13 or fabs(reader_->leptonLHEpid2) != 13)
@@ -682,15 +698,25 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
 	if(itMap->first.isSignal == -1){ // fake lepton background 
 
-	  if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) continue ; // if less than one isolated lepton over the minimum pt                           
-         
-	  // take the fake weight from the cleaned jet collection over threshold                                                                                           
-	  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
-	    continue ;
-	  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
-	    continue ;
-	  
+	  int numberOfPromptLeptons = 0;
 
+	  if(typeid(cutEvent_) == typeid(cutContainerWW)){
+	    if(leptonsIsoTight.size() < 1 or leptonsIsoTight.size() >= 2 ) continue ; // if less than one isolated lepton over the minimum pt                           
+            numberOfPromptLeptons = 1;
+	    // take the fake weight from the cleaned jet collection over threshold                                                                                           
+	    if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13)
+	      continue ;
+	    if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11)
+	      continue ;
+	  }
+	  else if(typeid(cutEvent_) == typeid(cutContainerWZ)){
+	    if(leptonsIsoTight.size() < 2 or leptonsIsoTight.size() >= 3 ) continue ; // if less than one isolated lepton over the minimum pt                           
+            numberOfPromptLeptons = 2;
+	    if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
+	      return ;
+	    if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
+	      return ;
+	  }
 	  // tke the reco jets, check that they are not overlapping with isolated leptons and over threshold + PUID + btagging + etaCut + matched with a GenJet           
 	  vector<jetContainer> RecoJetsForFake;
 	  RecoJetsForFake  = dumpJetsForFake (RecoJets,
@@ -705,27 +731,59 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 
 	  // fake rate                                                                                                                                                     
 	  for (size_t iJet = 0; iJet < RecoJetsForFake.size(); iJet++){
-
 	    eventFakeWeight = 1.;
 
-	    if(TString(finalStateString).Contains("UU")){
+	    if(TString(finalStateString).Contains("UU") and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake); // get the fake rate from interpolation                               
 	    }
-	    else if(TString(finalStateString).Contains("EE")){
+	    else if(TString(finalStateString).Contains("EE")  and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
 	    }
-	    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 11  and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
 	    }
-	    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    else if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) == 13  and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
 	    }
-	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13){
+	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 13  and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
 	    }
-	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11){
+	    else if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) == 11  and numberOfPromptLeptons == 1){
 	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
 	    }
+	    else if(TString(finalStateString).Contains("UUU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("EEE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("UUE") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"U",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 11 and fabs(leptonsIsoTight.at(1).flavour_) == 13) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
+	    }
+	    else if(TString(finalStateString).Contains("EEU") and (fabs(leptonsIsoTight.at(0).flavour_) == 13 and fabs(leptonsIsoTight.at(1).flavour_) == 11) and
+		    numberOfPromptLeptons == 2){
+	      eventFakeWeight = getFakeWeight(RecoJetsForFake.at(iJet),*fakeRate_,"E",RecoJetsForFake);
+	    }
+
 	    else {
 	      cerr<<" problem with fake rate evaluation --> catogry problem --> fix it "<<endl;
 	      continue ;
@@ -737,7 +795,10 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	    fakeLeptonsIsoTight = leptonsIsoTight ;
 	    fakeLeptonsAll      = LeptonsAll;
 	    leptonContainer fakeLepton ;
-	    fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration_,finalStateString);
+	    if(numberOfPromptLeptons == 1)
+	      fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),*fakeMigration_.get(),finalStateString);
+	    else if(numberOfPromptLeptons == 2)
+	      fakeLepton = createFakeLepton(RecoJetsForFake.at(iJet),leptonsIsoTight.at(0),leptonsIsoTight.at(1),*fakeMigration_.get(),finalStateString);
 
 	    fakeLeptonsIsoTight.push_back(fakeLepton);
 	    fakeLeptonsAll.push_back(fakeLepton);
@@ -787,7 +848,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 		totalBackgroundVariableList.push_back(segment);
 	      } 
 	      variableValue.clear();
-
+	      
 	      FillVariablesNtupla(variableValue,
 				  totalBackgroundVariableList,
 				  fakeLeptonsIsoTight,
@@ -799,7 +860,7 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 		backgroundTNtuplaForTraining_[itMap->first.sampleName+"_"+itMap->first.sampleNameReduced].at(iTree+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event      
 	      else 
 		backgroundTNtuplaForTraining_[itMap->first.sampleName+"_"+itMap->first.sampleNameReduced].at(iTree*varListBackground.size()+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event      
-
+	      
 	    }
 	  }
 	}	  
@@ -921,7 +982,6 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 	      trackJetEvent trackEvent;
 	      trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 
-	      // analysis with nominal objects                 	
 	      if( !passCutContainerSelection (cutEvent_,
 					      itMap->first.sampleName+"_"+itMap->first.sampleNameReduced,
 					      0,
@@ -936,14 +996,14 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 					      leptonIsoLooseCut_,
 					      vect,
 					      finalStateString)) continue ;
-	      
+		
 	      
 	      for(size_t iVar = 0; iVar < varListBackground.size(); iVar++){
 		totalBackgroundVariableList.clear();
 		string segment;
 		stringstream background_temp(varListBackground.at(iVar)); 
 		while(getline(background_temp, segment,':')){
-		  totalBackgroundVariableList.push_back(segment);
+		    totalBackgroundVariableList.push_back(segment);
 		} 
 		variableValue.clear();
 		
@@ -960,16 +1020,17 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 		  backgroundTNtuplaForTraining_[itMap->first.sampleName+"_"+itMap->first.sampleNameReduced].at(iTree*varListBackground.size()+iVar)->Fill(&variableValue[0]); // fill the ntupla for this event   
 	      }
 	    }
+	    
 	  }
+
 	}
-	  
 	else{
 
 	  trackJets = dumpTrackJets (trackJetsAll,leptonsIsoTight, 1., minPtLeptonCutCleaning_, dRThreshold);
 	  trackJetEvent trackEvent;
 	  trackEvent = produceTrackJetEvent (trackJets,RecoJets);
 	
-	  // analysis with nominal objects                 	
+	  // analysis with nominal objects               
 	  if( !passCutContainerSelection (cutEvent_,
 					  itMap->first.sampleName+"_"+itMap->first.sampleNameReduced,
 					  0,
@@ -984,6 +1045,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 					  leptonIsoLooseCut_,
 					  vect,
 					  finalStateString)) continue ;
+	  
+
 
 	  for(size_t iVar = 0; iVar < varListBackground.size(); iVar++){
 	    
@@ -1014,7 +1077,8 @@ void TMVATrainingClass::AddPrepareTraining (const cutContainer & cutContainer,
 }
 
 				     
-void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
+template <class T>
+void TMVATrainingClass<T>::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 					       const float & minPtLeptonCut,
 					       const float & minPtLeptonCutCleaning,
 					       const float & leptonIsoCut_mu,
@@ -1036,7 +1100,8 @@ void TMVATrainingClass::SetBasicEventCutInfo ( const bool & usePuppiAsDefault,
 }
 
 // Book MVA Training Variables 
-void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalGlobalWeight, 
+template <class T>
+void TMVATrainingClass<T>::BookMVATrees (const map<sampleContainer,float> & signalGlobalWeight, 
 				      const map<sampleContainer,float> & backgroundGlobalWeight){
   
   SetGlobalSampleWeight(signalGlobalWeight,backgroundGlobalWeight);
@@ -1049,7 +1114,7 @@ void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalG
 	if(itMap->first.sampleName+"_"+itMap->first.sampleNameReduced == itMap2->first){
 	  factory_.back()->RootBaseDir()->cd();
 	  for(size_t iNtuple = 0; iNtuple < itMap2->second.size() ; iNtuple++){
-	    cout<<"TMVATrainingClass::BookMVATrees Add signal tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
+	    cout<<"TMVATrainingClass<T>::BookMVATrees Add signal tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
 	    factory_.back()->AddSignalTree (itMap2->second.at(iNtuple).get(),itMap->second) ;
 	  }
 	  break;
@@ -1064,7 +1129,7 @@ void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalG
 	if(itMap->first.sampleName+"_"+itMap->first.sampleNameReduced == itMap2->first){
 	  factory_.back()->RootBaseDir()->cd();
 	  for(size_t iNtuple = 0; iNtuple < itMap2->second.size() ; iNtuple++){
-	    cout<<"TMVATrainingClass::BookMVATrees Add background tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
+	    cout<<"TMVATrainingClass<T>::BookMVATrees Add background tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
 	    factory_.back()->AddBackgroundTree (itMap2->second.at(iNtuple).get(),itMap->second) ;
 	  }
 	  break;
@@ -1082,7 +1147,7 @@ void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalG
 	  for(size_t iVar = 0; iVar < trainingVariables_.size(); iVar++){
 	    factory_.at(iVar)->RootBaseDir()->cd();
 	    for(size_t iNtuple = 0; iNtuple < itMap2->second.size()/trainingVariables_.size() ; iNtuple++){
-	      cout<<"TMVATrainingClass::BookMVATrees Add signal tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
+	      cout<<"TMVATrainingClass<T>::BookMVATrees Add signal tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
 	      factory_.at(iVar)->AddSignalTree (itMap2->second.at(iNtuple*trainingVariables_.size()+iVar).get(),itMap->second) ;
 	    }
 	  }
@@ -1098,7 +1163,7 @@ void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalG
 	  for(size_t iVar = 0; iVar < trainingVariables_.size(); iVar++){
 	    factory_.at(iVar)->RootBaseDir()->cd();
 	    for(size_t iNtuple = 0; iNtuple < itMap2->second.size()/trainingVariables_.size() ; iNtuple++){
-	      cout<<"TMVATrainingClass::BookMVATrees Add background tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
+	      cout<<"TMVATrainingClass<T>::BookMVATrees Add background tree "<<" ntuple name "<<itMap2->second.at(iNtuple)->GetName()<<" events unweighted "<<itMap2->second.at(iNtuple)->GetEntries()<<" weight "<<itMap->second<<endl;
 	      factory_.at(iVar)->AddBackgroundTree (itMap2->second.at(iNtuple*trainingVariables_.size()+iVar).get(),itMap->second) ;
 	    }
 	  }
@@ -1109,7 +1174,8 @@ void TMVATrainingClass::BookMVATrees (const map<sampleContainer,float> & signalG
 }
 
 // set global event weight
-void TMVATrainingClass::SetGlobalSampleWeight (const map<sampleContainer,float> & signalGlobalWeight, 
+template <class T>
+void TMVATrainingClass<T>::SetGlobalSampleWeight (const map<sampleContainer,float> & signalGlobalWeight, 
 					       const map<sampleContainer,float> & backgroundGlobalWeight){
 
   signalGlobalWeight_.clear();
@@ -1123,7 +1189,8 @@ void TMVATrainingClass::SetGlobalSampleWeight (const map<sampleContainer,float> 
 }
 
 
-void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const string & weightStringBackground){
+template <class T>
+void TMVATrainingClass<T>::SetEventWeight (const string & weightStringSignal, const string & weightStringBackground){
 
   for(size_t ifact = 0; ifact < factory_.size(); ifact++){
     factory_.at(ifact)->RootBaseDir()->cd();
@@ -1137,7 +1204,8 @@ void TMVATrainingClass::SetEventWeight (const string & weightStringSignal, const
 
 
 // Train Rectangular Cuts
-void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod){
+template <class T>
+void TMVATrainingClass<T>::BookandTrainRectangularCuts (const string & FitMethod){
 
   // create output directory if not there and change the variable name in case of a list
   string command = " if [ ! -e "+outputFilePath_.back()+" ] ; then mkdir "+outputFilePath_.back()+" ; fi";
@@ -1260,7 +1328,8 @@ void TMVATrainingClass::BookandTrainRectangularCuts (const string & FitMethod){
 }
 
 // Train Likelihood
-void TMVATrainingClass::BookandTrainLikelihood ( const string & LikelihoodType ){
+template <class T>
+void TMVATrainingClass<T>::BookandTrainLikelihood ( const string & LikelihoodType ){
 
   if(trainEachVarIndependently_) {
     cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
@@ -1326,7 +1395,8 @@ void TMVATrainingClass::BookandTrainLikelihood ( const string & LikelihoodType )
 }
 
 // Train Fisher Discriminant
-void TMVATrainingClass::BookandTrainFisherDiscriminant(){
+template <class T>
+void TMVATrainingClass<T>::BookandTrainFisherDiscriminant(){
 
   if(trainEachVarIndependently_) {
     cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
@@ -1367,7 +1437,8 @@ void TMVATrainingClass::BookandTrainFisherDiscriminant(){
 }
 
 // Train Linear Discriminant
-void TMVATrainingClass::BookandTrainLinearDiscriminant(){
+template <class T>
+void TMVATrainingClass<T>::BookandTrainLinearDiscriminant(){
 
   if(trainEachVarIndependently_) {
     cerr<<" train each var independently available only for Cut and BDTG --> exit from this function"<<endl;
@@ -1407,7 +1478,8 @@ void TMVATrainingClass::BookandTrainLinearDiscriminant(){
 }
 
 // Train MLP
-void TMVATrainingClass::BookandTrainMLP(const int & nCycles, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainMLP(const int & nCycles, 
 					const string & HiddenLayers, 
 					const string & NeuronType,
 					const string & TrainingMethod, 
@@ -1455,7 +1527,8 @@ void TMVATrainingClass::BookandTrainMLP(const int & nCycles,
 }
 
 // Train Clemont Ferrand ANN
-void TMVATrainingClass::BookandTrainCFMlpANN ( const int & nCycles, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainCFMlpANN ( const int & nCycles, 
 					       const string & HiddenLayers){
 
   if(trainEachVarIndependently_) {
@@ -1498,7 +1571,8 @@ void TMVATrainingClass::BookandTrainCFMlpANN ( const int & nCycles,
 
 
 // Train TMVA ANN
-void TMVATrainingClass::BookandTrainTMlpANN  ( const int & nCycles, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainTMlpANN  ( const int & nCycles, 
 					       const string & HiddenLayers,  
 					       const string & TrainingMethod, 
 					       const float & ValidationFraction){
@@ -1543,7 +1617,8 @@ void TMVATrainingClass::BookandTrainTMlpANN  ( const int & nCycles,
 }
 
 // Train BDT
-void TMVATrainingClass::BookandTrainBDT ( const int & NTrees, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainBDT ( const int & NTrees, 
 					  const bool & optimizeMethods, 
 					  const string & BoostType, 
 					  const float & AdaBoostBeta,
@@ -1593,7 +1668,8 @@ void TMVATrainingClass::BookandTrainBDT ( const int & NTrees,
 }
 
 // Train BDTG
-void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainBDTG ( const int & NTrees, 
 					   const bool & optimizeMethods, 
 					   const float & GradBaggingFraction, 
 					   const string & PruneMethod,
@@ -1679,7 +1755,8 @@ void TMVATrainingClass::BookandTrainBDTG ( const int & NTrees,
 }
 
 // Train BDTF
-void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees, 
+template <class T>
+void TMVATrainingClass<T>::BookandTrainBDTF ( const int & NTrees, 
 					   const bool & optimizeMethods, 
 					   const string & BoostType, 
 					   const float & AdaBoostBeta, 
@@ -1731,7 +1808,8 @@ void TMVATrainingClass::BookandTrainBDTF ( const int & NTrees,
   cout << "==> TMVAClassification is done!" << endl;
 }
 
-void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue, 
+template <class T>
+void TMVATrainingClass<T>::FillVariablesNtupla(vector<float> & variableValue, 
 					    const vector<string> & variableList,
 					    vector<leptonContainer> & leptonsIsoTight,
 					    vector<jetContainer> & RecoJets,
@@ -1982,3 +2060,7 @@ void TMVATrainingClass::FillVariablesNtupla(vector<float> & variableValue,
   }
 }
 
+					
+/// template instance
+template class TMVATrainingClass<cutContainerWW> ;
+template class TMVATrainingClass<cutContainerWZ> ;

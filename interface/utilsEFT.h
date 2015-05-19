@@ -10,6 +10,7 @@
 #include "readTreeEFT.h"
 #include "ReadInputFile.h"
 #include "utils.h"
+#include "dumpObjectsFromTree.h"
 
 using namespace std ;
 
@@ -94,7 +95,7 @@ void fillTrackJetArray (vector<jetContainer> & jetVector,
 
 
 bool passCutContainerSelection (readTreeEFT* readTree,
-                                cutContainer & Cut,
+                                cutContainerWW & Cut,
                                 const string & sampleName,     
                                 const int & samplePosition,     
                                 const bool & usePuppiAsDefault,

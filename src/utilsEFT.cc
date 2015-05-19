@@ -244,7 +244,7 @@ void fillRecoLeptonsArray (vector<leptonContainer> & lepVector, readTreeEFT & re
 
 
 bool passCutContainerSelection (readTreeEFT* reader,
-				cutContainer & Cut,
+				cutContainerWW & Cut,
 				const string & sampleName,
 				const int    & samplePosition,
 				const bool   & usePuppiAsDefault,
