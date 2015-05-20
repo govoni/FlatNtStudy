@@ -4,9 +4,11 @@
 PHANTOM_SS_EWK_UU_126_PhaseI_50PU                           WW_EWK                4        2.0682E-003                      1               1
 PHANTOM_SS_EWK_UU_noH_PhaseI_50PU                           WW_EWK_ALT            2        2.2462E-003                      1               1
 #PHANTOM_SS_EWK_UU_126_0p5_PhaseI_50PU                       WW_EWK_ALT           2       2.1305E-003                      1               1
+#PHANTOM_SS_EWK_UU_126_0p8_PhaseI_50PU                       WW_EWK_ALT           2       2.0838E-003                      1               1
 #PHANTOM_SS_EWK_UU_126_0p9_PhaseI_50PU                       WW_EWK_ALT           2       2.0768E-003                      1               1
 PHANTOM_WZ_EWK_SF_UU_126_PhaseI_50PU                        WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_SS_QCD_UU_126_PhaseI_50PU                           WW_QCD                  5       0.533455E-003                    1               0
 PHANTOM_WZ_QCD_SF_UU_PhaseI_50PU                            WZ_QCD                801       8.1326E-003                      1               0
 TTbar_PhaseI_50PU                                           fakeLepton            861       242.5                            1              -1
-W3J_lv_QED1_QCD3_PhaseI_50PU                                fakeLepton            861       6.34                             1              -1
+Madgraph_bbar_W3J_lv_QED1_QCD3_PhaseI50PU                   fakeLepton            861       6.354                            1              -1
+Madgraph_bbar_ll3J_QED2_QCD3_PhaseI50PU                     fakeLepton            861       0.60241                          1              -1

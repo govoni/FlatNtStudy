@@ -1121,13 +1121,13 @@ void makeFakeChargeBackground(const string & sampleName,
   if(leptonsIsoTight.size() != 2) return ; // if less than one isolated lepton over the minimum pt                                                                       
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
     return ;
-  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
     return ;
-  if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("EU") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
     return ;
-  if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("UE") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
     return ;
 
   if(leptonsIsoTight.at(0).charge_ == leptonsIsoTight.at(1).charge_) {
@@ -1329,13 +1329,13 @@ void makeFakeChargeBackground(const string & sampleName,
   if(leptonsIsoTight.size() != 2) return ; // if less than one isolated lepton over the minimum pt                                                                       
 
   // take the fake weigh from the cleaned jet collection over threshold                                                                                                    
-  if(TString(finalStateString).Contains("UU") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("UU") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
     return ;
-  if(TString(finalStateString).Contains("EE") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("EE") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
     return ;
-  if(TString(finalStateString).Contains("EU") and fabs(leptonsIsoTight.at(0).flavour_) != 11 and fabs(leptonsIsoTight.at(1).flavour_) != 13)
+  if(TString(finalStateString).Contains("EU") and (fabs(leptonsIsoTight.at(0).flavour_) != 11 or fabs(leptonsIsoTight.at(1).flavour_) != 13))
     return ;
-  if(TString(finalStateString).Contains("UE") and fabs(leptonsIsoTight.at(0).flavour_) != 13 and fabs(leptonsIsoTight.at(1).flavour_) != 11)
+  if(TString(finalStateString).Contains("UE") and (fabs(leptonsIsoTight.at(0).flavour_) != 13 or fabs(leptonsIsoTight.at(1).flavour_) != 11))
     return ;
 
   if(leptonsIsoTight.at(0).charge_ == leptonsIsoTight.at(1).charge_) {

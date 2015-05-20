@@ -27,6 +27,7 @@ parser.add_option('--computeProfileLikelihood', action='store_true', dest='compu
 parser.add_option('--maximumLikelihoodFit',     action='store_true', dest='maximumLikelihoodFit',     default=False, help='run max Likelihood fit inside combination tool')
 parser.add_option('--generateOnly',             action='store_true', dest='generateOnly',       default=False, help='only generation with combiner')
 parser.add_option('--makeLikelihoodScan',       action='store_true', dest='makeLikelihoodScan', default=False, help='run the likelihood scan')
+parser.add_option('--makeHypothesisSeparation', action='store_true', dest='makeHypothesisSeparation', default=False, help='run the hypothesis separation')
 
 ##### submit jobs to condor, lxbatch and hercules 
 parser.add_option('--batchMode',      action='store_true', dest='batchMode',      default=False, help='to run jobs on condor fnal')
@@ -40,6 +41,7 @@ parser.add_option('--channel',      action="store", type="string", dest="channel
 
 ###### options for Bias test in the combination tool
 parser.add_option('--nToys',                 action="store",     type="int",    dest="nToys",                 default=0,  help="number of toys to generate")
+parser.add_option('--nCycle',                action="store",     type="int",    dest="nCycle",                default=1,  help="n cycle of toys generation : Hybrid new")
 parser.add_option('--submitSingleJobs',      action="store_true",               dest="submitSingleJobs",      default=False,  help="one job one toy")
 
 parser.add_option('--inputGeneratedDataset', action="store", type="string", dest="inputGeneratedDataset", default="", help="parse a dataset from generateOnly")
@@ -488,3 +490,33 @@ if __name__ == '__main__':
                os.system("mv higgsCombine*"+options.channel+"*MultiDimFit* "+options.outputDIR);   
                                       
 
+       elif options.makeHypothesisSeparation == 1 : 
+
+           print "##########################################################"
+           print "###### run the Hybrid new for hypothesis separation  #####"
+           print "##########################################################" 
+
+           outputWorkspace = card.replace(".txt","_ws_Hypo.root")
+
+           runCmmd = "text2workspace.py %s -m 100 -P HiggsAnalysis.CombinedLimit.HiggsJPC:twoHypothesisHiggs --PO=muFloating -o %s"%(card,outputWorkspace);
+           print "runCmmd ",runCmmd;
+           os.system(runCmmd);
+
+           if options.batchMode :
+
+               if options.nCycle != 0 :
+                   for iCycle in range(options.nCycle):
+                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExt=1 --generateNuis=1 --fitNuis=0 --singlePoint 1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys--setPhysicsModelParameters r=%d --freezeNuisances r -s -1 -T %d -n %s"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job"+string(iCycle));
+                       fn = "combineScript_LikelihoodScan_%s_job%d"%(outname,iCycle);
+                       submitBatchJobCombine(runCmmd,fn,outname+"_job"+string(iCycle));                       
+               else :
+                   sys.exit("set nCycle to a non null value");
+           else:
+               
+               if options.nCycle != 0 :
+                   for iCycle in range(options.nCycle):
+                      runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExt=1 --generateNuis=1 --fitNuis=0 --singlePoint 1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys--setPhysicsModelParameters r=%d --freezeNuisances r -s -1 -T %d -n %s"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job"+string(iCycle));
+                      os.system(runCmmd);
+                      os.system("mv higgsCombine*"+options.channel+"*HybridNew* "+options.outputDIR);
+               else :
+                   sys.exit("set nCycle to a non null value");
