@@ -150,11 +150,16 @@ int main (int argc, char ** argv) {
       if(not TString(InputBaseDirectory).Contains("root://eoscms.cern.ch//"))
 	chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
       else{
+
+	TRandom3 randomSeed ;
+	randomSeed.SetSeed(0);
+	TString tmpFile = Form("tmp_list_%f.txt",randomSeed.Uniform(0,1));
+
 	TString tmpDirectory = TString(InputBaseDirectory+"/"+itSubSample->sampleName+"/").ReplaceAll("root://eoscms.cern.ch/","");
-	cout<<"cmsLs "+tmpDirectory+" | awk '{print $5}' > tmp_list.txt"<<endl;
-	system("cmsLs "+tmpDirectory+" | awk '{print $5}' > tmp_list.txt");
+	cout<<"cmsLs "+tmpDirectory+" | awk '{print $5}' > "<<tmpFile<<endl;
+	system("cmsLs "+tmpDirectory+" | awk '{print $5}' > "+tmpFile);
 	string line;
-	ifstream infile ("tmp_list.txt");
+	ifstream infile (tmpFile.Data());
 	if(infile.is_open()){
 	  while ( getline (infile,line) ){
 	    if(line.empty()) 
@@ -163,7 +168,7 @@ int main (int argc, char ** argv) {
 	  }
 	  infile.close();
 	}
-	system("rm tmp_list.txt");
+	system("rm "+tmpFile);
       }	
       
       int totEvent = chain->GetEntries();
