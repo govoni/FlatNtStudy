@@ -113,7 +113,24 @@ int main (int argc, char ** argv) {
       int numBefore = 0;
       // take input files
       numBefore += itSubSample->numBefore; 
-      chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
+      if(not TString(InputBaseDirectory).Contains("root://eoscms.cern.ch//"))
+        chain->Add ((InputBaseDirectory+"/"+itSubSample->sampleName+"/*.root").c_str()) ;
+      else{
+        TString tmpDirectory = TString(InputBaseDirectory+"/"+itSubSample->sampleName+"/").ReplaceAll("root://eoscms.cern.ch/","");
+        cout<<"cmsLs "+tmpDirectory+" | awk '{print $5}' > tmp_list.txt"<<endl;
+        system("cmsLs "+tmpDirectory+" | awk '{print $5}' > tmp_list.txt");
+        string line;
+        ifstream infile ("tmp_list.txt");
+        if(infile.is_open()){
+          while ( getline (infile,line) ){
+            if(line.empty())
+              continue;
+            chain->Add(("root://eoscms.cern.ch/"+line).c_str()) ;
+          }
+          infile.close();
+        }
+        system("rm tmp_list.txt");
+      }
 
       int totEvent = chain->GetEntries();
 
