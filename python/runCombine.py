@@ -59,7 +59,7 @@ parser.add_option('--rMax',          action="store", type=float, dest="rMax", de
 (options, args) = parser.parse_args()
 
 ##########################################
-###### Submit batch job for combine ######
+ ###### Submit batch job for combine ######
 ##########################################
 
 def submitBatchJobCombine(command, fn, fileNames):
@@ -161,7 +161,11 @@ if __name__ == '__main__':
             else:
                 os.system("ls  | grep _"+var+"_"+options.channel+" | grep txt > list.txt"); # make a list of datacards            
                 
-            file = open("list.txt", 'r');                
+            file = open("list.txt", 'r');       
+
+            if os.path.getsize("list.txt")  == 0 :
+                continue;
+
             combineCommand = "combineCards.py ";
 
             if options.channel == "COMB" :
@@ -257,6 +261,9 @@ if __name__ == '__main__':
 
             file = open("list.txt", 'r');                
             combineCommand = "combineCards.py ";
+
+            if os.path.getsize("list.txt")  == 0 :
+                continue;
 
             if options.channel == "COMB" :
                 iline = 0;
@@ -498,25 +505,28 @@ if __name__ == '__main__':
 
            outputWorkspace = card.replace(".txt","_ws_Hypo.root")
 
-           runCmmd = "text2workspace.py %s -m 100 -P HiggsAnalysis.CombinedLimit.HiggsJPC:twoHypothesisHiggs --PO=muFloating -o %s"%(card,outputWorkspace);
+           runCmmd = "text2workspace.py %s -m 100 -P HiggsAnalysis.CombinedLimit.HiggsJPC:twoHypothesisHiggs --PO=muFloating --PO verbose  -o %s"%(card,outputWorkspace);
            print "runCmmd ",runCmmd;
            os.system(runCmmd);
 
            if options.batchMode :
 
                if options.nCycle != 0 :
-                   for iCycle in range(options.nCycle):
-                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExt=1 --generateNuis=1 --fitNuis=0 --singlePoint 1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys--setPhysicsModelParameters r=%d --freezeNuisances r -s -1 -T %d -n %s"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job"+string(iCycle));
-                       fn = "combineScript_LikelihoodScan_%s_job%d"%(outname,iCycle);
-                       submitBatchJobCombine(runCmmd,fn,outname+"_job"+string(iCycle));                       
+                   for iCycle in range(options.nCycle):                       
+                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5 "%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+                       print "runCmmd ",runCmmd;
+                       fn = "combineScript_LikelihoodScan_%s_exp_job_%d"%(outname,iCycle);
+                       submitBatchJobCombine(runCmmd,fn,outname);                       
                else :
                    sys.exit("set nCycle to a non null value");
            else:
                
                if options.nCycle != 0 :
                    for iCycle in range(options.nCycle):
-                      runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExt=1 --generateNuis=1 --fitNuis=0 --singlePoint 1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys--setPhysicsModelParameters r=%d --freezeNuisances r -s -1 -T %d -n %s"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job"+string(iCycle));
-                      os.system(runCmmd);
-                      os.system("mv higgsCombine*"+options.channel+"*HybridNew* "+options.outputDIR);
+                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint r=1,x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+
+                       print "runCmmd ",runCmmd;
+                       os.system(runCmmd);
+                       os.system("mv higgsCombine*"+options.channel+"*HybridNew* "+options.outputDIR);
                else :
                    sys.exit("set nCycle to a non null value");

@@ -2,10 +2,10 @@
 #  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
 ##############################################################################################################################################
 PHANTOM_SS_EWK_EE_126_PhaseI_50PU                          WW_EWK              4           2.0682E-003                      1               1
-PHANTOM_SS_EWK_EE_noH_PhaseI_50PU                          WW_EWK_ALT          2           2.2462E-003                      1               1
-#PHANTOM_SS_EWK_EE_126_0p5_PhaseI_50PU                      WW_EWK_ALT          2           2.1305E-003                        1               1
-#PHANTOM_SS_EWK_EE_126_0p8_PhaseI_50PU                      WW_EWK_ALT           2       2.0838E-003                      1               1
-#PHANTOM_SS_EWK_EE_126_0p9_PhaseI_50PU                      WW_EWK_ALT          2           2.0768E-003                        1               1
+#PHANTOM_SS_EWK_EE_noH_PhaseI_50PU                          WW_EWK_ALT          2           2.2462E-003                     1               1
+#PHANTOM_SS_EWK_EE_126_0p5_PhaseI_50PU                      WW_EWK_ALT          2           2.1305E-003                     1               1
+PHANTOM_SS_EWK_EE_126_0p8_PhaseI_50PU                       WW_EWK_ALT          2           2.0868E-003                     1               1
+#PHANTOM_SS_EWK_EE_126_0p9_PhaseI_50PU                      WW_EWK_ALT          2           2.0768E-003                     1               1
 PHANTOM_WZ_EWK_SF_EE_126_PhaseI_50PU                       WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_OS_QCDwg_EE_PhaseI_50PU                            wrongCharge           417       0.35527                          1              -2
 PHANTOM_SS_QCD_EE_126_PhaseI_50PU                          WW_QCD                  5       0.533455E-003                    1               0
