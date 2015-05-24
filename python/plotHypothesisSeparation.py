@@ -29,10 +29,11 @@ parser.add_option('--channel',   action="store", type="string", dest="channel", 
 parser.add_option('--outputPlotDIR',   action="store", type="string", dest="outputPlotDIR", default="")
 parser.add_option('--inputVariable',   action="store", type="string", dest="inputVariable", default="")
 
-
-parser.add_option('--nbin',   action="store", type="int", dest="nbin", default=500)
-parser.add_option('--qmin',   action="store", type="float", dest="qmin", default=-100)
-parser.add_option('--qmax',   action="store", type="float", dest="qmax", default=100)
+ 
+parser.add_option('--nbin',    action="store", type="int", dest="nbin", default=500)
+parser.add_option('--qmin',    action="store", type="float", dest="qmin", default=-100)
+parser.add_option('--qmax',    action="store", type="float", dest="qmax", default=100)
+parser.add_option('--coupling',action="store", type="float", dest="coupling", default=0)
 
 
 (options, args) = parser.parse_args()
@@ -117,6 +118,42 @@ def setStyle():
   blueArray  = array('d', blue)
   TColor.CreateGradientColorTable(NRGBs, stopsArray, redArray, greenArray, blueArray, NCont)
 
+#####################
+#### inverse erf ####
+#####################
+def ErfInverse(y) : 
+  kMaxit = 50; 
+  kEps = 1e-14; 
+  kConst = 0.8862269254527579; #// sqrt(pi)/2.0 
+
+  if ROOT.TMath.Abs(y) <= kEps:
+    return kConst*y; 
+
+  if(ROOT.TMath.Abs(y) < 1.0) :
+    erfi = kConst*ROOT.TMath.Abs(y); 
+    Y0 = ROOT.TMath.Erf(0.9*erfi); 
+    derfi = 0.1*erfi; 
+    for iter in range(kMaxit):
+      Y1 = 1. - ROOT.TMath.Erfc(erfi); 
+      DY1 = ROOT.TMath.Abs(y) - Y1; 
+      if (ROOT.TMath.Abs(DY1) < kEps) :
+        if (y < 0) :
+          return -erfi; 
+        else:
+          return erfi;
+      DY0 = Y1 - Y0; 
+      derfi *= DY1/DY0; 
+      Y0 = Y1; 
+      erfi += derfi; 
+      if ROOT.TMath.Abs(derfi/erfi) < kEps :
+        if y < 0 : 
+          return -erfi; 
+        else: 
+          return erfi;
+
+  return 0; 
+
+
 ##################################                                                                                                                                              
 ########### Main Code ############                                                                                                                                              
 ##################################                                                                                                                                             
@@ -126,14 +163,8 @@ if __name__ == '__main__':
     ## set the style                                                                                                                                                           
     setStyle();
 
-    tex = ROOT.TLatex(0.82,0.96,"14 TeV");
-    tex.SetNDC(1);
-    tex.SetTextAlign(11);
-    tex.SetTextFont(42);
-    tex.SetTextSize(0.04);
-    tex.SetLineWidth(2);
 
-    tex2 = TLatex(0.17,0.86,"CMS Delphes Simulation");
+    tex2 = TLatex(0.17,0.875,"CMS Delphes Simulation");
     tex2.SetNDC(1);
     tex2.SetTextAlign(11);
     tex2.SetTextFont(61);
@@ -162,6 +193,7 @@ if __name__ == '__main__':
 
     nullHypoHist = ROOT.TH1F("nullHypoHist","",options.nbin,options.qmin,options.qmax);
     alteHypoHist = ROOT.TH1F("alteHypoHist","",options.nbin,options.qmin,options.qmax);
+    expectedCLs  = ROOT.TH1F("expectedCLs","",options.nbin,0,1);   
     nullHypoHist.Sumw2();
     alteHypoHist.Sumw2();
 
@@ -177,7 +209,16 @@ if __name__ == '__main__':
         if toyDir == 0 :
            print "Error in file ",fileName,": directory /toys not found";
            continue;
-        
+
+        ##take the cls as the average one
+        tree = fileOut.Get("limit");
+        for iEntry in range(tree.GetEntries()):
+          tree.GetEntry(iEntry);
+          if tree.quantileExpected != 0.5:
+            continue;
+          expectedCLs.Fill(tree.limit);
+
+        ##take the list of keys
         for key in toyDir.GetListOfKeys() :
             if ROOT.TString(key.GetClassName()).Contains("RooStats") and ROOT.TString(key.GetClassName()).Contains("HypoTestResult") :
               hypoTestToy = toyDir.Get(key.GetName());
@@ -213,27 +254,46 @@ if __name__ == '__main__':
     #################
     can = ROOT.TCanvas("can","can",600,600);
        
-    legend = ROOT.TLegend(0.45,0.25,0.85,0.45);
+    legend = ROOT.TLegend(0.25,0.75,0.85,0.85);
     legend.SetFillColor(0);
     legend.SetFillStyle(0);
     legend.SetBorderSize(0);
     legend.SetTextSize(0.031);
+    legend.SetNColumns(2);
+
+    median_array = array("f",[]);
+
+    for ibin in range(nullHypoHist.GetNbinsX()):
+      for itimes in range(int(nullHypoHist.GetBinContent(ibin+1))):
+        median_array.append(nullHypoHist.GetBinCenter(ibin+1));
+
+    if len(median_array)%2 == 0:
+      median = median_array[len(median_array)/2]
+    else :
+      median = median_array[len(median_array)/2-1]
+
+
+
 
     nullHypoHist.Scale(1./nullHypoHist.Integral());
     alteHypoHist.Scale(1./alteHypoHist.Integral());
 
     frame = can.DrawFrame(nullHypoHist.GetXaxis().GetXmin(),0.,nullHypoHist.GetXaxis().GetXmax(),
-                          max(nullHypoHist.GetMaximum(),alteHypoHist.GetMaximum())*1.5);
+                          max(nullHypoHist.GetMaximum(),alteHypoHist.GetMaximum())*1.6);
 
-    
-    frame.GetXaxis().SetTitle("-2 x Ln(L_{noH}/L_{H})");
-    frame.GetXaxis().SetTitleSize(0.045);
-    frame.GetXaxis().SetLabelSize(0.04);
+
+    if options.coupling == 0 :
+      frame.GetXaxis().SetTitle("-2 x LQ(L_{H,c_{v}=0}/L_{H,c_{v}=1})");
+    else :
+      frame.GetXaxis().SetTitle("-2 x Ln(L_{H,c_{v}=%0.1f}/L_{H,c_{v}=0})"%options.coupling);
+      
+    frame.GetXaxis().SetTitleSize(0.040);
+    frame.GetXaxis().SetLabelSize(0.030);
 
     frame.GetYaxis().SetTitle("Probability Density");
-    frame.GetYaxis().SetTitleSize(0.045);
-    frame.GetYaxis().SetTitleOffset(1.17);
-    frame.GetYaxis().SetLabelSize(0.04);
+    frame.GetYaxis().SetTitleSize(0.040);
+    frame.GetYaxis().SetTitleOffset(1.25);
+    frame.GetYaxis().SetLabelSize(0.030);
 
     nullHypoHist.SetFillStyle(3001)
     nullHypoHist.SetFillColor(801);
@@ -249,18 +309,35 @@ if __name__ == '__main__':
     nullHypoHist.Draw("hist same");
     alteHypoHist.Draw("hist same");
     
-    legend.AddEntry(nullHypoHist,"WW_{ewk} with H","fl")
-    legend.AddEntry(alteHypoHist,"WW_{ewk} no H","fl")
+    legend.AddEntry(nullHypoHist,  "WW_{ewk} H, c_{v}=1","f")
+    if options.coupling == 0:
+      legend.AddEntry(alteHypoHist,"WW_{ewk} H, c_{v}=0","f")
+    else:
+      legend.AddEntry(alteHypoHist,"WW_{ewk} H, c_{v}=%0.1f"%(options.coupling),"f")
     legend.Draw("same");
 
-    tex.Draw();
+
+    medianLineNull = ROOT.TLine(median,0,median,nullHypoHist.GetMaximum());
+    medianLineNull.SetLineWidth(2);
+    medianLineNull.SetLineStyle(7);
+    medianLineNull.Draw("same")
+
+    tex3.Draw();
     tex2.Draw();
+
+    tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f"%(expectedCLs.GetMean()));
+    tex.SetNDC(1);
+    tex.SetTextAlign(11);
+    tex.SetTextFont(42);
+    tex.SetTextSize(0.04);
+    tex.SetLineWidth(2);
+    tex.Draw();
 
     os.system("mkdir -p "+options.outputPlotDIR);
     os.system("rm "+options.outputPlotDIR+"/*");
 
     can.RedrawAxis();
 
-    can.SaveAs(options.outputPlotDIR+"/hyposeperation.png","png");
-    can.SaveAs(options.outputPlotDIR+"/hyposeperation.pdf","pdf");
-    can.SaveAs(options.outputPlotDIR+"/hyposeperation.root","root");
+    can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f.png"%(options.coupling),"png");
+    can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f.pdf"%(options.coupling),"pdf");
+    can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f.root"%(options.coupling),"root");
