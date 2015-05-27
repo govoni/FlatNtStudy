@@ -465,6 +465,7 @@ int main (int argc, char ** argv) {
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
 
 	if(HminusNoH != 0 and TString(SampleVector.at(iSample).m_sampleName).Contains("126")) continue ;
+	if(TString(SampleVector.at(iSample).m_sampleName).Contains("ALT")) continue;
 
         if(hTotal == 0)
 	  hTotal = (TH1F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_histos[variableList1D.at(iVar).variableName]->Clone(("hTotal_"+CutList.at(iCut).cutLayerName+"_"+variableList1D.at(iVar).variableName).c_str());
@@ -1087,6 +1088,7 @@ int main (int argc, char ** argv) {
       for(size_t iSample = 0; iSample < SampleVector.size(); iSample++){
 
 	if(HminusNoH != 0 and TString(SampleVector.at(iSample).m_sampleName).Contains("126")) continue ;
+	if(TString(SampleVector.at(iSample).m_sampleName).Contains("ALT")) continue;
 
         if(hTotal == 0) 
 	  hTotal = (TH2F*) SampleVector.at(iSample).m_sampleContent[CutList.at(iCut).cutLayerName].m_2Dhistos[variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY]->Clone(("hTotal_"+CutList.at(iCut).cutLayerName+"_"+variableList2D.at(iVar).variableNameX+"_"+variableList2D.at(iVar).variableNameY).c_str());
