@@ -549,7 +549,7 @@ int main (int argc, char ** argv) {
       string wrongChargeSys = "CMS_wrongCharge  lnN";
       string QCDScaleSys    = "QCDScale     lnN";
       string PdfqqSys       = "Pdfqq        lnN";
-      string btagSys        = "CMS_btag_eff lnN";
+      //string btagSys        = "CMS_btag_eff lnN";
 
       string lepEffSys_mu   = "CMS_lep_eff_mu  lnN";
       string lepEffSys_el   = "CMS_lep_eff_el  lnN";
@@ -587,11 +587,11 @@ int main (int argc, char ** argv) {
 	  lumiSys     = lumiSys     +"   -";
 	  QCDScaleSys = QCDScaleSys +"   -";
 	  PdfqqSys    = PdfqqSys    +"   -";
-	  btagSys     = btagSys     +"   -";
+	  //btagSys     = btagSys     +"   -";
 
-	  if (TString(finalStateString).Contains("UU"))
+	  if (TString(finalStateString).Contains("UUU"))
 	    lepEffSys_mu   = lepEffSys_mu   +"   -";
-	  else if (TString(finalStateString).Contains("EE"))
+	  else if (TString(finalStateString).Contains("EEE"))
 	    lepEffSys_el   = lepEffSys_el   +"   -";
 	  else{
 	    lepEffSys_mu   = lepEffSys_mu   +"   -";
@@ -723,13 +723,13 @@ int main (int argc, char ** argv) {
 	  avoidEmptyBins(hJetResUp);
 	  avoidEmptyBins(hJetResDown);
 
-	  if(TString(finalStateString).Contains("UU")){
+	  if(TString(finalStateString).Contains("UUU")){
 	    hMuScaleUp->Write();
 	    hMuScaleDown->Write();
 	    hMuResUp->Write();
 	    hMuResDown->Write();
 	  }
-	  else if (TString(finalStateString).Contains("EE")){
+	  else if (TString(finalStateString).Contains("EEE")){
 	    hElScaleUp->Write();
 	    hElScaleDown->Write();
 	    hElResUp->Write();
@@ -801,13 +801,13 @@ int main (int argc, char ** argv) {
 	  avoidEmptyBins(HminusNoH_res_jDw);
 
 
-	  if(TString(finalStateString).Contains("UU")){	  	    
+	  if(TString(finalStateString).Contains("UUU")){	  	    
 	    HminusNoH_scale_muUp->Write();
 	    HminusNoH_scale_muDw->Write();
 	    HminusNoH_res_muUp->Write();
 	    HminusNoH_res_muDw->Write();
 	  }	  
-	  else if(TString(finalStateString).Contains("EE")){
+	  else if(TString(finalStateString).Contains("EEE")){
 	    HminusNoH_scale_elUp->Write();
 	    HminusNoH_scale_elDw->Write();
 	    HminusNoH_res_elUp->Write();
@@ -847,7 +847,7 @@ int main (int argc, char ** argv) {
 	  acceptSys   = acceptSys   +"   -";
 	}
 
-	btagSys     = btagSys     +"   1.040";	
+	//btagSys     = btagSys     +"   1.040";	
 
 	lepEffSys_mu   = lepEffSys_mu   +"   1.020";	  
 	lepEffSys_el   = lepEffSys_el   +"   1.020";	  
@@ -896,16 +896,16 @@ int main (int argc, char ** argv) {
       datacard<< lumiSys +"\n" ;
       datacard<< QCDScaleSys +"\n" ;
       datacard<< PdfqqSys +"\n";
-      datacard<< btagSys +"\n";
+      //datacard<< btagSys +"\n";
       datacard<< acceptSys +"\n";
 
-      if (TString(finalStateString).Contains("UU")){
+      if (TString(finalStateString).Contains("UUU")){
 	datacard<< lepEffSys_mu +"\n";
 	datacard<< fakeLepSys_mu+"\n";	  
 	datacard<< muScaleShape +"\n" ;
 	datacard<< muResShape +"\n" ;
       }
-      else if(TString(finalStateString).Contains("EE")){
+      else if(TString(finalStateString).Contains("EEE")){
 	datacard<< wrongChargeSys +"\n";
 	datacard<< lepEffSys_el+"\n";
 	datacard<< fakeLepSys_el+"\n";	  
@@ -1127,7 +1127,7 @@ int main (int argc, char ** argv) {
       string wrongChargeSys = "CMS_wrongCharge  lnN";
       string QCDScaleSys    = "QCDScale     lnN";
       string PdfqqSys       = "Pdfqq        lnN";
-      string btagSys        = "CMS_btag_eff lnN";
+      //string btagSys        = "CMS_btag_eff lnN";
       string lepEffSys_mu   = "CMS_lep_eff_mu   lnN";
       string lepEffSys_el   = "CMS_lep_eff_el   lnN";
       string acceptSys      = "CMS_accept   lnN";
@@ -1239,13 +1239,13 @@ int main (int argc, char ** argv) {
 	  avoidEmptyBins(hJetResUp);
 	  avoidEmptyBins(hJetResDown);
 
-	  if(TString(finalStateString).Contains("UU")){
+	  if(TString(finalStateString).Contains("UUU")){
 	    hMuScaleUp   ->Write();
 	    hMuScaleDown ->Write();
 	    hMuResUp     ->Write();
 	    hMuResDown   ->Write();
 	  }
-	  else if(TString(finalStateString).Contains("EE")){
+	  else if(TString(finalStateString).Contains("EEE")){
 	    hElScaleUp   ->Write();
 	    hElScaleDown ->Write();
 	    hElResUp     ->Write();
@@ -1337,13 +1337,13 @@ int main (int argc, char ** argv) {
 	  avoidEmptyBins(hJetResDown);
 
 					      
-	  if(TString(finalStateString).Contains("UU")){
+	  if(TString(finalStateString).Contains("UUU")){
 	    hMuScaleUp   ->Write();
 	    hMuScaleDown ->Write();
 	    hMuResUp     ->Write();
 	    hMuResDown   ->Write();
 	  }
-	  else if(TString(finalStateString).Contains("EE")){
+	  else if(TString(finalStateString).Contains("EEE")){
 	    hElScaleUp   ->Write();
 	    hElScaleDown ->Write();
 	    hElResUp     ->Write();
@@ -1404,7 +1404,7 @@ int main (int argc, char ** argv) {
 	    acceptSys   = acceptSys   +"   -";
 	  }
 
-	  btagSys        = btagSys        +"   1.040";
+	  //btagSys        = btagSys        +"   1.040";
 	  lepEffSys_mu   = lepEffSys_mu   +"   1.020";
 	  lepEffSys_el   = lepEffSys_el   +"   1.020";
 
@@ -1451,7 +1451,7 @@ int main (int argc, char ** argv) {
 	  lumiSys     = lumiSys     +"   -";
 	  QCDScaleSys = QCDScaleSys +"   -";
 	  PdfqqSys    = PdfqqSys    +"   -";
-	  btagSys     = btagSys     +"   -";
+	  //btagSys     = btagSys     +"   -";
           acceptSys   = acceptSys   +"   -";
 
 	  lepEffSys_mu   = lepEffSys_mu   +"   -";
@@ -1512,17 +1512,17 @@ int main (int argc, char ** argv) {
       datacard<< lumiSys +"\n" ;
       datacard<< QCDScaleSys +"\n" ;
       datacard<< PdfqqSys +"\n";
-      datacard<< btagSys +"\n";
+      //datacard<< btagSys +"\n";
       datacard<< acceptSys +"\n";
       datacard<< wrongChargeSys +"\n";
 
-      if(TString(finalStateString).Contains("UU")){
+      if(TString(finalStateString).Contains("UUU")){
 	datacard<< lepEffSys_mu +"\n";
 	datacard<< fakeLepSys_mu +"\n";
 	datacard<< muScaleShape + "\n";
 	datacard<< muResShape + "\n";
       }
-      else if(TString(finalStateString).Contains("EE")){
+      else if(TString(finalStateString).Contains("EEE")){
 	datacard<< lepEffSys_el +"\n";
 	datacard<< fakeLepSys_el +"\n";
 	datacard<< elScaleShape + "\n";

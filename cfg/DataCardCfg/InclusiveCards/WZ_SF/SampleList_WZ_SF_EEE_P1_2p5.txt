@@ -1,0 +1,8 @@
+##############################################################################################################################################
+#  Sample Name 					            Reduced Name      Color     XSec (pb)                 NumEntriesBefore     Signal
+##############################################################################################################################################
+PHANTOM_WZ_EWK_SF_EE_126_PhaseI_50PU_2p5             WZ_EWK_126		    97       1.96E-03                        1              1
+PHANTOM_WZ_QCD_SF_EE_PhaseI_50PU_2p5                 WZ_QCD              91       8.13E-03                        1              0 
+PHANTOM_ZZ_EWK_SF_EE_PhaseI_50PU_2p5				 ZZ_EWK				8	     7.01E-05						 1			    0
+PHANTOM_ZZ_QCD_SF_EE_PhaseI_50PU_2p5				 ZZ_QCD			    63	     3.14E-04						 1			    0
+DY_3jets_PhaseI_50PU_2p5                             fakeLepton            861       0.60241                          1              -1
