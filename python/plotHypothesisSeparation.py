@@ -325,7 +325,7 @@ if __name__ == '__main__':
     tex3.Draw();
     tex2.Draw();
 
-    tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f"%(expectedCLs.GetMean()));
+    tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.3f"%(expectedCLs.GetMean()));
     tex.SetNDC(1);
     tex.SetTextAlign(11);
     tex.SetTextFont(42);

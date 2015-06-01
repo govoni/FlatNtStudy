@@ -48,6 +48,7 @@ parser.add_option('--inputGeneratedDataset', action="store", type="string", dest
 parser.add_option('--injectSignal',          action="store", type=float,    dest="injectSignal",  default=0., help='inject a singal in the toy generation')
 parser.add_option('--noSystematics',         action="store", type=int,      dest="noSystematics", default=0,  help='avoid systematics')
 parser.add_option('--bruteForce',            action="store", type=int,      dest="bruteForce", default=0,  help='use brute force for profile likelihood')
+parser.add_option('--freezeNuisances',       action="store", type="string", dest="freezeNuisances", default="", help='type the name of the nuisances you want to freeze')
 
 ###### input set of variables : 
 parser.add_option('--inputVariableList', action="store", type="string", dest="inputVariableList", default="list of variables to be considered")
@@ -513,17 +514,24 @@ if __name__ == '__main__':
 
                if options.nCycle != 0 :
                    for iCycle in range(options.nCycle):                       
-                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5 "%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+                       if options.freezeNuisances == "":
+                           runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5 "%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+                       else :
+                           runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5 --freezeNuisances %s "%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle,options.freezeNuisances);
+
                        print "runCmmd ",runCmmd;
-                       fn = "combineScript_LikelihoodScan_%s_exp_job_%d"%(outname,iCycle);
-                       submitBatchJobCombine(runCmmd,fn,outname);                       
+                       fn = "combineScript_HybridNew_%s_exp_job_%d"%(outname,iCycle);
+#                       submitBatchJobCombine(runCmmd,fn,outname);                       
                else :
                    sys.exit("set nCycle to a non null value");
            else:
                
                if options.nCycle != 0 :
                    for iCycle in range(options.nCycle):
-                       runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint r=1,x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+                       if options.freezeNuisances:
+                           runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint r=1,x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5"%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle);
+                       else:
+                           runCmmd = "combine %s -M HybridNew -m 100 --testStat=TEV --generateExternalMeasurements=1 --generateNuis=0 --fitNuis=0 --singlePoint x=1 --saveHybridResult -i 1 --clsAcc 0 --fullBToys --setPhysicsModelParameters r=%d --setPhysicsModelParameterRanges r=-1,2:x=0,1 -s -1 -T %d -n %s_exp_%d --expectedFromGrid 0.5 --freezeNuisances %s "%(outputWorkspace,options.injectSignal,options.nToys,outname+"_job",iCycle,options.freezeNuisances);
 
                        print "runCmmd ",runCmmd;
                        os.system(runCmmd);

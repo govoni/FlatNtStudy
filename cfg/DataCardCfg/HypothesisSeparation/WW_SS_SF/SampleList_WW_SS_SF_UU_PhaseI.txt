@@ -3,9 +3,11 @@
 ##############################################################################################################################################
 PHANTOM_SS_EWK_UU_126_PhaseI_50PU                           WW_EWK                4        2.0682E-003                      1               1
 #PHANTOM_SS_EWK_UU_noH_PhaseI_50PU                          WW_EWK_ALT            2        2.2462E-003                      1               1
-#PHANTOM_SS_EWK_UU_126_0p5_PhaseI_50PU                      WW_EWK_ALT            2       2.1305E-003                      1               1
-PHANTOM_SS_EWK_UU_126_0p8_PhaseI_50PU                       WW_EWK_ALT            2       2.0918E-003                      1               1
-#PHANTOM_SS_EWK_UU_126_0p9_PhaseI_50PU                      WW_EWK_ALT            2       2.0768E-003                      1               1
+#PHANTOM_SS_EWK_UU_126_0p5_PhaseI_50PU                      WW_EWK_ALT            2        2.1305E-003                      1               1
+#PHANTOM_SS_EWK_UU_126_0p6_PhaseI_50PU                      WW_EWK_ALT            2        2.1162E-003                      1               1
+PHANTOM_SS_EWK_UU_126_0p7_PhaseI_50PU                       WW_EWK_ALT            2        2.1035E-003                      1               1
+#PHANTOM_SS_EWK_UU_126_0p8_PhaseI_50PU                      WW_EWK_ALT            2        2.0918E-003                      1               1
+#PHANTOM_SS_EWK_UU_126_0p9_PhaseI_50PU                      WW_EWK_ALT            2        2.0768E-003                      1               1
 PHANTOM_WZ_EWK_SF_UU_126_PhaseI_50PU                        WZ_EWK                12        1.96E-003                        1               0
 PHANTOM_SS_QCD_UU_126_PhaseI_50PU                           WW_QCD                  5       0.533455E-003                    1               0
 PHANTOM_WZ_QCD_SF_UU_PhaseI_50PU                            WZ_QCD                801       8.1326E-003                      1               0
