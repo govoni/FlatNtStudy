@@ -102,7 +102,7 @@ void loopOnEvents (plotter & analysisPlots,
 	  continue;
       } 
     }   
-   
+
     // loop on the cut list
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
@@ -822,7 +822,6 @@ void loopOnEvents (plotter & analysisPlots,
 	continue;
     }
 
-    
     for(size_t iCut = 0; iCut < CutList.size() ; iCut++){ 
 
       TLorentzVector L_met, L_gen_met;
@@ -884,7 +883,6 @@ void loopOnEvents (plotter & analysisPlots,
       float eventFakeWeight = 1.;
 
       if(applyFake){ // the sample require the fake rate application
-	
 
 	makeFakeLeptonBackground( sampleName,        // name of the sample
 				  samplePosition,     
@@ -933,6 +931,7 @@ void loopOnEvents (plotter & analysisPlots,
 				 matchingCone,       // matching for cleaning
 				 vect                // efficiency histos
 				 );
+
       }
       else { // if not fake rate sample
       
@@ -1064,7 +1063,7 @@ void loopOnEvents (plotter & analysisPlots,
 	  RecoJetsRes  = dumpJets (RecoJetsAllRes, leptonsIsoTight, minJetCutPt, 999, CutList.at(iCut).jetPUID, minPtLeptonCutCleaning, matchingCone);
 	
 	}     
-      
+
 	// analysis with nominal objects
 	if( passCutContainerSelection (CutList.at(iCut),
 				       sampleName,
@@ -1110,7 +1109,7 @@ void loopOnEvents (plotter & analysisPlots,
 			  L_met,"",eventFakeWeight);
 	  }
 	}
-	  
+
 	/// if perform sys analysis
 	if(analysisPlots.getSystematics()){
 
@@ -1251,7 +1250,6 @@ void loopOnEvents (plotter & analysisPlots,
 	    }
 	  }
 	
-
 	  // scale electron up
 	  leptonAll.clear();
 	  leptonAll = electronsAllScaleUp;
@@ -1318,7 +1316,7 @@ void loopOnEvents (plotter & analysisPlots,
 			    L_met_electronScaleUp,"elScaleUp",eventFakeWeight);
 	    }
 	  }
-
+	  
 	  // scale electron down
 	  leptonAll.clear();
 	  leptonAll = electronsAllScaleDown;
@@ -1358,7 +1356,7 @@ void loopOnEvents (plotter & analysisPlots,
 			  L_met_electronScaleDown, 
 			  "elScaleDown",eventFakeWeight);
 	      
-	      fillHisto2DWZ(analysisPlots, sampleName, samplePosition,
+	      fillHisto2DWW(analysisPlots, sampleName, samplePosition,
 			    CutList.at(iCut).cutLayerName,VariableList2D, 
 			    leptonTight,softMuons,RecoJets, 
 			    GenJets,trackEvent,
@@ -1384,8 +1382,7 @@ void loopOnEvents (plotter & analysisPlots,
 			    L_met_electronScaleDown,"elScaleDown",eventFakeWeight);
 	    }
 	  }
-
-	  
+	  	  
 	  // analysis smearing leptons (extra smearing)
 	  leptonAll.clear();
 	  leptonAll = muonsAllRes;
