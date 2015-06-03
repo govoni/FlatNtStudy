@@ -15,7 +15,7 @@ void fillHistoWW( plotter & analysisPlots,
 		  const string & systematicName,
 		  const float & eventFakeWeight
                 ){
-  
+
   // some basic lorentz vectors                                                                                                                                                
   TLorentzVector L_dilepton, L_LLmet;
   TLorentzVector L_dijet, L_dijet_gen;
@@ -110,7 +110,6 @@ void fillHistoWW( plotter & analysisPlots,
   float mR  = 0;
 
   computeRazor(leptonsIsoTight.at(0).lepton4V_,leptonsIsoTight.at(1).lepton4V_,L_met,mTR,mR);
-
 
   for(size_t iVar = 0; iVar < VariableList.size(); iVar++){
 
@@ -519,7 +518,6 @@ void fillHisto2DWW ( plotter & analysisPlots,
 		     TLorentzVector & L_met,
 		     const string & systematicName,
 		     const float & eventFakeWeight){
-
 
   // some basic lorentz vectors                                                                                                                                                 
   TLorentzVector L_dilepton, L_LLmet;

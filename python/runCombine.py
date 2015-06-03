@@ -521,7 +521,7 @@ if __name__ == '__main__':
 
                        print "runCmmd ",runCmmd;
                        fn = "combineScript_HybridNew_%s_exp_job_%d"%(outname,iCycle);
-#                       submitBatchJobCombine(runCmmd,fn,outname);                       
+                       submitBatchJobCombine(runCmmd,fn,outname);                       
                else :
                    sys.exit("set nCycle to a non null value");
            else:
