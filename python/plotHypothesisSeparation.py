@@ -273,8 +273,8 @@ if __name__ == '__main__':
     qH095p   = nullHypo_array[int(math.floor(len(nullHypo_array) * 0.5*(1-0.954)+0.5))];
     qH099p   = nullHypo_array[int(math.floor(len(nullHypo_array) * 0.5*(1-0.997)+0.5))];
     qH068m   = nullHypo_array[min(int(math.floor(len(nullHypo_array) * 0.5*(1+0.683)+0.5)),len(nullHypo_array)-1)];
-    qH068m   = nullHypo_array[min(int(math.floor(len(nullHypo_array) * 0.5*(1+0.954)+0.5)),len(nullHypo_array)-1)];
-    qH068m   = nullHypo_array[min(int(math.floor(len(nullHypo_array) * 0.5*(1+0.997)+0.5)),len(nullHypo_array)-1)];
+    qH095m   = nullHypo_array[min(int(math.floor(len(nullHypo_array) * 0.5*(1+0.954)+0.5)),len(nullHypo_array)-1)];
+    qH099m   = nullHypo_array[min(int(math.floor(len(nullHypo_array) * 0.5*(1+0.997)+0.5)),len(nullHypo_array)-1)];
 
 
     medianH1 = alteHypo_array[int(len(alteHypo_array)/2)]
@@ -282,8 +282,8 @@ if __name__ == '__main__':
     qH195p   = alteHypo_array[int(math.floor(len(alteHypo_array) * 0.5*(1-0.954)+0.5))];
     qH199p   = alteHypo_array[int(math.floor(len(alteHypo_array) * 0.5*(1-0.997)+0.5))];
     qH168m   = alteHypo_array[min(int(math.floor(len(alteHypo_array) * 0.5*(1+0.683)+0.5)),len(alteHypo_array)-1)];
-    qH168m   = alteHypo_array[min(int(math.floor(len(alteHypo_array) * 0.5*(1+0.954)+0.5)),len(alteHypo_array)-1)];
-    qH168m   = alteHypo_array[min(int(math.floor(len(alteHypo_array) * 0.5*(1+0.997)+0.5)),len(alteHypo_array)-1)];
+    qH195m   = alteHypo_array[min(int(math.floor(len(alteHypo_array) * 0.5*(1+0.954)+0.5)),len(alteHypo_array)-1)];
+    qH199m   = alteHypo_array[min(int(math.floor(len(alteHypo_array) * 0.5*(1+0.997)+0.5)),len(alteHypo_array)-1)];
 
 
     ### print some  infor
@@ -437,9 +437,9 @@ if __name__ == '__main__':
     tex2.Draw();
 
     if options.fullCoverage :
-      tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f%s #rightarrow %0.2f #sigma"%(expectedCLs.GetMean()*100,"%",math.fabs(separation)));
+      tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f #rightarrow %0.2f #sigma"%(expectedCLs.GetMean(),math.fabs(separation)));
     else:
-      tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f%s #rightarrow %0.2f #sigma"%(expectedCLs.GetMean()*100,"%",math.fabs(ROOT.Math.normal_quantile_c(expectedCLs.GetMean()/2,1.0))));
+      tex = ROOT.TLatex(0.25,0.7,"CLs^{exp} = %0.2f #rightarrow %0.2f #sigma"%(expectedCLs.GetMean(),math.fabs(ROOT.Math.normal_quantile_c(expectedCLs.GetMean()/2,1.0))));
     tex.SetNDC(1);
     tex.SetTextAlign(11);
     tex.SetTextFont(42);
