@@ -274,6 +274,9 @@ if __name__ == '__main__':
     
     frame = can.DrawFrame(0.1,0,1,ROOT.TMath.MaxElement(curGraph_2s.GetN(),curGraph_2s.GetY())*1.2);
 
+
+    frame.SetNdivisions(510);
+
     frame.GetXaxis().SetTitle("#Delta c^{H}_{V}");
     frame.GetXaxis().SetTitleSize(0.045);
     frame.GetXaxis().SetLabelSize(0.04);
@@ -366,6 +369,8 @@ if __name__ == '__main__':
     can = ROOT.TCanvas("can","can",600,600);
     
     frame = can.DrawFrame(0.1,0.,1,ROOT.TMath.MaxElement(curGraph_exp.GetN(),curGraph_exp.GetY())*1.2);
+
+    frame.SetNdivisions(510)
 
     frame.GetXaxis().SetTitle("#Delta c^{H}_{V}");
     frame.GetXaxis().SetTitleSize(0.045);

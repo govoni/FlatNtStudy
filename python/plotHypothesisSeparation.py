@@ -25,15 +25,15 @@ parser = OptionParser()
 parser.add_option('-b', action='store_true', dest='noX', default=True, help='no X11 windows')
 parser.add_option('--fullCoverage', action='store_true', dest='fullCoverage', default=False, help='use full coverage')
 
-parser.add_option('--fileDIR',   action="store", type="string", dest="fileDIR", default="")
-parser.add_option('--channel',   action="store", type="string", dest="channel",     default="UUpp")
+parser.add_option('--fileDIR',         action="store", type="string", dest="fileDIR", default="")
+parser.add_option('--channel',         action="store", type="string", dest="channel",     default="UUpp")
 parser.add_option('--outputPlotDIR',   action="store", type="string", dest="outputPlotDIR", default="")
 parser.add_option('--inputVariable',   action="store", type="string", dest="inputVariable", default="")
 
  
-parser.add_option('--nbin',    action="store", type="int", dest="nbin", default=500)
-parser.add_option('--qmin',    action="store", type="float", dest="qmin", default=-100)
-parser.add_option('--qmax',    action="store", type="float", dest="qmax", default=100)
+parser.add_option('--nbin',    action="store", type="int", dest="nbin",       default=500)
+parser.add_option('--qmin',    action="store", type="float", dest="qmin",     default=-100)
+parser.add_option('--qmax',    action="store", type="float", dest="qmax",     default=100)
 parser.add_option('--coupling',action="store", type="float", dest="coupling", default=0)
 
 
@@ -118,41 +118,6 @@ def setStyle():
   greenArray = array('d', green)
   blueArray  = array('d', blue)
   TColor.CreateGradientColorTable(NRGBs, stopsArray, redArray, greenArray, blueArray, NCont)
-
-#####################
-#### inverse erf ####
-#####################
-def ErfInverse(y) : 
-  kMaxit = 50; 
-  kEps = 1e-14; 
-  kConst = 0.8862269254527579; #// sqrt(pi)/2.0 
-
-  if ROOT.TMath.Abs(y) <= kEps:
-    return kConst*y; 
-
-  if(ROOT.TMath.Abs(y) < 1.0) :
-    erfi = kConst*ROOT.TMath.Abs(y); 
-    Y0 = ROOT.TMath.Erf(0.9*erfi); 
-    derfi = 0.1*erfi; 
-    for iter in range(kMaxit):
-      Y1 = 1. - ROOT.TMath.Erfc(erfi); 
-      DY1 = ROOT.TMath.Abs(y) - Y1; 
-      if (ROOT.TMath.Abs(DY1) < kEps) :
-        if (y < 0) :
-          return -erfi; 
-        else:
-          return erfi;
-      DY0 = Y1 - Y0; 
-      derfi *= DY1/DY0; 
-      Y0 = Y1; 
-      erfi += derfi; 
-      if ROOT.TMath.Abs(derfi/erfi) < kEps :
-        if y < 0 : 
-          return -erfi; 
-        else: 
-          return erfi;
-
-  return 0; 
 
 
 ##################################                                                                                                                                              
@@ -388,9 +353,9 @@ if __name__ == '__main__':
 
     ## set x-axis label  
     if options.coupling == 0 :
-      frame.GetXaxis().SetTitle("-2 x LQ(L_{H,c_{v}=0}/L_{H,c_{v}=1})");
+      frame.GetXaxis().SetTitle("-2 x LQ(L_{H,c^{2}_{v}=0}/L_{H,c^{2}_{v}=1})");
     else :
-      frame.GetXaxis().SetTitle("-2 x Ln(L_{H,c_{v}=%0.1f}/L_{H,c_{v}=0})"%options.coupling);
+      frame.GetXaxis().SetTitle("-2 x Ln(L_{H,c^{2}_{v}=%0.1f}/L_{H,c^{2}_{v}=0})"%options.coupling);
       
     ## frame style  
     frame.GetXaxis().SetTitleSize(0.040);
