@@ -139,17 +139,17 @@ if __name__ == '__main__':
     tex3.SetLineWidth(2);
 
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs lumi
-    filePolarizedPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI_bbar/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
 
     significancePhaseI_vsLumi = ROOT.TGraphAsymmErrors();
     significancePhaseI_vsLumi = filePolarizedPhaseI_vsLumi.Get("signficance_graph");
 
-    filePolarizedPhaseII_vsLumi = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedPhaseII_vsLumi = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_bbar/Card2D/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
 
     significancePhaseII_vsLumi = ROOT.TGraphAsymmErrors();
     significancePhaseII_vsLumi = filePolarizedPhaseII_vsLumi.Get("signficance_graph");
 
-    filePolarizedAged_vsLumi    = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
+    filePolarizedAged_vsLumi    = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged_bbar/lumiExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsLumi.root","OPEN");
     significanceAged_vsLumi = ROOT.TGraphAsymmErrors();
     significanceAged_vsLumi = filePolarizedAged_vsLumi.Get("signficance_graph");
 
@@ -168,6 +168,9 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(significancePhaseII_vsLumi.GetN(),significancePhaseII_vsLumi.GetY()),
                               ROOT.TMath.MaxElement(significanceAged_vsLumi.GetN(),significanceAged_vsLumi.GetY())))*1.2);
 
+    frame.GetXaxis().SetNdivisions(40804);
+    frame.GetYaxis().SetNdivisions(10608);
+
     frame.GetXaxis().SetTitle("Luminosity (fb^{-1})");
     frame.GetXaxis().SetTitleSize(0.045);
     frame.GetXaxis().SetLabelSize(0.04);
@@ -178,17 +181,17 @@ if __name__ == '__main__':
     frame.GetYaxis().SetLabelSize(0.04);
     
 
-    significancePhaseI_vsLumi.SetMarkerSize(1.1);
+    significancePhaseI_vsLumi.SetMarkerSize(1.2);
     significancePhaseI_vsLumi.SetLineStyle(1);
     significancePhaseI_vsLumi.Draw("pl");
 
-    significancePhaseII_vsLumi.SetMarkerSize(1.1);
+    significancePhaseII_vsLumi.SetMarkerSize(1.2);
     significancePhaseII_vsLumi.SetLineStyle(1);
     significancePhaseII_vsLumi.SetLineColor(ROOT.kRed);
     significancePhaseII_vsLumi.SetMarkerColor(ROOT.kRed);
     significancePhaseII_vsLumi.Draw("plsame");
 
-    significanceAged_vsLumi.SetMarkerSize(1.1);
+    significanceAged_vsLumi.SetMarkerSize(1.2);
     significanceAged_vsLumi.SetLineStyle(1);
     significanceAged_vsLumi.SetLineColor(ROOT.kBlue);
     significanceAged_vsLumi.SetMarkerColor(ROOT.kBlue);
@@ -209,21 +212,21 @@ if __name__ == '__main__':
 
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.png","png");
     can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.pdf","pdf");
-    can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.root","root");
-    can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.C","C");
+#    can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.root","root");
+#    can.SaveAs("output/detectorComparison/LL_scattering_vsLumi.C","C");
 
     ## input file for phaseI 50PU, aged and phaseII for polarized signficance vs fake
-    filePolarizedPhaseI_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
+    filePolarizedPhaseI_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseI_bbar/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
 
     significancePhaseI_vsFake = ROOT.TGraphAsymmErrors();
     significancePhaseI_vsFake = filePolarizedPhaseI_vsFake.Get("signficance_graph");
 
-    filePolarizedPhaseII_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
+    filePolarizedPhaseII_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_PhaseII_bbar/Card2D/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
 
     significancePhaseII_vsFake = ROOT.TGraphAsymmErrors();
     significancePhaseII_vsFake = filePolarizedPhaseII_vsFake.Get("signficance_graph");
 
-    filePolarizedAged_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
+    filePolarizedAged_vsFake  = ROOT.TFile("output/DataCards_WW_SS_Polarized_Dynamic_Aged_bbar/fakeRateExtrapolation/computeProfileLikelihood/plotProfileLikelihood/ProfileLikelihood_COMB_vsFake.root","OPEN");
     significanceAged_vsFake = ROOT.TGraphAsymmErrors();
     significanceAged_vsFake = filePolarizedAged_vsFake.Get("signficance_graph");
 
@@ -240,6 +243,9 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(significancePhaseII_vsFake.GetN(),significancePhaseII_vsFake.GetY()),
                               ROOT.TMath.MaxElement(significanceAged_vsFake.GetN(),significanceAged_vsFake.GetY())))*1.2);
 
+    frame2.GetXaxis().SetNdivisions(506);
+    frame2.GetYaxis().SetNdivisions(506);
+
     frame2.GetXaxis().SetTitle("fake rate scale factor");
     frame2.GetXaxis().SetTitleSize(0.045);
     frame2.GetXaxis().SetLabelSize(0.04);
@@ -250,15 +256,15 @@ if __name__ == '__main__':
     frame2.GetYaxis().SetLabelSize(0.04);
 
 
-    significancePhaseI_vsFake.SetMarkerSize(1.1);
+    significancePhaseI_vsFake.SetMarkerSize(1.2);
     significancePhaseI_vsFake.SetLineStyle(1);
     significancePhaseI_vsFake.Draw("pl");
-    significancePhaseII_vsFake.SetMarkerSize(1.1);
+    significancePhaseII_vsFake.SetMarkerSize(1.2);
     significancePhaseII_vsFake.SetLineStyle(1);
     significancePhaseII_vsFake.SetLineColor(ROOT.kRed);
     significancePhaseII_vsFake.SetMarkerColor(ROOT.kRed);
     significancePhaseII_vsFake.Draw("plsame");
-    significanceAged_vsFake.SetMarkerSize(1.1);
+    significanceAged_vsFake.SetMarkerSize(1.2);
     significanceAged_vsFake.SetLineStyle(1);
     significanceAged_vsFake.SetLineColor(ROOT.kBlue);
     significanceAged_vsFake.SetMarkerColor(ROOT.kBlue);
@@ -282,8 +288,8 @@ if __name__ == '__main__':
     
     can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.png","png");
     can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.pdf","pdf");
-    can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.root","root");
-    can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.C","C");
+#    can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.root","root");
+#    can2.SaveAs("output/detectorComparison/LL_scattering_vsFake.C","C");
 
     ## input file for phaseI 50PU, aged and phaseII for noH-H signficance vs lumi
     fileHvsNoHPhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_HvsNoH_Dynamic_PhaseI/Card2D/lumiExtrapolation/computeAsymptotic/plotAsymptotic/Asymptotic_COMB.root","OPEN");
@@ -319,6 +325,9 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(limitPhaseII_vsLumi.GetN(),limitPhaseII_vsLumi.GetY()),
                               ROOT.TMath.MaxElement(limitAged_vsLumi.GetN(),limitAged_vsLumi.GetY())))*1.25);
 
+
+    frame3.GetXaxis().SetNdivisions(40804);
+    frame3.GetYaxis().SetNdivisions(10608);
     frame3.GetXaxis().SetTitle("Luminosity (fb^{-1})");
     frame3.GetXaxis().SetTitleSize(0.045);
     frame3.GetXaxis().SetLabelSize(0.04);
@@ -329,17 +338,17 @@ if __name__ == '__main__':
     frame3.GetYaxis().SetLabelSize(0.04);
     
 
-    limitPhaseI_vsLumi.SetMarkerSize(1.1);
+    limitPhaseI_vsLumi.SetMarkerSize(1.2);
     limitPhaseI_vsLumi.SetLineStyle(1);
     limitPhaseI_vsLumi.Draw("pl");
 
-    limitPhaseII_vsLumi.SetMarkerSize(1.1);
+    limitPhaseII_vsLumi.SetMarkerSize(1.2);
     limitPhaseII_vsLumi.SetLineStyle(1);
     limitPhaseII_vsLumi.SetLineColor(ROOT.kRed);
     limitPhaseII_vsLumi.SetMarkerColor(ROOT.kRed);
     limitPhaseII_vsLumi.Draw("plsame");
 
-    limitAged_vsLumi.SetMarkerSize(1.1);
+    limitAged_vsLumi.SetMarkerSize(1.2);
     limitAged_vsLumi.SetLineStyle(1);
     limitAged_vsLumi.SetLineColor(ROOT.kBlue);
     limitAged_vsLumi.SetMarkerColor(ROOT.kBlue);
@@ -358,8 +367,8 @@ if __name__ == '__main__':
 
     can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.png","png");
     can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.pdf","pdf");
-    can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.root","root");
-    can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.C","C");
+#    can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.root","root");
+#    can3.SaveAs("output/detectorComparison/HvsNoH_vsLumi.C","C");
 
 
     ## input file for phaseII 140PU, aged and phaseII for noH-H signficance vs lumi
@@ -396,6 +405,9 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(limitPhaseII_vsFake.GetN(),limitPhaseII_vsFake.GetY()),
                               ROOT.TMath.MaxElement(limitAged_vsFake.GetN(),limitAged_vsFake.GetY())))*1.15);
 
+    frame4.GetYaxis().SetNdivisions(1006);
+    frame4.GetXaxis().SetNdivisions(506);
+
     frame4.GetXaxis().SetTitle("fake rate scale factor");
     frame4.GetXaxis().SetTitleSize(0.045);
     frame4.GetXaxis().SetLabelSize(0.04);
@@ -406,17 +418,17 @@ if __name__ == '__main__':
     frame4.GetYaxis().SetLabelSize(0.04);
     
 
-    limitPhaseI_vsFake.SetMarkerSize(1.1);
+    limitPhaseI_vsFake.SetMarkerSize(1.2);
     limitPhaseI_vsFake.SetLineStyle(1);
     limitPhaseI_vsFake.Draw("pl");
 
-    limitPhaseII_vsFake.SetMarkerSize(1.1);
+    limitPhaseII_vsFake.SetMarkerSize(1.2);
     limitPhaseII_vsFake.SetLineStyle(1);
     limitPhaseII_vsFake.SetLineColor(ROOT.kRed);
     limitPhaseII_vsFake.SetMarkerColor(ROOT.kRed);
     limitPhaseII_vsFake.Draw("plsame");
 
-    limitAged_vsFake.SetMarkerSize(1.1);
+    limitAged_vsFake.SetMarkerSize(1.2);
     limitAged_vsFake.SetLineStyle(1);
     limitAged_vsFake.SetLineColor(ROOT.kBlue);
     limitAged_vsFake.SetMarkerColor(ROOT.kBlue);
@@ -433,8 +445,8 @@ if __name__ == '__main__':
     can4.RedrawAxis();
     can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.png","png");
     can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.pdf","pdf");
-    can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.root","root");
-    can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.C","C");
+#    can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.root","root");
+#    can4.SaveAs("output/detectorComparison/HvsNoH_vsFake.C","C");
 
     ## inclusive cross section
     fileInclusivePhaseI_vsLumi  = ROOT.TFile("output/DataCards_WW_SS_Inclusive_Dynamic_PhaseI/Card2D/lumiExtrapolation/computeMaxLikelihoodFit/computeMaxLikelihoodFit/mu_uncertainty_COMB.root","OPEN");
@@ -481,6 +493,9 @@ if __name__ == '__main__':
 
 
 
+    frame5.GetXaxis().SetNdivisions(40804);
+    frame5.GetYaxis().SetNdivisions(40506);
+
     frame5.GetXaxis().SetTitle("Luminosity (fb^{-1})");
     frame5.GetXaxis().SetTitleSize(0.045);
     frame5.GetXaxis().SetLabelSize(0.04);
@@ -490,7 +505,8 @@ if __name__ == '__main__':
     frame5.GetYaxis().SetLabelSize(0.04);
     
 
-    fitPhaseI_vsLumi.SetMarkerSize(1.1);
+    fitPhaseI_vsLumi.SetMarkerSize(1.2);
+    fitPhaseI_vsLumi.SetLineWidth(3);
     fitPhaseI_vsLumi.SetLineStyle(1);
 
     arrayX_buffer = fitPhaseI_vsLumi.GetX();
@@ -537,13 +553,15 @@ if __name__ == '__main__':
 
     fitPhaseI_vsLumi.Draw("pl");
 
-    fitPhaseII_vsLumi.SetMarkerSize(1.1);
+    fitPhaseII_vsLumi.SetMarkerSize(1.2);
+    fitPhaseII_vsLumi.SetLineWidth(3);
     fitPhaseII_vsLumi.SetLineStyle(1);
     fitPhaseII_vsLumi.SetLineColor(ROOT.kRed);
     fitPhaseII_vsLumi.SetMarkerColor(ROOT.kRed);
     fitPhaseII_vsLumi.Draw("plsame");
 
-    fitAged_vsLumi.SetMarkerSize(1.1);
+    fitAged_vsLumi.SetMarkerSize(1.2);
+    fitAged_vsLumi.SetLineWidth(3);
     fitAged_vsLumi.SetLineStyle(1);
     fitAged_vsLumi.SetLineColor(ROOT.kBlue);
     fitAged_vsLumi.SetMarkerColor(ROOT.kBlue);
@@ -561,8 +579,8 @@ if __name__ == '__main__':
     can5.RedrawAxis();
     can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.png","png");
     can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.pdf","pdf");
-    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.root","root");
-    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.C","C");
+#    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.root","root");
+#    can5.SaveAs("output/detectorComparison/Inclusive_vsLumi.C","C");
 
 
     ## input file for phaseII 140PU, aged and phaseII for noH-H signficance vs lumi
@@ -608,6 +626,9 @@ if __name__ == '__main__':
                           max(ROOT.TMath.MaxElement(fitPhaseII_vsFake.GetN(),fitPhaseII_vsFake.GetY()),
                               ROOT.TMath.MaxElement(fitAged_vsFake.GetN(),fitAged_vsFake.GetY())))*1.2);
 
+    frame6.GetYaxis().SetNdivisions(40506);
+    frame6.GetXaxis().SetNdivisions(506);
+
     frame6.GetXaxis().SetTitle("fake rate scale factor");
     frame6.GetXaxis().SetTitleSize(0.045);
     frame6.GetXaxis().SetLabelSize(0.04);
@@ -618,7 +639,8 @@ if __name__ == '__main__':
     frame6.GetYaxis().SetLabelSize(0.04);
     
 
-    fitPhaseI_vsFake.SetMarkerSize(1.1);
+    fitPhaseI_vsFake.SetMarkerSize(1.2);
+    fitPhaseI_vsFake.SetLineWidth(3);
     fitPhaseI_vsFake.SetLineStyle(1);
 
     arrayX_buffer = fitPhaseI_vsFake.GetX();
@@ -636,7 +658,8 @@ if __name__ == '__main__':
 
     fitPhaseI_vsFake.Draw("pl");
 
-    fitPhaseII_vsFake.SetMarkerSize(1.1);
+    fitPhaseII_vsFake.SetMarkerSize(1.2);
+    fitPhaseII_vsFake.SetLineWidth(3);
     fitPhaseII_vsFake.SetLineStyle(1);
     fitPhaseII_vsFake.SetLineColor(ROOT.kRed);
     fitPhaseII_vsFake.SetMarkerColor(ROOT.kRed);
@@ -657,7 +680,8 @@ if __name__ == '__main__':
 
     fitPhaseII_vsFake.Draw("plsame");
 
-    fitAged_vsFake.SetMarkerSize(1.1);
+    fitAged_vsFake.SetMarkerSize(1.2);
+    fitAged_vsFake.SetLineWidth(3);
     fitAged_vsFake.SetLineStyle(1);
     fitAged_vsFake.SetLineColor(ROOT.kBlue);
     fitAged_vsFake.SetMarkerColor(ROOT.kBlue);
@@ -689,7 +713,7 @@ if __name__ == '__main__':
     can6.RedrawAxis();
     can6.SaveAs("output/detectorComparison/Inclusive_vsFake.png","png");
     can6.SaveAs("output/detectorComparison/Inclusive_vsFake.pdf","pdf");
-    can6.SaveAs("output/detectorComparison/Inclusive_vsFake.root","root");
-    can6.SaveAs("output/detectorComparison/Inclusive_vsFake.C","C");
+#    can6.SaveAs("output/detectorComparison/Inclusive_vsFake.root","root");
+#    can6.SaveAs("output/detectorComparison/Inclusive_vsFake.C","C");
 
     

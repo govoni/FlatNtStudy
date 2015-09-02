@@ -36,8 +36,9 @@ inputDirectoryPhaseI  = ['output/DataCards_WW_SS_HypothesisSeparation_0p9_Dynami
                          'output/DataCards_WW_SS_HypothesisSeparation_0p6_Dynamic_PhaseI/Card2D/datacardSeparation/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_0p5_Dynamic_PhaseI/Card2D/datacardSeparation/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_noH_Dynamic_PhaseI/Card2D/datacardSeparation/computeHypoSeparation/']
-
-inputDirectoryAged    = ['output/DataCards_WW_SS_HypothesisSeparation_0p9_Dynamic_Aged/AgedCards/computeHypoSeparation/',
+                         
+inputDirectoryAged    = [
+                         'output/DataCards_WW_SS_HypothesisSeparation_0p9_Dynamic_Aged/AgedCards/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_0p8_Dynamic_Aged/AgedCards/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_0p7_Dynamic_Aged/AgedCards/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_0p6_Dynamic_Aged/AgedCards/computeHypoSeparation/',
@@ -50,11 +51,11 @@ inputDirectoryPhaseII = ['output/DataCards_WW_SS_HypothesisSeparation_0p9_Dynami
                          'output/DataCards_WW_SS_HypothesisSeparation_0p6_Dynamic_PhaseII/Card2D/datacardSeparation/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_0p5_Dynamic_PhaseII/Card2D/datacardSeparation/computeHypoSeparation/',
                          'output/DataCards_WW_SS_HypothesisSeparation_noH_Dynamic_PhaseII/Card2D/datacardSeparation/computeHypoSeparation/']
- 
+                         
 qmin     = [-20,-30,-50,-50,-50,-200]
 qmax     = [20,30,50,50,50,200]
 nbin     = [75,100,150,150,150,200]
-coupling = [0.1,0.2,0.3,0.4,0.5,1]
+coupling = [0.9,0.8,0.7,0.6,0.5,0]
 
 #####################################                                                                                                                                          
 ###### definition of the style ######                                                                                                                                         
@@ -221,12 +222,15 @@ def plotHypotesisDistributions(nullHypoHist,alteHypoHist,expectedCLs, coupling, 
   frame = can.DrawFrame(nullHypoHist.GetXaxis().GetXmin(),0.,nullHypoHist.GetXaxis().GetXmax(),
                         max(nullHypoHist.GetMaximum(),alteHypoHist.GetMaximum())*1.6);
 
+  frame.GetXaxis().SetNdivisions(40505);
+  frame.GetYaxis().SetNdivisions(509);
+
   
     ## set x-axis label  
   if coupling == 1 :
-    frame.GetXaxis().SetTitle("-2 x LQ(L_{H,c^{2}_{v}=0}/L_{H,c^{2}_{v}=1})");
+    frame.GetXaxis().SetTitle("-2 x LQ(L_{H, #kappa^{2}_{V}=0}/L_{H, #kappa^{2}_{V}=1})");
   else :
-    frame.GetXaxis().SetTitle("-2 x Ln(L_{H,c^{2}_{v}=%0.1f}/L_{H,c^{2}_{v}=0})"%coupling);
+    frame.GetXaxis().SetTitle("-2 x Ln(L_{H, #kappa^{2}_{V}=%0.1f}/L_{H, #kappa^{2}_{V}=1})"%coupling);
       
   ## frame style  
   frame.GetXaxis().SetTitleSize(0.040);
@@ -234,37 +238,38 @@ def plotHypotesisDistributions(nullHypoHist,alteHypoHist,expectedCLs, coupling, 
     
   frame.GetYaxis().SetTitle("Probability Density");
   frame.GetYaxis().SetTitleSize(0.040);
-  frame.GetYaxis().SetTitleOffset(1.25);
+  frame.GetYaxis().SetTitleOffset(1.40);
   frame.GetYaxis().SetLabelSize(0.030);
 
   ## histo style
   nullHypoHist.SetFillStyle(3001)
   nullHypoHist.SetFillColor(801);
   nullHypoHist.SetLineColor(ROOT.kRed);
-  nullHypoHist.SetLineWidth(2);
+  nullHypoHist.SetLineWidth(3);
   nullHypoHist.SetLineStyle(7);
 
   alteHypoHist.SetFillStyle(3001)
   alteHypoHist.SetFillColor(861);
   alteHypoHist.SetLineColor(ROOT.kBlue);
-  alteHypoHist.SetLineWidth(2);
+  alteHypoHist.SetLineWidth(3);
   
   ## draw on the PAD
   nullHypoHist.Draw("hist same");
   alteHypoHist.Draw("hist same");
     
   ## legend
-  legend.AddEntry(nullHypoHist,  "WW_{ewk} H, c^{2}_{v}=1","f")
+  legend.AddEntry(nullHypoHist,  "WW_{ewk} H, #kappa^{2}_{V}=1","f")
   if coupling == 1:
-    legend.AddEntry(alteHypoHist,"WW_{ewk} H, c^{2}_{v}=0","f")
+    legend.AddEntry(alteHypoHist,"WW_{ewk} H, #kappa^{2}_{V}=0","f")
   else:
-    legend.AddEntry(alteHypoHist,"WW_{ewk} H, c^{2}_{v}=%0.1f"%(coupling),"f")
-    legend.Draw("same");
+    legend.AddEntry(alteHypoHist,"WW_{ewk} H, #kappa^{2}_{V}=%0.1f"%(coupling),"f")
+
+  legend.Draw("same");
 
 
   ## draw the median line for H0
   medianLineNull = ROOT.TLine(medianH0,0,medianH0,nullHypoHist.GetMaximum());
-  medianLineNull.SetLineWidth(2);
+  medianLineNull.SetLineWidth(3);
   medianLineNull.SetLineStyle(7);
   medianLineNull.Draw("same")
 
@@ -277,12 +282,13 @@ def plotHypotesisDistributions(nullHypoHist,alteHypoHist,expectedCLs, coupling, 
   tex.SetTextAlign(11);
   tex.SetTextFont(42);
   tex.SetTextSize(0.04);
-  tex.SetLineWidth(2);
+  tex.SetLineWidth(3);
   tex.Draw();
 
   can.RedrawAxis();
 
   can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f_%s.png"%(coupling,postfix),"png");
+  can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f_%s.root"%(coupling,postfix),"root");
   can.SaveAs(options.outputPlotDIR+"/hyposeperation_c%0.1f_%s.pdf"%(coupling,postfix),"pdf");
 
 
@@ -299,7 +305,7 @@ if __name__ == '__main__':
     tex2.SetNDC(1);
     tex2.SetTextAlign(11);
     tex2.SetTextFont(61);
-    tex2.SetLineWidth(2);
+    tex2.SetLineWidth(3);
     tex2.SetTextSize(0.04);
 
     tex3 = ROOT.TLatex(0.67,0.96,"14 TeV, 3000 fb^{-1}");
@@ -307,7 +313,7 @@ if __name__ == '__main__':
     tex3.SetTextAlign(11);
     tex3.SetTextFont(42);
     tex3.SetTextSize(0.04);
-    tex3.SetLineWidth(2);
+    tex3.SetLineWidth(3);
 
     ## create output plot directory                                                                                                                                           
     os.system("mkdir -p "+options.outputPlotDIR);
@@ -526,7 +532,7 @@ if __name__ == '__main__':
     ########################
     ## Phase PhaseII plot ##
     ########################
-    '''
+
     ## start with phaseI
     for idir in range(len(inputDirectoryPhaseII)):
 
@@ -608,7 +614,7 @@ if __name__ == '__main__':
       phaseII_CLs.SetPoint(idir,coupling[idir],expectedCLs.GetMean())
       separation = ROOT.Math.normal_quantile_c(expectedCLs.GetMean()/2,1.0);
       if numpy.isnan(separation) or numpy.isinf(separation):
-        phaseII_Sepa.SetPoint(idir,coupling[idir],12.55);
+        phaseII_Sepa.SetPoint(idir,coupling[idir],12.3);
       else:
         phaseII_Sepa.SetPoint(idir,coupling[idir],ROOT.Math.normal_quantile_c(expectedCLs.GetMean()/2,1.0))
 
@@ -617,7 +623,6 @@ if __name__ == '__main__':
       plotHypotesisDistributions(nullHypoHist,alteHypoHist,expectedCLs, coupling[idir],"PhaseII");
 
 
-    '''
     ##### make the final plot
     can = ROOT.TCanvas("can","can",600,600);
 
@@ -635,7 +640,7 @@ if __name__ == '__main__':
       
     frame.SetNdivisions(510);
 
-    frame.GetXaxis().SetTitle("#Deltac^{2}_{H}");
+    frame.GetXaxis().SetTitle("#kappa^{2}_{V}");
     frame.GetXaxis().SetTitleSize(0.045);
     frame.GetXaxis().SetLabelSize(0.04);
 
@@ -646,19 +651,21 @@ if __name__ == '__main__':
 
     phaseI_CLs.SetMarkerSize(1.4); 
     phaseI_CLs.SetMarkerStyle(20); 
-    phaseI_CLs.SetLineWidth(2);
+    phaseI_CLs.SetLineWidth(3);
     phaseI_CLs.Draw("pl");
-    '''
-    phaseII_CLs.SetMarkerSize(1.1);
+
+    phaseII_CLs.SetMarkerSize(1.4);
+    phaseII_CLs.SetMarkerStyle(20);
     phaseII_CLs.SetLineStyle(1);
+    phaseII_CLs.SetLineWidth(3);
     phaseII_CLs.SetLineColor(ROOT.kRed);
     phaseII_CLs.SetMarkerColor(ROOT.kRed);
     phaseII_CLs.Draw("plsame"); 
-    '''
+
     phaseAged_CLs.SetMarkerSize(1.4);
     phaseAged_CLs.SetMarkerStyle(20);
     phaseAged_CLs.SetLineStyle(1);
-    phaseAged_CLs.SetLineWidth(2);
+    phaseAged_CLs.SetLineWidth(3);
     phaseAged_CLs.SetLineColor(ROOT.kBlue);
     phaseAged_CLs.SetMarkerColor(ROOT.kBlue);
     phaseAged_CLs.Draw("plsame");
@@ -668,7 +675,7 @@ if __name__ == '__main__':
 
     legend.AddEntry(phaseI_CLs,    "Phase I 50 PU","pl");
     legend.AddEntry(phaseAged_CLs, "Phase I aged 140 PU","pl");
-#    legend.AddEntry(phaseII_CLs,   "Phase II 140 PU","pl");
+    legend.AddEntry(phaseII_CLs,   "Phase II 140 PU","pl");
     legend.Draw();
 
     can.RedrawAxis();
@@ -681,7 +688,7 @@ if __name__ == '__main__':
     ##### make the final plot
     can2 = ROOT.TCanvas("can2","can2",600,600);
 
-    legend2 = ROOT.TLegend(0.18,0.6,0.58,0.80);
+    legend2 = ROOT.TLegend(0.415,0.65,0.885,0.85);
     legend2.SetFillColor(0);
     legend2.SetFillStyle(0);
     legend2.SetBorderSize(0);
@@ -693,8 +700,10 @@ if __name__ == '__main__':
                               ROOT.TMath.MaxElement(phaseAged_Sepa.GetN(),phaseAged_Sepa.GetY())))*1.2);
 
     frame2.SetNdivisions(510);
-
-    frame2.GetXaxis().SetTitle("#Deltac^{2}_{H}");
+    frame2.GetXaxis().SetNdivisions(209);
+    frame2.GetYaxis().SetNdivisions(510);
+    
+    frame2.GetXaxis().SetTitle("#kappa^{2}_{V}");
     frame2.GetXaxis().SetTitleSize(0.045);
     frame2.GetXaxis().SetLabelSize(0.04);
 
@@ -706,19 +715,21 @@ if __name__ == '__main__':
     phaseI_Sepa.SetMarkerSize(1.4);
     phaseI_Sepa.SetMarkerStyle(20);
     phaseI_Sepa.SetLineStyle(1);
-    phaseI_Sepa.SetLineWidth(2);
+    phaseI_Sepa.SetLineWidth(3);
     phaseI_Sepa.Draw("pl");
-    '''
-    phaseII_Sepa.SetMarkerSize(1.1);
+
+    phaseII_Sepa.SetMarkerSize(1.4);
+    phaseII_Sepa.SetMarkerStyle(20);
     phaseII_Sepa.SetLineStyle(1);
+    phaseII_Sepa.SetLineWidth(3);
     phaseII_Sepa.SetLineColor(ROOT.kRed);
     phaseII_Sepa.SetMarkerColor(ROOT.kRed);
     phaseII_Sepa.Draw("plsame");
-    '''
+
     phaseAged_Sepa.SetMarkerStyle(20);
     phaseAged_Sepa.SetMarkerSize(1.4);
     phaseAged_Sepa.SetLineStyle(1);
-    phaseAged_Sepa.SetLineWidth(2);
+    phaseAged_Sepa.SetLineWidth(3);
     phaseAged_Sepa.SetLineColor(ROOT.kBlue);
     phaseAged_Sepa.SetMarkerColor(ROOT.kBlue);
     phaseAged_Sepa.Draw("plsame");
@@ -728,13 +739,54 @@ if __name__ == '__main__':
 
     legend2.AddEntry(phaseI_Sepa,    "Phase I 50 PU","pl");
     legend2.AddEntry(phaseAged_Sepa, "Phase I aged 140 PU","pl");
-#    legend2.AddEntry(phaseII_Sepa,   "Phase II 140 PU","pl");
+    legend2.AddEntry(phaseII_Sepa,   "Phase II 140 PU","pl");
     legend2.Draw();
 
     can2.RedrawAxis();
 
+    pad2 = ROOT.TPad("pad2","pad2",0.52,0.32,0.88,0.65)
+    pad2.SetFillStyle(0);
+    pad2.Draw();
+    pad2.cd();
+
+    phaseI_Sepa.GetXaxis().SetRangeUser(0.5,0.9);
+    phaseII_Sepa.GetXaxis().SetRangeUser(0.5,0.9);
+    phaseAged_Sepa.GetXaxis().SetRangeUser(0.5,0.9);
+
+    phaseI_Sepa.GetYaxis().SetRangeUser(0.5,3);
+    phaseII_Sepa.GetYaxis().SetRangeUser(0.5,3);
+    phaseAged_Sepa.GetYaxis().SetRangeUser(0.5,3);
+
+    phaseI_Sepa.GetXaxis().SetLabelSize(0.06);
+    phaseI_Sepa.GetXaxis().SetTitleSize(0.);
+    phaseI_Sepa.GetYaxis().SetLabelSize(0.06);
+    phaseI_Sepa.GetYaxis().SetTitleSize(0.);
+    
+    frame3 = pad2.DrawFrame(0.58,0.5,0.92,4);
+    frame3.SetNdivisions(510);
+
+    frame3.GetXaxis().SetTitleSize(0.06);
+    frame3.GetXaxis().SetLabelSize(0.06);
+
+    frame3.GetYaxis().SetTitleSize(0.06);
+    frame3.GetYaxis().SetTitleOffset(1.17);
+    frame3.GetYaxis().SetLabelSize(0.06);
+    
+
+    phaseI_Sepa.Draw("pl");
+    phaseAged_Sepa.Draw("plsame");
+    phaseII_Sepa.Draw("plsame");
+
+    can2.RedrawAxis();
+    pad2.RedrawAxis();
+
+    can2.Modified()
+    can2.Update();
+    gPad.Update();
+
     can2.SaveAs(options.outputPlotDIR+"/hyposeperation_Sepa.png","png");
     can2.SaveAs(options.outputPlotDIR+"/hyposeperation_Sepa.pdf","pdf");
+    can2.SaveAs(options.outputPlotDIR+"/hyposeperation_Sepa.root","pdf");
 
 
 
